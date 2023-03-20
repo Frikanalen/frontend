@@ -23,7 +23,7 @@
   "dependencies": {
     "@apollo/client": "^3.6.9",
     "@emotion/react": "^11.9.0",
-    "@emotion/styled": "^11.8.1",
+    "@emotion/styled": "^11.10.6",
     "@fontsource/roboto-flex": "^4.5.2",
     "@fontsource/roboto-mono": "^4.5.8",
     "@fontsource/roboto-serif": "^4.5.8",
