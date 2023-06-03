@@ -12,24 +12,24 @@ export default function About() {
         }}
       />
       <AboutLinkBar />
-      <article className={"flex flex-col lg:flex-row "}>
-        <header className={"text-gray-900 p-4 lg:pr-12 lg:pb-24 bg-gradient-to-b from-green-200 to-green-300 h-fit"}>
-          <h2 className={"text-5xl font-bold"}>Vedtekter</h2>
-          <div className={"text-xl font-semibold"}>
+      <article className={"flex flex-col lg:flex-row"}>
+        <header
+          className={"text-gray-900 p-8 space-y-4 lg:pr-12 lg:pb-24 bg-gradient-to-b from-green-200 to-green-300 h-fit"}
+        >
+          <h2 className={"text-6xl font-bold"}>Vedtekter</h2>
+          <div className={"text-2xl font-semibold"}>
             for <span className={"font-bold"}>Foreningen Frikanalen</span>
           </div>
-          <div className={"font-serif text-sm pt-3"}>
-            <p>Vedtatt på stiftelsesmøtet 14. juni 2007.</p>
-            <p>
-              Revidert av årsmøtet 4. februar 2008, <br />
-              28.april 2011, 28. mai 2015 og 13. mars 2021.
-            </p>
-          </div>
+          <p className={"font-serif text-sm"}>Vedtatt på stiftelsesmøtet 14. juni 2007.</p>
+          <p className={"font-serif text-sm"}>
+            Revidert av årsmøtet 4. februar 2008, <br />
+            28.april 2011, 28. mai 2015 og 13. mars 2021.
+          </p>
         </header>
 
         <div
           className={
-            "pr-2 pt-1 max-w-[800px] prose text-justify lg:prose-lg prose-slate prose-p:ml-4 " +
+            "max-w-[800px] prose text-justify lg:prose-lg prose-slate prose-p:ml-4 " +
             "prose-h5:font-sans prose-h5:font-bold prose-li:ml-4 prose-li:font-serif prose-p:font-serif [&_section]:ml-4 "
           }
         >

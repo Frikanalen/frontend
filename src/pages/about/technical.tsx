@@ -9,11 +9,11 @@ const GithubLogo = ({ className }: { className?: string }) => (
 )
 
 const info = `
+## Teknisk informasjon
+
 Kildekoden er i GitHub, pull requests er velkomne :) 
 
-Frikanalen kjører på et on-premise Kubernetes-cluster.
-
-Docker-images blir bygget av GitHub Actions.
+Frikanalen kjører på et on-premise Kubernetes-cluster. Docker-images blir bygget av GitHub Actions.
 
 Vår [frontend](https://github.com/frikanalen/frontend) er skrevet i Next.JS. Vi bruker Apollo til å kommunisere vha GraphQL med vår backend.
 
@@ -32,13 +32,9 @@ export const TechInfoPage = () => {
   return (
     <div>
       <AboutLinkBar />
-      <div className={"flex gap-4"}>
+      <div className={"flex gap-2"}>
         <div className={"lg:basis-1/4"}>
-          <div
-            className={
-              "bg-gradient-to-b from-green-300 to-green-400 italic-semi text-green-900 p-5 flex drop-shadow-xl"
-            }
-          >
+          <div className={"bg-gradient-to-b from-green-200 to-green-300 italic-semi text-green-900 p-5 flex"}>
             <div>
               <GithubLogo className={"inline h-[1em] mr-1"} />
             </div>
@@ -69,9 +65,7 @@ export const TechInfoPage = () => {
             </div>
           </div>
         </div>
-        <section
-          className={"prose bg-gradient-to-b from-orange-200/80 to-orange-300/80 text-orange-900 p-5 drop-shadow-xl"}
-        >
+        <section className={"prose prose-lg text-black px-2"}>
           <ReactMarkdown>{info}</ReactMarkdown>
         </section>
       </div>

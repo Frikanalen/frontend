@@ -2,9 +2,9 @@ import { Meta } from "src/modules/core/components/Meta"
 import Link from "next/link"
 import { AboutLinkBar } from "../../modules/core/components/aboutLinkBar"
 
-const Sitat = () => (
-  <div className={"lg:basis-1/3 "}>
-    <div className={"bg-gradient-to-b from-orange-300 to-orange-400 italic-semi text-right text-gray-800 p-8 "}>
+const Sitat = ({ className }: { className?: string }) => (
+  <div className={className}>
+    <div className={"lg:border-r-4 max-lg:border-b-4 border-orange-600 italic-semi my-2 text-right text-gray-800 p-4"}>
       <div className={"font-extrabold text-xl italic-semi"}>
         «&nbsp;Målet med Frikanalen er å styrke ytringsfrihet og deltakerdemokratiet ved å gi flere mulighet til å ytre
         seg i TV-mediet.&nbsp;»
@@ -32,9 +32,9 @@ export const About = () => (
     />
     <AboutLinkBar />
     <div className={"space-y-4 lg:pr-12 lg:pb-24"}>
-      <div className={"flex gap-4"}>
-        <Sitat />
-        <div className={"space-y-2"}>
+      <div className={"flex max-lg:flex-col gap-4"}>
+        <Sitat className={"max-w-[450px]"} />
+        <div className="p-2 space-y-2">
           <h2 className={"text-3xl text-gray-800 font-bold "}>Frikanalen er sivilsamfunnets videoplatform</h2>
 
           <div className={"max-w-prose space-y-2"}>
@@ -48,7 +48,7 @@ export const About = () => (
             </p>
           </div>
         </div>
-      </div>{" "}
+      </div>
     </div>
   </div>
 )

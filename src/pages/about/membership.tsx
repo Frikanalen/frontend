@@ -7,15 +7,11 @@ export const MembershipPage = () => {
 
       <div className={"flex gap-4"}>
         <div className={"lg:basis-1/4"}>
-          <div className={"bg-gradient-to-b from-green-300 to-green-400 italic-semi text-green-900 p-5 "}>
-            Bli med som medlem!
+          <div className={"bg-gradient-to-b from-green-200 to-green-300 italic-semi text-black p-8"}>
+            Alle individer og ikke-kommersielle organisasjoner kan tegne medlemskap og få sitt innhold på TV.
           </div>
         </div>
-        <section className={"prose"}>
-          <p>
-            Alle individer og ikke-kommersielle organisasjoner kan tegne medlemskap i Frikanalen og få sitt innhold
-            sendt på riksdekkende fjernsyn.
-          </p>
+        <section className={"prose prose-lg"}>
           <p>Slik går du frem:</p>
           <ul>
             <li>

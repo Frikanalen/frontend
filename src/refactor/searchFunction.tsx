@@ -74,7 +74,7 @@ export const SearchFunction = ({ className }: { className?: string }) => {
   // bg-gradient-to-b from-green-500 to-green-700
   return (
     <div ref={ref} className={className}>
-      <div className={"gap-4 my-6 flex font-bold text-2xl text-black/80 items-center"}>
+      <div className={"gap-4 mb-6 flex font-bold text-2xl text-black/80 items-center"}>
         <div className={"max-lg:hidden"}>Søk</div>
         <div className={cx("m-1 grow text-black", { "rounded-b-none": showResults })}>
           <div className={"relative"}>
