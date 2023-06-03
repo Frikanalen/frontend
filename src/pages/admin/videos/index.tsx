@@ -53,14 +53,7 @@ export const VideoAdminList = () => {
         <h1 className={"text-4xl font-bold p-2"}>Administratorfunksjoner</h1>
       </Link>
       <h2 className={"text-2xl font-bold p-2"}>Videoer</h2>
-      <DataGrid
-        disableSelectionOnClick
-        autoHeight
-        rows={videos ?? []}
-        columns={columns}
-        pageSize={5}
-        rowsPerPageOptions={[5]}
-      />
+      <DataGrid autoHeight rows={videos ?? []} columns={columns} />
     </div>
   )
 }
