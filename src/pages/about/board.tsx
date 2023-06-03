@@ -18,6 +18,18 @@ export const Board = () => (
           Teknisk leder Tore Sinding Bekkedal kan nås på{" "}
           <Link href="mailto:toresbe@protonmail.com">toresbe@protonmail.com</Link>
         </p>
+        <p>
+          Egil Skarning Langemyr (Evangeliekirken Arendal), styremedlem
+        </p>
+        <p>
+          Olav Hardang (Bladet Evangelisten), styremedlem
+        </p>
+        <p>
+          Estehan Zouain (NUUG), styremedlem
+        </p>
+        <p>
+          Rune Hagerup, styremedlem
+        </p>
       </div>
     </div>
   </div>
