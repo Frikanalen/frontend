@@ -6,7 +6,7 @@ import { UserProvider } from "src/refactor/UserContext"
 import { AppProps } from "next/app"
 import { client } from "../modules/apollo/client"
 import "../modules/styling/global.css"
-import "@fontsource/roboto-flex/variable-full.css"
+import "@fontsource-variable/roboto-flex"
 import "@fontsource/roboto-mono"
 import "@fontsource/roboto-serif"
 
