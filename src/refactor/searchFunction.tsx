@@ -17,8 +17,7 @@ const SearchResults = ({
   show?: boolean
   loading?: boolean
 }) => {
-  const className =
-    "bg-gradient-to-b from-green-100 to-green-300 rounded-b-lg  top-full left-0 w-full absolute flex flex-col z-100"
+  const className = "rounded-b-lg top-full left-0 w-full absolute flex flex-col z-100"
 
   if (!show) return null
 
@@ -72,23 +71,19 @@ export const SearchFunction = ({ className }: { className?: string }) => {
   useOnClickOutside(ref, () => setShowResults(false))
   const items = data?.video.search.items
 
+  // bg-gradient-to-b from-green-500 to-green-700
   return (
     <div ref={ref} className={className}>
-      <div
-        className={
-          "bg-gradient-to-b from-green-500 to-green-700 lg:pl-10 gap-4 p-3 flex font-bold text-2xl text-white/95 items-center"
-        }
-      >
+      <div className={"gap-4 my-6 flex font-bold text-2xl text-black/80 items-center"}>
         <div className={"max-lg:hidden"}>Søk</div>
-        <div className={cx("bg-green-100 rounded-lg m-1 grow text-black", { "rounded-b-none": showResults })}>
+        <div className={cx("m-1 grow text-black", { "rounded-b-none": showResults })}>
           <div className={"relative"}>
-            <form role={"search"} className={"flex items-center"} action={"/video/search"}>
+            <form role={"search"} className={"flex items-center border-2 border-black/80"} action={"/video/search"}>
               <SearchResults show={showResults} results={items} loading={loading} />
               <SearchIcon className={"mx-2"} />
               <InputBase
                 onClick={() => setShowResults(true)}
                 value={query}
-                placeholder="Søk"
                 fullWidth
                 name={"q"}
                 className={""}

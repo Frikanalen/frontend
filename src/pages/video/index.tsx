@@ -70,7 +70,7 @@ export const ArchivePage = ({ children }: { children: React.ReactNode }) => (
 export const ArchiveHome = () => {
   return (
     <ArchivePage>
-      <NewestVideos className={"drop-shadow-xl grow"} />
+      <NewestVideos className={"drop-shadow-md grow"} />
     </ArchivePage>
   )
 }
