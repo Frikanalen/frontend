@@ -22,7 +22,7 @@ export default function About() {
             <p>Vedtatt på stiftelsesmøtet 14. juni 2007.</p>
             <p>
               Revidert av årsmøtet 4. februar 2008, <br />
-              28.april 2011 og 28. mai 2015.
+              28.april 2011, 28. mai 2015 og 13. mars 2021.
             </p>
           </div>
         </header>
@@ -36,7 +36,7 @@ export default function About() {
           <section>
             <h4 className={"lg:!mt-0"}>§ 1. Navn</h4>
 
-            <p>Foreningen Frikanalen er en selvstendig forening stiftet 14.06.2007.</p>
+            <p>Foreningen Frikanalen, også omtalt som Åpen kanal, er en selvstendig forening stiftet 14.06.2007.</p>
           </section>
           <section>
             <h4>§ 2. Formål</h4>
