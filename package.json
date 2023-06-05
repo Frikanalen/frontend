@@ -52,7 +52,7 @@
     "tus-js-client": "^3.0.1",
     "use-tus": "^0.7.0",
     "usehooks-ts": "^2.7.1",
-    "video.js": "^7.18.1",
+    "video.js": "^8.3.0",
     "videojs-mobile-ui": "^0.7.0"
   },
   "devDependencies": {
