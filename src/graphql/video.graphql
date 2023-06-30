@@ -118,6 +118,8 @@ fragment LatestVideos on Organization {
         description
         createdAt
         duration
+        published
+
         organization {
             id
             name

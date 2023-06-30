@@ -6,6 +6,7 @@ import { FieldValues, useForm } from "react-hook-form"
 import { nopeResolver } from "@hookform/resolvers/nope"
 import { ErrorMessage } from "@hookform/error-message"
 import { LoginSchema } from "./schemas"
+import { AnyCnameRecord } from "dns"
 
 export const LoginForm = ({ onSuccess }: { onSuccess: () => void }) => {
   const {
@@ -17,11 +18,11 @@ export const LoginForm = ({ onSuccess }: { onSuccess: () => void }) => {
 
   const [mutate] = useMutation(LoginDocument, {
     refetchQueries: ["GetSession"],
-    onError: (e) => {
+    onError: (e: any) => {
       if (e instanceof ApolloError)
         setError("backend", { type: "custom", message: e.message })
       else
-        setError("backend", { type: "custom", message: e.toString() })
+        setError("backend", { type: "custom", message: e })
     },
     onCompleted: ({ user }) => {
       if (user.login.status === MutationStatus.Success) onSuccess()

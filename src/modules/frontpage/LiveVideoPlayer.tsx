@@ -1,10 +1,12 @@
-import videojs, { VideoJsPlayer, VideoJsPlayerOptions } from "video.js"
+import videojs from "video.js"
 import "video.js/dist/video-js.min.css"
 
 import { useEffect, useRef } from "react"
+import type VideoJsPlayer from "video.js/dist/types/player"
+
 
 interface VideoJSProps {
-  options: VideoJsPlayerOptions
+  options: any,
   onReady?: (player: any) => void
 }
 

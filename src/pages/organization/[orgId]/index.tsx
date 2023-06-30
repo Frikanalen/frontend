@@ -41,8 +41,8 @@ const EditorPanel = ({ organization }: { organization: Pick<Organization, "id" |
   const router = useRouter()
 
   return (
-    <div className={"bg-orange-300 p-2"}>
-      <h4>Redaktørpanel</h4>
+    <div className={"bg-orange-200 p-4 space-y-4 border-2 border-black"}>
+      <h4 className="text-xl font-bold">Redaktørpanel</h4>
       <Button
         onClick={() => {
           setActiveOrganization(organization)
@@ -74,13 +74,13 @@ export const OrganizationPage: NextPage<OrganizationPageProps> = ({ orgId }) => 
       />
       <div>
         <h2 className={"text-5xl text-green-800 font-black "}>{name}</h2>
-        {isEditor && <EditorPanel organization={organization} />}
-        <div className={"description py-3"}>
+        <div className={"prose-lg prose description py-3"}>
           <ReactMarkdown>{description || ""}</ReactMarkdown>
         </div>
         <LatestVideosGrid latestVideos={latestVideos} />
       </div>
       <div id={"grow"}>&nbsp;</div>
+      {isEditor && <EditorPanel organization={organization} />}
       <LegalInfo organization={organization} />
     </div>
   )

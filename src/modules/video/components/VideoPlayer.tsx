@@ -2,8 +2,9 @@ import React from "react"
 import { Video } from "../../../generated/graphql"
 import { getAssetURI } from "../getAssetURI"
 import { VideoJS } from "../../frontpage/LiveVideoPlayer"
-import videojs from "video.js"
-import SourceObject = videojs.Tech.SourceObject
+
+// This just went away for some reason
+type SourceObject = object
 
 export type VideoPlayerProps = {
   className?: string
