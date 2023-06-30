@@ -1,6 +1,6 @@
-import { Button, InputLabel, TextField } from "@mui/material"
+import { Alert, Button, InputLabel, TextField } from "@mui/material"
 import React from "react"
-import { useMutation } from "@apollo/client"
+import { ApolloError, useMutation } from "@apollo/client"
 import { LoginDocument, MutationStatus } from "../../generated/graphql"
 import { FieldValues, useForm } from "react-hook-form"
 import { nopeResolver } from "@hookform/resolvers/nope"
@@ -17,7 +17,12 @@ export const LoginForm = ({ onSuccess }: { onSuccess: () => void }) => {
 
   const [mutate] = useMutation(LoginDocument, {
     refetchQueries: ["GetSession"],
-    onError: (e) => setError("backend", { type: "custom", message: e.toString() }),
+    onError: (e) => {
+      if (e instanceof ApolloError)
+        setError("backend", { type: "custom", message: e.message })
+      else
+        setError("backend", { type: "custom", message: e.toString() })
+    },
     onCompleted: ({ user }) => {
       if (user.login.status === MutationStatus.Success) onSuccess()
       else setError("backend", { type: "custom", message: "Ukjent feil" })
@@ -60,7 +65,11 @@ export const LoginForm = ({ onSuccess }: { onSuccess: () => void }) => {
         </div>
       </form>
       <div className={"py-1"}>
-        <ErrorMessage errors={errors} name={"backend"} />
+        {errors.backend &&
+          <Alert severity="error">
+            <ErrorMessage errors={errors} name={"backend"} />
+          </Alert>
+        }
       </div>
       <div className={"py-4"}>
         <Button
