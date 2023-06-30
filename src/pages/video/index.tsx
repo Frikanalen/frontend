@@ -29,7 +29,9 @@ export const VideoThumbnail = ({
       <div className={"absolute bg-gray-800/50 leading-4 p-1 right-0 bottom-0 m-1 text-white"}>
         {formatVideoDuration(video.duration)}
       </div>
-      <img alt={""} src={video.images.thumbLarge} />
+      <div className="aspect-video flex bg-black justify-center" >
+        <img alt={""} src={video.images.thumbLarge} />
+      </div>
     </div>
   )
 }
