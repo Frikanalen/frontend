@@ -2,15 +2,19 @@ import { SearchFunction } from "../../refactor/searchFunction"
 import { BasicVideoMetadataFragment, GetVideosDocument, Video } from "../../generated/graphql"
 import { useQuery } from "@apollo/client"
 import Link from "next/link"
-import { addMinutes, format } from "date-fns"
+import { format } from "date-fns"
 import nb from "date-fns/locale/nb"
 import cx from "classnames"
 
 export const formatVideoDuration = (seconds?: number | null): string => {
   if (!seconds) return ""
 
-  const duration = addMinutes(new Date(seconds * 1000), new Date().getTimezoneOffset())
-  return format(duration, duration.getHours() ? "H:mm:ss" : "mm:ss")
+  const hrs = Math.floor(seconds / 3600)
+  const mins = Math.floor((seconds % 3600) / 60)
+  const secs = Math.floor(seconds % 60)
+
+  return hrs ? `${hrs}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+    : `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
 }
 
 export const VideoThumbnail = ({
