@@ -13,7 +13,7 @@ const { publicRuntimeConfig } = getConfig()
 const UploadProgressBar = ({ progress }: { progress: number }) => (
   <Progress.Root max={100} value={progress} className={" h-9 relative"}>
     <div className={"absolute z-40 inset-1 text-center h-full font-semibold text-white mix-blend-exclusion"}>
-      {progress}%
+      {progress.toFixed(2)}%
     </div>
     <Progress.Indicator className={"z-20 inset-0 h-9 overflow-hidden rounded-full absolute"}>
       <div
