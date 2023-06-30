@@ -5,6 +5,8 @@ import Link from "next/link"
 import { format } from "date-fns"
 import nb from "date-fns/locale/nb"
 import cx from "classnames"
+import { Alert } from "@mui/material"
+const logger = require('pino')()
 
 export const formatVideoDuration = (seconds?: number | null): string => {
   if (!seconds) return ""
@@ -52,9 +54,14 @@ const VideoCard = ({ video }: { video: BasicVideoMetadataFragment }) => {
 }
 
 const NewestVideos = ({ className }: { className?: string }) => {
-  const { data } = useQuery(GetVideosDocument)
+  const { data, error } = useQuery(GetVideosDocument)
 
   const videos = data?.video.list.items
+
+  if (error) {
+    logger.error('fetching newest videos', error)
+    return <Alert severity={"error"}>Kunne ikke hente nyeste videoer</Alert>
+  }
 
   return (
     <div className={cx(className, "p-4 border-orange-300 bg-white/40 border-4 space-y-2 rounded-xl shadow-lg w-full")}>
