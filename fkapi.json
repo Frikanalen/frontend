@@ -140,7 +140,8 @@
           "postalAddress": { "type": "string" },
           "streetAddress": { "type": "string" },
           "editor": { "$ref": "#/components/schemas/User" }
-        }
+        },
+        "required": ["id", "name"]
       },
       "NewOrganizationForm": {
         "type": "object",
@@ -268,7 +269,13 @@
       },
       "VideoMediaAsset": {
         "type": "object",
-        "properties": { "type": { "type": "string" }, "url": { "type": "string" }, "metadata": { "type": "object" } }
+        "properties": {
+          "id": { "type": "number" },
+          "type": { "type": "string" },
+          "url": { "type": "string" },
+          "metadata": { "type": "object" }
+        },
+        "required": ["id", "type", "url"]
       },
       "VideoMediaAssetForm": {
         "type": "object",

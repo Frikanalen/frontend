@@ -1,33 +1,45 @@
 import React from "react"
-import { Video } from "../../../generated/graphql"
 import { getAssetURI } from "../getAssetURI"
 import { VideoJS } from "../../frontpage/LiveVideoPlayer"
+import { useGetVideosId } from "src/generated/video/video"
+import { Video } from "src/generated/model"
 
 // This just went away for some reason
 type SourceObject = object
 
+const FORMATS = [
+  { assetType: "hls", type: "application/vnd.apple.mpegurl" },
+  { assetType: "webm", type: "video/webm" },
+  { assetType: "theora", type: "video/ogg" },
+] as const
+
 export type VideoPlayerProps = {
   className?: string
-  video: Pick<Video, "assets" | "images" | "duration">
+  videoId: number
 }
 
-export function VideoPlayer({ className, video }: VideoPlayerProps) {
-  const formats = [
-    { assetType: "hls", type: "application/vnd.apple.mpegurl" },
-    { assetType: "webm", type: "video/webm" },
-    { assetType: "theora", type: "video/ogg" },
-  ]
+export const getLargeThumbnail = (videoId: number) => {
+  const { data: video } = useGetVideosId(videoId)
+  if (!video) return null;
 
-  const sources: SourceObject[] = formats
-    .map(({ assetType, type }) => {
-      const src = getAssetURI(video.assets, assetType)!
+  const thumbnail = video.media.assets.find(({ type }) => type === "thumbnail-large")
+  if (!thumbnail) return null
+  return thumbnail.url
+}
 
-      return {
-        src,
-        type,
-      }
+export const VideoPlayer = ({ className, videoId }: VideoPlayerProps) => {
+  const { data: video } = useGetVideosId(videoId)
+
+  if (!video) return null;
+
+  const sources: SourceObject[] = FORMATS
+    .map(({ assetType, type }) => ({
+      src: getAssetURI(video.media.assets, assetType)!,
+      type,
     })
+    )
     .filter(({ src }) => src)
+
   if (!video) return null
 
   return (
@@ -38,7 +50,7 @@ export function VideoPlayer({ className, video }: VideoPlayerProps) {
             fluid: true,
             html5: { vhs: { overrideNative: true } },
             controls: true,
-            poster: video.images.thumbLarge,
+            poster: getLargeThumbnail(videoId),
             liveui: false,
             sources,
           }}

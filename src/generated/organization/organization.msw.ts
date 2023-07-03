@@ -19,8 +19,8 @@ export const getGetOrganizationsMock = () => ({
 })
 
 export const getPostOrganizationsMock = () => ({
-  id: faker.helpers.arrayElement([faker.datatype.number({ min: undefined, max: undefined }), undefined]),
-  name: faker.helpers.arrayElement([faker.random.word(), undefined]),
+  id: faker.datatype.number({ min: undefined, max: undefined }),
+  name: faker.random.word(),
   description: faker.helpers.arrayElement([faker.random.word(), undefined]),
   homepage: faker.helpers.arrayElement([faker.internet.url(), undefined]),
   postalAddress: faker.helpers.arrayElement([faker.random.word(), undefined]),
@@ -43,8 +43,8 @@ export const getPostOrganizationsMock = () => ({
 })
 
 export const getGetOrganizationsIdMock = () => ({
-  id: faker.helpers.arrayElement([faker.datatype.number({ min: undefined, max: undefined }), undefined]),
-  name: faker.helpers.arrayElement([faker.random.word(), undefined]),
+  id: faker.datatype.number({ min: undefined, max: undefined }),
+  name: faker.random.word(),
   description: faker.helpers.arrayElement([faker.random.word(), undefined]),
   homepage: faker.helpers.arrayElement([faker.internet.url(), undefined]),
   postalAddress: faker.helpers.arrayElement([faker.random.word(), undefined]),
@@ -77,8 +77,8 @@ export const getNewVideoMock = () => ({
   createdAt: `${faker.date.past().toISOString().split(".")[0]}Z`,
   updatedAt: `${faker.date.past().toISOString().split(".")[0]}Z`,
   organization: {
-    id: faker.helpers.arrayElement([faker.datatype.number({ min: undefined, max: undefined }), undefined]),
-    name: faker.helpers.arrayElement([faker.random.word(), undefined]),
+    id: faker.datatype.number({ min: undefined, max: undefined }),
+    name: faker.random.word(),
     description: faker.helpers.arrayElement([faker.random.word(), undefined]),
     homepage: faker.helpers.arrayElement([faker.internet.url(), undefined]),
     postalAddress: faker.helpers.arrayElement([faker.random.word(), undefined]),
@@ -102,8 +102,9 @@ export const getNewVideoMock = () => ({
   media: {
     id: faker.datatype.number({ min: undefined, max: undefined }),
     assets: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-      type: faker.helpers.arrayElement([faker.random.word(), undefined]),
-      url: faker.helpers.arrayElement([faker.random.word(), undefined]),
+      id: faker.datatype.number({ min: undefined, max: undefined }),
+      type: faker.random.word(),
+      url: faker.random.word(),
       metadata: faker.helpers.arrayElement([{}, undefined]),
     })),
   },

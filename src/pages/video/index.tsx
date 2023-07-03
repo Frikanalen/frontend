@@ -6,6 +6,8 @@ import { format } from "date-fns"
 import nb from "date-fns/locale/nb"
 import cx from "classnames"
 import { Alert } from "@mui/material"
+import { useGetVideos, useGetVideosId } from "src/generated/video/video"
+import { getLargeThumbnail } from "src/modules/video/components/VideoPlayer"
 const logger = require('pino')()
 
 export const formatVideoDuration = (seconds?: number | null): string => {
@@ -20,29 +22,35 @@ export const formatVideoDuration = (seconds?: number | null): string => {
 }
 
 export const VideoThumbnail = ({
-  video,
+  videoId,
   className,
 }: {
-  video: Pick<Video, "duration" | "images">
+  videoId: number,
   className?: string
 }) => {
+  const { data: video } = useGetVideosId(videoId)
+  if (!video) return null;
+
   return (
     <div className={cx("relative", className)}>
       <div className={"absolute bg-gray-800/50 leading-4 p-1 right-0 bottom-0 m-1 text-white"}>
         {formatVideoDuration(video.duration)}
       </div>
       <div className="aspect-video flex bg-black justify-center" >
-        <img alt={""} src={video.images.thumbLarge} />
+        <img alt={""} src={getLargeThumbnail(videoId) ?? ""} />
       </div>
     </div>
   )
 }
 
-const VideoCard = ({ video }: { video: BasicVideoMetadataFragment }) => {
+const VideoCard = ({ videoId }: { videoId: number }) => {
+  const { data: video } = useGetVideosId(videoId)
+  if (!video) return null;
+
   return (
     <Link href={`/video/${video.id}`} className={"snap-start"}>
       <div className={"bg-black/60 rounded-md w-52 h-full"}>
-        <VideoThumbnail video={video} />
+        <VideoThumbnail videoId={video.id} />
         <div className={"p-2"}>
           <div className={"font-bold text-white/80"}>{video.title}</div>
           <div className={"font-bold text-white/70"}>{video.organization.name}</div>
@@ -54,9 +62,10 @@ const VideoCard = ({ video }: { video: BasicVideoMetadataFragment }) => {
 }
 
 const NewestVideos = ({ className }: { className?: string }) => {
-  const { data, error } = useQuery(GetVideosDocument)
+  const { data, error } = useGetVideos({ limit: 15 })
 
-  const videos = data?.video.list.items
+  if (!data) return null
+  const videos = data.rows
 
   if (error) {
     logger.error('fetching newest videos', error)
@@ -67,7 +76,7 @@ const NewestVideos = ({ className }: { className?: string }) => {
     <div className={cx(className, "p-4 border-orange-300 bg-white/40 border-4 space-y-2 rounded-xl shadow-lg w-full")}>
       <div className={"text-3xl font-bold text-black/95"}>Nyeste videoer</div>
       <div className={"flex gap-4 pb-2 overflow-x-scroll scroll-x-smooth snap-x horizontal-list"}>
-        {videos?.map((v) => v && <VideoCard key={v.id} video={v} />)}
+        {videos?.map((v) => v && <VideoCard key={v.id} videoId={v.id} />)}
       </div>
     </div>
   )

@@ -8,7 +8,8 @@
 import type { VideoMediaAssetMetadata } from "./videoMediaAssetMetadata"
 
 export interface VideoMediaAsset {
-  type?: string
-  url?: string
+  id: number
+  type: string
+  url: string
   metadata?: VideoMediaAssetMetadata
 }
