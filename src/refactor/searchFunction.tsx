@@ -17,7 +17,7 @@ const SearchResults = ({
   show?: boolean
   loading?: boolean
 }) => {
-  const className = "rounded-b-lg top-full left-0 w-full absolute flex flex-col z-100"
+  const className = "rounded-b-lg bg-gray-100 top-full left-0 w-full absolute flex flex-col z-100"
 
   if (!show) return null
 
@@ -71,7 +71,6 @@ export const SearchFunction = ({ className }: { className?: string }) => {
   useOnClickOutside(ref, () => setShowResults(false))
   const items = data?.video.search.items
 
-  // bg-gradient-to-b from-green-500 to-green-700
   return (
     <div ref={ref} className={className}>
       <div className={"gap-4 mb-6 flex font-bold text-2xl text-black/80 items-center"}>

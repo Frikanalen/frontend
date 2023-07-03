@@ -1,6 +1,4 @@
 import { SearchFunction } from "../../refactor/searchFunction"
-import { BasicVideoMetadataFragment, GetVideosDocument, Video } from "../../generated/graphql"
-import { useQuery } from "@apollo/client"
 import Link from "next/link"
 import { format } from "date-fns"
 import nb from "date-fns/locale/nb"
