@@ -17,7 +17,7 @@ const SearchResults = ({
   show?: boolean
   loading?: boolean
 }) => {
-  const className = "rounded-b-lg bg-gray-100 top-full left-0 w-full absolute flex flex-col z-100"
+  const className = "rounded-b-lg space-y-1 p-2 bg-gray-100 top-full left-0 w-full absolute flex flex-col z-100"
 
   if (!show) return null
 
@@ -44,7 +44,7 @@ const SearchResults = ({
   )
 }
 const SearchResult = ({ result }: { result: VideoSearchResultFragment }) => (
-  <div className={"pl-2 pr-5 pb-[5px] text-black/80 hover:text-green-900 hover:bg-green-200"}>
+  <div className={"text-black/80 hover:text-green-900 hover:bg-green-200"}>
     <Link href={`/video/${result.id}`}>
       <div className={"flex gap-2 lg:items-center text-sm lg:text-lg"}>
         <img className={"w-8 lg:w-24 aspect-video max-md:hidden"} alt={""} src={result.images.thumbSmall} />
