@@ -6,7 +6,6 @@ import { FieldValues, useForm } from "react-hook-form"
 import { nopeResolver } from "@hookform/resolvers/nope"
 import { ErrorMessage } from "@hookform/error-message"
 import { LoginSchema } from "./schemas"
-import { AnyCnameRecord } from "dns"
 
 export const LoginForm = ({ onSuccess }: { onSuccess: () => void }) => {
   const {

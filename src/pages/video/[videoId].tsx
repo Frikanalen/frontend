@@ -16,10 +16,9 @@ export interface VideoPageParams extends ParsedUrlQuery {
 export const VideoPage = () => {
   const router = useRouter()
   const videoId = parseInt(router.query.videoId as string)
+  const { data: video } = useGetVideosId(videoId)
 
   if (isNaN(videoId)) return null
-
-  const { data: video } = useGetVideosId(videoId)
 
   if (!video) return <Alert severity="error">Videoen finnes ikke</Alert>
 

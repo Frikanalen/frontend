@@ -5,7 +5,7 @@ import nb from "date-fns/locale/nb"
 import cx from "classnames"
 import { Alert } from "@mui/material"
 import { useGetVideos, useGetVideosId } from "src/generated/video/video"
-import { getLargeThumbnail } from "src/modules/video/components/VideoPlayer"
+import { useLargeThumbnail } from "src/modules/video/components/VideoPlayer"
 const logger = require('pino')()
 
 export const formatVideoDuration = (seconds?: number | null): string => {
@@ -27,6 +27,7 @@ export const VideoThumbnail = ({
   className?: string
 }) => {
   const { data: video } = useGetVideosId(videoId)
+  const thumbnail = useLargeThumbnail(videoId) ?? ""
   if (!video) return null;
 
   return (
@@ -35,7 +36,7 @@ export const VideoThumbnail = ({
         {formatVideoDuration(video.duration)}
       </div>
       <div className="aspect-video flex bg-black justify-center" >
-        <img alt={""} src={getLargeThumbnail(videoId) ?? ""} />
+        <img alt={""} src={thumbnail} />
       </div>
     </div>
   )

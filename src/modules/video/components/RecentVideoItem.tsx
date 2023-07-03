@@ -11,9 +11,10 @@ export type RecentVideoItemProps = {
 
 export const RecentVideoItem = ({ videoId }: RecentVideoItemProps) => {
   const { data: video } = useGetVideosId(videoId)
+  const router = useRouter()
+
   if (!video) return null;
 
-  const router = useRouter()
   const { id, title, createdAt } = video
 
   return (

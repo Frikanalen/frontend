@@ -1,4 +1,4 @@
-import { BasicVideoMetadataFragment, PublishVideoDocument } from "../../../generated/graphql"
+import {  PublishVideoDocument } from "../../../generated/graphql"
 import Link from "next/link"
 import { format } from "date-fns"
 import { nb } from "date-fns/locale"

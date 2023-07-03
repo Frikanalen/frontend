@@ -2,7 +2,6 @@ import React from "react"
 import { getAssetURI } from "../getAssetURI"
 import { VideoJS } from "../../frontpage/LiveVideoPlayer"
 import { useGetVideosId } from "src/generated/video/video"
-import { Video } from "src/generated/model"
 
 // This just went away for some reason
 type SourceObject = object
@@ -18,7 +17,7 @@ export type VideoPlayerProps = {
   videoId: number
 }
 
-export const getLargeThumbnail = (videoId: number) => {
+export const useLargeThumbnail = (videoId: number) => {
   const { data: video } = useGetVideosId(videoId)
   if (!video) return null;
 
@@ -29,6 +28,7 @@ export const getLargeThumbnail = (videoId: number) => {
 
 export const VideoPlayer = ({ className, videoId }: VideoPlayerProps) => {
   const { data: video } = useGetVideosId(videoId)
+  const poster = useLargeThumbnail(videoId)
 
   if (!video) return null;
 
@@ -50,7 +50,7 @@ export const VideoPlayer = ({ className, videoId }: VideoPlayerProps) => {
             fluid: true,
             html5: { vhs: { overrideNative: true } },
             controls: true,
-            poster: getLargeThumbnail(videoId),
+            poster,
             liveui: false,
             sources,
           }}

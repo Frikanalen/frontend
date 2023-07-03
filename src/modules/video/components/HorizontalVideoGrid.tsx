@@ -15,11 +15,11 @@ export function HorizontalVideoGrid({ videos }: VideoGridProps) {
 
   return (
     <div className={"flex gap-4 flex-nowrap"}>
-      {videos.map(({ id, title, createdAt, images, duration, description, published }) => (
+      {videos.map(({ id, title, createdAt, description, published }) => (
         <div key={id} className={"w-56 h-64 border-2 border-gray-700 rounded-md"}>
           <div className={"flex p-2 h-full flex-col justify-between"}>
             <Link href={`/video/${id}`} passHref>
-              <VideoThumbnail video={{ images, duration }} />
+              <VideoThumbnail videoId={parseInt(id)} />
               <div className={"pt-2"}>{title}</div>
             </Link>
             {!published && <div className={"rounded-lg bg-black text-white font-bold p-2 italic"}>Ikke publisert</div>}
