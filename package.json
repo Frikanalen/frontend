@@ -43,7 +43,7 @@
     "date-fns": "^2.28.0",
     "dotenv": "^16.3.1",
     "graphql": "^16.7.1",
-    "next": "13.4.7",
+    "next": "13.4.10",
     "next-remove-imports": "^1.0.6",
     "nope-validator": "^1.0.4",
     "pino": "^8.14.1",
