@@ -77,7 +77,11 @@ export const SearchFunction = ({ className }: { className?: string }) => {
         <div className={"max-lg:hidden"}>Søk</div>
         <div className={cx("m-1 grow text-black", { "rounded-b-none": showResults })}>
           <div className={"relative"}>
-            <form role={"search"} className={"flex items-center border-2 border-black/80"} action={"/video/search"}>
+            <form
+              role={"search"}
+              className={"flex items-center bg-white/80 border-2 border-black/80"}
+              action={"/video/search"}
+            >
               <SearchResults show={showResults} results={items} loading={loading} />
               <SearchIcon className={"mx-2"} />
               <InputBase
