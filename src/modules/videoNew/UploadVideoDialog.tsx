@@ -1,13 +1,14 @@
-import React, { ReactNode, useState } from "react"
+import React, { useState } from "react"
 import { useQuery } from "@apollo/client"
 import { GetOrganizationDocument, Maybe } from "../../generated/graphql"
 import { RequireUserIsEditor } from "../../refactor/requireUserIsEditor"
-import { VideoCreationUpload } from "./videoCreationUpload"
+import { UploadProgressBar, VideoCreationUpload } from "./videoCreationUpload"
 import { OrganizationPageParams } from "../../pages/organization/[orgId]"
 import { GetServerSideProps } from "next"
 import { VideoCreationForm } from "src/modules/forms/VideoCreationForm"
-import { VideoCreationPublish } from "./VideoCreationPublish"
 import FileDownloadDoneRoundedIcon from "@mui/icons-material/FileDownloadDoneRounded"
+import { useMediaProcessorStatus } from "./useMediaProcessorStatus"
+import { useRouter } from "next/router"
 
 export interface UploadPageProps {
   orgId: Maybe<string>
@@ -22,33 +23,43 @@ const VideoUploadDone = () => (
   </div>
 )
 
-const StepNumber = ({ children }: { children: string }) => (
-  <span className={"text-lg lg:text-5xl font-bold lg:font-black lg:block"}>{children}</span>
-)
+export const VideoUpload = ({ onMediaId }: { onMediaId: (mediaId: number) => void }) => {
+  const [isProcessed, setIsProcessed] = useState<boolean>(false)
+  const [uploadId, setUploadId] = useState<string>()
+  return (
+    <>
+      {!uploadId ? (
+        <VideoCreationUpload onComplete={setUploadId} />
+      ) : !isProcessed ? (
+        <VideoProcessingProgress uploadId={uploadId} onComplete={() => setIsProcessed(true)} onMediaId={onMediaId} />
+      ) : (
+        <VideoUploadDone />
+      )}
+    </>
+  )
+}
 
-const Step = ({ children, className = "" }: { children: ReactNode; className?: string }) => (
-  <div className={"lg:w-1/3 text-lg lg:text-2xl p-2 lg:p-5 font-bold " + className}>{children}</div>
-)
-
-const UploadDialogStep = ({
-  children,
-  className = "",
-  disabled = false,
+const VideoProcessingProgress = ({
+  uploadId,
+  onMediaId,
+  onComplete,
 }: {
-  children: ReactNode
-  className?: string
-  disabled?: boolean
-}) => (
-  <div className={"flex p-3 pr-0 flex-col lg:flex-row " + className ?? ""} aria-disabled={disabled}>
-    {children}
-  </div>
-)
+  uploadId: string
+  onMediaId: (mediaId: number) => void
+  onComplete: () => void
+}) => {
+  const { percent } = useMediaProcessorStatus(uploadId, onComplete, onMediaId)
+  return (
+    <div>
+      <div className={"text-2xl font-semibold"}>Etterbehandler video...</div>
+      <UploadProgressBar progress={percent ?? 0} />
+    </div>
+  )
+}
 
 export const UploadVideoDialog = ({ orgId }: UploadPageProps) => {
   const { data } = useQuery(GetOrganizationDocument, { variables: { orgId: orgId! }, skip: !orgId })
-
-  const [mediaId, setMediaId] = useState<string>()
-  const [videoId, setVideoId] = useState<string>()
+  const router = useRouter()
 
   if (!data) return null
 
@@ -56,44 +67,11 @@ export const UploadVideoDialog = ({ orgId }: UploadPageProps) => {
 
   return (
     <RequireUserIsEditor organization={organization}>
-      <div className="shadow-xl">
-        <h3 className="text-3xl bg-gradient-to-b from-green-800 to-green-900 font-bold text-green-200 px-8 py-5">
-          Ny video for {organization.name}
-        </h3>
-        <UploadDialogStep className={" bg-gradient-to-t from-green-500 to-green-400 text-black"}>
-          <Step>
-            <StepNumber>1.</StepNumber> last opp fil
-          </Step>
-          <div className={"w-full px-5 py-3"}>
-            {!mediaId ? <VideoCreationUpload onComplete={setMediaId} /> : <VideoUploadDone />}
-          </div>
-        </UploadDialogStep>
-        <UploadDialogStep
-          disabled={!mediaId}
-          className={
-            `bg-gradient-to-t from-green-400 to-green-300 text-black transition-all delay-500 duration-500 ease-in-out ` +
-            ` aria-disabled:opacity-50 aria-disabled:grayscale`
-          }
-        >
-          <Step>
-            <StepNumber>2.</StepNumber> oppgi metadata
-          </Step>
-          <div className={`w-full px-5 py-3`}>
-            {mediaId && <VideoCreationForm mediaId={mediaId} organizationId={organization.id} onCreated={setVideoId} />}
-          </div>
-        </UploadDialogStep>
-        <UploadDialogStep
-          className={`bg-gradient-to-t from-green-300 to-green-200 text-black ${videoId || "grayscale opacity-50"}`}
-        >
-          <Step>
-            <StepNumber>3.</StepNumber> publisér!
-          </Step>
-          {videoId && (
-            <div className={"flex p-5 py-3 w-full min-h-full"}>
-              <VideoCreationPublish videoId={videoId} />
-            </div>
-          )}
-        </UploadDialogStep>
+      <h3 className="text-3xl bg-gradient-to-b from-green-800 to-green-900 font-bold text-green-200 px-8 py-5">
+        Ny video for {organization.name}
+      </h3>
+      <div className={"bg-gradient-to-t from-green-500 to-green-400 text-black p-8"}>
+        <VideoCreationForm organizationId={organization.id} onCreated={(videoId) => router.push(`/video/${videoId}`)} />
       </div>
     </RequireUserIsEditor>
   )

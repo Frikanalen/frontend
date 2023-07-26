@@ -1,84 +1,84 @@
-import { CreateVideoDocument } from "../../generated/graphql"
-import Nope from "nope-validator"
-import { nopeResolver } from "@hookform/resolvers/nope"
+import * as z from "zod"
+import { zodResolver } from "@hookform/resolvers/zod"
 import { FieldValues, useForm } from "react-hook-form"
-import { useMutation } from "@apollo/client"
-import { InputLabel, TextField, Button } from "@mui/material"
+import { InputLabel, TextField, Button, Alert } from "@mui/material"
 import { ErrorMessage } from "@hookform/error-message"
+import React from "react"
+import { VideoUpload } from "../videoNew/UploadVideoDialog"
+import { useNewVideo } from "../../generated/video/video"
 
 interface VideoCreationFormProps {
   mediaId?: string
-  onCreated: (videoId: string) => void
+  onCreated: (videoId: number) => void
   organizationId: string
 }
 
-const CreateVideoSchema = Nope.object().shape({
-  title: Nope.string().required("Videoen må ha et navn"),
-  description: Nope.string().required("Videoen må ha en beskrivelse"),
+const CreateVideoSchema = z.object({
+  title: z.string().nonempty("Videoen må ha en tittel"),
+  mediaId: z.number({ required_error: "Du må laste opp en fil" }),
 })
 
-export const VideoCreationForm = ({ mediaId, organizationId, onCreated }: VideoCreationFormProps) => {
+type CreateVideoForm = z.infer<typeof CreateVideoSchema>
+
+export const VideoCreationForm = ({ organizationId, onCreated }: VideoCreationFormProps) => {
   const {
+    setValue,
     register,
-    setError,
     formState: { errors },
     handleSubmit,
-  } = useForm({ resolver: nopeResolver(CreateVideoSchema) })
+    watch,
+  } = useForm<CreateVideoForm>({ resolver: zodResolver(CreateVideoSchema) })
 
-  const [mutate] = useMutation(CreateVideoDocument, {
-    onError: (e) => setError("backend", { type: "custom", message: e.toString() }),
-    onCompleted: (data) => {
-      const videoId = data.video.create.video?.id
-      videoId && onCreated(videoId)
-    },
-  })
+  const [backendError, setBackendError] = React.useState<string | null>()
+  const { mutate } = useNewVideo()
 
-  if (!mediaId) return null
-
-  const onSubmit = async ({ title, description }: FieldValues) =>
-    await mutate({ variables: { title, description, mediaId, organizationId } })
+  const onSubmit = async ({ title, mediaId }: FieldValues) => {
+    // FIXME
+    if (!mediaId) return
+    await mutate(
+      {
+        orgId: parseInt(organizationId),
+        data: {
+          title,
+          mediaId,
+        },
+      },
+      {
+        onError: (e) => setBackendError(e.message),
+        onSuccess: ({ id }) => {
+          onCreated(id)
+        },
+      }
+    )
+  }
 
   return (
     <form>
       <div className={"flex flex-col gap-5 pt-2 pb-4"}>
-        <div className={"space-y-1"}>
-          <InputLabel htmlFor={"video-title"}>
-            <div className={"text-xl font-bold text-black py-1"}>Tittel</div>
-          </InputLabel>
-          <TextField {...register("title")} className={"bg-white rounded-md"} fullWidth autoFocus id={"video-title"} />
-          <div>
-            <ErrorMessage errors={errors} name={"title"} />
-          </div>
+        <InputLabel className={"text-xl font-bold text-black"} htmlFor={"video-title"}>
+          Tittel
+        </InputLabel>
+        <TextField {...register("title")} className={"bg-white rounded-md"} fullWidth autoFocus id={"video-title"} />
+        <div>
+          &nbsp;
+          <ErrorMessage errors={errors} name={"title"} />
         </div>
-        <div className={"space-y-1"}>
-          <InputLabel htmlFor={"video-description"}>
-            <div className={"text-xl font-bold text-black"}>Beskrivelse</div>
-          </InputLabel>
-          <TextField
-            className={"bg-white rounded-md"}
-            multiline
-            fullWidth
-            minRows={4}
-            {...register("description")}
-            type={"description"}
-            id={"video-description"}
-          />
-          <div>
-            <ErrorMessage errors={errors} name={"description"} />
-          </div>
+        <VideoUpload onMediaId={(mediaId) => setValue("mediaId", mediaId)} />
+        <div>
+          &nbsp;
+          <ErrorMessage name={"mediaId"} errors={errors} />
         </div>
         <div className="ml-auto">
           <Button
-            className="flex gap-2 bg-green-200 hover:bg-green-100"
+            className="text-black bg-white/20 hover:text-white"
             variant="contained"
+            disabled={!watch("mediaId")}
             onClick={handleSubmit(onSubmit)}
           >
             Fortsett
           </Button>
-          <div>
-            <ErrorMessage errors={errors} name={"backend"} />
-          </div>
         </div>
+        {backendError && <Alert severity={"error"}>{backendError}</Alert>}
       </div>
     </form>
   )
