@@ -1,5 +1,5 @@
 import * as Progress from "@radix-ui/react-progress"
-import React, { Reducer, useCallback, useEffect, useMemo, useReducer, useState } from "react"
+import React, { useCallback, useEffect, useMemo, useState } from "react"
 import { useCookie } from "react-use"
 import { useTus } from "use-tus"
 
@@ -81,7 +81,7 @@ export const useUpload = (onComplete: (uploadId: string) => void) => {
     const id = new URL(upload.url).pathname.split("/").pop() ?? ""
     if (!id.length) throw new Error("Upload ID is empty")
     return id
-  }, [progress, onComplete, upload?.url])
+  }, [upload?.url])
 
   useEffect(() => {
     if (progress === 100) onComplete(uploadId)
