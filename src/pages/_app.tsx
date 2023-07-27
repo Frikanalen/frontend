@@ -23,13 +23,11 @@ const CustomApp = ({ Component, pageProps, apolloClient = client }: FKAppProps) 
       <Hydrate state={pageProps.dehydratedState}>
         <ApolloProvider client={apolloClient}>
           <UserProvider>
-            <div className={"max-w-[1500px] min-h-screen mx-auto w-full flex flex-col  pt-3 md:px-3 md:pt-5 xl:pt-12"}>
-              <div className={"flex flex-col grow"}>
-                <Header className={"px-2 md:px-0"} />
-                <main style={{ isolation: "isolate" }} className="flex flex-col grow">
-                  <Component {...pageProps} />
-                </main>
-              </div>
+            <div className={"max-w-[1500px] min-h-screen flex flex-col mx-auto w-full pt-3 md:px-3 md:pt-5 xl:pt-12"}>
+              <Header className={"px-2 md:px-0"} />
+              <main style={{ isolation: "isolate" }} className="flex flex-col grow">
+                <Component {...pageProps} />
+              </main>
               <Footer className={"text-slate-800 my-4"} />
             </div>
           </UserProvider>

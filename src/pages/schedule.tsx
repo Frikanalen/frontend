@@ -4,6 +4,7 @@ import { addDays, endOfDay, format, parse, startOfDay } from "date-fns"
 import { locale } from "../modules/i18n/dateFn"
 import { useGetSchedule } from "../generated/scheduling/scheduling"
 import { useRouter } from "next/router"
+import cx from "classnames"
 
 const parseDateQuery = (date: string | string[] | undefined) => {
   if (typeof date !== "string") return undefined
@@ -55,28 +56,31 @@ export const Schedule = () => {
         <ScheduleNavButton onClick={() => navigate(1)}>dagen etter</ScheduleNavButton>
       </div>
 
-      <div className={"flex w-full max-h-screen"}>
+      <div className={"flex flex-row grow h-[1px] items-stretch"}>
         <div
-          className={"bg-gradient-to-b from-green-600 to-green-700 text-gray-50 font-bold text-xl w-40 p-4 text-right"}
+          className={cx(
+            "bg-gradient-to-b from-green-600 to-green-700",
+            "text-gray-50 font-bold text-xl w-40 p-4 text-right min-h-fill"
+          )}
         >
           {format(date, "PPP", { locale })}
         </div>
-        <div className={"grow bg-green-800 text-gray-50 overflow-auto"}>
-          {data?.map((program, index) => (
+        <div className={"flex-auto  bg-green-800 text-gray-50 overflow-auto"}>
+          {data?.map(({ startsAt, endsAt, video: { title, description, organization } }, index) => (
             <div key={index} className={""}>
               <div className={"bg-green-900 flex"}>
-                <div className={"w-16 text-right font-bold pr-2"}>{format(new Date(program.startsAt), "HH:mm")}</div>
+                <div className={"w-16 text-right font-bold pr-2"}>{format(new Date(startsAt), "HH:mm")}</div>
                 <span className={"pr-2"}>&ndash;</span>
-                {format(new Date(program.endsAt), "HH:mm")}
-                <span className={"px-2"}>{program.video.organization.name}</span>
+                {format(new Date(endsAt), "HH:mm")}
+                <span className={"px-2"}>{organization.name}</span>
               </div>
 
               <div className={"p-2 pl-16 text-gray-50 bg-green-800 flex gap-2"}>
-                <div className={"font-bold"}>{program.video.title}</div>
-                {program.video.description && (
+                <div className={"font-bold"}>{title}</div>
+                {description && (
                   <>
                     &ndash;
-                    <div>{program.video.description}</div>
+                    <div>{description}</div>
                   </>
                 )}
               </div>
