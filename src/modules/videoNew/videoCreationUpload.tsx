@@ -48,6 +48,8 @@ export const useUpload = (onComplete: (uploadId: string) => void) => {
     },
   })
 
+  const onSuccess = useCallback(() => onComplete(uploadId), [onComplete])
+
   // Clear all localStorage keys starting with "tus::"
   useEffect(() => {
     Object.keys(localStorage)
@@ -66,7 +68,7 @@ export const useUpload = (onComplete: (uploadId: string) => void) => {
           xhr.withCredentials = true
           xhr.setRequestHeader("X-CSRF-Token", csrfToken)
         },
-        onSuccess: () => setProgress(100),
+        onSuccess,
         metadata: {
           filename: file.name,
           filetype: file.type,
@@ -82,10 +84,6 @@ export const useUpload = (onComplete: (uploadId: string) => void) => {
     if (!id.length) throw new Error("Upload ID is empty")
     return id
   }, [upload?.url])
-
-  useEffect(() => {
-    if (progress === 100) onComplete(uploadId)
-  }, [progress, onComplete, uploadId])
 
   return {
     handleSetUpload,

@@ -24,22 +24,17 @@ const VideoUploadDone = () => (
   </div>
 )
 
-export const VideoUpload = ({ onMediaId }: { onMediaId: (mediaId: number) => void }) => {
+export const VideoUpload = ({ onJobCreated }: { onJobCreated: (mediaId: number, uploadId: string) => void }) => {
   const [isProcessed, setIsProcessed] = useState<boolean>(false)
   const [uploadId, setUploadId] = useState<string>()
   const onCompleted = useCallback(() => setIsProcessed(true), [setIsProcessed])
-  // FIXME: Ugly hack
-  // This is a little hack to get around the fact that we get the uploadId
-  // before the media processor job is created. This is fundamentally an issue
-  // with media-processor and should be fixed there
-  const uploadIdWithDelay = useDebounce<string | undefined>(uploadId, 1000)
 
   return (
     <>
-      {!uploadIdWithDelay ? (
+      {!uploadId ? (
         <VideoCreationUpload onComplete={setUploadId} />
       ) : !isProcessed ? (
-        <VideoProcessingProgress uploadId={uploadIdWithDelay} onComplete={onCompleted} onMediaId={onMediaId} />
+        <VideoProcessingProgress uploadId={uploadId} onComplete={onCompleted} onJobCreated={onJobCreated} />
       ) : (
         <VideoUploadDone />
       )}
@@ -49,20 +44,24 @@ export const VideoUpload = ({ onMediaId }: { onMediaId: (mediaId: number) => voi
 
 const VideoProcessingProgress = ({
   uploadId,
-  onMediaId,
+  onJobCreated,
   onComplete,
 }: {
   uploadId: string
-  onMediaId: (mediaId: number) => void
+  onJobCreated: (mediaId: number, uploadId: string) => void
   onComplete: () => void
 }) => {
-  const { percent } = useMediaProcessorStatus(uploadId, onComplete, onMediaId)
-  return (
-    <div>
-      <div className={"text-2xl font-semibold"}>Etterbehandler video...</div>
-      <UploadProgressBar progress={percent ?? 0} />
-    </div>
-  )
+  const jobCreated = useCallback((mediaId: number) => onJobCreated(mediaId, uploadId), [onJobCreated])
+  const { percent, status } = useMediaProcessorStatus(uploadId, onComplete, jobCreated)
+
+  if (status !== "error")
+    return (
+      <div>
+        <div className={"text-2xl font-semibold"}>Etterbehandler video...</div>
+        <UploadProgressBar progress={percent ?? 0} />
+      </div>
+    )
+  else return <div>Det skjedde en feil under opplastingen</div>
 }
 
 export const UploadVideoDialog = ({ orgId }: UploadPageProps) => {
@@ -79,7 +78,15 @@ export const UploadVideoDialog = ({ orgId }: UploadPageProps) => {
         Ny video for {organization.name}
       </h3>
       <div className={"bg-gradient-to-t from-green-500 to-green-400 text-black p-8"}>
-        <VideoCreationForm organizationId={organization.id} onCreated={(videoId) => router.push(`/video/${videoId}`)} />
+        <VideoCreationForm
+          organizationId={organization.id}
+          onCreated={(videoId, uploadId) =>
+            router.push({
+              pathname: `/video/[videoId]`,
+              query: { videoId, uploadId },
+            })
+          }
+        />
       </div>
     </RequireUserIsEditor>
   )

@@ -1,26 +1,62 @@
 import getConfig from "next/config"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 
 export const useMediaProcessorStatus = (
   uploadId: string,
-  onComplete: () => void,
-  onMediaId: (mediaId: number) => void,
+  onComplete?: () => void,
+  onJobCreated?: (mediaId: number) => void,
 ) => {
   const [percent, setPercent] = useState<number>(0)
-  const [status, setStatus] = useState<"pending" | "connected" | "error">("pending")
+  const [status, setStatus] = useState<"pending" | "connected" | "error" | "completed">("pending")
+  const [_, setRetryCount] = useState<number>(0)
+  const sRef = useRef<EventSource | null>(null)
 
   useEffect(() => {
     const { FK_MEDIAPROC } = getConfig().publicRuntimeConfig
 
-    const s = new EventSource(`${FK_MEDIAPROC}/status/${uploadId}`, { withCredentials: true })
-    s.onopen = () => setStatus("connected")
-    s.onerror = console.log
-    s.addEventListener("progress", ({ data }) => setPercent(JSON.parse(data).percent))
-    s.addEventListener("status", ({ data }) => onMediaId(JSON.parse(data).mediaId))
-    s.addEventListener("completed", onComplete)
+    const connect = () => {
+      sRef.current?.close() // Ensure any existing connection is closed before creating a new one
+      const s = new EventSource(`${FK_MEDIAPROC}/status/${uploadId}`, { withCredentials: true })
+      sRef.current = s
+      s.onopen = () => {
+        setStatus("connected")
+        setRetryCount(0)
+      }
+      s.onerror = () => {
+        setRetryCount((prevRetryCount) => {
+          if (prevRetryCount < 10) {
+            setTimeout(connect, 1000)
+            return prevRetryCount + 1
+          } else {
+            setStatus("error")
+            return prevRetryCount
+          }
+        })
+      }
+      s.addEventListener("status", ({ data }) => {
+        const { mediaId, isCompleted, isActive, isFailed } = JSON.parse(data)
+        if (isCompleted) {
+          setStatus("completed")
+          onComplete && onComplete()
+        } else if (isActive) {
+          setPercent(0)
+          setStatus("connected")
+        } else if (isFailed) {
+          setStatus("error")
+        }
+      })
+      s.addEventListener("progress", ({ data }) => setPercent(JSON.parse(data).percent))
+      onJobCreated && s.addEventListener("status", ({ data }) => onJobCreated(JSON.parse(data).mediaId))
+      s.addEventListener("completed", () => {
+        setStatus("completed")
+        onComplete && onComplete()
+      })
+    }
 
-    return () => s.close()
-  }, [uploadId, onComplete, onMediaId])
+    connect()
+
+    return () => sRef.current?.close() // Close the current EventSource instance when the component is unmounted
+  }, [uploadId, onComplete, onJobCreated])
 
   return { percent, status }
 }

@@ -9,7 +9,7 @@ import { useNewVideo } from "../../generated/video/video"
 
 interface VideoCreationFormProps {
   mediaId?: string
-  onCreated: (videoId: number) => void
+  onCreated: (videoId: number, uploadId: string) => void
   organizationId: string
 }
 
@@ -31,6 +31,7 @@ export const VideoCreationForm = ({ organizationId, onCreated }: VideoCreationFo
 
   const [backendError, setBackendError] = React.useState<string | null>()
   const { mutate } = useNewVideo()
+  const [uploadId, setUploadId] = React.useState<string | null>(null)
 
   const onSubmit = async ({ title, mediaId }: FieldValues) => {
     // FIXME
@@ -46,12 +47,19 @@ export const VideoCreationForm = ({ organizationId, onCreated }: VideoCreationFo
       {
         onError: (e) => setBackendError(e.message),
         onSuccess: ({ id }) => {
-          onCreated(id)
+          onCreated(id, uploadId!)
         },
       },
     )
   }
-  const onMediaId = useCallback((mediaId: number) => setValue("mediaId", mediaId), [setValue])
+  const onJobCreated = useCallback(
+    (mediaId: number, uploadId: string) => {
+      setValue("mediaId", mediaId)
+      setUploadId(uploadId)
+    },
+    [setValue],
+  )
+
   return (
     <form>
       <div className={"flex flex-col gap-5 pt-2 pb-4"}>
@@ -63,7 +71,7 @@ export const VideoCreationForm = ({ organizationId, onCreated }: VideoCreationFo
           &nbsp;
           <ErrorMessage errors={errors} name={"title"} />
         </div>
-        <VideoUpload onMediaId={onMediaId} />
+        <VideoUpload onJobCreated={onJobCreated} />
         <div>
           &nbsp;
           <ErrorMessage name={"mediaId"} errors={errors} />
