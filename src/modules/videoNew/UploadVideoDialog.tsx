@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useCallback, useState } from "react"
 import { useQuery } from "@apollo/client"
 import { GetOrganizationDocument, Maybe } from "../../generated/graphql"
 import { RequireUserIsEditor } from "../../refactor/requireUserIsEditor"
@@ -9,6 +9,7 @@ import { VideoCreationForm } from "src/modules/forms/VideoCreationForm"
 import FileDownloadDoneRoundedIcon from "@mui/icons-material/FileDownloadDoneRounded"
 import { useMediaProcessorStatus } from "./useMediaProcessorStatus"
 import { useRouter } from "next/router"
+import { useDebounce } from "usehooks-ts"
 
 export interface UploadPageProps {
   orgId: Maybe<string>
@@ -26,12 +27,19 @@ const VideoUploadDone = () => (
 export const VideoUpload = ({ onMediaId }: { onMediaId: (mediaId: number) => void }) => {
   const [isProcessed, setIsProcessed] = useState<boolean>(false)
   const [uploadId, setUploadId] = useState<string>()
+  const onCompleted = useCallback(() => setIsProcessed(true), [setIsProcessed])
+  // FIXME: Ugly hack
+  // This is a little hack to get around the fact that we get the uploadId
+  // before the media processor job is created. This is fundamentally an issue
+  // with media-processor and should be fixed there
+  const uploadIdWithDelay = useDebounce<string | undefined>(uploadId, 1000)
+
   return (
     <>
-      {!uploadId ? (
+      {!uploadIdWithDelay ? (
         <VideoCreationUpload onComplete={setUploadId} />
       ) : !isProcessed ? (
-        <VideoProcessingProgress uploadId={uploadId} onComplete={() => setIsProcessed(true)} onMediaId={onMediaId} />
+        <VideoProcessingProgress uploadId={uploadIdWithDelay} onComplete={onCompleted} onMediaId={onMediaId} />
       ) : (
         <VideoUploadDone />
       )}

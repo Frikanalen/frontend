@@ -3,7 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { FieldValues, useForm } from "react-hook-form"
 import { InputLabel, TextField, Button, Alert } from "@mui/material"
 import { ErrorMessage } from "@hookform/error-message"
-import React from "react"
+import React, { useCallback } from "react"
 import { VideoUpload } from "../videoNew/UploadVideoDialog"
 import { useNewVideo } from "../../generated/video/video"
 
@@ -51,7 +51,7 @@ export const VideoCreationForm = ({ organizationId, onCreated }: VideoCreationFo
       },
     )
   }
-
+  const onMediaId = useCallback((mediaId: number) => setValue("mediaId", mediaId), [setValue])
   return (
     <form>
       <div className={"flex flex-col gap-5 pt-2 pb-4"}>
@@ -63,7 +63,7 @@ export const VideoCreationForm = ({ organizationId, onCreated }: VideoCreationFo
           &nbsp;
           <ErrorMessage errors={errors} name={"title"} />
         </div>
-        <VideoUpload onMediaId={(mediaId) => setValue("mediaId", mediaId)} />
+        <VideoUpload onMediaId={onMediaId} />
         <div>
           &nbsp;
           <ErrorMessage name={"mediaId"} errors={errors} />
