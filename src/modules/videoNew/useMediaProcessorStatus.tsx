@@ -28,6 +28,7 @@ export const useMediaProcessorStatus = (
             setTimeout(connect, 1000)
             return prevRetryCount + 1
           } else {
+            console.error("Media processing failed (onerror event)")
             setStatus("error")
             return prevRetryCount
           }
@@ -37,11 +38,13 @@ export const useMediaProcessorStatus = (
         const { mediaId, isCompleted, isActive, isFailed } = JSON.parse(data)
         if (isCompleted) {
           setStatus("completed")
+          onJobCreated && mediaId && onJobCreated(mediaId)
           onComplete && onComplete()
         } else if (isActive) {
           setPercent(0)
           setStatus("connected")
         } else if (isFailed) {
+          console.error("Media processing failed (status event)")
           setStatus("error")
         }
       })

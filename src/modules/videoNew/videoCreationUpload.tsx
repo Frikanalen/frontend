@@ -96,6 +96,7 @@ export const useUpload = (onComplete: (uploadId: string) => void) => {
 export const VideoCreationUpload = ({ onComplete }: VideoFileUploadProps) => {
   const { handleSetUpload, error, upload, progress } = useUpload(onComplete)
 
+  if (error) console.error(error)
   return (
     <div className={"text-green-900 bg-green-100 rounded-2xl p-2"}>
       <div
