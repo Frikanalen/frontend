@@ -13,7 +13,7 @@ export const RecentVideoItem = ({ videoId }: RecentVideoItemProps) => {
   const { data: video } = useGetVideosId(videoId)
   const router = useRouter()
 
-  if (!video) return null;
+  if (!video) return null
 
   const { id, title, createdAt } = video
 

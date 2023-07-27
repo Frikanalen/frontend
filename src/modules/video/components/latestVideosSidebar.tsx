@@ -21,10 +21,7 @@ const LatestVideosHeading = ({ id, name }: { id: number; name: string }) => (
   </div>
 )
 
-export const LatestVideosSidebar = ({
-  className,
-  organizationId
-}: LatestVideosSidebarProps) => {
+export const LatestVideosSidebar = ({ className, organizationId }: LatestVideosSidebarProps) => {
   const { data: organization } = useGetOrganizationsId(organizationId)
   const { data: latestVideos } = useGetVideos({ organization: organizationId, limit: 5 })
 
@@ -36,9 +33,7 @@ export const LatestVideosSidebar = ({
     <div className={className}>
       <LatestVideosHeading id={id} name={name} />
       <div className="flex flex-col lg:gap-4 lg:px-3 ">
-        {latestVideos?.rows?.map((x) => (
-          <RecentVideoItem key={x.id} videoId={x.id} />
-        ))}
+        {latestVideos?.rows?.map((x) => <RecentVideoItem key={x.id} videoId={x.id} />)}
       </div>
     </div>
   )

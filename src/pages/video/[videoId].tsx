@@ -12,7 +12,6 @@ export interface VideoPageParams extends ParsedUrlQuery {
   videoId: string
 }
 
-
 export const VideoPage = () => {
   const router = useRouter()
   const videoId = parseInt(router.query.videoId as string)
@@ -35,10 +34,12 @@ export const VideoPage = () => {
         <VideoPlayer videoId={videoId} />
         <VideoPageMetaBar videoId={videoId} />
       </div>
-      <LatestVideosSidebar className={"lg:basis-1/3 grow-0 shrink-0 drop-shadow-md"} organizationId={video.organization.id} />
+      <LatestVideosSidebar
+        className={"lg:basis-1/3 grow-0 shrink-0 drop-shadow-md"}
+        organizationId={video.organization.id}
+      />
     </div>
   )
 }
-
 
 export default VideoPage

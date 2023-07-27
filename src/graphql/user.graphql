@@ -1,88 +1,87 @@
 query GetSession {
-    session {
-        ...UserSession
-    }
+  session {
+    ...UserSession
+  }
 }
 
 fragment UserSession on Session {
-    authenticated
-    user {
-        id
-        email
-        name
-        roles {
-            role
-            organization {
-                id
-                name
-            }
-        }
-    }
-}
-
-query GetProfile {
-    session {
-        user {
-            ...UserProfile
-        }
-    }
-}
-
-fragment UserProfile on User {
+  authenticated
+  user {
     id
     email
     name
     roles {
-        ...UserRoles
+      role
+      organization {
+        id
+        name
+      }
     }
+  }
+}
+
+query GetProfile {
+  session {
+    user {
+      ...UserProfile
+    }
+  }
+}
+
+fragment UserProfile on User {
+  id
+  email
+  name
+  roles {
+    ...UserRoles
+  }
 }
 
 fragment UserRoles on UserRole {
-    organization {
-        id
-        name
-    }
-    role
+  organization {
+    id
+    name
+  }
+  role
 }
 
 mutation Login($email: String!, $password: String!) {
-    user {
-        login(input: {email: $email, password: $password}) {
-            status
-            user {
-                id
-                email
-            }
-        }
+  user {
+    login(input: { email: $email, password: $password }) {
+      status
+      user {
+        id
+        email
+      }
     }
+  }
 }
 
 mutation Logout {
-    user {
-        logout {
-            status
-        }
+  user {
+    logout {
+      status
     }
+  }
 }
 
 mutation Register($input: RegisterInput!) {
-    user {
-        register(input: $input) {
-            status
-        }
+  user {
+    register(input: $input) {
+      status
     }
+  }
 }
 
 mutation EditProfile($input: UserProfileInput!) {
-    user {
-        profile(input: $input) {
-            __typename
-            user {
-                __typename
-                name
-            }
-            status
-        }
-
+  user {
+    profile(input: $input) {
+      __typename
+      user {
+        __typename
+        name
+      }
+      status
     }
+  }
 }

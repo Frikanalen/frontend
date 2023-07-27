@@ -6,7 +6,7 @@ import cx from "classnames"
 import { Alert } from "@mui/material"
 import { useGetVideos, useGetVideosId } from "src/generated/video/video"
 import { useLargeThumbnail } from "src/modules/video/components/VideoPlayer"
-const logger = require('pino')()
+const logger = require("pino")()
 
 export const formatVideoDuration = (seconds?: number | null): string => {
   if (!seconds) return ""
@@ -15,27 +15,22 @@ export const formatVideoDuration = (seconds?: number | null): string => {
   const mins = Math.floor((seconds % 3600) / 60)
   const secs = Math.floor(seconds % 60)
 
-  return hrs ? `${hrs}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
-    : `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+  return hrs
+    ? `${hrs}:${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`
+    : `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`
 }
 
-export const VideoThumbnail = ({
-  videoId,
-  className,
-}: {
-  videoId: number,
-  className?: string
-}) => {
+export const VideoThumbnail = ({ videoId, className }: { videoId: number; className?: string }) => {
   const { data: video } = useGetVideosId(videoId)
   const thumbnail = useLargeThumbnail(videoId) ?? ""
-  if (!video) return null;
+  if (!video) return null
 
   return (
     <div className={cx("relative", className)}>
       <div className={"absolute bg-gray-800/50 leading-4 p-1 right-0 bottom-0 m-1 text-white"}>
         {formatVideoDuration(video.duration)}
       </div>
-      <div className="aspect-video flex bg-black justify-center" >
+      <div className="aspect-video flex bg-black justify-center">
         <img alt={""} src={thumbnail} />
       </div>
     </div>
@@ -44,7 +39,7 @@ export const VideoThumbnail = ({
 
 const VideoCard = ({ videoId }: { videoId: number }) => {
   const { data: video } = useGetVideosId(videoId)
-  if (!video) return null;
+  if (!video) return null
 
   return (
     <Link href={`/video/${video.id}`} className={"snap-start"}>
@@ -67,7 +62,7 @@ const NewestVideos = ({ className }: { className?: string }) => {
   const videos = data.rows
 
   if (error) {
-    logger.error('fetching newest videos', error)
+    logger.error("fetching newest videos", error)
     return <Alert severity={"error"}>Kunne ikke hente nyeste videoer</Alert>
   }
 

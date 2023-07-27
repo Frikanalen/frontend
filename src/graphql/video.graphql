@@ -1,138 +1,136 @@
 query GetVideos {
-    video {
-        list(input: {sort: [DATE_DESC], perPage: 20}) {
-            items {
-                ...BasicVideoMetadata
-            }
-        }
+  video {
+    list(input: { sort: [DATE_DESC], perPage: 20 }) {
+      items {
+        ...BasicVideoMetadata
+      }
     }
+  }
 }
 
-
-mutation CreateVideo ($title: String!, $description: String!, $mediaId: ID!, $organizationId: ID!) {
-    video {
-        create(input: {title: $title, description: $description, mediaId: $mediaId, organizationId: $organizationId}) {
-            status
-            video {
-                id
-            }
-        }
+mutation CreateVideo($title: String!, $description: String!, $mediaId: ID!, $organizationId: ID!) {
+  video {
+    create(input: { title: $title, description: $description, mediaId: $mediaId, organizationId: $organizationId }) {
+      status
+      video {
+        id
+      }
     }
+  }
 }
 
-mutation UpdateVideo ($id: ID!, $title: String!, $description: String!) {
-    video {
-        update(input: {id: $id, title: $title, description: $description}) {
-            status
-            video {
-                id
-            }
-        }
+mutation UpdateVideo($id: ID!, $title: String!, $description: String!) {
+  video {
+    update(input: { id: $id, title: $title, description: $description }) {
+      status
+      video {
+        id
+      }
     }
+  }
 }
 
-mutation PublishVideo ($videoId: ID!) {
-    video {
-        publish(videoId: $videoId) {
-            status
-        }
+mutation PublishVideo($videoId: ID!) {
+  video {
+    publish(videoId: $videoId) {
+      status
     }
+  }
 }
 
-mutation DeleteVideo ($videoId: ID!) {
-    video {
-        delete(videoId: $videoId) {
-            status
-        }
+mutation DeleteVideo($videoId: ID!) {
+  video {
+    delete(videoId: $videoId) {
+      status
     }
+  }
 }
-
 
 query GetVideo($videoId: ID!) {
-    video {
-        get(id: $videoId) {
-            ...BasicVideoMetadata
-            ...VideoAssets
-            organization {
-                ...LatestVideos
-            }
-        }
+  video {
+    get(id: $videoId) {
+      ...BasicVideoMetadata
+      ...VideoAssets
+      organization {
+        ...LatestVideos
+      }
     }
+  }
 }
 
 query VideoSearch($query: String!) {
-    video {
-        search(input: {query: $query}) {
-            items {
-                ...VideoSearchResult
-            }
-        }
+  video {
+    search(input: { query: $query }) {
+      items {
+        ...VideoSearchResult
+      }
     }
+  }
 }
 
 fragment VideoSearchResult on Video {
+  id
+  title
+  organization {
     id
-    title
-    organization {
-        id
-        name
-    }
-    images {
-        thumbSmall
-        thumbMedium
-    }
+    name
+  }
+  images {
+    thumbSmall
+    thumbMedium
+  }
 }
 
 fragment VideoAssets on Video {
-    assets {
-        id
-        type
-        path
-    }
+  assets {
+    id
+    type
+    path
+  }
 }
 
 fragment BasicVideoMetadata on Video {
+  id
+  title
+  description
+  createdAt
+  duration
+  organization {
+    id
+    name
+  }
+  images {
+    thumbLarge
+    thumbMedium
+    thumbSmall
+  }
+}
+
+fragment LatestVideos on Organization {
+  id
+  name
+
+  latestVideos {
     id
     title
     description
     createdAt
     duration
+    published
+
     organization {
-        id
-        name
+      id
+      name
     }
     images {
-        thumbLarge
-        thumbMedium
-        thumbSmall
+      thumbLarge
+      thumbMedium
+      thumbSmall
     }
-}
-
-fragment LatestVideos on Organization {
-    id
-    name
-
-    latestVideos {
-        id
-        title
-        description
-        createdAt
-        duration
-        published
-
-        organization {
-            id
-            name
-        }
-        images {
-            thumbLarge
-            thumbMedium
-            thumbSmall
-        }
-        assets {
-            id
-            type
-            path
-        }
+    assets {
+      id
+      type
+      path
     }
+  }
 }

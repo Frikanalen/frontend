@@ -27,15 +27,13 @@ export const BulletinDetail = ({ bulletinId }: BulletinDetailProps) => {
       <div>
         <Meta meta={{ title: "Rediger bulletin" }} />
         <Link href={"/admin"} passHref>
-
           <h1>Administratorfunksjoner</h1>
-
         </Link>
         <h3>Rediger bulletin</h3>
         <BulletinEditor value={data?.bulletin} onSave={() => refetch()} />
       </div>
     </RequireAuthentication>
-  );
+  )
 }
 
 export const getServerSideProps: GetServerSideProps<BulletinDetailProps> = async (ctx) => {

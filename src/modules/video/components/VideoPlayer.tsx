@@ -19,7 +19,7 @@ export type VideoPlayerProps = {
 
 export const useLargeThumbnail = (videoId: number) => {
   const { data: video } = useGetVideosId(videoId)
-  if (!video) return null;
+  if (!video) return null
 
   const thumbnail = video.media.assets.find(({ type }) => type === "thumbnail-large")
   if (!thumbnail) return null
@@ -30,15 +30,12 @@ export const VideoPlayer = ({ className, videoId }: VideoPlayerProps) => {
   const { data: video } = useGetVideosId(videoId)
   const poster = useLargeThumbnail(videoId)
 
-  if (!video) return null;
+  if (!video) return null
 
-  const sources: SourceObject[] = FORMATS
-    .map(({ assetType, type }) => ({
-      src: getAssetURI(video.media.assets, assetType)!,
-      type,
-    })
-    )
-    .filter(({ src }) => src)
+  const sources: SourceObject[] = FORMATS.map(({ assetType, type }) => ({
+    src: getAssetURI(video.media.assets, assetType)!,
+    type,
+  })).filter(({ src }) => src)
 
   if (!video) return null
 

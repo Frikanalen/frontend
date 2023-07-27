@@ -18,10 +18,8 @@ export const LoginForm = ({ onSuccess }: { onSuccess: () => void }) => {
   const [mutate] = useMutation(LoginDocument, {
     refetchQueries: ["GetSession"],
     onError: (e: any) => {
-      if (e instanceof ApolloError)
-        setError("backend", { type: "custom", message: e.message })
-      else
-        setError("backend", { type: "custom", message: e })
+      if (e instanceof ApolloError) setError("backend", { type: "custom", message: e.message })
+      else setError("backend", { type: "custom", message: e })
     },
     onCompleted: ({ user }) => {
       if (user.login.status === MutationStatus.Success) onSuccess()
@@ -65,11 +63,11 @@ export const LoginForm = ({ onSuccess }: { onSuccess: () => void }) => {
         </div>
       </form>
       <div className={"py-1"}>
-        {errors.backend &&
+        {errors.backend && (
           <Alert severity="error">
             <ErrorMessage errors={errors} name={"backend"} />
           </Alert>
-        }
+        )}
       </div>
       <div className={"py-4"}>
         <Button

@@ -3,64 +3,63 @@
 @tailwind utilities;
 
 @layer utilities {
-    .font-thin {
-        font-variation-settings: 'wght' 100;
-    }
-    .font-extralight {
-        font-variation-settings: 'wght' 200;
-    }
-    .font-light {
-        font-variation-settings: 'wght' 300;
-    }
-    .font-normal {
-        font-variation-settings: 'wght' 400;
-    }
-    .font-medium {
-        font-variation-settings: 'wght' 500;
-    }
-    .font-semibold {
-        font-variation-settings: 'wght' 600;
-    }
-    .font-bold {
-        font-variation-settings: 'wght' 700;
-    }
-    .font-extrabold {
-        font-variation-settings: 'wght' 800;
-    }
-    .font-black {
-        font-variation-settings: 'wght' 900;
-    }
-    .font-wide {
-        font-variation-settings: 'wdth' 110;
-    }
-    .italic-semi {
-        font-variation-settings: 'slnt' -10;
-    }
-    .font-condensed {
-        font-variation-settings: 'wdth' 50;
-    }
+  .font-thin {
+    font-variation-settings: "wght" 100;
+  }
+  .font-extralight {
+    font-variation-settings: "wght" 200;
+  }
+  .font-light {
+    font-variation-settings: "wght" 300;
+  }
+  .font-normal {
+    font-variation-settings: "wght" 400;
+  }
+  .font-medium {
+    font-variation-settings: "wght" 500;
+  }
+  .font-semibold {
+    font-variation-settings: "wght" 600;
+  }
+  .font-bold {
+    font-variation-settings: "wght" 700;
+  }
+  .font-extrabold {
+    font-variation-settings: "wght" 800;
+  }
+  .font-black {
+    font-variation-settings: "wght" 900;
+  }
+  .font-wide {
+    font-variation-settings: "wdth" 110;
+  }
+  .italic-semi {
+    font-variation-settings: "slnt" -10;
+  }
+  .font-condensed {
+    font-variation-settings: "wdth" 50;
+  }
 }
 
 body,
 html {
-    margin: 0;
-    padding: 0;
-    min-height: 100vh;
-    background: #f0f2f0;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  background: #f0f2f0;
 }
 
-
 .horizontal-list::-webkit-scrollbar {
-    height: 1.5em;
-    border-radius: 99999px;
+  height: 1.5em;
+  border-radius: 99999px;
 }
 
 .horizontal-list::-webkit-scrollbar-track {
-    background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.35));
-    border-radius: 99999px;
+  background: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.35));
+  border-radius: 99999px;
 }
 
 .horizontal-list::-webkit-scrollbar-thumb {
-    background-color: rgba(0,0,0,0.4);
-    border-radius: 99999px;
+  background-color: rgba(0, 0, 0, 0.4);
+  border-radius: 99999px;
 }
