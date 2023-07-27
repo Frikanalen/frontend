@@ -5,7 +5,7 @@ import { useEffect, useState } from "react"
 export const useMediaProcessorStatus = (
   uploadId: string,
   onComplete: () => void,
-  onMediaId: (mediaId: number) => void
+  onMediaId: (mediaId: number) => void,
 ) => {
   const { FK_MEDIAPROC } = getConfig().publicRuntimeConfig
   const [percent, setPercent] = useState<number>(0)

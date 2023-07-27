@@ -18,7 +18,7 @@ export const getPostAuthRegisterMock = () => ({
       createdAt: faker.helpers.arrayElement([faker.random.word(), undefined]),
       permissions: faker.helpers.arrayElement([
         Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
-          faker.random.word()
+          faker.random.word(),
         ),
         undefined,
       ]),
@@ -45,7 +45,7 @@ export const getUserProfileMock = () => ({
       createdAt: faker.helpers.arrayElement([faker.random.word(), undefined]),
       permissions: faker.helpers.arrayElement([
         Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
-          faker.random.word()
+          faker.random.word(),
         ),
         undefined,
       ]),

@@ -73,7 +73,7 @@ export const useUpload = (onComplete: (uploadId: string) => void) => {
         },
       })
     },
-    [setUpload, csrfToken]
+    [setUpload, csrfToken],
   )
 
   const uploadId = useMemo((): string => {

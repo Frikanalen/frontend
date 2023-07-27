@@ -46,7 +46,7 @@ type SecondParameter<T extends (...args: any) => any> = T extends (config: any, 
 export const getOrganizations = (
   params?: GetOrganizationsParams,
   options?: SecondParameter<typeof axiosInstance>,
-  signal?: AbortSignal
+  signal?: AbortSignal,
 ) => {
   return axiosInstance<GetOrganizations200>({ url: `/organizations`, method: "get", params, signal }, options)
 }
@@ -56,13 +56,13 @@ export const getGetOrganizationsQueryKey = (params?: GetOrganizationsParams) =>
 
 export const getGetOrganizationsQueryOptions = <
   TData = Awaited<ReturnType<typeof getOrganizations>>,
-  TError = ErrorType<unknown>
+  TError = ErrorType<unknown>,
 >(
   params?: GetOrganizationsParams,
   options?: {
     query?: UseQueryOptions<Awaited<ReturnType<typeof getOrganizations>>, TError, TData>
     request?: SecondParameter<typeof axiosInstance>
-  }
+  },
 ): UseQueryOptions<Awaited<ReturnType<typeof getOrganizations>>, TError, TData> & { queryKey: QueryKey } => {
   const { query: queryOptions, request: requestOptions } = options ?? {}
 
@@ -85,7 +85,7 @@ export const useGetOrganizations = <TData = Awaited<ReturnType<typeof getOrganiz
   options?: {
     query?: UseQueryOptions<Awaited<ReturnType<typeof getOrganizations>>, TError, TData>
     request?: SecondParameter<typeof axiosInstance>
-  }
+  },
 ): UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
   const queryOptions = getGetOrganizationsQueryOptions(params, options)
 
@@ -101,7 +101,7 @@ export const useGetOrganizations = <TData = Awaited<ReturnType<typeof getOrganiz
  */
 export const postOrganizations = (
   newOrganizationForm: NewOrganizationForm,
-  options?: SecondParameter<typeof axiosInstance>
+  options?: SecondParameter<typeof axiosInstance>,
 ) => {
   return axiosInstance<Organization>(
     {
@@ -110,7 +110,7 @@ export const postOrganizations = (
       headers: { "Content-Type": "application/json" },
       data: newOrganizationForm,
     },
-    options
+    options,
   )
 }
 
@@ -131,7 +131,7 @@ export const getPostOrganizationsMutationOptions = <TError = ErrorType<unknown>,
   const { mutation: mutationOptions, request: requestOptions } = options ?? {}
 
   const mutationFn: MutationFunction<Awaited<ReturnType<typeof postOrganizations>>, { data: NewOrganizationForm }> = (
-    props
+    props,
   ) => {
     const { data } = props ?? {}
 
@@ -167,7 +167,7 @@ export const usePostOrganizations = <TError = ErrorType<unknown>, TContext = unk
 export const getOrganizationsId = (
   id: number,
   options?: SecondParameter<typeof axiosInstance>,
-  signal?: AbortSignal
+  signal?: AbortSignal,
 ) => {
   return axiosInstance<Organization>({ url: `/organizations/${id}`, method: "get", signal }, options)
 }
@@ -176,13 +176,13 @@ export const getGetOrganizationsIdQueryKey = (id: number) => [`/organizations/${
 
 export const getGetOrganizationsIdQueryOptions = <
   TData = Awaited<ReturnType<typeof getOrganizationsId>>,
-  TError = ErrorType<ResourceNotFoundResponse>
+  TError = ErrorType<ResourceNotFoundResponse>,
 >(
   id: number,
   options?: {
     query?: UseQueryOptions<Awaited<ReturnType<typeof getOrganizationsId>>, TError, TData>
     request?: SecondParameter<typeof axiosInstance>
-  }
+  },
 ): UseQueryOptions<Awaited<ReturnType<typeof getOrganizationsId>>, TError, TData> & { queryKey: QueryKey } => {
   const { query: queryOptions, request: requestOptions } = options ?? {}
 
@@ -202,13 +202,13 @@ export type GetOrganizationsIdQueryError = ErrorType<ResourceNotFoundResponse>
  */
 export const useGetOrganizationsId = <
   TData = Awaited<ReturnType<typeof getOrganizationsId>>,
-  TError = ErrorType<ResourceNotFoundResponse>
+  TError = ErrorType<ResourceNotFoundResponse>,
 >(
   id: number,
   options?: {
     query?: UseQueryOptions<Awaited<ReturnType<typeof getOrganizationsId>>, TError, TData>
     request?: SecondParameter<typeof axiosInstance>
-  }
+  },
 ): UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
   const queryOptions = getGetOrganizationsIdQueryOptions(id, options)
 
@@ -225,7 +225,7 @@ export const useGetOrganizationsId = <
 export const newVideo = (
   orgId: number,
   newVideoForm: NewVideoForm,
-  options?: SecondParameter<typeof axiosInstance>
+  options?: SecondParameter<typeof axiosInstance>,
 ) => {
   return axiosInstance<Video>(
     {
@@ -234,7 +234,7 @@ export const newVideo = (
       headers: { "Content-Type": "application/json" },
       data: newVideoForm,
     },
-    options
+    options,
   )
 }
 
@@ -255,7 +255,7 @@ export const getNewVideoMutationOptions = <TError = ErrorType<unknown>, TContext
   const { mutation: mutationOptions, request: requestOptions } = options ?? {}
 
   const mutationFn: MutationFunction<Awaited<ReturnType<typeof newVideo>>, { orgId: number; data: NewVideoForm }> = (
-    props
+    props,
   ) => {
     const { orgId, data } = props ?? {}
 
@@ -291,7 +291,7 @@ export const useNewVideo = <TError = ErrorType<unknown>, TContext = unknown>(opt
 export const postOrganizationsIdPlaylists = (
   id: number,
   newPlaylistForm: NewPlaylistForm,
-  options?: SecondParameter<typeof axiosInstance>
+  options?: SecondParameter<typeof axiosInstance>,
 ) => {
   return axiosInstance<Playlist>(
     {
@@ -300,13 +300,13 @@ export const postOrganizationsIdPlaylists = (
       headers: { "Content-Type": "application/json" },
       data: newPlaylistForm,
     },
-    options
+    options,
   )
 }
 
 export const getPostOrganizationsIdPlaylistsMutationOptions = <
   TError = ErrorType<unknown>,
-  TContext = unknown
+  TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof postOrganizationsIdPlaylists>>,
@@ -363,11 +363,11 @@ export const usePostOrganizationsIdPlaylists = <TError = ErrorType<unknown>, TCo
 export const getOrganizationsIdMembers = (
   id: number,
   options?: SecondParameter<typeof axiosInstance>,
-  signal?: AbortSignal
+  signal?: AbortSignal,
 ) => {
   return axiosInstance<GetOrganizationsIdMembers200>(
     { url: `/organizations/${id}/members`, method: "get", signal },
-    options
+    options,
   )
 }
 
@@ -375,13 +375,13 @@ export const getGetOrganizationsIdMembersQueryKey = (id: number) => [`/organizat
 
 export const getGetOrganizationsIdMembersQueryOptions = <
   TData = Awaited<ReturnType<typeof getOrganizationsIdMembers>>,
-  TError = ErrorType<AuthenticationRequiredResponse | PermissionDeniedResponse | ResourceNotFoundResponse>
+  TError = ErrorType<AuthenticationRequiredResponse | PermissionDeniedResponse | ResourceNotFoundResponse>,
 >(
   id: number,
   options?: {
     query?: UseQueryOptions<Awaited<ReturnType<typeof getOrganizationsIdMembers>>, TError, TData>
     request?: SecondParameter<typeof axiosInstance>
-  }
+  },
 ): UseQueryOptions<Awaited<ReturnType<typeof getOrganizationsIdMembers>>, TError, TData> & { queryKey: QueryKey } => {
   const { query: queryOptions, request: requestOptions } = options ?? {}
 
@@ -403,13 +403,13 @@ export type GetOrganizationsIdMembersQueryError = ErrorType<
  */
 export const useGetOrganizationsIdMembers = <
   TData = Awaited<ReturnType<typeof getOrganizationsIdMembers>>,
-  TError = ErrorType<AuthenticationRequiredResponse | PermissionDeniedResponse | ResourceNotFoundResponse>
+  TError = ErrorType<AuthenticationRequiredResponse | PermissionDeniedResponse | ResourceNotFoundResponse>,
 >(
   id: number,
   options?: {
     query?: UseQueryOptions<Awaited<ReturnType<typeof getOrganizationsIdMembers>>, TError, TData>
     request?: SecondParameter<typeof axiosInstance>
-  }
+  },
 ): UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
   const queryOptions = getGetOrganizationsIdMembersQueryOptions(id, options)
 
@@ -426,7 +426,7 @@ export const useGetOrganizationsIdMembers = <
 export const postOrganizationsIdMembers = (
   id: number,
   postOrganizationsIdMembersBody: PostOrganizationsIdMembersBody,
-  options?: SecondParameter<typeof axiosInstance>
+  options?: SecondParameter<typeof axiosInstance>,
 ) => {
   return axiosInstance<void>(
     {
@@ -435,13 +435,13 @@ export const postOrganizationsIdMembers = (
       headers: { "Content-Type": "application/json" },
       data: postOrganizationsIdMembersBody,
     },
-    options
+    options,
   )
 }
 
 export const getPostOrganizationsIdMembersMutationOptions = <
   TError = ErrorType<AuthenticationRequiredResponse | PostOrganizationsIdMembers404>,
-  TContext = unknown
+  TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof postOrganizationsIdMembers>>,
@@ -483,7 +483,7 @@ export type PostOrganizationsIdMembersMutationError = ErrorType<
  */
 export const usePostOrganizationsIdMembers = <
   TError = ErrorType<AuthenticationRequiredResponse | PostOrganizationsIdMembers404>,
-  TContext = unknown
+  TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof postOrganizationsIdMembers>>,
@@ -503,14 +503,14 @@ export const usePostOrganizationsIdMembers = <
 export const deleteOrganizationsIdMembersMember = (
   id: number,
   member: number,
-  options?: SecondParameter<typeof axiosInstance>
+  options?: SecondParameter<typeof axiosInstance>,
 ) => {
   return axiosInstance<void>({ url: `/organizations/${id}/members/${member}`, method: "delete" }, options)
 }
 
 export const getDeleteOrganizationsIdMembersMemberMutationOptions = <
   TError = ErrorType<unknown>,
-  TContext = unknown
+  TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof deleteOrganizationsIdMembersMember>>,

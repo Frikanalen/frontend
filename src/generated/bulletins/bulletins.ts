@@ -42,7 +42,7 @@ export const getGetBulletinsQueryKey = () => [`/bulletins`] as const
 
 export const getGetBulletinsQueryOptions = <
   TData = Awaited<ReturnType<typeof getBulletins>>,
-  TError = ErrorType<unknown>
+  TError = ErrorType<unknown>,
 >(options?: {
   query?: UseQueryOptions<Awaited<ReturnType<typeof getBulletins>>, TError, TData>
   request?: SecondParameter<typeof axiosInstance>
@@ -65,7 +65,7 @@ export type GetBulletinsQueryError = ErrorType<unknown>
  */
 export const useGetBulletins = <
   TData = Awaited<ReturnType<typeof getBulletins>>,
-  TError = ErrorType<unknown>
+  TError = ErrorType<unknown>,
 >(options?: {
   query?: UseQueryOptions<Awaited<ReturnType<typeof getBulletins>>, TError, TData>
   request?: SecondParameter<typeof axiosInstance>
@@ -85,7 +85,7 @@ export const useGetBulletins = <
 export const postBulletins = (newBulletinForm: NewBulletinForm, options?: SecondParameter<typeof axiosInstance>) => {
   return axiosInstance<Bulletin>(
     { url: `/bulletins`, method: "post", headers: { "Content-Type": "application/json" }, data: newBulletinForm },
-    options
+    options,
   )
 }
 
@@ -96,7 +96,7 @@ export const getPostBulletinsMutationOptions = <TError = ErrorType<unknown>, TCo
   const { mutation: mutationOptions, request: requestOptions } = options ?? {}
 
   const mutationFn: MutationFunction<Awaited<ReturnType<typeof postBulletins>>, { data: NewBulletinForm }> = (
-    props
+    props,
   ) => {
     const { data } = props ?? {}
 
@@ -132,13 +132,13 @@ export const getGetBulletinsIdQueryKey = (id: number) => [`/bulletins/${id}`] as
 
 export const getGetBulletinsIdQueryOptions = <
   TData = Awaited<ReturnType<typeof getBulletinsId>>,
-  TError = ErrorType<ResourceNotFoundResponse>
+  TError = ErrorType<ResourceNotFoundResponse>,
 >(
   id: number,
   options?: {
     query?: UseQueryOptions<Awaited<ReturnType<typeof getBulletinsId>>, TError, TData>
     request?: SecondParameter<typeof axiosInstance>
-  }
+  },
 ): UseQueryOptions<Awaited<ReturnType<typeof getBulletinsId>>, TError, TData> & { queryKey: QueryKey } => {
   const { query: queryOptions, request: requestOptions } = options ?? {}
 
@@ -158,13 +158,13 @@ export type GetBulletinsIdQueryError = ErrorType<ResourceNotFoundResponse>
  */
 export const useGetBulletinsId = <
   TData = Awaited<ReturnType<typeof getBulletinsId>>,
-  TError = ErrorType<ResourceNotFoundResponse>
+  TError = ErrorType<ResourceNotFoundResponse>,
 >(
   id: number,
   options?: {
     query?: UseQueryOptions<Awaited<ReturnType<typeof getBulletinsId>>, TError, TData>
     request?: SecondParameter<typeof axiosInstance>
-  }
+  },
 ): UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
   const queryOptions = getGetBulletinsIdQueryOptions(id, options)
 
@@ -184,7 +184,7 @@ export const putBulletinsId = (id: number, options?: SecondParameter<typeof axio
 
 export const getPutBulletinsIdMutationOptions = <
   TError = ErrorType<PermissionDeniedResponse | ResourceNotFoundResponse>,
-  TContext = unknown
+  TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<Awaited<ReturnType<typeof putBulletinsId>>, TError, { id: number }, TContext>
   request?: SecondParameter<typeof axiosInstance>
@@ -209,7 +209,7 @@ export type PutBulletinsIdMutationError = ErrorType<PermissionDeniedResponse | R
  */
 export const usePutBulletinsId = <
   TError = ErrorType<PermissionDeniedResponse | ResourceNotFoundResponse>,
-  TContext = unknown
+  TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<Awaited<ReturnType<typeof putBulletinsId>>, TError, { id: number }, TContext>
   request?: SecondParameter<typeof axiosInstance>
@@ -227,7 +227,7 @@ export const deleteBulletinsId = (id: number, options?: SecondParameter<typeof a
 
 export const getDeleteBulletinsIdMutationOptions = <
   TError = ErrorType<PermissionDeniedResponse | ResourceNotFoundResponse>,
-  TContext = unknown
+  TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<Awaited<ReturnType<typeof deleteBulletinsId>>, TError, { id: number }, TContext>
   request?: SecondParameter<typeof axiosInstance>
@@ -252,7 +252,7 @@ export type DeleteBulletinsIdMutationError = ErrorType<PermissionDeniedResponse 
  */
 export const useDeleteBulletinsId = <
   TError = ErrorType<PermissionDeniedResponse | ResourceNotFoundResponse>,
-  TContext = unknown
+  TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<Awaited<ReturnType<typeof deleteBulletinsId>>, TError, { id: number }, TContext>
   request?: SecondParameter<typeof axiosInstance>

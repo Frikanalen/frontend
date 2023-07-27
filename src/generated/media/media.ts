@@ -24,7 +24,7 @@ type SecondParameter<T extends (...args: any) => any> = T extends (config: any, 
 export const postVideosMedia = (videoMediaForm: VideoMediaForm, options?: SecondParameter<typeof axiosInstance>) => {
   return axiosInstance<PostVideosMedia201>(
     { url: `/videos/media`, method: "post", headers: { "Content-Type": "application/json" }, data: videoMediaForm },
-    options
+    options,
   )
 }
 
@@ -35,7 +35,7 @@ export const getPostVideosMediaMutationOptions = <TError = ErrorType<unknown>, T
   const { mutation: mutationOptions, request: requestOptions } = options ?? {}
 
   const mutationFn: MutationFunction<Awaited<ReturnType<typeof postVideosMedia>>, { data: VideoMediaForm }> = (
-    props
+    props,
   ) => {
     const { data } = props ?? {}
 
@@ -66,7 +66,7 @@ export const usePostVideosMedia = <TError = ErrorType<unknown>, TContext = unkno
 export const postVideosMediaIdAssets = (
   id: number,
   videoMediaAssetForm: VideoMediaAssetForm,
-  options?: SecondParameter<typeof axiosInstance>
+  options?: SecondParameter<typeof axiosInstance>,
 ) => {
   return axiosInstance<PostVideosMediaIdAssets201>(
     {
@@ -75,7 +75,7 @@ export const postVideosMediaIdAssets = (
       headers: { "Content-Type": "application/json" },
       data: videoMediaAssetForm,
     },
-    options
+    options,
   )
 }
 

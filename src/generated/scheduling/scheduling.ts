@@ -31,7 +31,7 @@ type SecondParameter<T extends (...args: any) => any> = T extends (config: any, 
 export const getSchedule = (
   params?: GetScheduleParams,
   options?: SecondParameter<typeof axiosInstance>,
-  signal?: AbortSignal
+  signal?: AbortSignal,
 ) => {
   return axiosInstance<ScheduleEntry[]>({ url: `/scheduling/entries`, method: "get", params, signal }, options)
 }
@@ -41,13 +41,13 @@ export const getGetScheduleQueryKey = (params?: GetScheduleParams) =>
 
 export const getGetScheduleQueryOptions = <
   TData = Awaited<ReturnType<typeof getSchedule>>,
-  TError = ErrorType<unknown>
+  TError = ErrorType<unknown>,
 >(
   params?: GetScheduleParams,
   options?: {
     query?: UseQueryOptions<Awaited<ReturnType<typeof getSchedule>>, TError, TData>
     request?: SecondParameter<typeof axiosInstance>
-  }
+  },
 ): UseQueryOptions<Awaited<ReturnType<typeof getSchedule>>, TError, TData> & { queryKey: QueryKey } => {
   const { query: queryOptions, request: requestOptions } = options ?? {}
 
@@ -70,7 +70,7 @@ export const useGetSchedule = <TData = Awaited<ReturnType<typeof getSchedule>>, 
   options?: {
     query?: UseQueryOptions<Awaited<ReturnType<typeof getSchedule>>, TError, TData>
     request?: SecondParameter<typeof axiosInstance>
-  }
+  },
 ): UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
   const queryOptions = getGetScheduleQueryOptions(params, options)
 
@@ -92,7 +92,7 @@ export const getGetSchedulingJukeboxableQueryKey = () => [`/scheduling/jukeboxab
 
 export const getGetSchedulingJukeboxableQueryOptions = <
   TData = Awaited<ReturnType<typeof getSchedulingJukeboxable>>,
-  TError = ErrorType<unknown>
+  TError = ErrorType<unknown>,
 >(options?: {
   query?: UseQueryOptions<Awaited<ReturnType<typeof getSchedulingJukeboxable>>, TError, TData>
   request?: SecondParameter<typeof axiosInstance>
@@ -115,7 +115,7 @@ export type GetSchedulingJukeboxableQueryError = ErrorType<unknown>
  */
 export const useGetSchedulingJukeboxable = <
   TData = Awaited<ReturnType<typeof getSchedulingJukeboxable>>,
-  TError = ErrorType<unknown>
+  TError = ErrorType<unknown>,
 >(options?: {
   query?: UseQueryOptions<Awaited<ReturnType<typeof getSchedulingJukeboxable>>, TError, TData>
   request?: SecondParameter<typeof axiosInstance>
@@ -134,7 +134,7 @@ export const useGetSchedulingJukeboxable = <
  */
 export const postSchedulingJukebox = (
   jukeboxSchedule: JukeboxSchedule,
-  options?: SecondParameter<typeof axiosInstance>
+  options?: SecondParameter<typeof axiosInstance>,
 ) => {
   return axiosInstance<PostSchedulingJukebox200>(
     {
@@ -143,7 +143,7 @@ export const postSchedulingJukebox = (
       headers: { "Content-Type": "application/json" },
       data: jukeboxSchedule,
     },
-    options
+    options,
   )
 }
 
@@ -164,7 +164,7 @@ export const getPostSchedulingJukeboxMutationOptions = <TError = ErrorType<unkno
   const { mutation: mutationOptions, request: requestOptions } = options ?? {}
 
   const mutationFn: MutationFunction<Awaited<ReturnType<typeof postSchedulingJukebox>>, { data: JukeboxSchedule }> = (
-    props
+    props,
   ) => {
     const { data } = props ?? {}
 

@@ -37,7 +37,7 @@ type SecondParameter<T extends (...args: any) => any> = T extends (config: any, 
 export const postOrganizationsIdPlaylists = (
   id: number,
   newPlaylistForm: NewPlaylistForm,
-  options?: SecondParameter<typeof axiosInstance>
+  options?: SecondParameter<typeof axiosInstance>,
 ) => {
   return axiosInstance<Playlist>(
     {
@@ -46,13 +46,13 @@ export const postOrganizationsIdPlaylists = (
       headers: { "Content-Type": "application/json" },
       data: newPlaylistForm,
     },
-    options
+    options,
   )
 }
 
 export const getPostOrganizationsIdPlaylistsMutationOptions = <
   TError = ErrorType<unknown>,
-  TContext = unknown
+  TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof postOrganizationsIdPlaylists>>,
@@ -109,7 +109,7 @@ export const usePostOrganizationsIdPlaylists = <TError = ErrorType<unknown>, TCo
 export const getPlaylists = (
   params?: GetPlaylistsParams,
   options?: SecondParameter<typeof axiosInstance>,
-  signal?: AbortSignal
+  signal?: AbortSignal,
 ) => {
   return axiosInstance<GetPlaylists200>({ url: `/playlists`, method: "get", params, signal }, options)
 }
@@ -119,13 +119,13 @@ export const getGetPlaylistsQueryKey = (params?: GetPlaylistsParams) =>
 
 export const getGetPlaylistsQueryOptions = <
   TData = Awaited<ReturnType<typeof getPlaylists>>,
-  TError = ErrorType<unknown>
+  TError = ErrorType<unknown>,
 >(
   params?: GetPlaylistsParams,
   options?: {
     query?: UseQueryOptions<Awaited<ReturnType<typeof getPlaylists>>, TError, TData>
     request?: SecondParameter<typeof axiosInstance>
-  }
+  },
 ): UseQueryOptions<Awaited<ReturnType<typeof getPlaylists>>, TError, TData> & { queryKey: QueryKey } => {
   const { query: queryOptions, request: requestOptions } = options ?? {}
 
@@ -148,7 +148,7 @@ export const useGetPlaylists = <TData = Awaited<ReturnType<typeof getPlaylists>>
   options?: {
     query?: UseQueryOptions<Awaited<ReturnType<typeof getPlaylists>>, TError, TData>
     request?: SecondParameter<typeof axiosInstance>
-  }
+  },
 ): UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
   const queryOptions = getGetPlaylistsQueryOptions(params, options)
 
@@ -170,13 +170,13 @@ export const getGetPlaylistsIdQueryKey = (id: number) => [`/playlists/${id}`] as
 
 export const getGetPlaylistsIdQueryOptions = <
   TData = Awaited<ReturnType<typeof getPlaylistsId>>,
-  TError = ErrorType<ResourceNotFoundResponse>
+  TError = ErrorType<ResourceNotFoundResponse>,
 >(
   id: number,
   options?: {
     query?: UseQueryOptions<Awaited<ReturnType<typeof getPlaylistsId>>, TError, TData>
     request?: SecondParameter<typeof axiosInstance>
-  }
+  },
 ): UseQueryOptions<Awaited<ReturnType<typeof getPlaylistsId>>, TError, TData> & { queryKey: QueryKey } => {
   const { query: queryOptions, request: requestOptions } = options ?? {}
 
@@ -196,13 +196,13 @@ export type GetPlaylistsIdQueryError = ErrorType<ResourceNotFoundResponse>
  */
 export const useGetPlaylistsId = <
   TData = Awaited<ReturnType<typeof getPlaylistsId>>,
-  TError = ErrorType<ResourceNotFoundResponse>
+  TError = ErrorType<ResourceNotFoundResponse>,
 >(
   id: number,
   options?: {
     query?: UseQueryOptions<Awaited<ReturnType<typeof getPlaylistsId>>, TError, TData>
     request?: SecondParameter<typeof axiosInstance>
-  }
+  },
 ): UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
   const queryOptions = getGetPlaylistsIdQueryOptions(id, options)
 

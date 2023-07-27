@@ -41,7 +41,7 @@ type SecondParameter<T extends (...args: any) => any> = T extends (config: any, 
 export const postAuthRegister = (registerForm: RegisterForm, options?: SecondParameter<typeof axiosInstance>) => {
   return axiosInstance<PostAuthRegister200>(
     { url: `/auth/register`, method: "post", headers: { "Content-Type": "application/json" }, data: registerForm },
-    options
+    options,
   )
 }
 
@@ -52,7 +52,7 @@ export const getPostAuthRegisterMutationOptions = <TError = ErrorType<void>, TCo
   const { mutation: mutationOptions, request: requestOptions } = options ?? {}
 
   const mutationFn: MutationFunction<Awaited<ReturnType<typeof postAuthRegister>>, { data: RegisterForm }> = (
-    props
+    props,
   ) => {
     const { data } = props ?? {}
 
@@ -84,7 +84,7 @@ export const usePostAuthRegister = <TError = ErrorType<void>, TContext = unknown
 export const loginUser = (loginForm: LoginForm, options?: SecondParameter<typeof axiosInstance>) => {
   return axiosInstance<LoginUser200>(
     { url: `/auth/login`, method: "post", headers: { "Content-Type": "application/json" }, data: loginForm },
-    options
+    options,
   )
 }
 
@@ -128,7 +128,7 @@ export const postAuthLogout = (options?: SecondParameter<typeof axiosInstance>) 
 export const getPostAuthLogoutMutationOptions = <
   TError = ErrorType<unknown>,
   TVariables = void,
-  TContext = unknown
+  TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<Awaited<ReturnType<typeof postAuthLogout>>, TError, TVariables, TContext>
   request?: SecondParameter<typeof axiosInstance>
@@ -160,7 +160,7 @@ export const usePostAuthLogout = <TError = ErrorType<unknown>, TVariables = void
 export const checkPermission = (
   params?: CheckPermissionParams,
   options?: SecondParameter<typeof axiosInstance>,
-  signal?: AbortSignal
+  signal?: AbortSignal,
 ) => {
   return axiosInstance<CheckPermission200>({ url: `/auth/hasPermission`, method: "get", params, signal }, options)
 }
@@ -170,13 +170,13 @@ export const getCheckPermissionQueryKey = (params?: CheckPermissionParams) =>
 
 export const getCheckPermissionQueryOptions = <
   TData = Awaited<ReturnType<typeof checkPermission>>,
-  TError = ErrorType<unknown>
+  TError = ErrorType<unknown>,
 >(
   params?: CheckPermissionParams,
   options?: {
     query?: UseQueryOptions<Awaited<ReturnType<typeof checkPermission>>, TError, TData>
     request?: SecondParameter<typeof axiosInstance>
-  }
+  },
 ): UseQueryOptions<Awaited<ReturnType<typeof checkPermission>>, TError, TData> & { queryKey: QueryKey } => {
   const { query: queryOptions, request: requestOptions } = options ?? {}
 
@@ -196,7 +196,7 @@ export const useCheckPermission = <TData = Awaited<ReturnType<typeof checkPermis
   options?: {
     query?: UseQueryOptions<Awaited<ReturnType<typeof checkPermission>>, TError, TData>
     request?: SecondParameter<typeof axiosInstance>
-  }
+  },
 ): UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
   const queryOptions = getCheckPermissionQueryOptions(params, options)
 
@@ -219,7 +219,7 @@ export const getUserProfileQueryKey = () => [`/auth/user`] as const
 
 export const getUserProfileQueryOptions = <
   TData = Awaited<ReturnType<typeof userProfile>>,
-  TError = ErrorType<void>
+  TError = ErrorType<void>,
 >(options?: {
   query?: UseQueryOptions<Awaited<ReturnType<typeof userProfile>>, TError, TData>
   request?: SecondParameter<typeof axiosInstance>

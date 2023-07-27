@@ -19,7 +19,7 @@ export const NavLink = ({ children, href, className }: { children: ReactNode; hr
           "text-gray-600 hover:text-gray-800": !active(href),
           "hover:border-b-[#E88840]/50 border-b-[#E88840]": active(href) && href !== "/",
         },
-        className
+        className,
       )}
     >
       {children}

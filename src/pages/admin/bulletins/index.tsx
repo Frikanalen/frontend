@@ -62,9 +62,7 @@ export const BulletinAdminPage = () => {
         <h2>Bulletins</h2>
         <div className={"flex flex-wrap gap-2"}>
           <NewBulletinCard />
-          {bulletins?.map((bulletin) => (
-            <BulletinCard key={bulletin.id} bulletin={bulletin} />
-          ))}
+          {bulletins?.map((bulletin) => <BulletinCard key={bulletin.id} bulletin={bulletin} />)}
         </div>
       </div>
     </RequireAuthentication>

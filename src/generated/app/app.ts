@@ -29,7 +29,7 @@ export const getGetOpenApiSpecJsonQueryKey = () => [`/open-api-spec.json`] as co
 
 export const getGetOpenApiSpecJsonQueryOptions = <
   TData = Awaited<ReturnType<typeof getOpenApiSpecJson>>,
-  TError = ErrorType<unknown>
+  TError = ErrorType<unknown>,
 >(options?: {
   query?: UseQueryOptions<Awaited<ReturnType<typeof getOpenApiSpecJson>>, TError, TData>
   request?: SecondParameter<typeof axiosInstance>
@@ -52,7 +52,7 @@ export type GetOpenApiSpecJsonQueryError = ErrorType<unknown>
  */
 export const useGetOpenApiSpecJson = <
   TData = Awaited<ReturnType<typeof getOpenApiSpecJson>>,
-  TError = ErrorType<unknown>
+  TError = ErrorType<unknown>,
 >(options?: {
   query?: UseQueryOptions<Awaited<ReturnType<typeof getOpenApiSpecJson>>, TError, TData>
   request?: SecondParameter<typeof axiosInstance>
@@ -78,7 +78,7 @@ export const getGetConfigQueryKey = () => [`/config`] as const
 
 export const getGetConfigQueryOptions = <
   TData = Awaited<ReturnType<typeof getConfig>>,
-  TError = ErrorType<unknown>
+  TError = ErrorType<unknown>,
 >(options?: {
   query?: UseQueryOptions<Awaited<ReturnType<typeof getConfig>>, TError, TData>
   request?: SecondParameter<typeof axiosInstance>

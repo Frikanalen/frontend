@@ -31,7 +31,7 @@ type SecondParameter<T extends (...args: any) => any> = T extends (config: any, 
 export const newVideo = (
   orgId: number,
   newVideoForm: NewVideoForm,
-  options?: SecondParameter<typeof axiosInstance>
+  options?: SecondParameter<typeof axiosInstance>,
 ) => {
   return axiosInstance<Video>(
     {
@@ -40,7 +40,7 @@ export const newVideo = (
       headers: { "Content-Type": "application/json" },
       data: newVideoForm,
     },
-    options
+    options,
   )
 }
 
@@ -61,7 +61,7 @@ export const getNewVideoMutationOptions = <TError = ErrorType<unknown>, TContext
   const { mutation: mutationOptions, request: requestOptions } = options ?? {}
 
   const mutationFn: MutationFunction<Awaited<ReturnType<typeof newVideo>>, { orgId: number; data: NewVideoForm }> = (
-    props
+    props,
   ) => {
     const { orgId, data } = props ?? {}
 
@@ -97,7 +97,7 @@ export const useNewVideo = <TError = ErrorType<unknown>, TContext = unknown>(opt
 export const getVideos = (
   params?: GetVideosParams,
   options?: SecondParameter<typeof axiosInstance>,
-  signal?: AbortSignal
+  signal?: AbortSignal,
 ) => {
   return axiosInstance<GetVideos200>({ url: `/videos`, method: "get", params, signal }, options)
 }
@@ -109,7 +109,7 @@ export const getGetVideosQueryOptions = <TData = Awaited<ReturnType<typeof getVi
   options?: {
     query?: UseQueryOptions<Awaited<ReturnType<typeof getVideos>>, TError, TData>
     request?: SecondParameter<typeof axiosInstance>
-  }
+  },
 ): UseQueryOptions<Awaited<ReturnType<typeof getVideos>>, TError, TData> & { queryKey: QueryKey } => {
   const { query: queryOptions, request: requestOptions } = options ?? {}
 
@@ -132,7 +132,7 @@ export const useGetVideos = <TData = Awaited<ReturnType<typeof getVideos>>, TErr
   options?: {
     query?: UseQueryOptions<Awaited<ReturnType<typeof getVideos>>, TError, TData>
     request?: SecondParameter<typeof axiosInstance>
-  }
+  },
 ): UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
   const queryOptions = getGetVideosQueryOptions(params, options)
 
@@ -154,13 +154,13 @@ export const getGetVideosIdQueryKey = (id: number) => [`/videos/${id}`] as const
 
 export const getGetVideosIdQueryOptions = <
   TData = Awaited<ReturnType<typeof getVideosId>>,
-  TError = ErrorType<ResourceNotFoundResponse>
+  TError = ErrorType<ResourceNotFoundResponse>,
 >(
   id: number,
   options?: {
     query?: UseQueryOptions<Awaited<ReturnType<typeof getVideosId>>, TError, TData>
     request?: SecondParameter<typeof axiosInstance>
-  }
+  },
 ): UseQueryOptions<Awaited<ReturnType<typeof getVideosId>>, TError, TData> & { queryKey: QueryKey } => {
   const { query: queryOptions, request: requestOptions } = options ?? {}
 
@@ -180,13 +180,13 @@ export type GetVideosIdQueryError = ErrorType<ResourceNotFoundResponse>
  */
 export const useGetVideosId = <
   TData = Awaited<ReturnType<typeof getVideosId>>,
-  TError = ErrorType<ResourceNotFoundResponse>
+  TError = ErrorType<ResourceNotFoundResponse>,
 >(
   id: number,
   options?: {
     query?: UseQueryOptions<Awaited<ReturnType<typeof getVideosId>>, TError, TData>
     request?: SecondParameter<typeof axiosInstance>
-  }
+  },
 ): UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
   const queryOptions = getGetVideosIdQueryOptions(id, options)
 

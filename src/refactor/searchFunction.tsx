@@ -35,13 +35,7 @@ const SearchResults = ({
       </div>
     )
 
-  return (
-    <div className={className}>
-      {results?.map((foo) => (
-        <SearchResult key={foo.id} result={foo} />
-      ))}
-    </div>
-  )
+  return <div className={className}>{results?.map((foo) => <SearchResult key={foo.id} result={foo} />)}</div>
 }
 const SearchResult = ({ result }: { result: VideoSearchResultFragment }) => (
   <div className={"text-black/80 hover:text-green-900 hover:bg-green-200"}>

@@ -12,7 +12,7 @@ const makeTestScheduleEntry = (
   start: Date,
   duration: number = 1800,
   video: ScheduleStateVideo = testVideo,
-  source: ScheduleStateEntry["source"] = "jukebox"
+  source: ScheduleStateEntry["source"] = "jukebox",
 ): ScheduleStateEntry => ({
   id,
   when: { start, end: add(start, { seconds: duration }) },

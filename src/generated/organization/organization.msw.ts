@@ -33,7 +33,7 @@ export const getPostOrganizationsMock = () => ({
       createdAt: faker.helpers.arrayElement([faker.random.word(), undefined]),
       permissions: faker.helpers.arrayElement([
         Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
-          faker.random.word()
+          faker.random.word(),
         ),
         undefined,
       ]),
@@ -57,7 +57,7 @@ export const getGetOrganizationsIdMock = () => ({
       createdAt: faker.helpers.arrayElement([faker.random.word(), undefined]),
       permissions: faker.helpers.arrayElement([
         Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
-          faker.random.word()
+          faker.random.word(),
         ),
         undefined,
       ]),
@@ -72,7 +72,7 @@ export const getNewVideoMock = () => ({
   description: faker.random.word(),
   duration: faker.datatype.number({ min: undefined, max: undefined }),
   categories: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
-    faker.datatype.number({ min: undefined, max: undefined })
+    faker.datatype.number({ min: undefined, max: undefined }),
   ),
   createdAt: `${faker.date.past().toISOString().split(".")[0]}Z`,
   updatedAt: `${faker.date.past().toISOString().split(".")[0]}Z`,
@@ -91,7 +91,7 @@ export const getNewVideoMock = () => ({
         createdAt: faker.helpers.arrayElement([faker.random.word(), undefined]),
         permissions: faker.helpers.arrayElement([
           Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
-            faker.random.word()
+            faker.random.word(),
           ),
           undefined,
         ]),

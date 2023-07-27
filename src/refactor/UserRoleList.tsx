@@ -11,9 +11,7 @@ interface UserRoleListProps {
 
 export const UserRoleList = ({ roles }: UserRoleListProps) => (
   <Section icon="officeBuilding" title="Organisasjoner du er medlem av">
-    {roles?.map((r, idx) => (
-      <UserRoleCard key={idx} role={r} />
-    ))}
+    {roles?.map((r, idx) => <UserRoleCard key={idx} role={r} />)}
     <div>
       <Button variant={"outlined"}>
         <Link href={"/organization/new"} passHref>

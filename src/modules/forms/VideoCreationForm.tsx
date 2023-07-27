@@ -48,7 +48,7 @@ export const VideoCreationForm = ({ organizationId, onCreated }: VideoCreationFo
         onSuccess: ({ id }) => {
           onCreated(id)
         },
-      }
+      },
     )
   }
 

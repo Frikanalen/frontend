@@ -60,7 +60,7 @@ export const Schedule = () => {
         <div
           className={cx(
             "bg-gradient-to-b from-green-600 to-green-700",
-            "text-gray-50 font-bold text-xl w-40 p-4 text-right min-h-fill"
+            "text-gray-50 font-bold text-xl w-40 p-4 text-right min-h-fill",
           )}
         >
           {format(date, "PPP", { locale })}
