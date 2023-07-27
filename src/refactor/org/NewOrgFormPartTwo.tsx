@@ -7,7 +7,7 @@ import { ErrorMessage } from "@hookform/error-message"
 import { MutateOrganizationDocument } from "../../generated/graphql"
 import { useMutation } from "@apollo/client"
 import { OrgdataFromBrreg } from "../../modules/organization/helpers/fetchBrregData"
-import { Button } from "src/modules/ui/components/Button"
+import { Button } from "../../modules/ui/components/Button"
 
 const NewOrgDetailSchema = Nope.object().shape({
   name: Nope.string().required().min(3),
