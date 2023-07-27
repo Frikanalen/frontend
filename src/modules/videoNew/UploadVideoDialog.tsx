@@ -1,3 +1,4 @@
+"use client"
 import React, { useCallback, useState } from "react"
 import { useQuery } from "@apollo/client"
 import { GetOrganizationDocument, Maybe } from "../../generated/graphql"
@@ -9,7 +10,6 @@ import { VideoCreationForm } from "src/modules/forms/VideoCreationForm"
 import FileDownloadDoneRoundedIcon from "@mui/icons-material/FileDownloadDoneRounded"
 import { useMediaProcessorStatus } from "./useMediaProcessorStatus"
 import { useRouter } from "next/router"
-import { useDebounce } from "usehooks-ts"
 
 export interface UploadPageProps {
   orgId: Maybe<string>
@@ -51,7 +51,7 @@ const VideoProcessingProgress = ({
   onJobCreated: (mediaId: number, uploadId: string) => void
   onComplete: () => void
 }) => {
-  const jobCreated = useCallback((mediaId: number) => onJobCreated(mediaId, uploadId), [onJobCreated])
+  const jobCreated = useCallback((mediaId: number) => onJobCreated(mediaId, uploadId), [onJobCreated, uploadId])
   const { percent, status } = useMediaProcessorStatus(uploadId, onComplete, jobCreated)
 
   if (status !== "error")

@@ -4,7 +4,6 @@ import { VideoJS } from "../../frontpage/LiveVideoPlayer"
 import { useGetVideosId } from "src/generated/video/video"
 import { useMediaProcessorStatus } from "src/modules/videoNew/useMediaProcessorStatus"
 import { useRouter } from "next/router"
-import { number } from "nope-validator"
 
 // This just went away for some reason
 type SourceObject = object
@@ -42,7 +41,7 @@ const PendingVideoWindow = ({ videoId }: { videoId: number }) => {
   return (
     <div className={"flex h-full relative"}>
       <div className={`absolute`} style={{ filter: `blur(${(100 - percent) / 3}px)` }}>
-        <img src={thumbnail!} />
+        <img src={thumbnail!} alt="" />
       </div>
       <div className="relative flex flex-col w-full items-center justify-center bg-green-200/10">
         <div className="flex flex-col gap-4 items-center">

@@ -8,7 +8,7 @@ export const useMediaProcessorStatus = (
 ) => {
   const [percent, setPercent] = useState<number>(0)
   const [status, setStatus] = useState<"pending" | "connected" | "error" | "completed">("pending")
-  const [_, setRetryCount] = useState<number>(0)
+  const setRetryCount = useState<number>(0)[1]
   const sRef = useRef<EventSource | null>(null)
 
   useEffect(() => {
@@ -59,7 +59,7 @@ export const useMediaProcessorStatus = (
     connect()
 
     return () => sRef.current?.close() // Close the current EventSource instance when the component is unmounted
-  }, [uploadId, onComplete, onJobCreated])
+  }, [uploadId, onComplete, onJobCreated, setRetryCount])
 
   return { percent, status }
 }

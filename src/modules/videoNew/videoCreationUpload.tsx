@@ -48,7 +48,14 @@ export const useUpload = (onComplete: (uploadId: string) => void) => {
     },
   })
 
-  const onSuccess = useCallback(() => onComplete(uploadId), [onComplete])
+  const uploadId = useMemo((): string => {
+    if (!upload?.url) return ""
+    const id = new URL(upload.url).pathname.split("/").pop() ?? ""
+    if (!id.length) throw new Error("Upload ID is empty")
+    return id
+  }, [upload?.url])
+
+  const onSuccess = useCallback(() => onComplete(uploadId), [onComplete, uploadId])
 
   // Clear all localStorage keys starting with "tus::"
   useEffect(() => {
@@ -75,15 +82,8 @@ export const useUpload = (onComplete: (uploadId: string) => void) => {
         },
       })
     },
-    [setUpload, csrfToken],
+    [setUpload, csrfToken, onSuccess],
   )
-
-  const uploadId = useMemo((): string => {
-    if (!upload?.url) return ""
-    const id = new URL(upload.url).pathname.split("/").pop() ?? ""
-    if (!id.length) throw new Error("Upload ID is empty")
-    return id
-  }, [upload?.url])
 
   return {
     handleSetUpload,
