@@ -3,7 +3,7 @@ FROM node:18-alpine AS deps
 WORKDIR /app
 COPY package.json yarn.lock ./
 
-RUN yarn install --frozen-lockfile --production
+RUN yarn --frozen-lockfile --production
 
 FROM node:18-alpine AS builder
 
@@ -15,7 +15,8 @@ ENV FK_API https://beta.frikanalen.no/api/v2
 ENV FK_MEDIA https://beta.frikanalen.no/api/v2
 ENV FK_GRAPHQL https://beta.frikanalen.no/graphql
 
-RUN NODE_ENV=development yarn install --frozen-lockfile && NODE_ENV=production yarn build
+RUN yarn --production=false --frozen-lockfile 
+RUN yarn build
 
 FROM node:18-alpine AS runner
 
@@ -31,6 +32,6 @@ COPY package.json yarn.lock ./
 
 USER node
 
-CMD yarn run start
+CMD yarn start
 
 EXPOSE 3000
