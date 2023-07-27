@@ -60,7 +60,7 @@ export const Schedule = () => {
         <div
           className={cx(
             "bg-gradient-to-b from-green-600 to-green-700",
-            "text-gray-50 font-bold text-xl w-40 p-4 text-right min-h-fill",
+            "text-gray-50 font-bold text-xl w-40 p-4 shrink-0 text-right min-h-fill",
           )}
         >
           {format(date, "PPP", { locale })}
@@ -68,21 +68,18 @@ export const Schedule = () => {
         <div className={"flex-auto  bg-green-800 text-gray-50 overflow-auto"}>
           {data?.map(({ startsAt, endsAt, video: { title, description, organization } }, index) => (
             <div key={index} className={""}>
-              <div className={"bg-green-900 flex"}>
-                <div className={"w-16 text-right font-bold pr-2"}>{format(new Date(startsAt), "HH:mm")}</div>
+              <div className={"bg-green-900"}>
+                <div className={"w-16 text-right font-bold inline-block pr-2"}>
+                  {format(new Date(startsAt), "HH:mm")}
+                </div>
                 <span className={"pr-2"}>&ndash;</span>
                 {format(new Date(endsAt), "HH:mm")}
                 <span className={"px-2"}>{organization.name}</span>
               </div>
 
-              <div className={"p-2 pl-16 text-gray-50 bg-green-800 flex gap-2"}>
-                <div className={"font-bold"}>{title}</div>
-                {description && (
-                  <>
-                    &ndash;
-                    <div>{description}</div>
-                  </>
-                )}
+              <div className={"p-2 pl-16 text-gray-50 bg-green-800 truncate"}>
+                <span className={"font-bold"}>{title}</span>
+                {description && <> &ndash; {description}</>}
               </div>
             </div>
           ))}
