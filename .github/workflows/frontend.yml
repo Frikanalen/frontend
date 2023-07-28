@@ -26,10 +26,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
       - name: Build docker
         id: docker_build
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v4
         with:
           tags: frikanalen/frontend-v2:${{ github.sha }},frikanalen/frontend-v2:latest
           push: true
-          pull: true
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache
