@@ -16,11 +16,11 @@ FROM deps AS builder
 WORKDIR /app
 RUN yarn --frozen-lockfile --production=false 
 COPY . .
-ENV FK_MEDIA https://beta.frikanalen.no/media
-ENV FK_GRAPHQL https://beta.frikanalen.no/graphql
-ENV FK_API https://beta.frikanalen.no/api/v2
-ENV FK_UPLOAD https://beta.frikanalen.no/api/v2/media/upload
-ENV FK_MEDIAPROC https://beta.frikanalen.no/api/v2/media
+ENV NEXT_PUBLIC_FK_MEDIA https://beta.frikanalen.no/media
+ENV NEXT_PUBLIC_FK_GRAPHQL https://beta.frikanalen.no/graphql
+ENV NEXT_PUBLIC_FK_API https://beta.frikanalen.no/api/v2
+ENV NEXT_PUBLIC_FK_UPLOAD https://beta.frikanalen.no/api/v2/media/upload
+ENV NEXT_PUBLIC_FK_MEDIAPROC https://beta.frikanalen.no/api/v2/media
 RUN yarn build
 
 ################################################################################

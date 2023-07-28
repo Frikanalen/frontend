@@ -1,4 +1,3 @@
-import getConfig from "next/config"
 import { useEffect, useState, useRef } from "react"
 
 export const useMediaProcessorStatus = (
@@ -12,11 +11,11 @@ export const useMediaProcessorStatus = (
   const sRef = useRef<EventSource | null>(null)
 
   useEffect(() => {
-    const { FK_MEDIAPROC } = getConfig().publicRuntimeConfig
+    const mediaprocUrl = process.env.NEXT_PUBLIC_FK_MEDIAPROC
 
     const connect = () => {
       sRef.current?.close() // Ensure any existing connection is closed before creating a new one
-      const s = new EventSource(`${FK_MEDIAPROC}/status/${uploadId}`, { withCredentials: true })
+      const s = new EventSource(`${mediaprocUrl}/status/${uploadId}`, { withCredentials: true })
       sRef.current = s
       s.onopen = () => {
         setStatus("connected")

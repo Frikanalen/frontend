@@ -30,12 +30,5 @@ module.exports = removeImports({
 
     return config
   },
-  publicRuntimeConfig: {
-    FK_API: process.env.FK_API,
-    FK_MEDIA: process.env.FK_MEDIA,
-    FK_UPLOAD: process.env.FK_UPLOAD,
-    FK_GRAPHQL: process.env.FK_GRAPHQL,
-    FK_MEDIAPROC: process.env.FK_MEDIAPROC,
-  },
   serverRuntimeConfig: {},
 })

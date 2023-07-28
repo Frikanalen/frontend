@@ -1,10 +1,7 @@
 import Axios, { AxiosError, AxiosRequestConfig } from "axios"
-import getConfig from "next/config"
-
-const { publicRuntimeConfig } = getConfig()
 
 export const AXIOS_INSTANCE = Axios.create({
-  baseURL: publicRuntimeConfig.FK_API,
+  baseURL: process.env.NEXT_PUBLIC_FK_API,
   xsrfCookieName: "fk-csrf",
   xsrfHeaderName: "X-CSRF-TOKEN",
   withCredentials: true,

@@ -7,8 +7,6 @@ import "regenerator-runtime/runtime"
 
 import { UploadFileSelector } from "./uploadFileSelector"
 import { Maybe } from "../../generated/graphql"
-import getConfig from "next/config"
-const { publicRuntimeConfig } = getConfig()
 
 export const UploadProgressBar = ({ progress }: { progress: number }) => (
   <Progress.Root max={100} value={progress} className={" h-9 relative"}>
@@ -43,7 +41,7 @@ export const useUpload = (onComplete: (uploadId: string) => void) => {
       onProgress: (bytesSent, bytesTotal) => {
         setProgress((bytesSent / bytesTotal) * 100)
       },
-      endpoint: publicRuntimeConfig.FK_UPLOAD,
+      endpoint: process.env.NEXT_PUBLIC_FK_UPLOAD,
       chunkSize: 2 ** 23, // Node throws a server-side exception if larger
     },
   })
