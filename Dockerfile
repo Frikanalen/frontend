@@ -1,23 +1,35 @@
+################################################################################
+# Run-time dependencies
+################################################################################
 FROM node:18-alpine AS deps
 
 WORKDIR /app
+
 COPY package.json yarn.lock ./
+RUN yarn --frozen-lockfile --production=true
 
-RUN yarn --frozen-lockfile --production
+################################################################################
+# Build-time dependencies
+################################################################################
+FROM deps AS build-deps
 
+WORKDIR /app
+RUN yarn --frozen-lockfile --production=false 
+
+################################################################################
+# Builder
+################################################################################
 FROM node:18-alpine AS builder
 
 WORKDIR /app
 COPY . .
-COPY --from=deps /app/node_modules ./node_modules
+COPY --from=build-deps /app/node_modules ./node_modules
 
-ENV FK_API https://beta.frikanalen.no/api/v2
-ENV FK_MEDIA https://beta.frikanalen.no/api/v2
-ENV FK_GRAPHQL https://beta.frikanalen.no/graphql
-
-RUN yarn --production=false --frozen-lockfile 
 RUN yarn build
 
+################################################################################
+# Runner
+################################################################################
 FROM node:18-alpine AS runner
 
 WORKDIR /app
