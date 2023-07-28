@@ -52,8 +52,6 @@ export const useUpload = (onComplete: (uploadId: string) => void) => {
       .forEach((key) => localStorage.removeItem(key))
   }, [])
 
-  console.error("endpoint", process.env.NEXT_PUBLIC_FK_UPLOAD)
-
   const handleSetUpload = useCallback(
     (file?: Maybe<File>) => {
       if (!file) return
