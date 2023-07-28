@@ -9,9 +9,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout master
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v2
       - name: Cache Docker layers
         uses: actions/cache@v2
         with:
@@ -28,7 +28,7 @@ jobs:
         id: docker_build
         uses: docker/build-push-action@v2
         with:
-          tags: frikanalen/frontend-v2:${{ github.sha }}
+          tags: frikanalen/frontend-v2:${{ github.sha }},frikanalen/frontend-v2:latest
           push: true
           pull: true
           cache-from: type=local,src=/tmp/.buildx-cache
