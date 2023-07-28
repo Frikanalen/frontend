@@ -1,3 +1,4 @@
+"use client"
 import * as Progress from "@radix-ui/react-progress"
 import React, { useCallback, useEffect, useMemo, useState } from "react"
 import { useCookie } from "react-use"
