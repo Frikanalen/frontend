@@ -21,5 +21,8 @@ jobs:
         id: docker_build
         uses: docker/build-push-action@v4
         with:
+          context: .
           tags: frikanalen/frontend-v2:${{ github.sha }},frikanalen/frontend-v2:latest
           push: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
