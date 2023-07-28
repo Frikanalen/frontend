@@ -11,20 +11,16 @@ RUN yarn --frozen-lockfile --production=true
 ################################################################################
 # Build-time dependencies
 ################################################################################
-FROM deps AS build-deps
+FROM deps AS builder
 
 WORKDIR /app
 RUN yarn --frozen-lockfile --production=false 
-
-################################################################################
-# Builder
-################################################################################
-FROM node:18-alpine AS builder
-
-WORKDIR /app
 COPY . .
-COPY --from=build-deps /app/node_modules ./node_modules
-
+ENV FK_MEDIA https://beta.frikanalen.no/media
+ENV FK_GRAPHQL https://beta.frikanalen.no/graphql
+ENV FK_API https://beta.frikanalen.no/api/v2
+ENV FK_UPLOAD https://beta.frikanalen.no/api/v2/media/upload
+ENV FK_MEDIAPROC https://beta.frikanalen.no/api/v2/media
 RUN yarn build
 
 ################################################################################
