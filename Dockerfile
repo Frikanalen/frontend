@@ -11,10 +11,15 @@ RUN yarn --frozen-lockfile --production=true
 ################################################################################
 # Build-time dependencies
 ################################################################################
-FROM deps AS builder
+FROM deps AS build-deps
 
 WORKDIR /app
 RUN yarn --frozen-lockfile --production=false 
+
+################################################################################
+# Builder
+################################################################################
+FROM build-deps AS builder
 COPY . .
 ENV NEXT_PUBLIC_FK_MEDIA https://beta.frikanalen.no/media
 ENV NEXT_PUBLIC_FK_GRAPHQL https://beta.frikanalen.no/graphql
