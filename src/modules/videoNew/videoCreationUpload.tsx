@@ -37,13 +37,6 @@ export const useUpload = (onComplete: (uploadId: string) => void) => {
 
   const { upload, setUpload, error } = useTus({
     autoStart: true,
-    uploadOptions: {
-      onProgress: (bytesSent, bytesTotal) => {
-        setProgress((bytesSent / bytesTotal) * 100)
-      },
-      endpoint: process.env.NEXT_PUBLIC_FK_UPLOAD,
-      chunkSize: 2 ** 23, // Node throws a server-side exception if larger
-    },
   })
 
   const uploadId = useMemo((): string => {
@@ -67,6 +60,11 @@ export const useUpload = (onComplete: (uploadId: string) => void) => {
       if (!file) return
 
       setUpload(file, {
+        onProgress: (bytesSent, bytesTotal) => {
+          setProgress((bytesSent / bytesTotal) * 100)
+        },
+        endpoint: process.env.NEXT_PUBLIC_FK_UPLOAD,
+        chunkSize: 2 ** 23, // Node throws a server-side exception if larger
         onBeforeRequest: (req) => {
           if (!csrfToken) throw new Error("Cannot upload without CSRF token!")
           const xhr = req.getUnderlyingObject() as XMLHttpRequest
