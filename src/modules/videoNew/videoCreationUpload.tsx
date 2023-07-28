@@ -32,12 +32,8 @@ interface VideoFileUploadProps {
 
 export const useUpload = (onComplete: (uploadId: string) => void) => {
   const [csrfToken] = useCookie("fk-csrf")
-
   const [progress, setProgress] = useState<number>(0)
-
-  const { upload, setUpload, error } = useTus({
-    autoStart: true,
-  })
+  const { upload, setUpload, error } = useTus({ autoStart: true })
 
   const uploadId = useMemo((): string => {
     if (!upload?.url) return ""
@@ -55,6 +51,8 @@ export const useUpload = (onComplete: (uploadId: string) => void) => {
       .forEach((key) => localStorage.removeItem(key))
   }, [])
 
+  console.error("endpoint", process.env.NEXT_PUBLIC_FK_UPLOAD)
+
   const handleSetUpload = useCallback(
     (file?: Maybe<File>) => {
       if (!file) return
@@ -63,7 +61,7 @@ export const useUpload = (onComplete: (uploadId: string) => void) => {
         onProgress: (bytesSent, bytesTotal) => {
           setProgress((bytesSent / bytesTotal) * 100)
         },
-        endpoint: process.env.NEXT_PUBLIC_FK_UPLOAD,
+        endpoint: `${process.env.NEXT_PUBLIC_FK_UPLOAD}`,
         chunkSize: 2 ** 23, // Node throws a server-side exception if larger
         onBeforeRequest: (req) => {
           if (!csrfToken) throw new Error("Cannot upload without CSRF token!")
