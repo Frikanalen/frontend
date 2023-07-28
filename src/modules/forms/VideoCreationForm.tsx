@@ -4,8 +4,8 @@ import { FieldValues, useForm } from "react-hook-form"
 import { InputLabel, TextField, Button, Alert } from "@mui/material"
 import { ErrorMessage } from "@hookform/error-message"
 import React, { useCallback } from "react"
-import { VideoUpload } from "../videoNew/UploadVideoDialog"
 import { useNewVideo } from "../../generated/video/video"
+import { VideoUpload } from "../videoNew/VideoUpload"
 
 interface VideoCreationFormProps {
   mediaId?: string

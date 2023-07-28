@@ -3,7 +3,7 @@ import prettyBytes from "pretty-bytes"
 import { useState } from "react"
 import { Maybe } from "../../generated/graphql"
 
-export const UploadFileSelector = ({ handleStart }: { handleStart: (file: File) => void }) => {
+export const FileSelector = ({ handleStart }: { handleStart: (file: File) => void }) => {
   const [file, setFile] = useState<Maybe<File>>()
 
   const FileSelector = () => (
