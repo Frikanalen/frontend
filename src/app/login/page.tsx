@@ -1,7 +1,6 @@
 "use client";
 import { PageLayout } from "@/app/about/pageLayout";
 import { Button, Form, Input } from "@heroui/react";
-import { userLoginCreate } from "@/generated/user/user";
 import Link from "next/link";
 
 export default function Login() {
