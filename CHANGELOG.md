@@ -1,6 +1,17 @@
 2025-05-31 
 # Changelog
 
+## [2.0.0](https://github.com/Frikanalen/frontend/compare/v1.0.0...v2.0.0) (2025-05-31)
+
+
+### ⚠ BREAKING CHANGES
+
+* update OpenAPI from django-api/main
+
+### Miscellaneous Chores
+
+* update OpenAPI from django-api/main ([d46a0ce](https://github.com/Frikanalen/frontend/commit/d46a0ce191600d39bd678838e098f37425a3eebf))
+
 ## 1.0.0 (2025-05-31)
 
 
