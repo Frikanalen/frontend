@@ -2,7 +2,7 @@
 import dynamic from "next/dynamic";
 import { Card, CardBody } from "@heroui/react";
 import { useLivePageScheduleItems } from "@/app/useLivePageScheduleItems";
-import { use20PPM, use4PPH } from "@/app/use20PPM";
+import { use20PPM } from "@/app/use20PPM";
 import { useScheduleCursor } from "@/app/useScheduleCursor";
 import { CurrentItem } from "@/app/currentItem";
 import { VideoBlurb } from "@/app/videoBlurb";
@@ -26,7 +26,7 @@ export const NextItem = ({ item }: { item: ScheduleitemRead }) => (
 );
 
 export const Live = () => {
-  const { data: schedule } = useLivePageScheduleItems(use4PPH());
+  const { data: schedule } = useLivePageScheduleItems();
   const { currentProgram, nextProgram } = useScheduleCursor(
     use20PPM(),
     schedule?.results,

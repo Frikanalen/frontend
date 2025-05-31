@@ -82,6 +82,12 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/AsRun"
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/AsRun"
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/AsRun"
       security:
         - cookieAuth: []
         - tokenAuth: []
@@ -154,6 +160,12 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/AsRun"
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/AsRun"
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/AsRun"
       security:
         - cookieAuth: []
         - tokenAuth: []
@@ -190,6 +202,12 @@ paths:
       requestBody:
         content:
           application/json:
+            schema:
+              $ref: "#/components/schemas/PatchedAsRun"
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/PatchedAsRun"
+          multipart/form-data:
             schema:
               $ref: "#/components/schemas/PatchedAsRun"
       security:
@@ -274,6 +292,12 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/Category"
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/Category"
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/Category"
         required: true
       security:
         - cookieAuth: []
@@ -327,6 +351,12 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/Category"
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/Category"
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/Category"
         required: true
       security:
         - cookieAuth: []
@@ -354,6 +384,12 @@ paths:
       requestBody:
         content:
           application/json:
+            schema:
+              $ref: "#/components/schemas/PatchedCategory"
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/PatchedCategory"
+          multipart/form-data:
             schema:
               $ref: "#/components/schemas/PatchedCategory"
       security:
@@ -430,6 +466,12 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/Bulletin"
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/Bulletin"
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/Bulletin"
         required: true
       security:
         - cookieAuth: []
@@ -479,6 +521,12 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/Bulletin"
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/Bulletin"
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/Bulletin"
         required: true
       security:
         - cookieAuth: []
@@ -504,6 +552,12 @@ paths:
       requestBody:
         content:
           application/json:
+            schema:
+              $ref: "#/components/schemas/PatchedBulletin"
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/PatchedBulletin"
+          multipart/form-data:
             schema:
               $ref: "#/components/schemas/PatchedBulletin"
       security:
@@ -593,6 +647,12 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/Organization"
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/Organization"
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/Organization"
         required: true
       security:
         - cookieAuth: []
@@ -644,6 +704,12 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/Organization"
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/Organization"
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/Organization"
         required: true
       security:
         - cookieAuth: []
@@ -670,6 +736,12 @@ paths:
       requestBody:
         content:
           application/json:
+            schema:
+              $ref: "#/components/schemas/PatchedOrganization"
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/PatchedOrganization"
+          multipart/form-data:
             schema:
               $ref: "#/components/schemas/PatchedOrganization"
       security:
@@ -709,10 +781,15 @@ paths:
         Query parameters
         ----------------
 
+        `date` - Date expressed in the format YYYY-MM-DD (eg. 2020-12-31), or
+                 "today".  Default is today, Europe/Oslo time.
+
+        `days` - Number of days schedule requested. Default is 7 days.
+
         `page_size` - How many items per page. If set to 0 it will list
                       all items.  Default is 50 items.
 
-        `surrounding` - Fetch th§e first event before and after the given
+        `surrounding` - Fetch the first event before and after the given
                         period
 
         `ordering` - Order results by specified field.  Prepend a minus for
@@ -736,16 +813,6 @@ paths:
           description: Which field to use when ordering the results.
           schema:
             type: string
-        - in: query
-          name: starttimeAfter
-          schema:
-            type: string
-            format: date-time
-        - in: query
-          name: starttimeBefore
-          schema:
-            type: string
-            format: date-time
       tags:
         - scheduleitems
       security:
@@ -766,10 +833,15 @@ paths:
         Query parameters
         ----------------
 
+        `date` - Date expressed in the format YYYY-MM-DD (eg. 2020-12-31), or
+                 "today".  Default is today, Europe/Oslo time.
+
+        `days` - Number of days schedule requested. Default is 7 days.
+
         `page_size` - How many items per page. If set to 0 it will list
                       all items.  Default is 50 items.
 
-        `surrounding` - Fetch th§e first event before and after the given
+        `surrounding` - Fetch the first event before and after the given
                         period
 
         `ordering` - Order results by specified field.  Prepend a minus for
@@ -779,6 +851,12 @@ paths:
       requestBody:
         content:
           application/json:
+            schema:
+              $ref: "#/components/schemas/ScheduleitemModify"
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/ScheduleitemModify"
+          multipart/form-data:
             schema:
               $ref: "#/components/schemas/ScheduleitemModify"
         required: true
@@ -832,6 +910,12 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/ScheduleitemModify"
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/ScheduleitemModify"
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/ScheduleitemModify"
         required: true
       security:
         - cookieAuth: []
@@ -858,6 +942,12 @@ paths:
       requestBody:
         content:
           application/json:
+            schema:
+              $ref: "#/components/schemas/PatchedScheduleitemRead"
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/PatchedScheduleitemRead"
+          multipart/form-data:
             schema:
               $ref: "#/components/schemas/PatchedScheduleitemRead"
       security:
@@ -1213,6 +1303,12 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/User"
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/User"
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/User"
       security:
         - cookieAuth: []
         - tokenAuth: []
@@ -1231,6 +1327,12 @@ paths:
       requestBody:
         content:
           application/json:
+            schema:
+              $ref: "#/components/schemas/PatchedUser"
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/PatchedUser"
+          multipart/form-data:
             schema:
               $ref: "#/components/schemas/PatchedUser"
       security:
@@ -1287,6 +1389,12 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/NewUser"
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/NewUser"
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/NewUser"
         required: true
       security:
         - cookieAuth: []
@@ -1327,45 +1435,45 @@ paths:
                      descending order.  I.e. `?ordering=-starttime`.
       parameters:
         - in: query
-          name: createdTimeAfter
+          name: created_time_after
           schema:
             type: string
             format: date-time
         - in: query
-          name: createdTimeBefore
+          name: created_time_before
           schema:
             type: string
             format: date-time
         - in: query
-          name: format_Fsname
+          name: format__fsname
           schema:
             type: string
         - in: query
-          name: integratedLufs
+          name: integrated_lufs
           schema:
             type: number
             format: float
         - in: query
-          name: integratedLufs_Gt
+          name: integrated_lufs__gt
           schema:
             type: number
             format: float
         - in: query
-          name: integratedLufs_Gte
+          name: integrated_lufs__gte
           schema:
             type: number
             format: float
         - in: query
-          name: integratedLufs_Isnull
+          name: integrated_lufs__isnull
           schema:
             type: boolean
         - in: query
-          name: integratedLufs_Lt
+          name: integrated_lufs__lt
           schema:
             type: number
             format: float
         - in: query
-          name: integratedLufs_Lte
+          name: integrated_lufs__lte
           schema:
             type: number
             format: float
@@ -1388,31 +1496,31 @@ paths:
           schema:
             type: string
         - in: query
-          name: truepeakLufs
+          name: truepeak_lufs
           schema:
             type: number
             format: float
         - in: query
-          name: truepeakLufs_Gt
+          name: truepeak_lufs__gt
           schema:
             type: number
             format: float
         - in: query
-          name: truepeakLufs_Gte
+          name: truepeak_lufs__gte
           schema:
             type: number
             format: float
         - in: query
-          name: truepeakLufs_Isnull
+          name: truepeak_lufs__isnull
           schema:
             type: boolean
         - in: query
-          name: truepeakLufs_Lt
+          name: truepeak_lufs__lt
           schema:
             type: number
             format: float
         - in: query
-          name: truepeakLufs_Lte
+          name: truepeak_lufs__lte
           schema:
             type: number
             format: float
@@ -1458,6 +1566,12 @@ paths:
       requestBody:
         content:
           application/json:
+            schema:
+              $ref: "#/components/schemas/VideoFile"
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/VideoFile"
+          multipart/form-data:
             schema:
               $ref: "#/components/schemas/VideoFile"
         required: true
@@ -1511,6 +1625,12 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/VideoFile"
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/VideoFile"
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/VideoFile"
         required: true
       security:
         - cookieAuth: []
@@ -1537,6 +1657,12 @@ paths:
       requestBody:
         content:
           application/json:
+            schema:
+              $ref: "#/components/schemas/PatchedVideoFile"
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/PatchedVideoFile"
+          multipart/form-data:
             schema:
               $ref: "#/components/schemas/PatchedVideoFile"
       security:
@@ -1619,7 +1745,7 @@ paths:
         `ref_url__icontains` - the reference url contain this string
       parameters:
         - in: query
-          name: categories_Name_Icontains
+          name: categories__name__icontains
           schema:
             type: array
             items:
@@ -1627,17 +1753,17 @@ paths:
           explode: true
           style: form
         - in: query
-          name: createdTimeAfter
+          name: created_time_after
           schema:
             type: string
             format: date-time
         - in: query
-          name: createdTimeBefore
+          name: created_time_before
           schema:
             type: string
             format: date-time
         - in: query
-          name: creator_Email
+          name: creator__email
           schema:
             type: string
         - in: query
@@ -1646,22 +1772,22 @@ paths:
             type: string
             format: duration
         - in: query
-          name: duration_Gt
+          name: duration__gt
           schema:
             type: string
             format: duration
         - in: query
-          name: duration_Gte
+          name: duration__gte
           schema:
             type: string
             format: duration
         - in: query
-          name: duration_Lt
+          name: duration__lt
           schema:
             type: string
             format: duration
         - in: query
-          name: duration_Lte
+          name: duration__lte
           schema:
             type: string
             format: duration
@@ -1670,11 +1796,11 @@ paths:
           schema:
             type: integer
         - in: query
-          name: hasTonoRecords
+          name: has_tono_records
           schema:
             type: boolean
         - in: query
-          name: isFiller
+          name: is_filler
           schema:
             type: boolean
         - name: limit
@@ -1688,7 +1814,7 @@ paths:
           schema:
             type: string
         - in: query
-          name: name_Icontains
+          name: name__icontains
           schema:
             type: string
         - name: offset
@@ -1708,58 +1834,58 @@ paths:
           schema:
             type: integer
         - in: query
-          name: playedCountWeb
+          name: played_count_web
           schema:
             type: integer
         - in: query
-          name: playedCountWeb_Gt
+          name: played_count_web__gt
           schema:
             type: integer
         - in: query
-          name: playedCountWeb_Gte
+          name: played_count_web__gte
           schema:
             type: integer
         - in: query
-          name: playedCountWeb_Lt
+          name: played_count_web__lt
           schema:
             type: integer
         - in: query
-          name: playedCountWeb_Lte
+          name: played_count_web__lte
           schema:
             type: integer
         - in: query
-          name: publishOnWeb
+          name: publish_on_web
           schema:
             type: boolean
         - in: query
-          name: refUrl
+          name: ref_url
           schema:
             type: string
         - in: query
-          name: refUrl_Icontains
+          name: ref_url__icontains
           schema:
             type: string
         - in: query
-          name: refUrl_Startswith
+          name: ref_url__startswith
           schema:
             type: string
         - in: query
-          name: updatedTimeAfter
-          schema:
-            type: string
-            format: date-time
-        - in: query
-          name: updatedTimeBefore
+          name: updated_time_after
           schema:
             type: string
             format: date-time
         - in: query
-          name: uploadedTimeAfter
+          name: updated_time_before
           schema:
             type: string
             format: date-time
         - in: query
-          name: uploadedTimeBefore
+          name: uploaded_time_after
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: uploaded_time_before
           schema:
             type: string
             format: date-time
@@ -1831,6 +1957,12 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/VideoCreate"
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/VideoCreate"
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/VideoCreate"
         required: true
       security:
         - cookieAuth: []
@@ -1882,6 +2014,12 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/Video"
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/Video"
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/Video"
         required: true
       security:
         - cookieAuth: []
@@ -1908,6 +2046,12 @@ paths:
       requestBody:
         content:
           application/json:
+            schema:
+              $ref: "#/components/schemas/PatchedVideo"
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/PatchedVideo"
+          multipart/form-data:
             schema:
               $ref: "#/components/schemas/PatchedVideo"
       security:
@@ -1976,7 +2120,7 @@ components:
             Points to the Video which was played if there is one. Can be
             empty if something other than a video was played. The field is mutually
             exclusive with `programName`.
-        programName:
+        program_name:
           type: string
           description:
             A free form text input saying what was played. If `video` is
@@ -1989,18 +2133,18 @@ components:
             The playout this entry corresponds with. This will almost always
             be 'main' which it defaults to.
           maxLength: 255
-        playedAt:
+        played_at:
           type: string
           format: date-time
           description: Time when the playout started. Defaults to now.
-        inMs:
+        in_ms:
           type: integer
           maximum: 2147483647
           minimum: -2147483648
           description:
             The inpoint where the video/stream was started at. In milliseconds.
             Normally 0 which it defaults to.
-        outMs:
+        out_ms:
           type: integer
           maximum: 2147483647
           minimum: -2147483648
@@ -2062,22 +2206,22 @@ components:
           format: email
           title: Email address
           maxLength: 254
-        firstName:
+        first_name:
           type: string
-        lastName:
+        last_name:
           type: string
-        dateOfBirth:
+        date_of_birth:
           type: string
           format: date
         password:
           type: string
           writeOnly: true
       required:
-        - dateOfBirth
+        - date_of_birth
         - email
-        - firstName
+        - first_name
         - id
-        - lastName
+        - last_name
         - password
     Organization:
       type: object
@@ -2096,37 +2240,37 @@ components:
         description:
           type: string
           maxLength: 255
-        postalAddress:
+        postal_address:
           type: string
           nullable: true
           title: Postal address for organization.
           maxLength: 2048
-        streetAddress:
+        street_address:
           type: string
           nullable: true
           title: Street address for organization.
           maxLength: 2048
-        editorId:
+        editor_id:
           type: integer
           nullable: true
           readOnly: true
-        editorName:
+        editor_name:
           type: string
           readOnly: true
-        editorEmail:
+        editor_email:
           type: string
           readOnly: true
-        editorMsisdn:
+        editor_msisdn:
           type: string
           readOnly: true
         fkmember:
           type: boolean
           readOnly: true
       required:
-        - editorEmail
-        - editorId
-        - editorMsisdn
-        - editorName
+        - editor_email
+        - editor_id
+        - editor_msisdn
+        - editor_name
         - fkmember
         - id
         - name
@@ -2281,7 +2425,7 @@ components:
             Points to the Video which was played if there is one. Can be
             empty if something other than a video was played. The field is mutually
             exclusive with `programName`.
-        programName:
+        program_name:
           type: string
           description:
             A free form text input saying what was played. If `video` is
@@ -2294,18 +2438,18 @@ components:
             The playout this entry corresponds with. This will almost always
             be 'main' which it defaults to.
           maxLength: 255
-        playedAt:
+        played_at:
           type: string
           format: date-time
           description: Time when the playout started. Defaults to now.
-        inMs:
+        in_ms:
           type: integer
           maximum: 2147483647
           minimum: -2147483648
           description:
             The inpoint where the video/stream was started at. In milliseconds.
             Normally 0 which it defaults to.
-        outMs:
+        out_ms:
           type: integer
           maximum: 2147483647
           minimum: -2147483648
@@ -2362,27 +2506,27 @@ components:
         description:
           type: string
           maxLength: 255
-        postalAddress:
+        postal_address:
           type: string
           nullable: true
           title: Postal address for organization.
           maxLength: 2048
-        streetAddress:
+        street_address:
           type: string
           nullable: true
           title: Street address for organization.
           maxLength: 2048
-        editorId:
+        editor_id:
           type: integer
           nullable: true
           readOnly: true
-        editorName:
+        editor_name:
           type: string
           readOnly: true
-        editorEmail:
+        editor_email:
           type: string
           readOnly: true
-        editorMsisdn:
+        editor_msisdn:
           type: string
           readOnly: true
         fkmember:
@@ -2421,28 +2565,28 @@ components:
           format: email
           readOnly: true
           title: Email address
-        firstName:
+        first_name:
           type: string
           maxLength: 30
-        lastName:
+        last_name:
           type: string
           maxLength: 30
-        dateJoined:
+        date_joined:
           type: string
           format: date-time
           readOnly: true
-        isStaff:
+        is_staff:
           type: string
           readOnly: true
-        dateOfBirth:
+        date_of_birth:
           type: string
           format: date
           nullable: true
-        phoneNumber:
+        phone_number:
           type: string
           description: Phone number at which this user can be reached
           maxLength: 128
-        organizationRoles:
+        organization_roles:
           type: string
           readOnly: true
         password:
@@ -2486,43 +2630,43 @@ components:
           type: integer
           readOnly: true
           description: Framerate of master video in thousands / second
-        properImport:
+        proper_import:
           type: boolean
-        hasTonoRecords:
+        has_tono_records:
           type: boolean
-        publishOnWeb:
+        publish_on_web:
           type: boolean
-        isFiller:
+        is_filler:
           type: boolean
           title: Play automatically?
           description:
             You still have the editorial responsibility.  Only affect videos
             from members.
-        refUrl:
+        ref_url:
           type: string
           description: URL for reference
           maxLength: 1024
-        createdTime:
+        created_time:
           type: string
           format: date-time
           readOnly: true
           nullable: true
           description: Time the program record was created
-        updatedTime:
+        updated_time:
           type: string
           format: date-time
           readOnly: true
           nullable: true
           description: Time the program record has been updated
-        uploadedTime:
+        uploaded_time:
           type: string
           format: date-time
           nullable: true
           description: Time the original video for the program was uploaded
-        ogvUrl:
+        ogv_url:
           type: string
           readOnly: true
-        largeThumbnailUrl:
+        large_thumbnail_url:
           type: string
           readOnly: true
     PatchedVideoFile:
@@ -2538,18 +2682,18 @@ components:
         filename:
           type: string
           maxLength: 256
-        createdTime:
+        created_time:
           type: string
           format: date-time
           readOnly: true
           nullable: true
           description: Time the video file was created
-        integratedLufs:
+        integrated_lufs:
           type: number
           format: double
           nullable: true
           title: Integrated LUFS of file defined in ITU R.128
-        truepeakLufs:
+        truepeak_lufs:
           type: number
           format: double
           nullable: true
@@ -2687,39 +2831,39 @@ components:
           format: email
           readOnly: true
           title: Email address
-        firstName:
+        first_name:
           type: string
           maxLength: 30
-        lastName:
+        last_name:
           type: string
           maxLength: 30
-        dateJoined:
+        date_joined:
           type: string
           format: date-time
           readOnly: true
-        isStaff:
+        is_staff:
           type: string
           readOnly: true
-        dateOfBirth:
+        date_of_birth:
           type: string
           format: date
           nullable: true
-        phoneNumber:
+        phone_number:
           type: string
           description: Phone number at which this user can be reached
           maxLength: 128
-        organizationRoles:
+        organization_roles:
           type: string
           readOnly: true
         password:
           type: string
           writeOnly: true
       required:
-        - dateJoined
+        - date_joined
         - email
         - id
-        - isStaff
-        - organizationRoles
+        - is_staff
+        - organization_roles
     Video:
       type: object
       properties:
@@ -2758,56 +2902,56 @@ components:
           type: integer
           readOnly: true
           description: Framerate of master video in thousands / second
-        properImport:
+        proper_import:
           type: boolean
-        hasTonoRecords:
+        has_tono_records:
           type: boolean
-        publishOnWeb:
+        publish_on_web:
           type: boolean
-        isFiller:
+        is_filler:
           type: boolean
           title: Play automatically?
           description:
             You still have the editorial responsibility.  Only affect videos
             from members.
-        refUrl:
+        ref_url:
           type: string
           description: URL for reference
           maxLength: 1024
-        createdTime:
+        created_time:
           type: string
           format: date-time
           readOnly: true
           nullable: true
           description: Time the program record was created
-        updatedTime:
+        updated_time:
           type: string
           format: date-time
           readOnly: true
           nullable: true
           description: Time the program record has been updated
-        uploadedTime:
+        uploaded_time:
           type: string
           format: date-time
           nullable: true
           description: Time the original video for the program was uploaded
-        ogvUrl:
+        ogv_url:
           type: string
           readOnly: true
-        largeThumbnailUrl:
+        large_thumbnail_url:
           type: string
           readOnly: true
       required:
         - categories
-        - createdTime
+        - created_time
         - files
         - framerate
         - id
-        - largeThumbnailUrl
+        - large_thumbnail_url
         - name
-        - ogvUrl
+        - ogv_url
         - organization
-        - updatedTime
+        - updated_time
     VideoCreate:
       type: object
       properties:
@@ -2844,55 +2988,55 @@ components:
           type: integer
           readOnly: true
           description: Framerate of master video in thousands / second
-        properImport:
+        proper_import:
           type: boolean
-        hasTonoRecords:
+        has_tono_records:
           type: boolean
-        publishOnWeb:
+        publish_on_web:
           type: boolean
-        isFiller:
+        is_filler:
           type: boolean
           title: Play automatically?
           description:
             You still have the editorial responsibility.  Only affect videos
             from members.
-        refUrl:
+        ref_url:
           type: string
           description: URL for reference
           maxLength: 1024
-        createdTime:
+        created_time:
           type: string
           format: date-time
           readOnly: true
           nullable: true
           description: Time the program record was created
-        updatedTime:
+        updated_time:
           type: string
           format: date-time
           readOnly: true
           nullable: true
           description: Time the program record has been updated
-        uploadedTime:
+        uploaded_time:
           type: string
           format: date-time
           nullable: true
           description: Time the original video for the program was uploaded
-        ogvUrl:
+        ogv_url:
           type: string
           readOnly: true
-        largeThumbnailUrl:
+        large_thumbnail_url:
           type: string
           readOnly: true
       required:
         - categories
-        - createdTime
+        - created_time
         - files
         - framerate
         - id
-        - largeThumbnailUrl
+        - large_thumbnail_url
         - name
-        - ogvUrl
-        - updatedTime
+        - ogv_url
+        - updated_time
     VideoFile:
       type: object
       properties:
@@ -2906,24 +3050,24 @@ components:
         filename:
           type: string
           maxLength: 256
-        createdTime:
+        created_time:
           type: string
           format: date-time
           readOnly: true
           nullable: true
           description: Time the video file was created
-        integratedLufs:
+        integrated_lufs:
           type: number
           format: double
           nullable: true
           title: Integrated LUFS of file defined in ITU R.128
-        truepeakLufs:
+        truepeak_lufs:
           type: number
           format: double
           nullable: true
           title: True peak LUFS of file defined in ITU R.128
       required:
-        - createdTime
+        - created_time
         - filename
         - format
         - id
@@ -2931,15 +3075,15 @@ components:
     VideoUploadToken:
       type: object
       properties:
-        uploadToken:
+        upload_token:
           type: string
           description: Video upload token (used by fkupload/frontend)
           maxLength: 32
-        uploadUrl:
+        upload_url:
           type: string
           readOnly: true
       required:
-        - uploadUrl
+        - upload_url
   securitySchemes:
     cookieAuth:
       type: apiKey

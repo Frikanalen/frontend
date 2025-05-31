@@ -1,5 +1,5 @@
 import { ScheduleitemsListParams } from "@/generated/frikanalenDjangoAPI.schemas";
-import { add, roundToNearestHours, sub } from "date-fns";
+// import { add, roundToNearestHours, sub } from "date-fns";
 import { useScheduleitemsList } from "@/generated/scheduleitems/scheduleitems";
 
 /**
@@ -9,13 +9,12 @@ import { useScheduleitemsList } from "@/generated/scheduleitems/scheduleitems";
  * re-render the component every time the value of "now" changes. Use support functions like
  * [use20PPM] to get a stable value.
  *
- * @param now
  */
-export const useLivePageScheduleItems = (now: Date) => {
+export const useLivePageScheduleItems = () => {
   // We round it slightly to make caching a little easier
   const livePageScheduleItems: ScheduleitemsListParams = {
-    starttimeAfter: roundToNearestHours(sub(now, { hours: 5 })).toISOString(),
-    starttimeBefore: roundToNearestHours(add(now, { hours: 8 })).toISOString(),
+    // starttime_after: roundToNearestHours(sub(now, { hours: 5 })).toISOString(),
+    // starttime_before: roundToNearestHours(add(now, { hours: 8 })).toISOString(),
     ordering: "starttime",
   };
 
