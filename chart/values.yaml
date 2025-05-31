@@ -1,0 +1,26 @@
+replicaCount: 1
+
+image:
+  repository: ghcr.io/frikanalen/frontend
+  pullPolicy: IfNotPresent
+  tag: main
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: true
+  className: traefik
+  certResolver: letsencrypt
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls: "true"
+  hosts:
+    - host: beta.frikanalen.no
+      paths:
+        - path: /
+          pathType: Prefix
+
+resources: {}
+
