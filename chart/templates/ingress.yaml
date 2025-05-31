@@ -27,5 +27,10 @@ spec:
                   number: {{ $.Values.service.port }}
           {{- end }}
     {{- end }}
+  tls:
+    - hosts:
+        {{- range .Values.ingress.hosts }}
+        - {{ .host }}
+        {{- end }}
 {{- end }}
 

@@ -3,8 +3,12 @@ name: Frontend build
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - 'chart/**'
   pull_request:
     branches: [main]
+    paths-ignore:
+      - 'chart/**'
 
 permissions:
   contents: read
