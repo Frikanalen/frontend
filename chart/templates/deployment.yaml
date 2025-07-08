@@ -20,7 +20,7 @@ spec:
           imagePullPolicy: Always
           env:
             - name: NEXT_PUBLIC_DJANGO_URL
-              value: https://beta.frikanalen.no/api
+              value: https://beta.frikanalen.no
           ports:
             - containerPort: 3000
 

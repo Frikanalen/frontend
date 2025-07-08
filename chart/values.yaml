@@ -6,7 +6,7 @@ image:
   tag: main
 
 django:
-  url: http://beta.frikanalen.no/api
+  url: http://beta.frikanalen.no
 
 service:
   type: ClusterIP
