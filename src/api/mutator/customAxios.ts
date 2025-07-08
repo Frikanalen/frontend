@@ -1,7 +1,8 @@
 import Axios, { AxiosError, AxiosRequestConfig } from "axios";
+import {env} from "@/lib/env";
 
 export const AXIOS_INSTANCE = Axios.create({
-  baseURL: "http://localhost:8000",
+  baseURL: env.NEXT_PUBLIC_DJANGO_URL,
 });
 
 export const customAxios = <T>(

@@ -5,6 +5,9 @@ image:
   pullPolicy: IfNotPresent
   tag: main
 
+django:
+  url: http://beta.frikanalen.no/api
+
 service:
   type: ClusterIP
   port: 80
