@@ -16,7 +16,7 @@ WORKDIR /app
 # FIXME: Should probably not be building in Docker anymore -
 #   it feels wrong hardcoding environment data like this,
 #   but next needs it at build time.
-ENV NEXT_PUBLIC_DJANGO_URL="https://beta.frikanalen.no/api"
+ENV NEXT_PUBLIC_DJANGO_URL="https://beta.frikanalen.no"
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
