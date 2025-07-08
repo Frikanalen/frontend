@@ -13,6 +13,11 @@ RUN yarn install --frozen-lockfile
 FROM node:22-alpine AS builder
 WORKDIR /app
 
+# FIXME: Should probably not be building in Docker anymore -
+#   it feels wrong hardcoding environment data like this,
+#   but next needs it at build time.
+ENV NEXT_PUBLIC_DJANGO_URL="https://beta.frikanalen.no/api"
+
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
