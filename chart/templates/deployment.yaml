@@ -17,7 +17,7 @@ spec:
       containers:
         - name: frontend
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          imagePullPolicy: Always
           env:
             - name: NEXT_PUBLIC_DJANGO_URL
               value: https://beta.frikanalen.no/api
