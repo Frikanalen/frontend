@@ -23,7 +23,7 @@ COPY . .
 ARG NEXT_PUBLIC_DJANGO_URL
 
 ENV NEXT_PUBLIC_DJANGO_URL=$NEXT_PUBLIC_DJANGO_URL
-RUN yarn orval
+
 RUN yarn build
 
 # Final runtime image
