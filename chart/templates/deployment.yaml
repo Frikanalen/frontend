@@ -16,10 +16,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: "{{ .Values.image.repository }}:latest"
-          env:
-            - name: NEXT_PUBLIC_DJANGO_URL
-              value: https://beta.frikanalen.no
+          image: "{{ .Values.image.repository }}"
           ports:
             - containerPort: 3000
 
