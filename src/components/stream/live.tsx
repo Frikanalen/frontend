@@ -46,6 +46,9 @@ export const Live = () => {
       />
       <Card className={"bg-gray-500/10 dark:bg-green-900 rounded-lg"}>
         <CardBody className={"flex flex-col gap-4"}>
+          <p>
+            <em>Medlemmet er ansvarlig for innholdet i deres sendinger.</em>
+          </p>
           <VideoBlurb video={currentProgram.video} />
         </CardBody>
       </Card>
