@@ -3,13 +3,14 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { HeaderNavMenu as HeaderNavMenu } from "../components/HeaderNavMenu";
 import { Logo } from "@/components/Logo";
+import { Providers } from "@/app/providers";
+import { ReactNode } from "react";
+import { Footer } from "@/components/layout/Footer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
 });
-import { Providers } from "@/app/providers";
-import { ReactNode } from "react";
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
@@ -41,7 +42,7 @@ export default function RootLayout({
               <HeaderNavMenu className="py-3" />
             </header>
             <div className="w-full max-w-3xl grow">{children}</div>
-            <footer>Footer.</footer>
+            <Footer />
           </div>
         </Providers>
       </body>

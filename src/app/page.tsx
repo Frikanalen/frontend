@@ -1,12 +1,9 @@
-import {Live} from "@/app/live";
-
+import { Live } from "@/components/stream/live";
 
 export default function Home() {
-    return (
-        <main>
-            <Live />
-        </main>
-    );
+  return (
+    <main>
+      <Live />
+    </main>
+  );
 }
-
-
