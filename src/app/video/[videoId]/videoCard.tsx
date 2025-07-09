@@ -10,8 +10,8 @@ export const VideoCard = ({ video }: { video: Video }) => {
       <h1 className={"font-bold text-2xl pb-4"}>{video.name}</h1>
       <VideoPlayer
         title={video.name}
-        src={video.ogv_url}
-        poster={video.large_thumbnail_url}
+        src={video.ogvUrl}
+        poster={video.largeThumbnailUrl}
       />
       <Card>
         <CardHeader>
