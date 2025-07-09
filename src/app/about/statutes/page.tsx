@@ -1,7 +1,6 @@
 import React from "react";
 import { Metadata } from "next";
-import { Card, CardBody, CardHeader } from "@heroui/react";
-import { PageLayout } from "@/app/about/pageLayout";
+import { AdvarselKort } from "@/app/about/statutes/AdvarselKort";
 
 export const metadata: Metadata = {
   title: "Vedtekter",
@@ -10,25 +9,13 @@ export const metadata: Metadata = {
 
 export default function About() {
   return (
-    <PageLayout>
+    <>
       <h1 className={"text-4xl font-black pb-6"}>
         Vedtekter for Foreningen Frikanalen
       </h1>
 
-      <Card className={"mb-4"}>
-        <CardHeader>
-          <h2 className={"text-lg font-bold"}>
-            NB: Dette dokumentet er ikke ajourført.
-          </h2>
-        </CardHeader>
-        <CardBody>
-          Under årsmøtet 2021 ble det vedtatt å endre styrets medlemmer, disse
-          endringene er ikke ennå flettet inn. I tillegg ble det under årsmøtet
-          2025 oppdaget at vedtektene av 2021 er selvmotstridende, og det ble
-          enstemmig vedtatt at et ekstraordinært årsmøte skal avholdes snarlig
-          for å harmonisere disse.
-        </CardBody>
-      </Card>
+      <AdvarselKort />
+
       <div className="prose dark:prose-invert prose-lg">
         <p>
           Vedtatt på stiftelsesmøtet 14. juni 2007. Revidert av Årsmøtet 4.
@@ -232,6 +219,6 @@ export default function About() {
           disponible midler og eiendeler skal fordeles.
         </p>
       </div>
-    </PageLayout>
+    </>
   );
 }
