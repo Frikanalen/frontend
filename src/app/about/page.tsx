@@ -4,7 +4,7 @@ import { AccordionLink } from "@/app/about/statutes/accordionLink";
 import React from "react";
 
 export const metadata: Metadata = {
-  title: "Om",
+  title: "Om Frikanalen",
   description: "Informasjon om Frikanalen og hvordan du kan bli medlem",
 };
 
@@ -16,6 +16,14 @@ export default function About() {
         <br /> sivilsamfunnets videoplatform.
       </h1>
       <div className="prose dark:prose-invert prose-lg">
+        <div>
+          <p>
+            «Målet med Frikanalen er å styrke ytringsfrihet og
+            deltakerdemokratiet ved å gi flere mulighet til å ytre seg i
+            TV-mediet»
+          </p>
+          <p className={"text-right"}>&mdash; Frikanalens formålsparagraf</p>
+        </div>
         <p>
           Vi ønsker i samarbeid med våre medlemsorganisasjoner utvikle en
           videoplattform uten forhåndssensur, tilrettelagt for behovene til
