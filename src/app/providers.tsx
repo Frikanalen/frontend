@@ -14,7 +14,7 @@ export const Providers = ({ children }: Readonly<{ children: ReactNode }>) => {
   return (
     <QueryClientProvider client={queryClient}>
       <HeroUIProvider navigate={router.push}>
-        <NextThemesProvider attribute="class" defaultTheme="dark">
+        <NextThemesProvider attribute="class" defaultTheme="light">
           {children}
         </NextThemesProvider>
       </HeroUIProvider>
