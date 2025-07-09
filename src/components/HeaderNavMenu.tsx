@@ -6,7 +6,7 @@ import { NavLink } from "@/components/NavLink";
 import Link from "next/link";
 
 export const HeaderNavMenu = ({ className }: { className?: string }) => (
-  <Navbar className={className}>
+  <Navbar className={className} isBlurred={false}>
     <NavbarContent>
       <NavLink href="/">Direkte</NavLink>
       <NavLink href="/archive">Mediatek</NavLink>
