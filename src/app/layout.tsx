@@ -33,7 +33,7 @@ export default function RootLayout({
         <title>Frikanalen</title>
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-green-50 dark:bg-green-950`}
       >
         <Providers>
           <div className="flex flex-col items-center min-h-screen">

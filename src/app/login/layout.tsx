@@ -1,6 +1,6 @@
 import React from "react";
 import cx from "classnames";
-export const PageLayout = ({
+const Layout = ({
   children,
   className,
 }: {
@@ -16,3 +16,5 @@ export const PageLayout = ({
     {children}
   </main>
 );
+
+export default Layout;

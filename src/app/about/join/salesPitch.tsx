@@ -2,7 +2,7 @@
 import { Button } from "@heroui/react";
 
 export const SalesPitch = () => (
-  <div className="max-w-lg">
+  <div className="w-full">
     <p>Ved å melde din organisasjon inn i Frikanalen, får du:</p>
     <ul>
       <li>Lagre videoinnhold i et reklamefritt arkiv tilgjengelig for alle</li>
@@ -10,7 +10,7 @@ export const SalesPitch = () => (
       <li>Stemmerett ved Foreningen Frikanalens møter</li>
     </ul>
     <div className={"ml-auto w-fit"}>
-      <Button className={"bg-green-200 "}>Bli med!</Button>
+      <Button className={"bg-green-200/80 rounded-md "}>Bli med!</Button>
     </div>
   </div>
 );

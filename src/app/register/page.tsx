@@ -1,15 +1,15 @@
 "use client";
 
 import { Card, CardBody, CardHeader } from "@heroui/react";
-import { PageLayout } from "@/app/about/pageLayout";
+import { Layout } from "@/app/about/layout";
 
 export default function Register() {
   return (
-    <PageLayout>
+    <Layout>
       <Card>
         <CardHeader>Registrering</CardHeader>
         <CardBody>Hello</CardBody>
       </Card>
-    </PageLayout>
+    </Layout>
   );
 }

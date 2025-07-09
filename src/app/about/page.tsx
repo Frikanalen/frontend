@@ -2,7 +2,6 @@ import { Metadata } from "next";
 import { AccordionLinkGroup } from "@/app/about/statutes/accordionLinkGroup";
 import { AccordionLink } from "@/app/about/statutes/accordionLink";
 import React from "react";
-import { PageLayout } from "@/app/about/pageLayout";
 
 export const metadata: Metadata = {
   title: "Om",
@@ -11,7 +10,7 @@ export const metadata: Metadata = {
 
 export default function About() {
   return (
-    <PageLayout className="space-y-10">
+    <div className="space-y-10">
       <h1 className={"text-4xl font-black"}>
         Frikanalen er
         <br /> sivilsamfunnets videoplatform.
@@ -30,12 +29,8 @@ export default function About() {
       </div>
       <AccordionLinkGroup>
         <AccordionLink href="/about/statutes">Våre vedtekter</AccordionLink>
-        <AccordionLink href="https://google.com">Vårt styre</AccordionLink>
-        <AccordionLink href="https://google.com">
-          Teknisk arbeidsgruppe
-        </AccordionLink>
-        <AccordionLink href="https://google.com">Bli med</AccordionLink>
+        <AccordionLink href="/about/join">Bli med</AccordionLink>
       </AccordionLinkGroup>
-    </PageLayout>
+    </div>
   );
 }
