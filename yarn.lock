@@ -1334,11 +1334,6 @@
   resolved "https://registry.yarnpkg.com/@heroui/use-scroll-position/-/use-scroll-position-2.1.8-beta.6.tgz#f8cb69c9cea7f53a763a7671aeedf7344dc80dae"
   integrity sha512-7N9u65BBbqKrk/1nAVnWPslf+6iB6J2jeDGu6mTNPPCuro1kNR7Dzn8L92M/axODKbYDSByYAAC5bhAgmTVzuA==
 
-"@heroui/use-theme@2.1.10-beta.4":
-  version "2.1.10-beta.4"
-  resolved "https://registry.yarnpkg.com/@heroui/use-theme/-/use-theme-2.1.10-beta.4.tgz#4b568b6cbe6bad1c6e85c33af45e25f645933b62"
-  integrity sha512-rujlh103MSKgOjdayfJlZE6q2gnI8y+bk/3oSBeKPlNocb/3En/hC106SwDO5Ju5YN2SQ9Rl8N9wq+Wx3gQKug==
-
 "@heroui/use-viewport-size@2.0.0-beta.3":
   version "2.0.0-beta.3"
   resolved "https://registry.yarnpkg.com/@heroui/use-viewport-size/-/use-viewport-size-2.0.0-beta.3.tgz#e2afc5721006192e7b2e41c407e7d2b5e87fe166"

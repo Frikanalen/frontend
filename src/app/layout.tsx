@@ -27,7 +27,7 @@ export default function RootLayout({
   children: ReactNode;
 }>) {
   return (
-    <html lang="en" className="light" style={{ colorScheme: "light" }}>
+    <html lang="no" suppressHydrationWarning>
       <head>
         <title>Frikanalen</title>
       </head>

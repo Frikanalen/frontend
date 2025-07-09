@@ -3,9 +3,10 @@
 
 import { useEffect, useState } from "react";
 import { Switch } from "@heroui/react";
-import { useTheme } from "@heroui/use-theme";
+
 import { SunIcon } from "@/components/SunIcon";
 import { MoonIcon } from "@/components/MoonIcon";
+import {useTheme} from "next-themes";
 
 export const ThemeSwitcherBrowser = () => {
   const [mounted, setMounted] = useState(false);
