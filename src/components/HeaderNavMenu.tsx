@@ -9,7 +9,6 @@ export const HeaderNavMenu = ({ className }: { className?: string }) => (
   <Navbar className={className} isBlurred={false}>
     <NavbarContent>
       <NavLink href="/">Direkte</NavLink>
-      <NavLink href="/archive">Mediatek</NavLink>
       <NavLink href="/schedule">Sendeplan</NavLink>
       <NavLink href="/about">Om oss</NavLink>
     </NavbarContent>
