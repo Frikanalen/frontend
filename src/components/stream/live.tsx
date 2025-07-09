@@ -34,7 +34,7 @@ export const Live = () => {
   if (!currentProgram) return null;
   return (
     <div className="flex flex-col gap-4">
-      <Card className={"bg-gray-500/10 dark:bg-green-900 rounded-lg"}>
+      <Card className={"bg-green-200/30 dark:bg-green-900 rounded-lg"}>
         <CardBody className={"space-y-1"}>
           <CurrentItem item={currentProgram} />
           <NextItem item={nextProgram} />
@@ -44,7 +44,7 @@ export const Live = () => {
         title="Frikanalen direkte"
         src="https://frikanalen.no/stream/index.m3u8"
       />
-      <Card className={"bg-gray-500/10 dark:bg-green-900 rounded-lg"}>
+      <Card className={"bg-green-200/15  dark:bg-green-900 rounded-lg"}>
         <CardBody className={"flex flex-col gap-4"}>
           <p>
             <em>Medlemmet er ansvarlig for innholdet i deres sendinger.</em>
