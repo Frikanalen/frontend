@@ -13,7 +13,7 @@ const Join = () => (
     <SalesPitch />
     <h4>Medlemskontingent</h4>
     <p>Kontingent settes etter organisasjonens omsetning.</p>
-    <table className={"max-w-lg"}>
+    <table className={"max-w-none"}>
       <thead>
         <tr>
           <th>Omsetning</th>

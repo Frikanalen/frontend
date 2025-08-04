@@ -15,7 +15,7 @@ export default function About() {
         Frikanalen er
         <br /> sivilsamfunnets videoplatform.
       </h1>
-      <div className="prose dark:prose-invert prose-lg">
+      <div className="prose dark:prose-invert prose-lg max-w-none">
         <div>
           <p>
             «Målet med Frikanalen er å styrke ytringsfrihet og

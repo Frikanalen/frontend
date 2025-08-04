@@ -79,7 +79,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AsRun'
+              $ref: '#/components/schemas/AsRunRequest'
       responses:
         '201':
           description: ''
@@ -151,7 +151,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AsRun'
+              $ref: '#/components/schemas/AsRunRequest'
       responses:
         '200':
           description: ''
@@ -189,7 +189,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PatchedAsRun'
+              $ref: '#/components/schemas/PatchedAsRunRequest'
       responses:
         '200':
           description: ''
@@ -272,7 +272,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Category'
+              $ref: '#/components/schemas/CategoryRequest'
       responses:
         '201':
           description: ''
@@ -325,7 +325,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Category'
+              $ref: '#/components/schemas/CategoryRequest'
       responses:
         '200':
           description: ''
@@ -353,7 +353,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PatchedCategory'
+              $ref: '#/components/schemas/PatchedCategoryRequest'
       responses:
         '200':
           description: ''
@@ -428,7 +428,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Bulletin'
+              $ref: '#/components/schemas/BulletinRequest'
       responses:
         '201':
           description: ''
@@ -477,7 +477,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Bulletin'
+              $ref: '#/components/schemas/BulletinRequest'
       responses:
         '200':
           description: ''
@@ -503,7 +503,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PatchedBulletin'
+              $ref: '#/components/schemas/PatchedBulletinRequest'
       responses:
         '200':
           description: ''
@@ -534,20 +534,27 @@ paths:
       tags:
         - news
   /api/obtain-token:
-    get:
-      operationId: obtain_token_retrieve
+    post:
+      operationId: obtain_token_create
       description: |-
-        Get a token you can use as a header instead of basic auth.
-
-        Use the header with HTTP like:
-            Authorization: Token 000000000000...
+        If we don't restrict this to JSON-only, the Python generated
+        code tries to both send form-multipart and JSON.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthTokenRequest'
       responses:
         '200':
           description: ''
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Token'
+                $ref: '#/components/schemas/AuthToken'
+      security:
+        - tokenAuth: []
+        - cookieAuth: []
       tags:
         - obtain-token
   /api/organization/:
@@ -591,7 +598,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Organization'
+              $ref: '#/components/schemas/OrganizationRequest'
       responses:
         '201':
           description: ''
@@ -642,7 +649,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Organization'
+              $ref: '#/components/schemas/OrganizationRequest'
       responses:
         '200':
           description: ''
@@ -669,7 +676,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PatchedOrganization'
+              $ref: '#/components/schemas/PatchedOrganizationRequest'
       responses:
         '200':
           description: ''
@@ -706,23 +713,25 @@ paths:
       description: |-
         Video events schedule
 
+        list:
         Query parameters
         ----------------
+        `date`: YYYY-MM-DD or 'today' (Europe/Oslo). Defaults to today.
 
-        `date` - Date expressed in the format YYYY-MM-DD (eg. 2020-12-31), or
-                 "today".  Default is today, Europe/Oslo time.
+        `days`: Number of days. Defaults to 1.
 
-        `days` - Number of days schedule requested. Default is 7 days.
+        `surrounding`: Include event before and after the window.
 
-        `page_size` - How many items per page. If set to 0 it will list
-                      all items.  Default is 50 items.
-
-        `surrounding` - Fetch the first event before and after the given
-                        period
-
-        `ordering` - Order results by specified field.  Prepend a minus for
-                     descending order.  I.e. `?ordering=-starttime`.
+        `ordering`: Field to order by. Prefix '-' for desc. Defaults to 'starttime'.
       parameters:
+        - name: date
+          in: query
+          schema:
+            type: string
+        - name: days
+          in: query
+          schema:
+            type: number
         - name: limit
           in: query
           description: Number of results to return per page.
@@ -741,6 +750,10 @@ paths:
           required: false
           schema:
             type: string
+        - name: surrounding
+          in: query
+          schema:
+            type: boolean
       responses:
         '200':
           description: ''
@@ -749,8 +762,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedScheduleitemReadList'
       security:
-        - cookieAuth: []
         - tokenAuth: []
+        - cookieAuth: []
       tags:
         - scheduleitems
     post:
@@ -758,28 +771,22 @@ paths:
       description: |-
         Video events schedule
 
+        list:
         Query parameters
         ----------------
+        `date`: YYYY-MM-DD or 'today' (Europe/Oslo). Defaults to today.
 
-        `date` - Date expressed in the format YYYY-MM-DD (eg. 2020-12-31), or
-                 "today".  Default is today, Europe/Oslo time.
+        `days`: Number of days. Defaults to 1.
 
-        `days` - Number of days schedule requested. Default is 7 days.
+        `surrounding`: Include event before and after the window.
 
-        `page_size` - How many items per page. If set to 0 it will list
-                      all items.  Default is 50 items.
-
-        `surrounding` - Fetch the first event before and after the given
-                        period
-
-        `ordering` - Order results by specified field.  Prepend a minus for
-                     descending order.  I.e. `?ordering=-starttime`.
+        `ordering`: Field to order by. Prefix '-' for desc. Defaults to 'starttime'.
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ScheduleitemModify'
+              $ref: '#/components/schemas/ScheduleitemModifyRequest'
       responses:
         '201':
           description: ''
@@ -788,21 +795,33 @@ paths:
               schema:
                 $ref: '#/components/schemas/ScheduleitemModify'
       security:
-        - cookieAuth: []
         - tokenAuth: []
+        - cookieAuth: []
       tags:
         - scheduleitems
-  '/api/scheduleitems/{id}':
+  '/api/scheduleitems/{id}/':
     get:
       operationId: scheduleitems_retrieve
-      description: Schedule item details
+      description: |-
+        Video events schedule
+
+        list:
+        Query parameters
+        ----------------
+        `date`: YYYY-MM-DD or 'today' (Europe/Oslo). Defaults to today.
+
+        `days`: Number of days. Defaults to 1.
+
+        `surrounding`: Include event before and after the window.
+
+        `ordering`: Field to order by. Prefix '-' for desc. Defaults to 'starttime'.
       parameters:
         - name: id
           in: path
+          description: A unique integer value identifying this TX schedule entry.
           required: true
           schema:
-            type: string
-            pattern: ^\d+$
+            type: integer
       responses:
         '200':
           description: ''
@@ -811,26 +830,38 @@ paths:
               schema:
                 $ref: '#/components/schemas/ScheduleitemRead'
       security:
-        - cookieAuth: []
         - tokenAuth: []
+        - cookieAuth: []
       tags:
         - scheduleitems
     put:
       operationId: scheduleitems_update
-      description: Schedule item details
+      description: |-
+        Video events schedule
+
+        list:
+        Query parameters
+        ----------------
+        `date`: YYYY-MM-DD or 'today' (Europe/Oslo). Defaults to today.
+
+        `days`: Number of days. Defaults to 1.
+
+        `surrounding`: Include event before and after the window.
+
+        `ordering`: Field to order by. Prefix '-' for desc. Defaults to 'starttime'.
       parameters:
         - name: id
           in: path
+          description: A unique integer value identifying this TX schedule entry.
           required: true
           schema:
-            type: string
-            pattern: ^\d+$
+            type: integer
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ScheduleitemModify'
+              $ref: '#/components/schemas/ScheduleitemModifyRequest'
       responses:
         '200':
           description: ''
@@ -839,53 +870,77 @@ paths:
               schema:
                 $ref: '#/components/schemas/ScheduleitemModify'
       security:
-        - cookieAuth: []
         - tokenAuth: []
+        - cookieAuth: []
       tags:
         - scheduleitems
     patch:
       operationId: scheduleitems_partial_update
-      description: Schedule item details
+      description: |-
+        Video events schedule
+
+        list:
+        Query parameters
+        ----------------
+        `date`: YYYY-MM-DD or 'today' (Europe/Oslo). Defaults to today.
+
+        `days`: Number of days. Defaults to 1.
+
+        `surrounding`: Include event before and after the window.
+
+        `ordering`: Field to order by. Prefix '-' for desc. Defaults to 'starttime'.
       parameters:
         - name: id
           in: path
+          description: A unique integer value identifying this TX schedule entry.
           required: true
           schema:
-            type: string
-            pattern: ^\d+$
+            type: integer
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PatchedScheduleitemRead'
+              $ref: '#/components/schemas/PatchedScheduleitemModifyRequest'
       responses:
         '200':
           description: ''
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ScheduleitemRead'
+                $ref: '#/components/schemas/ScheduleitemModify'
       security:
-        - cookieAuth: []
         - tokenAuth: []
+        - cookieAuth: []
       tags:
         - scheduleitems
     delete:
       operationId: scheduleitems_destroy
-      description: Schedule item details
+      description: |-
+        Video events schedule
+
+        list:
+        Query parameters
+        ----------------
+        `date`: YYYY-MM-DD or 'today' (Europe/Oslo). Defaults to today.
+
+        `days`: Number of days. Defaults to 1.
+
+        `surrounding`: Include event before and after the window.
+
+        `ordering`: Field to order by. Prefix '-' for desc. Defaults to 'starttime'.
       parameters:
         - name: id
           in: path
+          description: A unique integer value identifying this TX schedule entry.
           required: true
           schema:
-            type: string
-            pattern: ^\d+$
+            type: integer
       responses:
         '204':
           description: No response body
       security:
-        - cookieAuth: []
         - tokenAuth: []
+        - cookieAuth: []
       tags:
         - scheduleitems
   /api/schema/:
@@ -897,159 +952,6 @@ paths:
         - YAML: application/vnd.oai.openapi
         - JSON: application/vnd.oai.openapi+json
       parameters:
-        - name: format
-          in: query
-          schema:
-            type: string
-            enum:
-              - json
-              - yaml
-        - name: lang
-          in: query
-          schema:
-            type: string
-            enum:
-              - af
-              - ar
-              - ar-dz
-              - ast
-              - az
-              - be
-              - bg
-              - bn
-              - br
-              - bs
-              - ca
-              - ckb
-              - cs
-              - cy
-              - da
-              - de
-              - dsb
-              - el
-              - en
-              - en-au
-              - en-gb
-              - eo
-              - es
-              - es-ar
-              - es-co
-              - es-mx
-              - es-ni
-              - es-ve
-              - et
-              - eu
-              - fa
-              - fi
-              - fr
-              - fy
-              - ga
-              - gd
-              - gl
-              - he
-              - hi
-              - hr
-              - hsb
-              - hu
-              - hy
-              - ia
-              - id
-              - ig
-              - io
-              - is
-              - it
-              - ja
-              - ka
-              - kab
-              - kk
-              - km
-              - kn
-              - ko
-              - ky
-              - lb
-              - lt
-              - lv
-              - mk
-              - ml
-              - mn
-              - mr
-              - ms
-              - my
-              - nb
-              - ne
-              - nl
-              - nn
-              - os
-              - pa
-              - pl
-              - pt
-              - pt-br
-              - ro
-              - ru
-              - sk
-              - sl
-              - sq
-              - sr
-              - sr-latn
-              - sv
-              - sw
-              - ta
-              - te
-              - tg
-              - th
-              - tk
-              - tr
-              - tt
-              - udm
-              - ug
-              - uk
-              - ur
-              - uz
-              - vi
-              - zh-hans
-              - zh-hant
-      responses:
-        '200':
-          description: ''
-          content:
-            application/json:
-              schema:
-                type: object
-                additionalProperties: {}
-            application/vnd.oai.openapi:
-              schema:
-                type: object
-                additionalProperties: {}
-            application/vnd.oai.openapi+json:
-              schema:
-                type: object
-                additionalProperties: {}
-            application/yaml:
-              schema:
-                type: object
-                additionalProperties: {}
-      security:
-        - tokenAuth: []
-        - cookieAuth: []
-        - {}
-      tags:
-        - schema
-  '/api/schema{format}':
-    get:
-      operationId: schema_formatted_retrieve
-      description: |-
-        OpenApi3 schema for this API. Format can be selected via content negotiation.
-
-        - YAML: application/vnd.oai.openapi
-        - JSON: application/vnd.oai.openapi+json
-      parameters:
-        - name: format
-          in: path
-          required: true
-          schema:
-            type: string
-            enum:
-              - .json
         - name: format
           in: query
           schema:
@@ -1210,7 +1112,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/User'
+              $ref: '#/components/schemas/UserRequest'
       responses:
         '200':
           description: ''
@@ -1230,7 +1132,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PatchedUser'
+              $ref: '#/components/schemas/PatchedUserRequest'
       responses:
         '200':
           description: ''
@@ -1285,7 +1187,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/NewUser'
+              $ref: '#/components/schemas/NewUserRequest'
       responses:
         '201':
           description: ''
@@ -1302,29 +1204,7 @@ paths:
   /api/videofiles/:
     get:
       operationId: videofiles_list
-      description: |-
-        Video file list
-
-        Query parameters
-        ----------------
-
-        HTTP parameters:
-
-        `video_id` - The (parent) video by ID
-
-        `created_time` - when this file entry was created.
-
-        `format__fsname` - the fileformat fsname for this file.
-
-        `integrated_lufs` (includes __gt, __gte, __lt, __lte, __isnull) the overall loudness of the file.
-
-        `truepeak_lufs` (includes __gt, __gte, __lt, __lte, __isnull) the overall loudness of the file.
-
-        `page_size` - How many items per page. If set to 0 it will list
-                      all items.  Default is 50 items.
-
-        `ordering` - Order results by specified field.  Prepend a minus for
-                     descending order.  I.e. `?ordering=-starttime`.
+      description: Video file list and detail endpoint.
       parameters:
         - name: created_time_after
           in: query
@@ -1338,37 +1218,32 @@ paths:
             format: date-time
         - name: format__fsname
           in: query
+          description: |-
+            * `large_thumb` - large_thumb
+            * `broadcast` - broadcast
+            * `vc1` - vc1
+            * `med_thumb` - med_thumb
+            * `small_thumb` - small_thumb
+            * `original` - original
+            * `theora` - theora
+            * `srt` - srt
+            * `cloudflare_id` - cloudflare_id
           schema:
             type: string
-        - name: integrated_lufs
-          in: query
-          schema:
-            type: number
-            format: float
-        - name: integrated_lufs__gt
-          in: query
-          schema:
-            type: number
-            format: float
-        - name: integrated_lufs__gte
-          in: query
-          schema:
-            type: number
-            format: float
+            enum:
+              - broadcast
+              - cloudflare_id
+              - large_thumb
+              - med_thumb
+              - original
+              - small_thumb
+              - srt
+              - theora
+              - vc1
         - name: integrated_lufs__isnull
           in: query
           schema:
             type: boolean
-        - name: integrated_lufs__lt
-          in: query
-          schema:
-            type: number
-            format: float
-        - name: integrated_lufs__lte
-          in: query
-          schema:
-            type: number
-            format: float
         - name: limit
           in: query
           description: Number of results to return per page.
@@ -1387,35 +1262,10 @@ paths:
           required: false
           schema:
             type: string
-        - name: truepeak_lufs
+        - name: video_id
           in: query
           schema:
-            type: number
-            format: float
-        - name: truepeak_lufs__gt
-          in: query
-          schema:
-            type: number
-            format: float
-        - name: truepeak_lufs__gte
-          in: query
-          schema:
-            type: number
-            format: float
-        - name: truepeak_lufs__isnull
-          in: query
-          schema:
-            type: boolean
-        - name: truepeak_lufs__lt
-          in: query
-          schema:
-            type: number
-            format: float
-        - name: truepeak_lufs__lte
-          in: query
-          schema:
-            type: number
-            format: float
+            type: integer
       responses:
         '200':
           description: ''
@@ -1430,35 +1280,13 @@ paths:
         - videofiles
     post:
       operationId: videofiles_create
-      description: |-
-        Video file list
-
-        Query parameters
-        ----------------
-
-        HTTP parameters:
-
-        `video_id` - The (parent) video by ID
-
-        `created_time` - when this file entry was created.
-
-        `format__fsname` - the fileformat fsname for this file.
-
-        `integrated_lufs` (includes __gt, __gte, __lt, __lte, __isnull) the overall loudness of the file.
-
-        `truepeak_lufs` (includes __gt, __gte, __lt, __lte, __isnull) the overall loudness of the file.
-
-        `page_size` - How many items per page. If set to 0 it will list
-                      all items.  Default is 50 items.
-
-        `ordering` - Order results by specified field.  Prepend a minus for
-                     descending order.  I.e. `?ordering=-starttime`.
+      description: Video file list and detail endpoint.
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/VideoFile'
+              $ref: '#/components/schemas/VideoFileRequest'
       responses:
         '201':
           description: ''
@@ -1474,7 +1302,7 @@ paths:
   '/api/videofiles/{id}':
     get:
       operationId: videofiles_retrieve
-      description: Video file details
+      description: Video file list and detail endpoint.
       parameters:
         - name: id
           in: path
@@ -1496,7 +1324,7 @@ paths:
         - videofiles
     put:
       operationId: videofiles_update
-      description: Video file details
+      description: Video file list and detail endpoint.
       parameters:
         - name: id
           in: path
@@ -1509,7 +1337,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/VideoFile'
+              $ref: '#/components/schemas/VideoFileRequest'
       responses:
         '200':
           description: ''
@@ -1524,7 +1352,7 @@ paths:
         - videofiles
     patch:
       operationId: videofiles_partial_update
-      description: Video file details
+      description: Video file list and detail endpoint.
       parameters:
         - name: id
           in: path
@@ -1536,7 +1364,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PatchedVideoFile'
+              $ref: '#/components/schemas/PatchedVideoFileRequest'
       responses:
         '200':
           description: ''
@@ -1551,7 +1379,7 @@ paths:
         - videofiles
     delete:
       operationId: videofiles_destroy
-      description: Video file details
+      description: Video file list and detail endpoint.
       parameters:
         - name: id
           in: path
@@ -1731,6 +1559,11 @@ paths:
           in: query
           schema:
             type: boolean
+        - name: q
+          in: query
+          description: Free-text search
+          schema:
+            type: string
         - name: ref_url
           in: query
           schema:
@@ -1829,7 +1662,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/VideoCreate'
+              $ref: '#/components/schemas/VideoCreateRequest'
       responses:
         '201':
           description: ''
@@ -1880,7 +1713,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Video'
+              $ref: '#/components/schemas/VideoRequest'
       responses:
         '200':
           description: ''
@@ -1907,7 +1740,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PatchedVideo'
+              $ref: '#/components/schemas/PatchedVideoRequest'
       responses:
         '200':
           description: ''
@@ -1998,6 +1831,58 @@ components:
           nullable: true
       required:
         - id
+    AsRunRequest:
+      type: object
+      properties:
+        video:
+          description: Points to the Video which was played if there is one. Can be empty if something other than a video was played. The field is mutually exclusive with `programName`.
+          type: integer
+          nullable: true
+        programName:
+          description: 'A free form text input saying what was played. If `video` is set, this field should not be set. Examples of where you''d use this field is e.g. when broadcasting live. Defaults to the empty string.'
+          type: string
+          maxLength: 160
+        playout:
+          description: The playout this entry corresponds with. This will almost always be 'main' which it defaults to.
+          type: string
+          maxLength: 255
+        playedAt:
+          description: Time when the playout started. Defaults to now.
+          type: string
+          format: date-time
+        inMs:
+          description: The inpoint where the video/stream was started at. In milliseconds. Normally 0 which it defaults to.
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        outMs:
+          description: 'The outpoint where the video/stream stopped. This would often be the duration of the video, or how long we live streamed a particular URL. Can be null (None) if this is ''currently happening''.'
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          nullable: true
+    AuthToken:
+      type: object
+      properties:
+        token:
+          type: string
+          readOnly: true
+      required:
+        - token
+    AuthTokenRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          minLength: 1
+          writeOnly: true
+        password:
+          type: string
+          minLength: 1
+          writeOnly: true
+      required:
+        - password
+        - username
     Bulletin:
       type: object
       properties:
@@ -2017,6 +1902,19 @@ components:
         - created
         - heading
         - id
+        - text
+    BulletinRequest:
+      type: object
+      properties:
+        heading:
+          type: string
+          maxLength: 80
+          minLength: 1
+        text:
+          type: string
+          minLength: 1
+      required:
+        - heading
         - text
     Category:
       type: object
@@ -2038,6 +1936,23 @@ components:
         - id
         - name
         - videocount
+    CategoryRequest:
+      type: object
+      properties:
+        id:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        name:
+          type: string
+          maxLength: 255
+          minLength: 1
+        desc:
+          type: string
+          maxLength: 255
+      required:
+        - id
+        - name
     NewUser:
       type: object
       properties:
@@ -2056,14 +1971,38 @@ components:
         dateOfBirth:
           type: string
           format: date
-        password:
-          type: string
-          writeOnly: true
+          nullable: true
       required:
-        - dateOfBirth
         - email
         - firstName
         - id
+        - lastName
+    NewUserRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 254
+          minLength: 1
+          title: Email address
+        firstName:
+          type: string
+          minLength: 1
+        lastName:
+          type: string
+          minLength: 1
+        dateOfBirth:
+          type: string
+          format: date
+          nullable: true
+        password:
+          type: string
+          minLength: 1
+          writeOnly: true
+      required:
+        - email
+        - firstName
         - lastName
         - password
     Organization:
@@ -2116,6 +2055,33 @@ components:
         - editorName
         - fkmember
         - id
+        - name
+    OrganizationRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 255
+          minLength: 1
+        homepage:
+          type: string
+          maxLength: 255
+          nullable: true
+          title: Link back to the organisation home page.
+        description:
+          type: string
+          maxLength: 255
+        postalAddress:
+          type: string
+          maxLength: 2048
+          nullable: true
+          title: Postal address for organization.
+        streetAddress:
+          type: string
+          maxLength: 2048
+          nullable: true
+          title: Street address for organization.
+      required:
         - name
     PaginatedAsRunList:
       type: object
@@ -2255,12 +2221,9 @@ components:
       required:
         - count
         - results
-    PatchedAsRun:
+    PatchedAsRunRequest:
       type: object
       properties:
-        id:
-          type: integer
-          readOnly: true
         video:
           description: Points to the Video which was played if there is one. Can be empty if something other than a video was played. The field is mutually exclusive with `programName`.
           type: integer
@@ -2288,22 +2251,17 @@ components:
           maximum: 2147483647
           minimum: -2147483648
           nullable: true
-    PatchedBulletin:
+    PatchedBulletinRequest:
       type: object
       properties:
-        id:
-          type: integer
-          readOnly: true
         heading:
           type: string
           maxLength: 80
+          minLength: 1
         text:
           type: string
-        created:
-          type: string
-          format: date-time
-          readOnly: true
-    PatchedCategory:
+          minLength: 1
+    PatchedCategoryRequest:
       type: object
       properties:
         id:
@@ -2313,21 +2271,17 @@ components:
         name:
           type: string
           maxLength: 255
+          minLength: 1
         desc:
           type: string
           maxLength: 255
-        videocount:
-          type: string
-          readOnly: true
-    PatchedOrganization:
+    PatchedOrganizationRequest:
       type: object
       properties:
-        id:
-          type: integer
-          readOnly: true
         name:
           type: string
           maxLength: 255
+          minLength: 1
         homepage:
           type: string
           maxLength: 255
@@ -2346,30 +2300,12 @@ components:
           maxLength: 2048
           nullable: true
           title: Street address for organization.
-        editorId:
-          type: integer
-          nullable: true
-          readOnly: true
-        editorName:
-          type: string
-          readOnly: true
-        editorEmail:
-          type: string
-          readOnly: true
-        editorMsisdn:
-          type: string
-          readOnly: true
-        fkmember:
-          type: boolean
-          readOnly: true
-    PatchedScheduleitemRead:
+    PatchedScheduleitemModifyRequest:
       type: object
       properties:
-        id:
-          type: integer
-          readOnly: true
         video:
-          $ref: '#/components/schemas/ScheduleitemVideo'
+          type: integer
+          nullable: true
         schedulereason:
           allOf:
             - $ref: '#/components/schemas/SchedulereasonEnum'
@@ -2378,36 +2314,17 @@ components:
         starttime:
           type: string
           format: date-time
-        endtime:
-          type: string
-          format: date-time
-          readOnly: true
         duration:
           type: string
-    PatchedUser:
+    PatchedUserRequest:
       type: object
       properties:
-        id:
-          type: integer
-          readOnly: true
-        email:
-          type: string
-          format: email
-          readOnly: true
-          title: Email address
         firstName:
           type: string
           maxLength: 30
         lastName:
           type: string
           maxLength: 30
-        dateJoined:
-          type: string
-          format: date-time
-          readOnly: true
-        isStaff:
-          type: string
-          readOnly: true
         dateOfBirth:
           type: string
           format: date
@@ -2416,21 +2333,38 @@ components:
           description: Phone number at which this user can be reached
           type: string
           maxLength: 128
-        organizationRoles:
-          type: string
-          readOnly: true
         password:
           type: string
+          minLength: 1
           writeOnly: true
-    PatchedVideo:
+    PatchedVideoFileRequest:
       type: object
       properties:
-        id:
+        video:
           type: integer
-          readOnly: true
+        format:
+          type: integer
+        filename:
+          type: string
+          maxLength: 256
+          minLength: 1
+        integratedLufs:
+          type: number
+          format: double
+          nullable: true
+          title: Integrated LUFS of file defined in ITU R.128
+        truepeakLufs:
+          type: number
+          format: double
+          nullable: true
+          title: True peak LUFS of file defined in ITU R.128
+    PatchedVideoRequest:
+      type: object
+      properties:
         name:
           type: string
           maxLength: 255
+          minLength: 1
         header:
           type: string
           maxLength: 2048
@@ -2439,28 +2373,20 @@ components:
           type: string
           maxLength: 2048
           nullable: true
-        files:
-          type: string
-          readOnly: true
         creator:
           type: string
           format: email
+          minLength: 1
           title: Email address
-        organization:
-          allOf:
-            - $ref: '#/components/schemas/Organization'
-          readOnly: true
         duration:
           type: string
         categories:
           type: array
           items:
             type: string
-        framerate:
-          description: Framerate of master video in thousands / second
-          type: integer
-          readOnly: true
+            minLength: 1
         properImport:
+          description: Has the video been properly imported?
           type: boolean
         hasTonoRecords:
           type: boolean
@@ -2474,58 +2400,11 @@ components:
           description: URL for reference
           type: string
           maxLength: 1024
-        createdTime:
-          description: Time the program record was created
-          type: string
-          format: date-time
-          nullable: true
-          readOnly: true
-        updatedTime:
-          description: Time the program record has been updated
-          type: string
-          format: date-time
-          nullable: true
-          readOnly: true
         uploadedTime:
           description: Time the original video for the program was uploaded
           type: string
           format: date-time
           nullable: true
-        ogvUrl:
-          type: string
-          readOnly: true
-        largeThumbnailUrl:
-          type: string
-          readOnly: true
-    PatchedVideoFile:
-      type: object
-      properties:
-        id:
-          type: integer
-          readOnly: true
-        video:
-          type: integer
-        format:
-          type: integer
-        filename:
-          type: string
-          maxLength: 256
-        createdTime:
-          description: Time the video file was created
-          type: string
-          format: date-time
-          nullable: true
-          readOnly: true
-        integratedLufs:
-          type: number
-          format: double
-          nullable: true
-          title: Integrated LUFS of file defined in ITU R.128
-        truepeakLufs:
-          type: number
-          format: double
-          nullable: true
-          title: True peak LUFS of file defined in ITU R.128
     ScheduleitemModify:
       type: object
       properties:
@@ -2554,14 +2433,12 @@ components:
         - endtime
         - id
         - starttime
-    ScheduleitemRead:
+    ScheduleitemModifyRequest:
       type: object
       properties:
-        id:
-          type: integer
-          readOnly: true
         video:
-          $ref: '#/components/schemas/ScheduleitemVideo'
+          type: integer
+          nullable: true
         schedulereason:
           allOf:
             - $ref: '#/components/schemas/SchedulereasonEnum'
@@ -2570,14 +2447,43 @@ components:
         starttime:
           type: string
           format: date-time
-        endtime:
-          type: string
-          format: date-time
-          readOnly: true
         duration:
           type: string
       required:
         - duration
+        - starttime
+    ScheduleitemOrganization:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+        description:
+          type: string
+          readOnly: true
+      required:
+        - description
+        - id
+        - name
+    ScheduleitemRead:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        video:
+          $ref: '#/components/schemas/ScheduleitemVideo'
+        starttime:
+          type: string
+          format: date-time
+        endtime:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
         - endtime
         - id
         - starttime
@@ -2599,16 +2505,10 @@ components:
           type: string
           maxLength: 2048
           nullable: true
-        creator:
-          type: string
-          format: email
-          title: Email address
         organization:
           allOf:
-            - $ref: '#/components/schemas/Organization'
+            - $ref: '#/components/schemas/ScheduleitemOrganization'
           readOnly: true
-        duration:
-          type: string
         categories:
           type: array
           items:
@@ -2632,22 +2532,6 @@ components:
         - 3
         - 4
         - 5
-    Token:
-      type: object
-      properties:
-        created:
-          type: string
-          format: date-time
-          readOnly: true
-        key:
-          type: string
-          maxLength: 40
-        user:
-          type: integer
-      required:
-        - created
-        - key
-        - user
     User:
       type: object
       properties:
@@ -2683,15 +2567,33 @@ components:
         organizationRoles:
           type: string
           readOnly: true
-        password:
-          type: string
-          writeOnly: true
       required:
         - dateJoined
         - email
         - id
         - isStaff
         - organizationRoles
+    UserRequest:
+      type: object
+      properties:
+        firstName:
+          type: string
+          maxLength: 30
+        lastName:
+          type: string
+          maxLength: 30
+        dateOfBirth:
+          type: string
+          format: date
+          nullable: true
+        phoneNumber:
+          description: Phone number at which this user can be reached
+          type: string
+          maxLength: 128
+        password:
+          type: string
+          minLength: 1
+          writeOnly: true
     Video:
       type: object
       properties:
@@ -2710,7 +2612,9 @@ components:
           maxLength: 2048
           nullable: true
         files:
-          type: string
+          type: object
+          additionalProperties:
+            type: string
           readOnly: true
         creator:
           type: string
@@ -2731,6 +2635,7 @@ components:
           type: integer
           readOnly: true
         properImport:
+          description: Has the video been properly imported?
           type: boolean
         hasTonoRecords:
           type: boolean
@@ -2796,7 +2701,9 @@ components:
           maxLength: 2048
           nullable: true
         files:
-          type: string
+          type: object
+          additionalProperties:
+            type: string
           readOnly: true
         creator:
           type: string
@@ -2815,6 +2722,7 @@ components:
           type: integer
           readOnly: true
         properImport:
+          description: Has the video been properly imported?
           type: boolean
         hasTonoRecords:
           type: boolean
@@ -2861,11 +2769,69 @@ components:
         - name
         - ogvUrl
         - updatedTime
+    VideoCreateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 255
+          minLength: 1
+        header:
+          type: string
+          maxLength: 2048
+          nullable: true
+        description:
+          type: string
+          maxLength: 2048
+          nullable: true
+        creator:
+          type: string
+          format: email
+          minLength: 1
+          title: Email address
+        organization:
+          type: integer
+        duration:
+          type: string
+        categories:
+          type: array
+          items:
+            type: string
+            minLength: 1
+        properImport:
+          description: Has the video been properly imported?
+          type: boolean
+        hasTonoRecords:
+          type: boolean
+        publishOnWeb:
+          type: boolean
+        isFiller:
+          description: You still have the editorial responsibility.  Only affect videos from members.
+          type: boolean
+          title: Play automatically?
+        refUrl:
+          description: URL for reference
+          type: string
+          maxLength: 1024
+        uploadedTime:
+          description: Time the original video for the program was uploaded
+          type: string
+          format: date-time
+          nullable: true
+      required:
+        - categories
+        - name
     VideoFile:
       type: object
       properties:
         id:
           type: integer
+          readOnly: true
+        createdTime:
+          description: Time the video file was created
+          type: string
+          format: date-time
+          nullable: true
           readOnly: true
         video:
           type: integer
@@ -2874,12 +2840,6 @@ components:
         filename:
           type: string
           maxLength: 256
-        createdTime:
-          description: Time the video file was created
-          type: string
-          format: date-time
-          nullable: true
-          readOnly: true
         integratedLufs:
           type: number
           format: double
@@ -2896,6 +2856,81 @@ components:
         - format
         - id
         - video
+    VideoFileRequest:
+      type: object
+      properties:
+        video:
+          type: integer
+        format:
+          type: integer
+        filename:
+          type: string
+          maxLength: 256
+          minLength: 1
+        integratedLufs:
+          type: number
+          format: double
+          nullable: true
+          title: Integrated LUFS of file defined in ITU R.128
+        truepeakLufs:
+          type: number
+          format: double
+          nullable: true
+          title: True peak LUFS of file defined in ITU R.128
+      required:
+        - filename
+        - format
+        - video
+    VideoRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 255
+          minLength: 1
+        header:
+          type: string
+          maxLength: 2048
+          nullable: true
+        description:
+          type: string
+          maxLength: 2048
+          nullable: true
+        creator:
+          type: string
+          format: email
+          minLength: 1
+          title: Email address
+        duration:
+          type: string
+        categories:
+          type: array
+          items:
+            type: string
+            minLength: 1
+        properImport:
+          description: Has the video been properly imported?
+          type: boolean
+        hasTonoRecords:
+          type: boolean
+        publishOnWeb:
+          type: boolean
+        isFiller:
+          description: You still have the editorial responsibility.  Only affect videos from members.
+          type: boolean
+          title: Play automatically?
+        refUrl:
+          description: URL for reference
+          type: string
+          maxLength: 1024
+        uploadedTime:
+          description: Time the original video for the program was uploaded
+          type: string
+          format: date-time
+          nullable: true
+      required:
+        - categories
+        - name
     VideoUploadToken:
       type: object
       properties:

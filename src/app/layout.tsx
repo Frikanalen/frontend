@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
+import "@/styles/globals.css";
 import { HeaderNavMenu as HeaderNavMenu } from "../components/HeaderNavMenu";
 import { Logo } from "@/components/Logo";
 import { Providers } from "@/app/providers";
@@ -33,15 +33,17 @@ export default function RootLayout({
         <title>Frikanalen</title>
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-green-50 dark:bg-green-950`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background`}
       >
         <Providers>
-          <div className="flex flex-col items-center min-h-screen">
-            <header className="w-full max-w-3xl">
-              <Logo className="w-100 pt-10" />
-              <HeaderNavMenu className="py-3" />
+          <div className="flex flex-col items-center min-h-screen px-2">
+            <header className="w-full max-w-5xl">
+              <Logo className="w-100 pt-10 text-content3-foreground" />
+              <HeaderNavMenu className="my-8 rounded-xl" />
             </header>
-            <div className="w-full max-w-3xl grow">{children}</div>
+            <main className="text-content3-foreground bg-background w-full max-w-5xl grow">
+              {children}
+            </main>
             <Footer />
           </div>
         </Providers>

@@ -17,10 +17,13 @@ export const VideoPlayer = ({
   src: string;
   poster?: string;
 }) => (
-  <MediaPlayer title={title} src={src} className={"!border-0 !rounded-xl"}>
+  <MediaPlayer title={title} src={src} className={"!border-0 !rounded-none"}>
     {poster && <Poster src={poster} />}
     <MediaProvider />
-    <DefaultVideoLayout icons={defaultLayoutIcons} />
+    <DefaultVideoLayout
+      icons={defaultLayoutIcons}
+      className={"[&>div]:!rounded-none"}
+    />
   </MediaPlayer>
 );
 

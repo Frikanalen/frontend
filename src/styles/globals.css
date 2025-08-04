@@ -1,4 +1,12 @@
 @import "tailwindcss";
+
 @plugin "@tailwindcss/typography";
+
+@plugin '@vidstack/react/tailwind.cjs';
+@plugin '../app/hero.ts';
 @source '../../node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}';
 @custom-variant dark (&:is(.dark *));
+
+:root {
+    --tw-prose-headings: #f00 !important;
+}
