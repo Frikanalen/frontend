@@ -71,7 +71,7 @@ export const ScheduleNavBar = ({
     phase === 0 ? router.replace(PREV_URL) : setPhase((phase - 1) as 0 | 1 | 2);
 
   return (
-    <div className="bg-content1 text-content1-foreground p-4 rounded-lg h-max">
+    <div className="p-4 rounded-lg h-max">
       <div className="flex items-center gap-4 justify-between">
         <Button
           size={"sm"}
