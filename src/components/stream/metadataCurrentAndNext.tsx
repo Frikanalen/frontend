@@ -12,7 +12,7 @@ export const MetadataCurrentAndNext = ({
   const { currentProgram, nextProgram } = useScheduleCursor(schedule);
 
   return (
-    <Accordion itemClasses={{ indicator: "text-white/90" }}>
+    <Accordion itemClasses={{ indicator: "text-primary-foreground" }}>
       <AccordionItem
         key={"1"}
         title={
@@ -22,7 +22,7 @@ export const MetadataCurrentAndNext = ({
           </div>
         }
         subtitle={
-          <h4 className={"text-medium pl-12"}>
+          <h4 className={"text-medium pl-12 text-primary-700"}>
             av {currentProgram?.video.organization.name}
           </h4>
         }
@@ -42,7 +42,7 @@ export const MetadataCurrentAndNext = ({
           </div>
         }
         subtitle={
-          <h4 className={"text-medium pl-12"}>
+          <h4 className={"text-medium pl-12 text-primary-700"}>
             av {nextProgram?.video.organization.name}
           </h4>
         }

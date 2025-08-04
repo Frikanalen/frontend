@@ -11,16 +11,14 @@ const VideoPlayer = dynamic(() => import("@/components/stream/VideoPlayer"), {
 export const Live = ({ schedule }: { schedule: ScheduleitemRead[] }) => {
   return (
     <div className="flex flex-col gap-4">
-      <Card className={"bg-green-200/15  dark:bg-green-900 rounded-lg"}>
+      <Card className={"bg-primary-50 text-primary rounded-lg"}>
         <VideoPlayer
           title="Frikanalen direkte"
           src="https://frikanalen.no/stream/index.m3u8"
         />
         <CardBody>
-          <p className={"p-2"}>
-            <em>
-              Medlemmet er selv ansvarlig for innholdet i deres sendinger.
-            </em>
+          <p className={"p-2 text-foreground"}>
+            <em>Medlemmet er selv ansvarlig for innholdet i sine sendinger.</em>
           </p>
           <MetadataCurrentAndNext schedule={schedule} />
         </CardBody>

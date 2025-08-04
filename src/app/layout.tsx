@@ -33,17 +33,15 @@ export default function RootLayout({
         <title>Frikanalen</title>
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-radial from-primary-600/60 to-primary-50 dark:to-primary-foreground text-foreground`}
       >
         <Providers>
-          <div className="flex flex-col items-center min-h-screen px-2">
-            <header className="w-full max-w-5xl">
-              <Logo className="w-100 pt-10 text-content3-foreground" />
-              <HeaderNavMenu className="my-4 rounded-xl" />
+          <div className="flex flex-col items-center min-h-screen">
+            <header className="w-full max-w-5xl px-2">
+              <Logo className="w-100 pt-12" />
+              <HeaderNavMenu className="my-6 rounded-xl bg-background/80" />
             </header>
-            <main className="text-content3-foreground bg-background w-full max-w-5xl grow">
-              {children}
-            </main>
+            <main className="w-full max-w-5xl grow px-2">{children}</main>
             <Footer />
           </div>
         </Providers>

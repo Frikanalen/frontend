@@ -22,12 +22,14 @@ export const ScheduleUI = ({
   month: string;
   date: string;
   items: ScheduleitemRead[];
-}) => (
-  <>
-    <ScheduleNavBar year={year} month={month} date={date} />
-    <ScheduleItemList items={items} />
-  </>
-);
+}) => {
+  return (
+    <>
+      <ScheduleNavBar year={year} month={month} date={date} />
+      <ScheduleItemList items={items} />
+    </>
+  );
+};
 
 export const ScheduleNavBar = ({
   year,

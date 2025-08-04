@@ -14,7 +14,7 @@ export default async function Schedule({
   const results = data.data.results;
   if (!results) return null;
   return (
-    <section className="">
+    <section className="bg-background rounded-md shadow-lg p-4">
       <ScheduleUI year={year} month={month} date={date} items={results} />
     </section>
   );
