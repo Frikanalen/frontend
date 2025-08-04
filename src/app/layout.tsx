@@ -39,7 +39,7 @@ export default function RootLayout({
           <div className="flex flex-col items-center min-h-screen px-2">
             <header className="w-full max-w-5xl">
               <Logo className="w-100 pt-10 text-content3-foreground" />
-              <HeaderNavMenu className="my-8 rounded-xl" />
+              <HeaderNavMenu className="my-4 rounded-xl" />
             </header>
             <main className="text-content3-foreground bg-background w-full max-w-5xl grow">
               {children}

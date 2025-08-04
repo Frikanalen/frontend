@@ -19,8 +19,7 @@ export const Live = ({ schedule }: { schedule: ScheduleitemRead[] }) => {
         <CardBody>
           <p className={"p-2"}>
             <em>
-              Medlemmet er selv ansvarlig for innholdet i deres sendinger, og
-              forpliktet til å overholde vedtatte retningslinjer.
+              Medlemmet er selv ansvarlig for innholdet i deres sendinger.
             </em>
           </p>
           <MetadataCurrentAndNext schedule={schedule} />
