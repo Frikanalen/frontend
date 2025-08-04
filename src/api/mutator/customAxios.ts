@@ -1,21 +1,25 @@
-import Axios, { AxiosError, AxiosRequestConfig } from "axios";
-import {env} from "@/lib/env";
+import Axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from "axios";
+import { env } from "@/lib/env";
 
 export const AXIOS_INSTANCE = Axios.create({
   baseURL: env.NEXT_PUBLIC_DJANGO_URL,
+  xsrfCookieName: "csrftoken",
+  withXSRFToken: true,
+  xsrfHeaderName: "x-csrftoken",
+  withCredentials: true,
 });
 
 export const customAxios = <T>(
   config: AxiosRequestConfig,
   options?: AxiosRequestConfig,
-): Promise<T> => {
+): Promise<AxiosResponse<T>> => {
   const source = Axios.CancelToken.source();
 
   const promise = AXIOS_INSTANCE({
     ...config,
     ...options,
     cancelToken: source.token,
-  }).then(({ data }) => data);
+  });
 
   // @ts-expect-error not sure why this is necessary
   promise.cancel = () => {
