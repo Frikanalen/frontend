@@ -1159,9 +1159,20 @@ paths:
   /api/user/login:
     post:
       operationId: user_login_create
+      description: Sets a session cookie for the user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
       responses:
-        '200':
-          description: No response body
+        '201':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Login'
       security:
         - tokenAuth: []
         - cookieAuth: []
@@ -1953,6 +1964,30 @@ components:
       required:
         - id
         - name
+    Login:
+      type: object
+      properties:
+        username:
+          type: string
+          format: email
+        password:
+          type: string
+      required:
+        - password
+        - username
+    LoginRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          format: email
+          minLength: 1
+        password:
+          type: string
+          minLength: 1
+      required:
+        - password
+        - username
     NewUser:
       type: object
       properties:
