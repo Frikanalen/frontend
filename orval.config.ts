@@ -8,7 +8,12 @@ export default defineConfig({
       client: "react-query",
       mode: "tags-split",
       mock: true,
-      baseUrl: process.env.NEXT_PUBLIC_DJANGO_URL,
+      override: {
+        mutator: {
+          path: "./src/api/mutator/customAxios.ts",
+          name: "customAxios",
+        },
+      },
     },
     hooks: {
       afterAllFilesWrite: "prettier --write",
