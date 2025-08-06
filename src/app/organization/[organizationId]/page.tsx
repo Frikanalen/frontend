@@ -4,39 +4,53 @@ import Markdown from "markdown-to-jsx";
 import { Fragment } from "react";
 import { Organization } from "@/generated/frikanalenDjangoAPI.schemas";
 import { videosList } from "@/generated/videos/videos";
-import { VideoHorizontalList } from "@/app/organization/[organizationId]/VideoHorizontalList";
+import { userRetrieve } from "@/generated/user/user";
+import { getCookiesFromRequest } from "@/app/profile/getCookiesFromRequest";
+import { profileIsAdminOrMember } from "@/app/organization/[organizationId]/admin/profileIsAdminOrMember";
+import { AdminAlert } from "@/app/organization/[organizationId]/AdminAlert";
+import { VideoVerticalList } from "@/app/organization/[organizationId]/VideoVerticalList";
 
 const RecentVideos = async ({
   organization,
 }: {
   organization: Organization;
 }) => {
-  const res = await videosList({ organization: organization.id, limit: 15 });
+  const res = await videosList({ organization: organization.id, limit: 10 });
   const data = res.data;
   if (res.status != 200) throw new Error(res.statusText);
 
   return (
     <section>
       <div className="bg-content2 text-content2-foreground rounded-lg p-4">
-        <h3>Nyeste videoer for {organization.name}</h3>
-        <VideoHorizontalList videos={data.results} />
+        <h3 className={"pb-2 text-lg font-bold"}>
+          Nyeste videoer for {organization.name}
+        </h3>
+        <VideoVerticalList videos={data.results} />
       </div>
     </section>
   );
 };
+
 export default async function Page({
   params,
 }: {
   params: Promise<{ organizationId: string }>;
 }) {
   const { organizationId } = await params;
-  const res = await organizationRetrieve(organizationId);
-  const organization = res.data;
+  const headers = await getCookiesFromRequest();
+  const { data: organization } = await organizationRetrieve(organizationId, {
+    headers,
+  });
+  const { data: profile } = await userRetrieve({ headers });
+
+  const isAdmin = profileIsAdminOrMember(organizationId, profile);
+
   if (!organization.fkmember) return notFound();
+
   return (
-    <main className="w-full max-w-5xl grow px-2">
-      <section className={"space-y-4"}>
-        <div className="bg-content2 text-content2-foreground rounded-lg p-4 max-w-lg">
+    <main className="w-full max-w-5xl h-fit">
+      <div className="flex flex-row gap-4">
+        <div className="bg-content2 grow text-content2-foreground rounded-lg p-4 space-y-4">
           <h1 className={"text-xl"}>{organization.name}</h1>
           <h2>Redaktør {organization.editorName}</h2>
           <div className={"prose dark:prose-invert"}>
@@ -46,8 +60,11 @@ export default async function Page({
             </Markdown>
           </div>
         </div>
-        <RecentVideos organization={organization} />
-      </section>
+        <div className={"w-sm"}>
+          {isAdmin && <AdminAlert organizationId={organizationId} />}
+          <RecentVideos organization={organization} />
+        </div>
+      </div>
     </main>
   );
 }

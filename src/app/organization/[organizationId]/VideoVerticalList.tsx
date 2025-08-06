@@ -3,27 +3,25 @@ import { Video } from "@/generated/frikanalenDjangoAPI.schemas";
 import { Card, CardFooter, Image, ScrollShadow } from "@heroui/react";
 import Link from "next/link";
 
-export const VideoHorizontalList = ({ videos }: { videos: Video[] }) => {
+export const VideoVerticalList = ({ videos }: { videos: Video[] }) => {
   return (
     <ScrollShadow
-      className="w-full p-4 border-1 border-secondary-600/20 rounded-xl overflow-x-scroll"
-      orientation={"horizontal"}
+      className="p-4 border-1 border-secondary-600/20 rounded-xl overflow-y-scroll max-h-[700px]"
       hideScrollBar={false}
     >
-      <div className="flex flex-nowrap w-auto gap-4">
+      <div className="flex flex-col gap-4">
         {videos.map((video) => (
           <Card
             as={Link}
             key={video.id}
-            className="w-72 shrink-0"
+            className="shrink-0"
             href={`/video/${video.id}`}
           >
             <Image
               alt=""
-              className=""
+              className="aspect-video"
               src={video.largeThumbnailUrl}
-              width={288}
-              height={162}
+              width={"100%"}
             />
             <CardFooter
               className={
@@ -33,7 +31,6 @@ export const VideoHorizontalList = ({ videos }: { videos: Video[] }) => {
               }
             >
               <div className={""}>{video.name}</div>
-              {/*<pre>{JSON.stringify(video, null, 2)}</pre>*/}
             </CardFooter>
           </Card>
         ))}

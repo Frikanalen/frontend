@@ -17,12 +17,20 @@ export const VideoPlayer = ({
   src: string;
   poster?: string;
 }) => (
-  <MediaPlayer title={title} src={src} className={"!border-0 !rounded-none"}>
-    {poster && <Poster src={poster} />}
-    <MediaProvider />
+  <MediaPlayer
+    title={title}
+    src={src}
+    poster={poster}
+    aspectRatio="16/9"
+    className={"rounded-b-none! rounded-t-lg!"}
+  >
+    <MediaProvider>
+      <Poster className="vds-poster" src={poster} />
+    </MediaProvider>
     <DefaultVideoLayout
       icons={defaultLayoutIcons}
-      className={"[&>div]:!rounded-none"}
+      colorScheme={"system"}
+      className={"[&>*]:rounded-b-none! [&>*]:rounded-t-lg!"}
     />
   </MediaPlayer>
 );
