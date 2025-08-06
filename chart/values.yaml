@@ -2,7 +2,7 @@ replicaCount: 1
 
 deployment:
   image: ghcr.io/frikanalen/frontend
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
 
 django:
   url: http://beta.frikanalen.no
