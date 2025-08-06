@@ -4,8 +4,8 @@ import { env } from "@/lib/env";
 export const AXIOS_INSTANCE = Axios.create({
   baseURL: env.NEXT_PUBLIC_DJANGO_URL,
   xsrfCookieName: "csrftoken",
-  withXSRFToken: true,
   xsrfHeaderName: "x-csrftoken",
+  withXSRFToken: true,
   withCredentials: true,
 });
 

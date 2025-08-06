@@ -8,7 +8,7 @@ import { useUserLoginCreate } from "@/generated/user/user";
 import { useRouter } from "next/navigation";
 
 const UserLoginFormSchema = z.object({
-  username: z.string(),
+  email: z.string(),
   password: z.string(),
 });
 
@@ -20,17 +20,17 @@ export default function Login() {
   const { mutateAsync } = useUserLoginCreate();
 
   return (
-    <div className={"grid-cols-2 grid gap-4"}>
-      <div className={"space-y-4"}>
-        <h2 className={"text-lg font-bold"}>Logg inn</h2>
-        <Form
-          onSubmit={handleSubmit(async (data) =>
-            mutateAsync({ data }).then(() => router.push("/profile")),
-          )}
-        >
+    <div className={"grid-cols-2 grid gap-8"}>
+      <Form
+        onSubmit={handleSubmit(async (data) =>
+          mutateAsync({ data }).then(() => router.push("/profile")),
+        )}
+      >
+        <div className={"flex flex-col gap-4 w-full"}>
+          <h2 className={"text-lg font-bold"}>Logg inn</h2>
           <Controller
             control={control}
-            name={"username"}
+            name={"email"}
             render={({ field }) => (
               <Input
                 isRequired
@@ -56,8 +56,8 @@ export default function Login() {
           <Button className={"ml-auto"} type="submit">
             Logg inn
           </Button>
-        </Form>
-      </div>
+        </div>
+      </Form>
       <div className={"space-y-4 flex flex-col justify-between"}>
         <div className={"text-lg"}>...eller registrer deg</div>
         <div className={""}>

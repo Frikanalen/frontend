@@ -1967,18 +1967,18 @@ components:
     Login:
       type: object
       properties:
-        username:
+        email:
           type: string
           format: email
         password:
           type: string
       required:
+        - email
         - password
-        - username
     LoginRequest:
       type: object
       properties:
-        username:
+        email:
           type: string
           format: email
           minLength: 1
@@ -1986,8 +1986,8 @@ components:
           type: string
           minLength: 1
       required:
+        - email
         - password
-        - username
     NewUser:
       type: object
       properties:
@@ -2567,6 +2567,27 @@ components:
         - 3
         - 4
         - 5
+    SimpleOrg:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+      required:
+        - id
+        - name
+    SimpleOrgRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 255
+          minLength: 1
+      required:
+        - name
     User:
       type: object
       properties:
@@ -2578,19 +2599,29 @@ components:
           format: email
           readOnly: true
           title: Email address
+        isStaff:
+          type: string
+          readOnly: true
+        dateJoined:
+          type: string
+          format: date-time
+          readOnly: true
+        editorOf:
+          type: array
+          items:
+            $ref: '#/components/schemas/SimpleOrg'
+          readOnly: true
+        memberOf:
+          type: array
+          items:
+            $ref: '#/components/schemas/SimpleOrg'
+          readOnly: true
         firstName:
           type: string
           maxLength: 30
         lastName:
           type: string
           maxLength: 30
-        dateJoined:
-          type: string
-          format: date-time
-          readOnly: true
-        isStaff:
-          type: string
-          readOnly: true
         dateOfBirth:
           type: string
           format: date
@@ -2599,15 +2630,13 @@ components:
           description: Phone number at which this user can be reached
           type: string
           maxLength: 128
-        organizationRoles:
-          type: string
-          readOnly: true
       required:
         - dateJoined
+        - editorOf
         - email
         - id
         - isStaff
-        - organizationRoles
+        - memberOf
     UserRequest:
       type: object
       properties:

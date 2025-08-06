@@ -14,8 +14,10 @@ export default async function Schedule({
   const results = data.data.results;
   if (!results) return null;
   return (
-    <section className="bg-background rounded-md shadow-lg p-4">
-      <ScheduleUI year={year} month={month} date={date} items={results} />
-    </section>
+    <main className="w-full max-w-5xl grow px-2">
+      <section className="bg-background rounded-md shadow-lg p-4">
+        <ScheduleUI year={year} month={month} date={date} items={results} />
+      </section>
+    </main>
   );
 }

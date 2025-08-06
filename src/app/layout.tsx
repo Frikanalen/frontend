@@ -38,10 +38,12 @@ export default function RootLayout({
         <Providers>
           <div className="flex flex-col items-center min-h-screen">
             <header className="w-full max-w-5xl px-2">
-              <Logo className="w-100 pt-12" />
+              <Logo className="w-100 pt-12 text-default-foreground/80" />
               <HeaderNavMenu className="my-6 rounded-xl bg-background/80" />
             </header>
-            <main className="w-full max-w-5xl grow px-2">{children}</main>
+            <div className="flex grow flex-col w-full items-center">
+              {children}
+            </div>
             <Footer />
           </div>
         </Providers>

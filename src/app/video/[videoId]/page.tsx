@@ -10,5 +10,9 @@ export default async function VideoPage({
 
   const video = await getVideo(videoId);
 
-  return <VideoCard video={video} />;
+  return (
+    <main className="w-full max-w-5xl grow px-2">
+      <VideoCard video={video} />
+    </main>
+  );
 }

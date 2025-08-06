@@ -34,18 +34,20 @@ export default async function Page({
   const organization = res.data;
   if (!organization.fkmember) return notFound();
   return (
-    <section className={"space-y-4"}>
-      <div className="bg-content2 text-content2-foreground rounded-lg p-4 max-w-lg">
-        <h1 className={"text-xl"}>{organization.name}</h1>
-        <h2>Redaktør {organization.editorName}</h2>
-        <div className={"prose dark:prose-invert"}>
-          <Markdown options={{ wrapper: Fragment }}>
-            {organization.description ||
-              "*organisasjonen har ikke lagt opp en beskrivelse av seg selv*"}
-          </Markdown>
+    <main className="w-full max-w-5xl grow px-2">
+      <section className={"space-y-4"}>
+        <div className="bg-content2 text-content2-foreground rounded-lg p-4 max-w-lg">
+          <h1 className={"text-xl"}>{organization.name}</h1>
+          <h2>Redaktør {organization.editorName}</h2>
+          <div className={"prose dark:prose-invert"}>
+            <Markdown options={{ wrapper: Fragment }}>
+              {organization.description ||
+                "*organisasjonen har ikke lagt opp en beskrivelse av seg selv*"}
+            </Markdown>
+          </div>
         </div>
-      </div>
-      <RecentVideos organization={organization} />
-    </section>
+        <RecentVideos organization={organization} />
+      </section>
+    </main>
   );
 }
