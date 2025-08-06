@@ -7,7 +7,7 @@ import { Providers } from "@/app/providers";
 import { ReactNode } from "react";
 import { Footer } from "@/components/layout/Footer";
 import { getCookiesFromRequest } from "@/app/profile/getCookiesFromRequest";
-import { userRetrieve } from "@/generated/user/user";
+import { getUserOrNull } from "@/app/getUserOrNull";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,8 +30,7 @@ export default async function RootLayout({
   children: ReactNode;
 }>) {
   const headers = await getCookiesFromRequest();
-  const user = await userRetrieve({ headers });
-
+  const user = await getUserOrNull(headers);
   return (
     <html lang="no" suppressHydrationWarning>
       <head>
@@ -45,7 +44,7 @@ export default async function RootLayout({
             <header className="w-full max-w-5xl px-2">
               <Logo className="w-100 pt-12 text-default-foreground/80" />
               <HeaderNavMenu
-                user={user.data}
+                user={user}
                 className="my-6 rounded-xl bg-background/80"
               />
             </header>

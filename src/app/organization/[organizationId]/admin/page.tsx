@@ -1,9 +1,9 @@
 import { getCookiesFromRequest } from "@/app/profile/getCookiesFromRequest";
 import { organizationRetrieve } from "@/generated/organization/organization";
-import { userRetrieve } from "@/generated/user/user";
 import { OrgAdminPage } from "@/app/organization/[organizationId]/OrgAdminPage";
-import { forbidden, notFound, unauthorized } from "next/navigation";
+import { forbidden, notFound, redirect } from "next/navigation";
 import { profileIsAdminOrMember } from "@/app/organization/[organizationId]/admin/profileIsAdminOrMember";
+import { getUserOrNull } from "@/app/getUserOrNull";
 
 export default async function Page({
   params,
@@ -12,16 +12,14 @@ export default async function Page({
 }) {
   const { organizationId } = await params;
   const headers = await getCookiesFromRequest();
-  const orgRes = await organizationRetrieve(organizationId, { headers });
-  const profileRes = await userRetrieve({ headers });
+  const user = await getUserOrNull(headers);
+  if (!user) return redirect("/login");
 
+  const orgRes = await organizationRetrieve(organizationId, { headers });
   if (orgRes.status === 404) return notFound();
-  if (profileRes.status === 401) return unauthorized();
 
   const organization = orgRes.data;
-  const profile = profileRes.data;
+  if (!profileIsAdminOrMember(organizationId, user)) throw forbidden();
 
-  if (!profileIsAdminOrMember(organizationId, profile)) throw forbidden();
-
-  return <OrgAdminPage organization={organization} profile={profile} />;
+  return <OrgAdminPage organization={organization} profile={user} />;
 }

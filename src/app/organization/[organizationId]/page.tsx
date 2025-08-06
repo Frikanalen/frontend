@@ -4,11 +4,11 @@ import Markdown from "markdown-to-jsx";
 import { Fragment } from "react";
 import { Organization } from "@/generated/frikanalenDjangoAPI.schemas";
 import { videosList } from "@/generated/videos/videos";
-import { userRetrieve } from "@/generated/user/user";
 import { getCookiesFromRequest } from "@/app/profile/getCookiesFromRequest";
 import { profileIsAdminOrMember } from "@/app/organization/[organizationId]/admin/profileIsAdminOrMember";
 import { AdminAlert } from "@/app/organization/[organizationId]/AdminAlert";
 import { VideoVerticalList } from "@/app/organization/[organizationId]/VideoVerticalList";
+import { getUserOrNull } from "@/app/getUserOrNull";
 
 const RecentVideos = async ({
   organization,
@@ -41,7 +41,7 @@ export default async function Page({
   const { data: organization } = await organizationRetrieve(organizationId, {
     headers,
   });
-  const { data: profile } = await userRetrieve({ headers });
+  const profile = await getUserOrNull(headers);
 
   const isAdmin = profileIsAdminOrMember(organizationId, profile);
 
@@ -60,7 +60,7 @@ export default async function Page({
             </Markdown>
           </div>
         </div>
-        <div className={"w-sm"}>
+        <div className={"w-sm space-y-4"}>
           {isAdmin && <AdminAlert organizationId={organizationId} />}
           <RecentVideos organization={organization} />
         </div>

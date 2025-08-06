@@ -2,8 +2,8 @@ import { VideoCard } from "@/app/video/[videoId]/videoCard";
 import { getCookiesFromRequest } from "@/app/profile/getCookiesFromRequest";
 import { videosRetrieve } from "@/generated/videos/videos";
 import { notFound, redirect } from "next/navigation";
-import { userRetrieve } from "@/generated/user/user";
 import { profileIsAdminOrMember } from "@/app/organization/[organizationId]/admin/profileIsAdminOrMember";
+import { getUserOrNull } from "@/app/getUserOrNull";
 
 export default async function VideoPage({
   params,
@@ -14,7 +14,7 @@ export default async function VideoPage({
   const headers = await getCookiesFromRequest();
 
   const { data: video, status } = await videosRetrieve(videoId, { headers });
-  const { data: user } = await userRetrieve({ headers });
+  const user = await getUserOrNull(headers);
 
   const mayEdit = profileIsAdminOrMember(
     video.organization.id.toString(),

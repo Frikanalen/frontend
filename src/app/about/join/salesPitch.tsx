@@ -10,7 +10,9 @@ export const SalesPitch = () => (
       <li>Stemmerett ved Foreningen Frikanalens møter</li>
     </ul>
     <div className={"ml-auto w-fit"}>
-      <Button className={"bg-green-200/80 rounded-md "}>Bli med!</Button>
+      <Button color={"primary"} className={"rounded-md "}>
+        Bli med!
+      </Button>
     </div>
   </div>
 );

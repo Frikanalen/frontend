@@ -1,7 +1,8 @@
-import { userRetrieve } from "@/generated/user/user";
 import { OrgList } from "@/app/profile/OrgList";
 import { getCookiesFromRequest } from "@/app/profile/getCookiesFromRequest";
 import { ModalIshPrototype } from "@/app/profile/ModalIshPrototype";
+import { getUserOrNull } from "@/app/getUserOrNull";
+import { forbidden } from "next/navigation";
 
 /*
 ideally three cases here:
@@ -13,13 +14,13 @@ ideally three cases here:
  */
 
 export default async function Page() {
-  const { data } = await userRetrieve({
-    headers: await getCookiesFromRequest(),
-  });
+  const headers = await getCookiesFromRequest();
+  const user = await getUserOrNull(headers);
+  if (!user) return forbidden();
   return (
     <ModalIshPrototype>
       <h2 className={"text-lg font-bold pb-4"}>Brukerside</h2>
-      <OrgList memberOf={data.memberOf} editorOf={data.editorOf} />
+      <OrgList memberOf={user.memberOf} editorOf={user.editorOf} />
     </ModalIshPrototype>
   );
 }

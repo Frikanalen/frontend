@@ -10,7 +10,7 @@ export const HeaderNavMenu = ({
   user,
 }: {
   className?: string;
-  user?: User;
+  user: User | null;
 }) => {
   return (
     <Navbar className={className} isBlurred={false}>

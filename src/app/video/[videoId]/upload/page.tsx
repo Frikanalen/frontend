@@ -3,11 +3,11 @@ import {
   videosRetrieve,
   videosUploadTokenRetrieve,
 } from "@/generated/videos/videos";
-import { userRetrieve } from "@/generated/user/user";
 import { profileIsAdminOrMember } from "@/app/organization/[organizationId]/admin/profileIsAdminOrMember";
 import { forbidden } from "next/navigation";
 
 import { ModalIshPrototype } from "@/app/profile/ModalIshPrototype";
+import { getUserOrNull } from "@/app/getUserOrNull";
 
 export default async function Page({
   params,
@@ -18,17 +18,17 @@ export default async function Page({
   const headers = await getCookiesFromRequest();
 
   const { data: video } = await videosRetrieve(videoId, { headers });
-  const { data: user } = await userRetrieve({ headers });
+  const user = await getUserOrNull(headers);
   const mayEdit = profileIsAdminOrMember(
     video.organization.id.toString(),
     user,
   );
+  if (!mayEdit) return forbidden();
   const { data: uploadToken } = await videosUploadTokenRetrieve(videoId, {
     headers,
   });
 
   console.log(uploadToken);
-  if (!mayEdit) return forbidden();
   return (
     <ModalIshPrototype>
       Todo: <h2>Upload file for video</h2>
