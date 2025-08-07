@@ -1,6 +1,24 @@
 2025-05-31 
 # Changelog
 
+## [2.0.0](https://github.com/Frikanalen/frontend/compare/v1.0.0...v2.0.0) (2025-08-07)
+
+
+### ⚠ BREAKING CHANGES
+
+* update OpenAPI from django-api/main
+
+### Bug Fixes
+
+* do not put build arg in quotes ([cc733f2](https://github.com/Frikanalen/frontend/commit/cc733f2daac223e0aae8ab96c41272e504ddddab))
+* no classnames in layout.tsx ([3147778](https://github.com/Frikanalen/frontend/commit/31477780be8e5bae648d05998ef8cf5734b03cc9))
+* set default theme to light ([5276d7f](https://github.com/Frikanalen/frontend/commit/5276d7f053b0294e01d34035f0a5ab49ca6f26cf))
+
+
+### Miscellaneous Chores
+
+* update OpenAPI from django-api/main ([d46a0ce](https://github.com/Frikanalen/frontend/commit/d46a0ce191600d39bd678838e098f37425a3eebf))
+
 ## 1.0.0 (2025-05-31)
 
 
