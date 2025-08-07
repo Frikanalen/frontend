@@ -1,7 +1,7 @@
 import React from "react";
 import "@vidstack/react/player/styles/default/theme.css";
 import "@vidstack/react/player/styles/default/layouts/video.css";
-import { MediaPlayer, MediaProvider, Poster } from "@vidstack/react";
+import { MediaPlayer, MediaProvider, Poster, VideoSrc } from "@vidstack/react";
 import {
   defaultLayoutIcons,
   DefaultVideoLayout,
@@ -14,7 +14,7 @@ export const VideoPlayer = ({
   poster,
 }: {
   title: string;
-  src: string;
+  src: string | VideoSrc | VideoSrc[];
   poster?: string;
 }) => (
   <MediaPlayer

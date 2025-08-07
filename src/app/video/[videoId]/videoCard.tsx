@@ -6,6 +6,24 @@ import { format, parseISO } from "date-fns";
 import { nb } from "date-fns/locale/nb";
 import { Link } from "@heroui/react";
 import { notFound } from "next/navigation";
+import { VideoMimeType, VideoSrc } from "@vidstack/react";
+
+type DjangoFormatFsname = "webmMed" | "theora";
+
+const djangoToMimeTable: Record<DjangoFormatFsname, VideoMimeType> = {
+  webmMed: "video/webm",
+  theora: "video/ogg",
+} as const;
+
+const djangoVideoFilesToVidstackSrcList = (videoFiles: {
+  [key: string]: string;
+}): VideoSrc[] =>
+  (
+    Object.entries(djangoToMimeTable) as [DjangoFormatFsname, VideoMimeType][]
+  ).map(([fsname, mimetype]) => ({
+    type: mimetype,
+    src: videoFiles[fsname] ?? undefined,
+  }));
 
 export const VideoCard = ({
   video: {
@@ -24,11 +42,14 @@ export const VideoCard = ({
   video: Video;
 }) => {
   if (!fkmember) return notFound();
-  const videoUrl = files.webmMed ?? files.theora ?? "";
   return (
     <div className="space-y-4 bg-background text-foreground rounded-xl">
       <div>
-        <VideoPlayer title={name} src={videoUrl} poster={files.largeThumb} />
+        <VideoPlayer
+          title={name}
+          src={djangoVideoFilesToVidstackSrcList(files)}
+          poster={files.largeThumb}
+        />
         <div className="p-4">
           <h1 className={"font-bold text-2xl"}>{name}</h1>
           <h2 className={"text-lg"}>
