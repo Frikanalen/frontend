@@ -6,6 +6,8 @@ import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useUserLoginCreate } from "@/generated/user/user";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { isAxiosError } from "axios";
 
 const UserLoginFormSchema = z.object({
   email: z.string(),
@@ -18,13 +20,34 @@ export default function Login() {
   });
   const router = useRouter();
   const { mutateAsync } = useUserLoginCreate();
+  const [error, setError] = useState<string | null>(null);
 
   return (
     <div className={"grid-cols-2 grid gap-8"}>
       <Form
-        onSubmit={handleSubmit(async (data) =>
-          mutateAsync({ data }).then(() => router.push("/profile")),
-        )}
+        onSubmit={handleSubmit(async (data) => {
+          setError(null);
+          return mutateAsync({ data })
+            .then(() => router.push("/profile"))
+
+            .catch((error) => {
+              if (!isAxiosError(error) || !(error instanceof Error)) {
+                setError(JSON.stringify(error, null, 2));
+                return;
+              }
+
+              if (!error.response) {
+                setError(error.message);
+                return;
+              }
+
+              if (error.response.data.detail) {
+                setError(error.response.data.detail);
+              } else {
+                setError(`Error: ${error.response.data}`);
+              }
+            });
+        })}
       >
         <div className={"flex flex-col gap-4 w-full"}>
           <h2 className={"text-lg font-bold"}>Logg inn</h2>
@@ -33,6 +56,7 @@ export default function Login() {
             name={"email"}
             render={({ field }) => (
               <Input
+                id="email"
                 isRequired
                 label="E-post"
                 type="email"
@@ -46,13 +70,15 @@ export default function Login() {
             name={"password"}
             render={({ field }) => (
               <Input
+                isRequired
                 label="Passord"
-                type="password"
-                autoComplete={"password"}
                 {...field}
+                type="password"
+                autoComplete={"current-password"}
               />
             )}
           />
+          {error}
           <Button className={"ml-auto"} type="submit">
             Logg inn
           </Button>
