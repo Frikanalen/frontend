@@ -48,7 +48,7 @@ export default async function Page({
   if (!organization.fkmember) return notFound();
 
   return (
-    <main className="w-full max-w-5xl h-fit">
+    <main className="w-full max-w-5xl h-fit px-2">
       <div className="flex flex-row gap-4">
         <div className="bg-content2 grow text-content2-foreground rounded-lg p-4 space-y-4">
           <h1 className={"text-xl"}>{organization.name}</h1>
