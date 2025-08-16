@@ -7,11 +7,13 @@ import { GoArrowUpRight } from "react-icons/go";
 
 export const MetadataCurrentAndNext = ({ schedule }: { schedule: ScheduleitemRead[] }) => {
   const { currentProgram, nextProgram } = useScheduleCursor(schedule);
+  const nextProgramStart = nextProgram && format(new Date(nextProgram.starttime), "HH:mm");
 
   return (
     <Accordion itemClasses={{ indicator: "text-primary-foreground" }}>
       <AccordionItem
         key={"1"}
+        textValue={`Nå: ${currentProgram?.video.name}`}
         title={
           <div className={"flex"}>
             <div className={"basis-12 shrink-0"}>Nå:</div>
@@ -36,12 +38,11 @@ export const MetadataCurrentAndNext = ({ schedule }: { schedule: ScheduleitemRea
         </div>
       </AccordionItem>
       <AccordionItem
+        textValue={`${nextProgramStart}: ${nextProgram?.video.name}`}
         key={"2"}
         title={
           <div className={"flex"}>
-            <div className={"basis-12 shrink-0"}>
-              {nextProgram && format(new Date(nextProgram.starttime), "HH:mm")}
-            </div>
+            <div className={"basis-12 shrink-0"}>{nextProgramStart}</div>
             {nextProgram?.video.name}
           </div>
         }

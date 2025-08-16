@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 export default function About() {
   return (
     <div className="space-y-10">
-      <h1 className={"text-4xl font-black text-black"}>
+      <h1 className={"text-4xl font-black text-black dark:text-green-200"}>
         Frikanalen er
         <br /> sivilsamfunnets videoplatform.
       </h1>

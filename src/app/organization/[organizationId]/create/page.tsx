@@ -14,7 +14,7 @@ export default async function Page({ params }: { params: Promise<{ organizationI
 
   return (
     <div className="space-y-4 lg:p-10 flex flex-col lg:flex-row">
-      <div className={"prose lg:max-w-sm"}>
+      <div className={"prose dark:prose-invert lg:max-w-sm"}>
         <h2 className={"mb-1!"}>Ny video</h2>
         <h3>for {organization.name}</h3>
         <p>

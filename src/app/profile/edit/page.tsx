@@ -9,7 +9,7 @@ export default async function Page() {
   if (!user) redirect("/login");
   return (
     <div className="space-y-4 lg:p-10 flex flex-col lg:flex-row">
-      <div className={"prose lg:max-w-sm basis-1/2 shrink-0"}>
+      <div className={"prose dark:prose-invert lg:max-w-sm basis-1/2 shrink-0"}>
         <h2 className={"mb-1!"}>Din profil</h2>
       </div>
       <UserProfileForm

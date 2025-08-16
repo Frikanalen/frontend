@@ -34,7 +34,7 @@ export const FileUpload = ({
       </form>
       <Progress value={progress} hidden={!isUploading} showValueLabel label={`Laster opp...`} />
       {isSuccess && (
-        <Alert color="success" className={"prose"}>
+        <Alert color="success" className={"prose dark:prose-invert"}>
           <h3>Videoen er lastet opp!</h3>
           <p>Det vil ta noe tid før kopier blir ferdige og videoen blir synlig.</p>
           <p>
@@ -55,7 +55,7 @@ export const FileUpload = ({
       )}
       {isError && <Alert color="danger">Error: ${error?.message}</Alert>}
       {isReady && (
-        <div className={"prose"}>
+        <div className={"prose dark:prose-invert"}>
           <Button onPress={start} disabled={!isReady}>
             Last opp {file?.name}
           </Button>

@@ -7,7 +7,7 @@ export default async function Page() {
   const user = await getUserOrNull(headers);
   return (
     <div className={"flex flex-col lg:flex-row gap-8"}>
-      <div className={"prose lg:basis-1/3 shrink-0"}>
+      <div className={"prose dark:prose-invert lg:basis-1/3 shrink-0"}>
         <h2>Ny organisasjon</h2>
         <p>
           <span className={"font-bold"}>NB:</span> Ved å registrere deg som redaktør for en

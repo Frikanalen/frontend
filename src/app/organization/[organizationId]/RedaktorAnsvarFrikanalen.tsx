@@ -16,7 +16,7 @@ export default function RedaktorAnsvarFrikanalen({
   editorPhone: ReactNode;
 }) {
   return (
-    <article lang="no" aria-labelledby="tittel" className="prose max-w-none">
+    <article lang="no" aria-labelledby="tittel" className="prose dark:prose-invert max-w-none">
       <header className="not-prose mb-4">
         <h1 id="tittel" className="text-2xl font-semibold">
           Redaktøransvar – Frikanalen

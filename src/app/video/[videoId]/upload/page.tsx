@@ -23,7 +23,7 @@ export default async function Page({ params }: { params: Promise<{ videoId: stri
   return (
     <ModalIshPrototype>
       <ModalIshPrototypeBody className={"space-y-4"}>
-        <div className="prose">
+        <div className="prose dark:prose-invert">
           <h2>Last opp originalfil for {video.name}</h2>
         </div>
         <FileUpload

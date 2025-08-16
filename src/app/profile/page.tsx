@@ -18,7 +18,7 @@ export default async function Page() {
   const user = await getUserOrNull(headers);
   if (!user) return redirect("/");
   return (
-    <section className={"prose max-w-none"}>
+    <section className={"prose dark:prose-invert max-w-none"}>
       <h2>Brukerside</h2>
       <h3>Din brukerprofil</h3>
       <div>
