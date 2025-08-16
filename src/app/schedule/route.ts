@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { redirect } from "next/navigation";
 
 export const runtime = "edge";
 
@@ -10,9 +10,7 @@ const formatter = new Intl.DateTimeFormat("en-CA", {
 });
 
 // Redirect to today's schedule, in [year]/[month]/[date]/page.tsx.
-export function GET(request: NextRequest) {
+export function GET() {
   const [year, month, day] = formatter.format(new Date()).split("-");
-  const url = request.nextUrl.clone();
-  url.pathname = `/schedule/${year}/${month}/${day}`;
-  return NextResponse.redirect(url);
+  redirect(`/schedule/${year}/${month}/${day}`);
 }
