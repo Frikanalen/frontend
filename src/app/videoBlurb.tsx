@@ -7,7 +7,7 @@ export const VideoBlurb = ({ video }: { video: ScheduleitemVideo }) => {
   return (
     <div className="flex gap-4">
       {!!organization.description.length && (
-        <div className="basis-1/4 grow-0  border-2 justify-start text-sm leading-6 text-primary-700">
+        <div className="basis-1/4 grow-0  justify-start text-sm leading-6 text-primary-700">
           <Markdown>{organization.description || ""}</Markdown>
         </div>
       )}

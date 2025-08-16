@@ -15,28 +15,22 @@ const djangoToMimeTable: Record<DjangoFormatFsname, VideoMimeType> = {
   theora: "video/ogg",
 } as const;
 
-const djangoVideoFilesToVidstackSrcList = (videoFiles: {
-  [key: string]: string;
-}): VideoSrc[] =>
-  (
-    Object.entries(djangoToMimeTable) as [DjangoFormatFsname, VideoMimeType][]
-  ).map(([fsname, mimetype]) => ({
-    type: mimetype,
-    src: videoFiles[fsname] ?? undefined,
-  }));
+const djangoVideoFilesToVidstackSrcList = (videoFiles: { [key: string]: string }): VideoSrc[] =>
+  (Object.entries(djangoToMimeTable) as [DjangoFormatFsname, VideoMimeType][]).map(
+    ([fsname, mimetype]) => ({
+      type: mimetype,
+      src: videoFiles[fsname] ?? undefined,
+    }),
+  );
 
 export const VideoCard = ({
   video: {
     description,
+    header,
     files,
     name,
     createdTime,
-    organization: {
-      description: orgDescription,
-      name: orgName,
-      id: orgId,
-      fkmember,
-    },
+    organization: { description: orgDescription, name: orgName, id: orgId, fkmember },
   },
 }: {
   video: Video;
@@ -59,15 +53,10 @@ export const VideoCard = ({
             </Link>
           </h2>
           {!!createdTime && (
-            <p>
-              Lastet opp{" "}
-              {format(parseISO(createdTime), "PPPPp", { locale: nb })}
-            </p>
+            <p>Lastet opp {format(parseISO(createdTime), "PPPPp", { locale: nb })}</p>
           )}
           <div className={"prose dark:prose-invert text-foreground py-2"}>
-            <Markdown>
-              {description ?? "*videoen har ingen beskrivelse*"}
-            </Markdown>
+            <Markdown>{description ?? header ?? "*videoen har ingen beskrivelse*"}</Markdown>
           </div>
           <div className={"prose dark:prose-invert text-foreground"}>
             {!!orgDescription?.length && <Markdown>{orgDescription}</Markdown>}

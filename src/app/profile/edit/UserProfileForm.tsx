@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 import { useUserUpdate } from "@/generated/user/user";
 
 export const UserProfileForm = ({ user, className }: { user: User; className?: string }) => {
-  const { mutateAsync } = useUserUpdate();
+  const { mutateAsync } = useUserUpdate({ request: { withCredentials: true } });
   const { register, handleSubmit } = useForm<UserRequest>({ defaultValues: { ...user } });
 
   return (
