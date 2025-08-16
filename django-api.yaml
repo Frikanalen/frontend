@@ -385,6 +385,16 @@ paths:
         - cookieAuth: []
       tags:
         - categories
+  /api/csrf/:
+    get:
+      operationId: csrf_retrieve
+      responses:
+        '200':
+          description: No response body
+      security:
+        - {}
+      tags:
+        - csrf
   /api/jukebox_csv:
     get:
       operationId: jukebox_csv_retrieve

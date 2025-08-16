@@ -5,11 +5,7 @@ import { forbidden, notFound, redirect } from "next/navigation";
 import { profileIsAdminOrMember } from "@/app/organization/[organizationId]/admin/profileIsAdminOrMember";
 import { getUserOrNull } from "@/app/getUserOrNull";
 
-export default async function Page({
-  params,
-}: {
-  params: Promise<{ organizationId: string }>;
-}) {
+export default async function Page({ params }: { params: Promise<{ organizationId: string }> }) {
   const { organizationId } = await params;
   const headers = await getCookiesFromRequest();
   const user = await getUserOrNull(headers);
@@ -21,5 +17,5 @@ export default async function Page({
   const organization = orgRes.data;
   if (!profileIsAdminOrMember(organizationId, user)) throw forbidden();
 
-  return <OrgAdminPage organization={organization} profile={user} />;
+  return <OrgAdminPage organization={organization} />;
 }

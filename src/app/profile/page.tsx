@@ -1,8 +1,9 @@
 import { OrgList } from "@/app/profile/OrgList";
 import { getCookiesFromRequest } from "@/app/profile/getCookiesFromRequest";
-import { ModalIshPrototype } from "@/app/profile/ModalIshPrototype";
 import { getUserOrNull } from "@/app/getUserOrNull";
 import { forbidden } from "next/navigation";
+import { LogoutButton } from "@/app/profile/LogoutButton";
+import { CreateOrgButton } from "@/app/profile/CreateOrgButton";
 
 /*
 ideally three cases here:
@@ -18,9 +19,20 @@ export default async function Page() {
   const user = await getUserOrNull(headers);
   if (!user) return forbidden();
   return (
-    <ModalIshPrototype>
-      <h2 className={"text-lg font-bold pb-4"}>Brukerside</h2>
+    <section className={"prose max-w-none"}>
+      <h2>Brukerside</h2>
+      <h3>Din brukerprofil</h3>
+      <div>
+        Navn: {user.firstName} {user.lastName}
+      </div>
+      <div>Epost: {user.email}</div>
+      <div>Telefonnummer: {user.phoneNumber}</div>
+      <div className="flex gap-2 py-2">
+        <LogoutButton />
+        <CreateOrgButton />
+      </div>
+      <h3>Dine organisasjoner</h3>
       <OrgList memberOf={user.memberOf} editorOf={user.editorOf} />
-    </ModalIshPrototype>
+    </section>
   );
 }

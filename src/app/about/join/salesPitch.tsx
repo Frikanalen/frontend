@@ -1,5 +1,6 @@
 "use client";
-import { Button } from "@heroui/react";
+
+import Link from "next/link";
 
 export const SalesPitch = () => (
   <div className="w-full">
@@ -9,10 +10,11 @@ export const SalesPitch = () => (
       <li>Muligheten til å sende ditt innhold på Frikanalen</li>
       <li>Stemmerett ved Foreningen Frikanalens møter</li>
     </ul>
-    <div className={"ml-auto w-fit"}>
-      <Button color={"primary"} className={"rounded-md "}>
-        Bli med!
-      </Button>
-    </div>
+    <p>
+      En medlemsorganisasjon må velge en ansvarlig redaktør som påtar seg juridisk redaktøransvar
+      for innhold. Organisasjonens besøks- og postadresse, samt redaktørens epost og telefonnummer,
+      må være tilgjengelig ihht.{" "}
+      <Link href={"https://lovdata.no/lov/1992-12-04-127/§2-16"}>Kringkastingsloven §2-16</Link>.
+    </p>
   </div>
 );

@@ -5,7 +5,6 @@ import z from "zod";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useUserLoginCreate } from "@/generated/user/user";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { isAxiosError } from "axios";
 
@@ -18,7 +17,6 @@ export default function Login() {
   const { control, handleSubmit } = useForm({
     resolver: zodResolver(UserLoginFormSchema),
   });
-  const router = useRouter();
   const { mutateAsync } = useUserLoginCreate();
   const [error, setError] = useState<string | null>(null);
 
@@ -28,7 +26,7 @@ export default function Login() {
         onSubmit={handleSubmit(async (data) => {
           setError(null);
           return mutateAsync({ data })
-            .then(() => router.push("/profile"))
+            .then(() => window.location.assign("/profile"))
 
             .catch((error) => {
               if (!isAxiosError(error) || !(error instanceof Error)) {
@@ -74,7 +72,7 @@ export default function Login() {
                 label="Passord"
                 {...field}
                 type="password"
-                autoComplete={"current-password"}
+                autoComplete={"password"}
               />
             )}
           />
@@ -87,8 +85,8 @@ export default function Login() {
       <div className={"space-y-4 flex flex-col justify-between"}>
         <div className={"text-lg"}>...eller registrer deg</div>
         <div className={""}>
-          En profil kan brukes til å personalisere din brukeropplevelse. En
-          bruker er også nødvendig for å administrere medlemskap.
+          En profil kan brukes til å personalisere din brukeropplevelse. En bruker er også nødvendig
+          for å administrere medlemskap.
         </div>{" "}
         <Link href={"/register"}>
           <Button className={"ml-auto"} href={"/register"}>

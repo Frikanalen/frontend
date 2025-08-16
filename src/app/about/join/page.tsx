@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 };
 
 const Join = () => (
-  <div className={"prose prose-lg dark:prose-invert max-w-none"}>
+  <div className={"prose prose-lg dark:prose-invert max-w-3xl pb-32"}>
     <h2>Bli medlem</h2>
     <SalesPitch />
     <h4>Medlemskontingent</h4>
@@ -41,8 +41,8 @@ const Join = () => (
     </table>
     <h4>Enkeltpersonmedlemskap</h4>
     <p>
-      Enkeltpersoner kan tegne årlig medlemskap for kr 1000.
-      Enkeltpersonmedlemskap medfører ikke medlemsrettigheter.
+      Enkeltpersoner kan tegne årlig medlemskap for kr 1000. Enkeltpersonmedlemskap medfører ikke
+      medlemsrettigheter.
     </p>
   </div>
 );

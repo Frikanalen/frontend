@@ -1,9 +1,18 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 export const runtime = "edge";
 
+const formatter = new Intl.DateTimeFormat("en-CA", {
+  timeZone: "Europe/Oslo",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
+
 // Redirect to today's schedule, in [year]/[month]/[date]/page.tsx.
-export function GET() {
-  const [year, month, day] = new Date().toISOString().slice(0, 10).split("-");
-  return NextResponse.redirect(`/${year}/${month}/${day}`);
+export function GET(request: NextRequest) {
+  const [year, month, day] = formatter.format(new Date()).split("-");
+  const url = request.nextUrl.clone();
+  url.pathname = `/schedule/${year}/${month}/${day}`;
+  return NextResponse.redirect(url);
 }

@@ -9,32 +9,29 @@ import { useEffect } from "react";
 // these should be flagged for the user to see.
 // could be stored in db as a list of organization inhibitions/warnings?
 const orgAdminLink = (id: number) => `/organization/${id}/admin`;
+const orgCreateLink = (id: number) => `/organization/${id}/create`;
 const orgPageLink = (id: number) => `/organization/${id}`;
 
-const UserOrgRole = ({
-  org,
-  isEditor,
-}: {
-  org: SimpleOrg;
-  isEditor?: boolean;
-}) => (
+const UserOrgRole = ({ org, isEditor }: { org: SimpleOrg; isEditor?: boolean }) => (
   <div key={org.id} className={"basis-24 border-l-2 pl-4 flex flex-col"}>
     <div className={"font-bold"}>{org.name}</div>
     <div className={"flex flex-col justify-between grow"}>
       {isEditor ? (
         <div>
-          Du er <span className={"font-bold"}>redaktøren til</span> denne
-          organisasjonen.
+          Du er <span className={"font-bold"}>redaktøren til</span> denne organisasjonen.
         </div>
       ) : (
         <div>Du er medlem av denne organisasjonen.</div>
       )}
       <div className="flex gap-2 justify-end">
+        <Button as={Link} href={orgCreateLink(org.id)} color="primary" size="md">
+          Ny video
+        </Button>
         <Button as={Link} href={orgAdminLink(org.id)} color="primary" size="md">
-          Rediger
+          Administrasjon
         </Button>
         <Button as={Link} href={orgPageLink(org.id)} color="primary" size="md">
-          Se offentlig side
+          Offentlig profil
         </Button>
       </div>
     </div>
@@ -50,9 +47,7 @@ function mergeOrgs(
   editorOf: readonly SimpleOrg[],
 ): (SimpleOrg & { isEditor: boolean })[] {
   // build a Map from memberships
-  const byId = new Map(
-    memberOf.map((org) => [org.id, { ...org, isEditor: false }]),
-  );
+  const byId = new Map(memberOf.map((org) => [org.id, { ...org, isEditor: false }]));
 
   // 2. override (or add) each ownership entry
   editorOf.forEach((org) => byId.set(org.id, { ...org, isEditor: true }));
@@ -69,9 +64,10 @@ export const OrgList = ({
 }) => {
   const router = useRouter();
   useEffect(() => {
-    memberOf.map(({ id }) => {
+    memberOf.forEach(({ id }) => {
       router.prefetch(orgPageLink(id));
       router.prefetch(orgAdminLink(id));
+      router.prefetch(orgCreateLink(id));
     });
   }, [memberOf, router]);
 

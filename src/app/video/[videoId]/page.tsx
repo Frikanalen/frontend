@@ -1,27 +1,25 @@
 import { VideoCard } from "@/app/video/[videoId]/videoCard";
 import { getCookiesFromRequest } from "@/app/profile/getCookiesFromRequest";
 import { videosRetrieve } from "@/generated/videos/videos";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { profileIsAdminOrMember } from "@/app/organization/[organizationId]/admin/profileIsAdminOrMember";
 import { getUserOrNull } from "@/app/getUserOrNull";
 
-export default async function VideoPage({
-  params,
-}: {
-  params: Promise<{ videoId: string }>;
-}) {
+export default async function VideoPage({ params }: { params: Promise<{ videoId: string }> }) {
   const { videoId } = await params;
   const headers = await getCookiesFromRequest();
 
-  const { data: video, status } = await videosRetrieve(videoId, { headers });
+  const { data: video, status } = await videosRetrieve(videoId, {
+    headers,
+    validateStatus: () => true,
+  });
+  if (status === 404) {
+    notFound();
+  }
+
   const user = await getUserOrNull(headers);
 
-  const mayEdit = profileIsAdminOrMember(
-    video.organization.id.toString(),
-    user,
-  );
-
-  if (mayEdit && !video.properImport) redirect(`/video/${videoId}/upload`);
+  const mayEdit = profileIsAdminOrMember(video.organization.id.toString(), user);
 
   if (status === 404) return notFound();
 
