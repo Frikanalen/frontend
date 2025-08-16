@@ -1,7 +1,5 @@
 "use client";
 
-import Link from "next/link";
-
 export const SalesPitch = () => (
   <div className="w-full">
     <p>Ved å melde din organisasjon inn i Frikanalen, får du:</p>
@@ -12,9 +10,8 @@ export const SalesPitch = () => (
     </ul>
     <p>
       En medlemsorganisasjon må velge en ansvarlig redaktør som påtar seg juridisk redaktøransvar
-      for innhold. Organisasjonens besøks- og postadresse, samt redaktørens epost og telefonnummer,
-      må være tilgjengelig ihht.{" "}
-      <Link href={"https://lovdata.no/lov/1992-12-04-127/§2-16"}>Kringkastingsloven §2-16</Link>.
+      for innhold. Kontaktinformasjon til redaktør i form av epost og telefonnummer må gjøres
+      offentlig tilgjengelig.
     </p>
   </div>
 );

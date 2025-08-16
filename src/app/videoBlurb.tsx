@@ -1,7 +1,6 @@
 import { ScheduleitemVideo } from "@/generated/frikanalenDjangoAPI.schemas";
 import Markdown from "markdown-to-jsx";
 import { Fragment } from "react";
-import { Link } from "@heroui/react";
 
 export const VideoBlurb = ({ video }: { video: ScheduleitemVideo }) => {
   const organization = video.organization;
@@ -14,20 +13,7 @@ export const VideoBlurb = ({ video }: { video: ScheduleitemVideo }) => {
       )}
       <div>
         <div className="prose dark:prose-invert [&>*]:leading-6">
-          <Markdown options={{ wrapper: Fragment }}>
-            {video.header || ""}
-          </Markdown>
-        </div>
-        <div>
-          <Link className="block" href={`/video/${video.id}/`}>
-            Gå til video
-          </Link>
-          <Link
-            className="block"
-            href={`/organization/${video.organization.id}/`}
-          >
-            Gå til organisasjon
-          </Link>
+          <Markdown options={{ wrapper: Fragment }}>{video.header || ""}</Markdown>
         </div>
       </div>
     </div>

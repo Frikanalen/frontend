@@ -11,28 +11,26 @@ export const metadata: Metadata = {
 export default function About() {
   return (
     <div className="space-y-10">
-      <h1 className={"text-4xl font-black"}>
+      <h1 className={"text-4xl font-black text-black"}>
         Frikanalen er
         <br /> sivilsamfunnets videoplatform.
       </h1>
       <div className="prose dark:prose-invert prose-lg max-w-none">
         <div>
           <p>
-            «Målet med Frikanalen er å styrke ytringsfrihet og
-            deltakerdemokratiet ved å gi flere mulighet til å ytre seg i
-            TV-mediet»
+            «Målet med Frikanalen er å styrke ytringsfrihet og deltakerdemokratiet ved å gi flere
+            mulighet til å ytre seg i TV-mediet»
           </p>
           <p className={"text-right"}>&mdash; Frikanalens formålsparagraf</p>
         </div>
         <p>
-          Vi ønsker i samarbeid med våre medlemsorganisasjoner utvikle en
-          videoplattform uten forhåndssensur, tilrettelagt for behovene til
-          norsk demokrati, organisasjonsliv og frivillighet.
+          Vi ønsker i samarbeid med våre medlemsorganisasjoner utvikle en videoplattform uten
+          forhåndssensur, tilrettelagt for behovene til norsk demokrati, organisasjonsliv og
+          frivillighet.
         </p>
         <p>
-          Vi tilbyr alle våre medlemmer adgang til en riksdekkende TV-kanal med
-          formidlingsplikt. Formidlingsplikt medfører at alle kabelleverandører
-          er forpliktet til å bære vår kanal.
+          Vi tilbyr alle våre medlemmer adgang til en riksdekkende TV-kanal med formidlingsplikt.
+          Formidlingsplikt medfører at alle kabelleverandører er forpliktet til å bære vår kanal.
         </p>
       </div>
       <AccordionLinkGroup>

@@ -1,9 +1,8 @@
 import { OrgList } from "@/app/profile/OrgList";
 import { getCookiesFromRequest } from "@/app/profile/getCookiesFromRequest";
 import { getUserOrNull } from "@/app/getUserOrNull";
-import { forbidden } from "next/navigation";
-import { LogoutButton } from "@/app/profile/LogoutButton";
-import { CreateOrgButton } from "@/app/profile/CreateOrgButton";
+import { redirect } from "next/navigation";
+import { ProfileButtons } from "@/app/profile/ProfileButtons";
 
 /*
 ideally three cases here:
@@ -17,7 +16,7 @@ ideally three cases here:
 export default async function Page() {
   const headers = await getCookiesFromRequest();
   const user = await getUserOrNull(headers);
-  if (!user) return forbidden();
+  if (!user) return redirect("/");
   return (
     <section className={"prose max-w-none"}>
       <h2>Brukerside</h2>
@@ -27,10 +26,7 @@ export default async function Page() {
       </div>
       <div>Epost: {user.email}</div>
       <div>Telefonnummer: {user.phoneNumber}</div>
-      <div className="flex gap-2 py-2">
-        <LogoutButton />
-        <CreateOrgButton />
-      </div>
+      <ProfileButtons />
       <h3>Dine organisasjoner</h3>
       <OrgList memberOf={user.memberOf} editorOf={user.editorOf} />
     </section>

@@ -17,8 +17,11 @@ export const Categories = <T extends FieldValues>({
     name={name}
     render={({ field }) => (
       <Select
+        label={"Kategorier"}
+        labelPlacement={"outside"}
         selectionMode="multiple"
-        placeholder="Select categories"
+        placeholder="Velg minst én kategori"
+        isRequired
         selectedKeys={new Set(field.value ?? [])}
         onSelectionChange={(keys) => field.onChange(Array.from(keys as Set<React.Key>).map(String))}
         onBlur={field.onBlur}

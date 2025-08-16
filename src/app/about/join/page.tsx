@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 };
 
 const Join = () => (
-  <div className={"prose prose-lg dark:prose-invert max-w-3xl pb-32"}>
+  <div className={"prose prose-lg dark:prose-invert max-w-3xl pb-8"}>
     <h2>Bli medlem</h2>
     <SalesPitch />
     <h4>Medlemskontingent</h4>

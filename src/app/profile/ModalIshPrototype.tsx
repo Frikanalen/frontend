@@ -1,6 +1,11 @@
 import { ReactNode } from "react";
 import cx from "classnames";
 
+/**
+ * As you may be able to tell, I'm not sure what to name this -
+ * it's a container component for single pages with not a lot of UI,
+ * like user signup forms, etc.
+ */
 export const ModalIshPrototype = ({
   children,
   className,

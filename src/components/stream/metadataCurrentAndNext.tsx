@@ -1,14 +1,11 @@
 import { ScheduleitemRead } from "@/generated/frikanalenDjangoAPI.schemas";
-import { Accordion, AccordionItem } from "@heroui/react";
+import { Accordion, AccordionItem, Link } from "@heroui/react";
 import { format } from "date-fns";
 import { useScheduleCursor } from "@/app/useScheduleCursor";
 import { VideoBlurb } from "@/app/videoBlurb";
+import { GoArrowUpRight } from "react-icons/go";
 
-export const MetadataCurrentAndNext = ({
-  schedule,
-}: {
-  schedule: ScheduleitemRead[];
-}) => {
+export const MetadataCurrentAndNext = ({ schedule }: { schedule: ScheduleitemRead[] }) => {
   const { currentProgram, nextProgram } = useScheduleCursor(schedule);
 
   return (
@@ -22,8 +19,15 @@ export const MetadataCurrentAndNext = ({
           </div>
         }
         subtitle={
-          <h4 className={"text-medium pl-12 text-primary-700"}>
-            av {currentProgram?.video.organization.name}
+          <h4 className={"text-medium pl-12 text-primary-600"}>
+            av{" "}
+            <Link
+              className={"text-primary-700"}
+              href={`/organization/${currentProgram?.video.organization.id}`}
+            >
+              {currentProgram?.video.organization.name}
+              <GoArrowUpRight />
+            </Link>
           </h4>
         }
       >
@@ -42,8 +46,15 @@ export const MetadataCurrentAndNext = ({
           </div>
         }
         subtitle={
-          <h4 className={"text-medium pl-12 text-primary-700"}>
-            av {nextProgram?.video.organization.name}
+          <h4 className={"text-medium pl-12 text-primary-600"}>
+            av{" "}
+            <Link
+              className={"text-primary-700"}
+              href={`/organization/${nextProgram?.video.organization.id}`}
+            >
+              {nextProgram?.video.organization.name}
+              <GoArrowUpRight />
+            </Link>
           </h4>
         }
       >

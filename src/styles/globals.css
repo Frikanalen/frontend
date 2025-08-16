@@ -10,3 +10,4 @@
 :root {
     --tw-prose-headings: #f00 !important;
 }
+@page { size: A4; margin: 15mm; }
