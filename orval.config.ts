@@ -19,4 +19,28 @@ export default defineConfig({
       afterAllFilesWrite: "prettier --write",
     },
   },
+
+  djangoSsr: {
+    input: "./django-api.yaml",
+    output: {
+      target: "./src/generated/ssr",
+      client: "fetch",
+      mode: "tags-split",
+      mock: true,
+      override: {
+        // Prefix "ssr"; operationId if present; else build from verb+route
+        operationName: (op, route, verb) =>
+          "ssr" +
+          (op.operationId ?? `${verb}${route}`)
+            .replace(/[{}]/g, "")
+            .split(/[\/_-]/)
+            .filter(Boolean)
+            .map((s) => s[0].toUpperCase() + s.slice(1))
+            .join(""),
+      },
+    },
+    hooks: {
+      afterAllFilesWrite: "prettier --write",
+    },
+  },
 });

@@ -6,7 +6,6 @@ import { defaultLayoutIcons, DefaultVideoLayout } from "@vidstack/react/player/l
 import "./videoplayer.css";
 import { Spinner } from "@heroui/react";
 import cx from "classnames";
-import { useTimeoutFn } from "react-use";
 
 export const VideoPlayer = ({
   title,
@@ -19,10 +18,6 @@ export const VideoPlayer = ({
   poster?: string;
   mediaPending?: boolean;
 }) => {
-  useTimeoutFn(() => {
-    if (mediaPending) window.location.reload();
-  }, 30000);
-
   return (
     <MediaPlayer title={title} src={src} poster={poster} aspectRatio="16/9" load="play">
       {mediaPending && (

@@ -1,15 +1,18 @@
 "use client";
 import { Video } from "@/generated/frikanalenDjangoAPI.schemas";
-import { notFound } from "next/navigation";
+import { notFound, useRouter } from "next/navigation";
 import VideoPlayer from "@/components/stream/VideoPlayer";
 import { Link } from "@heroui/react";
 import { format, parseISO } from "date-fns";
 import { nb } from "date-fns/locale/nb";
 import Markdown from "markdown-to-jsx";
 import { djangoVideoFilesToVidstackSrcList } from "@/app/video/[videoId]/videoCard";
+import { useTimeoutFn } from "react-use";
+import { revalidateVideoAction } from "@/components/stream/revalidateVideoAction";
 
 export const VideoCardForAdmin = ({
   video: {
+    id,
     description,
     header,
     files,
@@ -20,8 +23,19 @@ export const VideoCardForAdmin = ({
 }: {
   video: Video;
 }) => {
-  if (!fkmember) return notFound();
   const videoFiles = djangoVideoFilesToVidstackSrcList(files);
+  const mediaPending = !videoFiles.length;
+  const router = useRouter();
+
+  useTimeoutFn(() => {
+    if (mediaPending) {
+      revalidateVideoAction(id.toString()).then(() => {
+        router.refresh();
+      });
+    }
+  }, 30000);
+
+  if (!fkmember) return notFound();
   return (
     <div className="space-y-4 bg-background text-foreground rounded-xl">
       <div>
@@ -29,7 +43,7 @@ export const VideoCardForAdmin = ({
           title={name}
           src={videoFiles}
           poster={files.largeThumb}
-          mediaPending={!!videoFiles.length}
+          mediaPending={mediaPending}
         />
 
         <div className="p-4">
