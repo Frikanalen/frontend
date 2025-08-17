@@ -18,12 +18,12 @@ const djangoToMimeTable: Record<DjangoFormatFsname, VideoMimeType> = {
 export const djangoVideoFilesToVidstackSrcList = (videoFiles: {
   [key: string]: string;
 }): VideoSrc[] =>
-  (Object.entries(djangoToMimeTable) as [DjangoFormatFsname, VideoMimeType][]).map(
-    ([fsname, mimetype]) => ({
+  (Object.entries(djangoToMimeTable) as [DjangoFormatFsname, VideoMimeType][])
+    .filter(([fsname]) => !!videoFiles[fsname]?.length)
+    .map(([fsname, mimetype]) => ({
       type: mimetype,
-      src: videoFiles[fsname] ?? undefined,
-    }),
-  );
+      src: videoFiles[fsname],
+    }));
 
 export const VideoCard = ({
   video: {
