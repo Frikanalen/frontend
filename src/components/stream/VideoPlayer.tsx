@@ -35,11 +35,7 @@ export const VideoPlayer = ({
       <MediaProvider>
         <Poster className={cx("vds-poster", { "blur-md": mediaPending })} src={poster} />
       </MediaProvider>
-      <DefaultVideoLayout
-        icons={defaultLayoutIcons}
-        colorScheme={"system"}
-        className={"[&>*]:rounded-b-none! [&>*]:rounded-t-lg!"}
-      />
+      <DefaultVideoLayout icons={defaultLayoutIcons} colorScheme={"system"} />
     </MediaPlayer>
   );
 };
