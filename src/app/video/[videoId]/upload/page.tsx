@@ -19,7 +19,6 @@ export default async function Page({ params }: { params: Promise<{ videoId: stri
     headers,
   });
 
-  console.log(uploadToken);
   return (
     <ModalIshPrototype>
       <ModalIshPrototypeBody className={"space-y-4"}>
