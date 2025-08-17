@@ -9,6 +9,6 @@
 
 :root {
     --tw-prose-headings: #f00 !important;
-    --video-border-radius: 0;
+    --video-border-radius: 10px 10px 0 0;
 }
 @page { size: A4; margin: 15mm; }
