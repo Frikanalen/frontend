@@ -13,7 +13,7 @@ export default async function Page({ params }: { params: Promise<{ videoId: stri
 
   const { data: video } = await videosRetrieve(videoId, { headers });
   const user = await getUserOrNull(headers);
-  const mayEdit = profileIsAdminOrMember(video.organization.id.toString(), user);
+  const mayEdit = profileIsAdminOrMember(video.organization.id, user);
   if (!mayEdit) return forbidden();
   const { data: uploadToken } = await videosUploadTokenRetrieve(videoId, {
     headers,

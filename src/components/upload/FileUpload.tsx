@@ -1,8 +1,9 @@
 "use client";
 import { Button, Link, Progress } from "@heroui/react";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { useTusUpload } from "@/lib/upload/useTusUpload";
 import { Alert } from "@heroui/alert";
+import { useRouter } from "next/navigation";
 
 export const FileUpload = ({
   videoId,
@@ -27,6 +28,12 @@ export const FileUpload = ({
     error,
     isSuccess,
   } = useTusUpload(videoId, uploadToken, uploadEndpoint);
+
+  const router = useRouter();
+  useEffect(() => {
+    if (isSuccess) setTimeout(() => router.push(`/video/${videoId}`), 5000);
+  }, [isSuccess, router, videoId]);
+
   return (
     <div>
       <form>
@@ -38,7 +45,7 @@ export const FileUpload = ({
           <h3>Videoen er lastet opp!</h3>
           <p>Det vil ta noe tid før kopier blir ferdige og videoen blir synlig.</p>
           <p>
-            Når den er ferdig, vil den være tilgjengelig på{" "}
+            Du blir videresendt til
             <Link href={`/video/${videoId}`}>videosiden</Link>
           </p>
         </Alert>
@@ -54,7 +61,7 @@ export const FileUpload = ({
         </div>
       )}
       {isError && <Alert color="danger">Error: ${error?.message}</Alert>}
-      {isReady && (
+      {isReady && !isSuccess && (
         <div className={"prose dark:prose-invert"}>
           <Button onPress={start} disabled={!isReady}>
             Last opp {file?.name}

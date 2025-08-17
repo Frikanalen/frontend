@@ -1,31 +1,14 @@
 "use client";
 import { Video } from "@/generated/frikanalenDjangoAPI.schemas";
+import { notFound } from "next/navigation";
 import VideoPlayer from "@/components/stream/VideoPlayer";
-import Markdown from "markdown-to-jsx";
+import { Link } from "@heroui/react";
 import { format, parseISO } from "date-fns";
 import { nb } from "date-fns/locale/nb";
-import { Link } from "@heroui/react";
-import { notFound } from "next/navigation";
-import { VideoMimeType, VideoSrc } from "@vidstack/react";
+import Markdown from "markdown-to-jsx";
+import { djangoVideoFilesToVidstackSrcList } from "@/app/video/[videoId]/videoCard";
 
-type DjangoFormatFsname = "webmMed" | "theora";
-
-const djangoToMimeTable: Record<DjangoFormatFsname, VideoMimeType> = {
-  webmMed: "video/webm",
-  theora: "video/ogg",
-} as const;
-
-export const djangoVideoFilesToVidstackSrcList = (videoFiles: {
-  [key: string]: string;
-}): VideoSrc[] =>
-  (Object.entries(djangoToMimeTable) as [DjangoFormatFsname, VideoMimeType][]).map(
-    ([fsname, mimetype]) => ({
-      type: mimetype,
-      src: videoFiles[fsname] ?? undefined,
-    }),
-  );
-
-export const VideoCard = ({
+export const VideoCardForAdmin = ({
   video: {
     description,
     header,
@@ -38,14 +21,17 @@ export const VideoCard = ({
   video: Video;
 }) => {
   if (!fkmember) return notFound();
+  const videoFiles = djangoVideoFilesToVidstackSrcList(files);
   return (
     <div className="space-y-4 bg-background text-foreground rounded-xl">
       <div>
         <VideoPlayer
           title={name}
-          src={djangoVideoFilesToVidstackSrcList(files)}
+          src={videoFiles}
           poster={files.largeThumb}
+          mediaPending={!!videoFiles.length}
         />
+
         <div className="p-4">
           <h1 className={"font-bold text-2xl"}>{name}</h1>
           <h2 className={"text-lg"}>

@@ -11,13 +11,16 @@ import { RecentVideos } from "@/app/organization/[organizationId]/RecentVideos";
 
 export default async function Page({ params }: { params: Promise<{ organizationId: string }> }) {
   const { organizationId } = await params;
+  const organizationIdNum = parseInt(organizationId);
+  if (isNaN(organizationIdNum)) return notFound();
+
   const headers = await getCookiesFromRequest();
   const { data: organization } = await organizationRetrieve(organizationId, {
     headers,
   });
   const profile = await getUserOrNull(headers);
 
-  const isAdmin = profileIsAdminOrMember(organizationId, profile);
+  const isAdmin = profileIsAdminOrMember(organizationIdNum, profile);
 
   if (!organization.fkmember && !isAdmin) return notFound();
 

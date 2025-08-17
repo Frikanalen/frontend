@@ -7,6 +7,9 @@ import { getUserOrNull } from "@/app/getUserOrNull";
 
 export default async function Page({ params }: { params: Promise<{ organizationId: string }> }) {
   const { organizationId } = await params;
+  const organizationIdNum = parseInt(organizationId);
+  if (isNaN(organizationIdNum)) return notFound();
+
   const headers = await getCookiesFromRequest();
   const user = await getUserOrNull(headers);
   if (!user) return redirect("/login");
@@ -15,7 +18,7 @@ export default async function Page({ params }: { params: Promise<{ organizationI
   if (orgRes.status === 404) return notFound();
 
   const organization = orgRes.data;
-  if (!profileIsAdminOrMember(organizationId, user)) throw forbidden();
+  if (!profileIsAdminOrMember(organizationIdNum, user)) throw forbidden();
 
   return <OrgAdminPage organization={organization} />;
 }
