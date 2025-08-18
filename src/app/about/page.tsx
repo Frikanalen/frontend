@@ -36,6 +36,7 @@ export default function About() {
       <AccordionLinkGroup>
         <AccordionLink href="/about/statutes">Våre vedtekter</AccordionLink>
         <AccordionLink href="/about/join">Bli med</AccordionLink>
+        <AccordionLink href="/about/contact">Kontakt oss</AccordionLink>
       </AccordionLinkGroup>
     </div>
   );
