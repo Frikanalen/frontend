@@ -8,6 +8,7 @@ import { ReactNode } from "react";
 import { Footer } from "@/components/layout/Footer";
 import { getCookiesFromRequest } from "@/app/profile/getCookiesFromRequest";
 import { getUserOrNull } from "@/app/getUserOrNull";
+import Head from "next/head";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,9 +35,9 @@ export default async function RootLayout({
 
   return (
     <html lang="no" suppressHydrationWarning>
-      <head>
+      <Head>
         <title>Frikanalen</title>
-      </head>
+      </Head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-radial from-primary-200/40 dark:from-primary-600/60 to-primary-50 dark:to-primary-foreground text-foreground`}
       >
