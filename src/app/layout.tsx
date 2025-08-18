@@ -21,6 +21,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://frikanalen.no"),
   title: "Frikanalen",
   description: "Frikanalen er sivilsamfunnets videoplatform",
 };
