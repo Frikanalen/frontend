@@ -12380,6 +12380,11 @@ components:
           readOnly: true
         duration:
           type: string
+        durationSec:
+          type: number
+          format: double
+          nullable: true
+          readOnly: true
         categories:
           type: array
           items:
@@ -12429,6 +12434,7 @@ components:
       required:
         - categories
         - createdTime
+        - durationSec
         - files
         - framerate
         - id
@@ -12467,6 +12473,11 @@ components:
           type: integer
         duration:
           type: string
+        durationSec:
+          type: number
+          format: double
+          nullable: true
+          readOnly: true
         categories:
           type: array
           items:
@@ -12516,6 +12527,7 @@ components:
       required:
         - categories
         - createdTime
+        - durationSec
         - files
         - framerate
         - id
@@ -12694,6 +12706,7 @@ components:
           maxLength: 32
         uploadUrl:
           type: string
+          default: 'http://localhost:1080/files/'
           readOnly: true
       required:
         - uploadUrl
