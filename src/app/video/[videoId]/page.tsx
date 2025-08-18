@@ -14,6 +14,7 @@ export default async function VideoPage({ params }: { params: Promise<{ videoId:
 
   const { data: video, status } = await ssrVideosRetrieve(videoId, {
     headers,
+    next: { revalidate: 60 },
   });
   if (status === 404) return notFound();
   if (status !== 200)
