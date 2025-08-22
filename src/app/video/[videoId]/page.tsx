@@ -1,4 +1,4 @@
-import { VideoCard } from "@/app/video/[videoId]/videoCard";
+import { VideoCard } from "@/app/video/[videoId]/VideoCard";
 import { getCookiesFromRequest } from "@/app/profile/getCookiesFromRequest";
 import { notFound } from "next/navigation";
 import { profileIsAdminOrMember } from "@/app/organization/[organizationId]/admin/profileIsAdminOrMember";
