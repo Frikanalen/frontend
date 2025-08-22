@@ -115,7 +115,6 @@ export function MDXEditorField<
         <CardBody className="w-full bg-default-100 p-0">
           <ForwardRefEditor
             ref={editorRef}
-            className={"h-80"}
             markdown={(field.value as unknown as string) ?? ""}
             onChange={field.onChange}
             onBlur={field.onBlur}

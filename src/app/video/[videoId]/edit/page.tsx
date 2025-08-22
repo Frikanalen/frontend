@@ -24,7 +24,7 @@ export default async function Page({ params }: VideoPageProps) {
   if (!user?.editorOf.some(({ id }) => id == video.organization.id)) return forbidden();
 
   return (
-    <section className={"bg-background rounded-md shadow-lg p-4 space-y-3"}>
+    <section className={"bg-background rounded-md shadow-lg p-8 space-y-3"}>
       <div className={"prose dark:prose-invert"}>
         <h2>Rediger video</h2>
       </div>

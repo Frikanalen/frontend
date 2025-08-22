@@ -24,7 +24,7 @@ export default function InitializedMDXEditor({
 }: { editorRef: ForwardedRef<MDXEditorMethods> | null } & MDXEditorProps) {
   return (
     <MDXEditor
-      contentEditableClassName="prose! dark:prose-invert!"
+      contentEditableClassName="prose! dark:prose-invert! h-80 grow max-w-none!"
       plugins={[
         headingsPlugin({ allowedHeadingLevels: [3, 4, 5, 6] }),
         listsPlugin(),
