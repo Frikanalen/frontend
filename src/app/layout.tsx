@@ -9,7 +9,6 @@ import { Footer } from "@/components/layout/Footer";
 import { getCookiesFromRequest } from "@/app/profile/getCookiesFromRequest";
 import { getUserOrNull } from "@/app/getUserOrNull";
 import Head from "next/head";
-
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],

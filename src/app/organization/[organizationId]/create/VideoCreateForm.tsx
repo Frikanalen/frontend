@@ -40,6 +40,7 @@ export const VideoCreateForm = ({
           placeholder={"Beskrivelse"}
           label={"Beskrivelse"}
           labelPlacement={"outside-top"}
+          maxLength={255}
           isRequired
         />
         <input type={"hidden"} {...register("organization")} value={organizationId} />

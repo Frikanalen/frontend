@@ -3,6 +3,7 @@ import { Organization } from "@/generated/frikanalenDjangoAPI.schemas";
 import { Button, Link } from "@heroui/react";
 
 import { OutstandingVideosList } from "@/app/profile/OutstandingVideosList";
+import { OrgVideosList } from "@/app/organization/[organizationId]/OrgVideosList";
 
 export const OrgAdminPage = ({ organization }: { organization: Organization }) => {
   return (
@@ -22,6 +23,7 @@ export const OrgAdminPage = ({ organization }: { organization: Organization }) =
           Ny video
         </Button>
       </div>
+      <OrgVideosList organizationId={organization.id} />
       <OutstandingVideosList organizationId={organization.id} />
     </section>
   );

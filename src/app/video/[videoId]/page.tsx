@@ -5,7 +5,6 @@ import { profileIsAdminOrMember } from "@/app/organization/[organizationId]/admi
 import { getUserOrNull } from "@/app/getUserOrNull";
 import { VideoCardForAdmin } from "@/app/video/[videoId]/VideoCardForAdmin";
 import { ssrVideosRetrieve } from "@/generated/ssr/videos/videos";
-import Head from "next/head";
 import { Metadata } from "next";
 
 export const revalidate = 60;
@@ -23,6 +22,7 @@ export async function generateMetadata({ params }: VideoPageProps): Promise<Meta
 
   const { data: video, status } = await ssrVideosRetrieve(videoId, {
     cache: "no-store",
+    next: { tags: [`video:${videoId}`] },
   });
   if (status !== 200)
     return {
@@ -51,24 +51,18 @@ export default async function VideoPage({ params }: VideoPageProps) {
 
   const { data: video, status } = await ssrVideosRetrieve(videoId, {
     headers,
-    cache: "no-store",
+    cache: "no-cache",
+    next: { tags: [`video:${videoId}`] },
   });
+
   if (status === 404) return notFound();
   if (status !== 200)
     throw new Error(
       `Unexpected status code ${status} when fetching video ${videoId} from ssrVideosRetrieve`,
     );
-
+  console.log(video.description);
   const user = await getUserOrNull(headers);
-
   const mayEdit = profileIsAdminOrMember(video.organization.id, user);
 
-  return (
-    <main className="w-full max-w-5xl grow px-2">
-      <Head>
-        <title>{video.name}</title>
-      </Head>
-      {mayEdit ? <VideoCardForAdmin video={video} /> : <VideoCard video={video} />}
-    </main>
-  );
+  return mayEdit ? <VideoCardForAdmin video={video} /> : <VideoCard video={video} />;
 }
