@@ -1,13 +1,13 @@
 "use client";
-import dynamic from "next/dynamic";
+// import dynamic from "next/dynamic";
 import { Card, CardBody } from "@heroui/react";
 import { ScheduleitemRead } from "@/generated/frikanalenDjangoAPI.schemas";
 import { MetadataCurrentAndNext } from "@/components/stream/metadataCurrentAndNext";
 import { Alert } from "@heroui/alert";
 
-const VideoPlayer = dynamic(() => import("@/components/stream/VideoPlayer"), {
-  ssr: false,
-});
+// const VideoPlayer = dynamic(() => import("@/components/stream/VideoPlayer"), {
+//   ssr: false,
+// });
 
 export const Live = ({ schedule }: { schedule: ScheduleitemRead[] }) => {
   return (
