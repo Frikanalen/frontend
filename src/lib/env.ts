@@ -7,7 +7,9 @@ const EnvSchema = z.object({
 
 export const env = isServer
   ? EnvSchema.parse({
-      DJANGO_URL: process.env.DJANGO_URL,
+      DJANGO_URL: process.env.DJANGO_URL?.length
+        ? process.env.DJANGO_URL
+        : "https://frikanalen.no/",
     })
   : {
       DJANGO_URL: "/api/",
