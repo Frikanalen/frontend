@@ -28,10 +28,6 @@ export default defineConfig({
       mode: "tags-split",
       mock: true,
       override: {
-        mutator: {
-          path: "./src/api/mutator/ssrFetch.ts",
-          name: "ssrFetch",
-        },
         // Prefix "ssr"; operationId if present; else build from verb+route
         operationName: (op, route, verb) =>
           "ssr" +
