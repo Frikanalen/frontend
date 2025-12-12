@@ -1,11 +1,9 @@
 replicaCount: 1
 
-deployment:
-  image: ghcr.io/frikanalen/frontend
+image:
+  repository: ghcr.io/frikanalen/frontend
+  tag: ""
   pullPolicy: Always
-
-django:
-  url: http://beta.frikanalen.no
 
 service:
   type: ClusterIP
@@ -14,15 +12,7 @@ service:
 ingress:
   enabled: true
   className: traefik
+  hostname: beta.frikanalen.no
   certResolver: letsencrypt
-  annotations:
-    traefik.ingress.kubernetes.io/router.entrypoints: websecure
-    traefik.ingress.kubernetes.io/router.tls: "true"
-  hosts:
-    - host: beta.frikanalen.no
-      paths:
-        - path: /
-          pathType: Prefix
 
 resources: {}
-
