@@ -10,11 +10,6 @@ on:
     paths-ignore:
       - 'chart/**'
   workflow_dispatch:
-    inputs:
-      ref:
-        description: 'Branch/tag/SHA to build'
-        required: false
-        default: ''
 
 permissions:
   contents: read
@@ -40,7 +35,7 @@ jobs:
         with:
           images: ghcr.io/frikanalen/frontend
           tags: |
-            type=raw,value=latest,enable={{is_default_branch && github.event_name != 'workflow_dispatch'}}
+            type=raw,value=latest,enable={{is_default_branch}}
             type=ref,event=branch
             type=ref,event=tag
             type=sha
