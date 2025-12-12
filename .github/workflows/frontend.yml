@@ -2,13 +2,6 @@ name: Frontend build
 
 on:
   push:
-    branches: [main]
-    paths-ignore:
-      - 'chart/**'
-  pull_request:
-    branches: [main]
-    paths-ignore:
-      - 'chart/**'
   workflow_dispatch:
 
 permissions:
@@ -47,12 +40,12 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and (if not PR) push
+      - name: Build and push
         uses: docker/build-push-action@v5
         with:
           build-args: |
             NEXT_PUBLIC_DJANGO_URL=https://frikanalen.no
-          push: ${{ github.event_name != 'pull_request' }}
+          push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
