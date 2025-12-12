@@ -1,3 +1,4 @@
+import { env } from "@/lib/env";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
@@ -5,14 +6,15 @@ const nextConfig: NextConfig = {
   experimental: {
     authInterrupts: true,
   },
-  async rewrites() {
-    return [
+  trailingSlash: true,
+  rewrites: async () => ({
+    beforeFiles: [
       {
         source: "/api/:path*",
-        destination: "http://localhost:8000/api/:path*",
+        destination: `${env.DJANGO_URL}/:path*`,
       },
-    ];
-  },
+    ],
+  }),
 };
 
 export default nextConfig;

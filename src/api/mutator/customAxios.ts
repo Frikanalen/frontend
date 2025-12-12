@@ -1,8 +1,8 @@
-import Axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from "axios";
 import { env } from "@/lib/env";
+import Axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from "axios";
 
 export const AXIOS_INSTANCE = Axios.create({
-  baseURL: env.NEXT_PUBLIC_DJANGO_URL,
+  baseURL: env.DJANGO_URL,
   xsrfCookieName: "csrftoken",
   xsrfHeaderName: "x-csrftoken",
   withXSRFToken: true,

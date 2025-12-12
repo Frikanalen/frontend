@@ -47,8 +47,6 @@ jobs:
       - name: Build and (if not PR) push
         uses: docker/build-push-action@v5
         with:
-          build-args: |
-            NEXT_PUBLIC_DJANGO_URL=https://frikanalen.no
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}

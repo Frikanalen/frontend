@@ -21,5 +21,8 @@ spec:
           ports:
             - containerPort: 3000
               protocol: TCP
+          env:
+            - name: DJANGO_URL
+              value: {{ .Values.djangoUrl | quote }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}

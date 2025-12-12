@@ -1,9 +1,14 @@
-import * as z from "zod"
+import { isServer } from "@tanstack/react-query";
+import * as z from "zod";
 
-const PublicEnvSchema = z.object({
-    NEXT_PUBLIC_DJANGO_URL: z.string()
-})
+const EnvSchema = z.object({
+  DJANGO_URL: z.url(),
+});
 
-export const env = PublicEnvSchema.parse({
-    NEXT_PUBLIC_DJANGO_URL: process.env.NEXT_PUBLIC_DJANGO_URL
-})
+export const env = isServer
+  ? EnvSchema.parse({
+      DJANGO_URL: process.env.DJANGO_URL,
+    })
+  : {
+      DJANGO_URL: "/api/",
+    };
