@@ -1,6 +1,13 @@
 2025-05-31 
 # Changelog
 
+## [2.0.1](https://github.com/Frikanalen/frontend/compare/v2.0.0...v2.0.1) (2025-12-18)
+
+
+### Bug Fixes
+
+* Docker builds not tagging releases ([049c667](https://github.com/Frikanalen/frontend/commit/049c667d37b9939378d318db5327efc68b0c8cbf))
+
 ## [2.0.0](https://github.com/Frikanalen/frontend/compare/v1.0.0...v2.0.0) (2025-12-12)
 
 
