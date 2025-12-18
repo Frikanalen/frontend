@@ -1,6 +1,13 @@
 2025-05-31 
 # Changelog
 
+## [2.0.3](https://github.com/Frikanalen/frontend/compare/v2.0.2...v2.0.3) (2025-12-18)
+
+
+### Bug Fixes
+
+* build directly in release-please context ([b9580ca](https://github.com/Frikanalen/frontend/commit/b9580ca29360bbcb309e32e0439e25bdc56c8588))
+
 ## [2.0.2](https://github.com/Frikanalen/frontend/compare/v2.0.1...v2.0.2) (2025-12-18)
 
 
