@@ -1,6 +1,13 @@
 2025-05-31 
 # Changelog
 
+## [2.0.4](https://github.com/Frikanalen/frontend/compare/v2.0.3...v2.0.4) (2025-12-18)
+
+
+### Bug Fixes
+
+* set DJANGO_URL ([e08883b](https://github.com/Frikanalen/frontend/commit/e08883be5ef045b08762394961dad57f67377204))
+
 ## [2.0.3](https://github.com/Frikanalen/frontend/compare/v2.0.2...v2.0.3) (2025-12-18)
 
 
