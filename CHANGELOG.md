@@ -1,6 +1,13 @@
 2025-05-31 
 # Changelog
 
+## [2.0.2](https://github.com/Frikanalen/frontend/compare/v2.0.1...v2.0.2) (2025-12-18)
+
+
+### Bug Fixes
+
+* try getting the history in checkout ([6507aba](https://github.com/Frikanalen/frontend/commit/6507aba116ef976a4a73295a212e17d061da80c2))
+
 ## [2.0.1](https://github.com/Frikanalen/frontend/compare/v2.0.0...v2.0.1) (2025-12-18)
 
 
