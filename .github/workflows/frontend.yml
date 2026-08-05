@@ -11,8 +11,11 @@ permissions:
   packages: write
 
 jobs:
-  build:
+  release:
     runs-on: ubuntu-latest
+    outputs:
+      created: ${{ steps.release.outputs.release_created }}
+      tag: ${{ steps.release.outputs.tag_name }}
     steps:
       - name: Release PR or GitHub Release (main only)
         id: release
@@ -21,33 +24,39 @@ jobs:
         with:
           release-type: node
 
+  build:
+    name: Build ${{ matrix.environment }} image
+    needs: release
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - environment: production
+            django_url: https://frikanalen.no
+            tag_suffix: ""
+            rolling_tag: latest
+          - environment: staging
+            django_url: https://staging.frikanalen.no
+            tag_suffix: -staging
+            rolling_tag: staging
+    steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Extract production Docker metadata
-        id: meta_production
+      - name: Extract Docker metadata
+        id: meta
         uses: docker/metadata-action@v5
         with:
           images: ghcr.io/frikanalen/frontend
           tags: |
-            type=ref,event=branch
-            type=sha,prefix=sha-,format=short
-            type=raw,value=latest,enable={{is_default_branch}}
-            type=raw,value=${{ steps.release.outputs.tag_name }},enable=${{ github.ref == 'refs/heads/main' && steps.release.outputs.release_created == 'true' }}
-
-      - name: Extract staging Docker metadata
-        id: meta_staging
-        uses: docker/metadata-action@v5
-        with:
-          images: ghcr.io/frikanalen/frontend
-          tags: |
-            type=ref,event=branch,suffix=-staging
-            type=sha,prefix=sha-,suffix=-staging,format=short
-            type=raw,value=staging,enable={{is_default_branch}}
-            type=raw,value=${{ steps.release.outputs.tag_name }}-staging,enable=${{ github.ref == 'refs/heads/main' && steps.release.outputs.release_created == 'true' }}
+            type=ref,event=branch,suffix=${{ matrix.tag_suffix }}
+            type=sha,prefix=sha-,suffix=${{ matrix.tag_suffix }},format=short
+            type=raw,value=${{ matrix.rolling_tag }},enable={{is_default_branch}}
+            type=raw,value=${{ needs.release.outputs.tag }}${{ matrix.tag_suffix }},enable=${{ github.ref == 'refs/heads/main' && needs.release.outputs.created == 'true' }}
 
       - name: Log in to GHCR
         uses: docker/login-action@v3
@@ -56,26 +65,14 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push production image
+      - name: Build and push image
         uses: docker/build-push-action@v5
         with:
           context: .
           build-args: |
-            NEXT_PUBLIC_DJANGO_URL=https://frikanalen.no
+            NEXT_PUBLIC_DJANGO_URL=${{ matrix.django_url }}
           push: true
-          tags: ${{ steps.meta_production.outputs.tags }}
-          labels: ${{ steps.meta_production.outputs.labels }}
-          cache-from: type=gha,scope=production
-          cache-to: type=gha,mode=max,scope=production
-
-      - name: Build and push staging image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          build-args: |
-            NEXT_PUBLIC_DJANGO_URL=https://staging.frikanalen.no
-          push: true
-          tags: ${{ steps.meta_staging.outputs.tags }}
-          labels: ${{ steps.meta_staging.outputs.labels }}
-          cache-from: type=gha,scope=staging
-          cache-to: type=gha,mode=max,scope=staging
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=${{ matrix.environment }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.environment }}
