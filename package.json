@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "next dev --turbopack",
-    "prettier": "prettier -w src/",
+    "prettier": "prettier",
+    "format": "prettier --write src/",
+    "format:check": "prettier --check src/",
     "build": "orval && next build",
     "start": "next start",
     "fetch-api": "wget -nv http://localhost:8000/api/schema/ -O django-api.yaml && npx -y openapi-format django-api.yaml -o django-api.yaml && rm -rf src/generated/* && orval",
