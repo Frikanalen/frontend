@@ -1,6 +1,13 @@
 2025-05-31 
 # Changelog
 
+## [2.0.5](https://github.com/Frikanalen/frontend/compare/v2.0.4...v2.0.5) (2026-08-05)
+
+
+### Bug Fixes
+
+* **ci:** build separate staging frontend image ([bf7443f](https://github.com/Frikanalen/frontend/commit/bf7443f397ac74f21da90cebe1e7e302973807f0))
+
 ## [2.0.4](https://github.com/Frikanalen/frontend/compare/v2.0.3...v2.0.4) (2025-12-18)
 
 
