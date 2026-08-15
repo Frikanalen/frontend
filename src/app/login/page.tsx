@@ -60,7 +60,7 @@ export default function Login() {
                   isRequired
                   label="E-post"
                   type="email"
-                  autoComplete={"section-login username"}
+                  autoComplete={"username"}
                   {...field}
                 />
               )}
@@ -70,11 +70,12 @@ export default function Login() {
               name={"password"}
               render={({ field }) => (
                 <Input
+                  id="password"
                   isRequired
                   label="Passord"
                   {...field}
                   type="password"
-                  autoComplete={"section-login password"}
+                  autoComplete={"current-password"}
                 />
               )}
             />

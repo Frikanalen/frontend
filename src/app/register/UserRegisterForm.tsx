@@ -23,16 +23,16 @@ export const UserRegisterForm = ({ className }: { className?: string }) => {
           {...register("email")}
           label={"Epost (brukernavn)"}
           labelPlacement={"outside-top"}
-          autoComplete={"section-register username"}
+          autoComplete={"username"}
         />
         <Input
-          autoComplete={"section-register given-name"}
+          autoComplete={"given-name"}
           {...register("firstName")}
           label={"Fornavn"}
           labelPlacement={"outside-top"}
         />
         <Input
-          autoComplete={"section-register family-name"}
+          autoComplete={"family-name"}
           {...register("lastName")}
           label={"Etternavn"}
           labelPlacement={"outside-top"}
@@ -41,7 +41,7 @@ export const UserRegisterForm = ({ className }: { className?: string }) => {
           {...register("password")}
           label={"Passord"}
           type={"password"}
-          autoComplete={"section-register new-password"}
+          autoComplete={"new-password"}
           labelPlacement={"outside-top"}
         />
       </div>
