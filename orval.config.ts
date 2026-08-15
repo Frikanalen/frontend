@@ -6,6 +6,9 @@ export default defineConfig({
     output: {
       target: "./src/generated",
       client: "react-query",
+      // Orval 8 changed the default httpClient from axios to fetch; pin it so
+      // the generated client keeps matching the customAxios mutator below.
+      httpClient: "axios",
       mode: "tags-split",
       mock: true,
       override: {
