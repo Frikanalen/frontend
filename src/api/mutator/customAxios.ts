@@ -1,10 +1,16 @@
 import Axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from "axios";
 
-// Relative baseURL: this runs in the browser, so requests go to the same
-// origin the page was served from (staging or production), which the
-// ingress already routes to the matching Django backend under /api.
+// Generated API functions get called both from the browser (client
+// components/hooks) and from Node during SSR (Server Components call them
+// directly, not just via hooks). In the browser a relative baseURL resolves
+// against the page's own origin, which the ingress routes to the matching
+// backend - but Node's fetch/axios can't resolve a relative URL at all, so
+// the server needs an absolute one from DJANGO_URL instead.
+const baseURL =
+  typeof window === "undefined" ? (process.env.DJANGO_URL ?? "http://localhost:8000/") : "";
+
 export const AXIOS_INSTANCE = Axios.create({
-  baseURL: "",
+  baseURL,
   xsrfCookieName: "csrftoken",
   xsrfHeaderName: "x-csrftoken",
   withXSRFToken: true,
