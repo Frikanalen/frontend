@@ -2,85 +2,59 @@
 import { Button, Form, Input } from "@heroui/react";
 import Link from "next/link";
 import z from "zod";
-import { Controller, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useUserLoginCreate } from "@/generated/user/user";
-import { useState } from "react";
-import { isAxiosError } from "axios";
 import type { LoginRequest } from "@/generated/frikanalenDjangoAPI.schemas";
+import { useApiFormSubmit } from "@/lib/useApiFormSubmit";
+import { FormError } from "@/components/form/FormError";
 
 const UserLoginFormSchema = z.object({
-  email: z.string(),
-  password: z.string(),
+  email: z.email("Skriv inn en gyldig e-postadresse."),
+  password: z.string().min(1, "Skriv inn passordet ditt."),
 });
 
 export default function Login() {
-  const { control, handleSubmit } = useForm<LoginRequest>({
+  const form = useForm<LoginRequest>({
     resolver: zodResolver(UserLoginFormSchema),
   });
+  const { register, formState } = form;
   const { mutateAsync } = useUserLoginCreate();
-  const [error, setError] = useState<string | null>(null);
 
-  const onSubmit = async (data: LoginRequest) => {
-    setError(null);
-    return mutateAsync({ data })
-      .then(() => window.location.assign("/profile"))
-
-      .catch((error) => {
-        if (!isAxiosError(error) || !(error instanceof Error)) {
-          setError(JSON.stringify(error, null, 2));
-          return;
-        }
-
-        if (!error.response) {
-          setError(error.message);
-          return;
-        }
-
-        if (error.response.data.detail) {
-          setError(error.response.data.detail);
-        } else {
-          setError(`Error: ${error.response.data}`);
-        }
-      });
-  };
+  const { onSubmit, error, isSubmitting } = useApiFormSubmit(form, async (data) => {
+    await mutateAsync({ data });
+    // we force a refresh because profile data is rendered server-side
+    window.location.assign("/profile");
+  });
 
   return (
     <section className={"w-full max-w-3xl bg-background p-4 rounded-lg shadow-lg mt-10"}>
       <div className={"grid-cols-2 grid gap-8"}>
-        <Form onSubmit={handleSubmit(onSubmit)}>
+        <Form onSubmit={onSubmit}>
           <div className={"flex flex-col gap-4 w-full"}>
             <h2 className={"text-lg font-bold"}>Logg inn</h2>
-            <Controller
-              control={control}
-              name={"email"}
-              render={({ field }) => (
-                <Input
-                  id="email"
-                  isRequired
-                  label="E-post"
-                  type="email"
-                  autoComplete={"username"}
-                  {...field}
-                />
-              )}
+            <FormError error={error} />
+            <Input
+              {...register("email")}
+              id="email"
+              isRequired
+              label="E-post"
+              type="email"
+              autoComplete={"username"}
+              isInvalid={!!formState.errors.email}
+              errorMessage={formState.errors.email?.message}
             />
-            <Controller
-              control={control}
-              name={"password"}
-              render={({ field }) => (
-                <Input
-                  id="password"
-                  isRequired
-                  label="Passord"
-                  {...field}
-                  type="password"
-                  autoComplete={"current-password"}
-                />
-              )}
+            <Input
+              {...register("password")}
+              id="password"
+              isRequired
+              label="Passord"
+              type="password"
+              autoComplete={"current-password"}
+              isInvalid={!!formState.errors.password}
+              errorMessage={formState.errors.password?.message}
             />
-            {error}
-            <Button className={"ml-auto"} type="submit">
+            <Button className={"ml-auto"} type="submit" isLoading={isSubmitting}>
               Logg inn
             </Button>
           </div>

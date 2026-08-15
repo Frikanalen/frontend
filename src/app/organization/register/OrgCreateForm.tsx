@@ -5,35 +5,42 @@ import { Button, Form, Input, Textarea } from "@heroui/react";
 import { useOrganizationCreate } from "@/generated/organization/organization";
 import { useRouter } from "next/navigation";
 import cx from "classnames";
+import { useApiFormSubmit } from "@/lib/useApiFormSubmit";
+import { FormError } from "@/components/form/FormError";
 export const OrgCreateForm = ({ className }: { className?: string }) => {
-  const { register, handleSubmit } = useForm<OrganizationRequest>();
+  const form = useForm<OrganizationRequest>();
+  const { register } = form;
   const router = useRouter();
   const { mutateAsync } = useOrganizationCreate();
+
+  const { onSubmit, error, isSubmitting } = useApiFormSubmit(form, async (data) => {
+    const { data: org } = await mutateAsync({ data });
+    router.push(`/organization/${org.id}`);
+  });
+
   return (
-    <Form
-      onSubmit={handleSubmit(async (data) => {
-        const { data: org } = await mutateAsync({ data });
-        router.push(`/organization/${org.id}`);
-      })}
-      className={cx("block", className)}
-      autoComplete={"off"}
-    >
+    <Form onSubmit={onSubmit} className={cx("block", className)} autoComplete={"off"}>
       <div className="flex flex-col gap-4">
+        <FormError error={error} />
         <Input
           label={"Organisasjonens navn"}
           labelPlacement={"outside-top"}
           isRequired
+          id="org-name"
           {...register("name")}
         />
         <Input
           label={"Organisasjonens nettside"}
           labelPlacement={"outside-top"}
+          type={"url"}
+          id="org-homepage"
           {...register("homepage")}
         />
         <Textarea
           label={"En kort beskrivelse av organisasjonen"}
           labelPlacement={"outside-top"}
           classNames={{ input: "py-2" }} // heroui bug? margins very stingy
+          id="org-description"
           {...register("description")}
           isRequired
         />
@@ -42,6 +49,7 @@ export const OrgCreateForm = ({ className }: { className?: string }) => {
             label={"Besøksadresse"}
             labelPlacement={"outside-top"}
             isRequired
+            id="org-streetAddress"
             {...register("streetAddress")}
             classNames={{ input: "py-2" }} // heroui bug? margins very stingy
           />
@@ -49,12 +57,15 @@ export const OrgCreateForm = ({ className }: { className?: string }) => {
             label={"Postadresse"}
             labelPlacement={"outside-top"}
             isRequired
+            id="org-postalAddress"
             {...register("postalAddress")}
             classNames={{ input: "py-2" }} // heroui bug? margins very stingy
           />
         </div>
         <div className="ml-auto">
-          <Button type={"submit"}>Opprett organisasjon</Button>
+          <Button type={"submit"} isLoading={isSubmitting}>
+            Opprett organisasjon
+          </Button>
         </div>
       </div>
     </Form>
