@@ -38,10 +38,7 @@ export const Logo = (props: { className?: string }) => (
         d="M181.25 36.01L179.42 31.25H170.18L168.39 36.01H165.5L173.83 15.78H175.83L184.16 36.01H181.25ZM170.97 29.18H178.63L174.82 19.07L170.97 29.18Z"
         fill="currentColor"
       />
-      <path
-        d="M189.98 33.59H201.84V36.01H187.36V16.17H189.98V33.59Z"
-        fill="currentColor"
-      />
+      <path d="M189.98 33.59H201.84V36.01H187.36V16.17H189.98V33.59Z" fill="currentColor" />
       <path
         d="M217.39 27.04H206.92V33.59H218.78V36.01H204.3V16.17H218.78V18.59H206.92V24.59H217.39V27.04Z"
         fill="currentColor"

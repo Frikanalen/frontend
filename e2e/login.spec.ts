@@ -1,11 +1,13 @@
 import { expect, test, type Page } from "@playwright/test";
 import { hangOn, rejectWith, resolveWith, stubApi, stubPage } from "./support/api";
+import { fillAndConfirm, fillBeforeHydration, waitForHydration } from "./support/hydration";
 
 const LOGIN = "/api/user/login";
 
 test.beforeEach(async ({ page }) => {
   await stubApi(page);
   await page.goto("/login");
+  await waitForHydration(page);
 });
 
 const email = (page: Page) => page.getByLabel("E-post");
@@ -14,8 +16,8 @@ const formAlert = (page: Page) => page.locator("form").getByRole("alert");
 const submit = (page: Page) => page.getByRole("button", { name: "Logg inn" });
 
 const fillInCredentials = async (page: Page) => {
-  await email(page).fill("someone@example.com");
-  await password(page).fill("hunter2");
+  await fillAndConfirm(email(page), "someone@example.com");
+  await fillAndConfirm(password(page), "hunter2");
 };
 
 test.describe("login form", () => {
@@ -90,8 +92,8 @@ test.describe("login form", () => {
   test("rejects a malformed email before reaching the API", async ({ page }) => {
     const attempts = await hangOn(page, LOGIN);
 
-    await email(page).fill("not-an-email");
-    await password(page).fill("hunter2");
+    await fillAndConfirm(email(page), "not-an-email");
+    await fillAndConfirm(password(page), "hunter2");
     await submit(page).click();
 
     // type="email" means the browser's own constraint validation stops this
@@ -106,5 +108,18 @@ test.describe("login form", () => {
     await submit(page).click();
 
     expect(attempts()).toBe(0);
+  });
+
+  // A password manager fills as soon as it sees the fields, which can land
+  // before the bundle runs. react-hook-form defaultValues used to overwrite
+  // the email field during mount, wiping the fill.
+  test("keeps a fill that lands before hydration", async ({ page }) => {
+    await fillBeforeHydration(page, "/login", {
+      email: "manager@example.com",
+      password: "filled-by-manager",
+    });
+
+    await expect(page.locator('input[name="email"]')).toHaveValue("manager@example.com");
+    await expect(page.locator('input[name="password"]')).toHaveValue("filled-by-manager");
   });
 });

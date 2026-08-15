@@ -1,21 +1,23 @@
 import { expect, test, type Page } from "@playwright/test";
 import { hangOn, rejectWith, resolveWith, stubApi, stubPage } from "./support/api";
+import { fillAndConfirm, fillBeforeHydration, waitForHydration } from "./support/hydration";
 
 const REGISTER = "/api/user/register";
 
 test.beforeEach(async ({ page }) => {
   await stubApi(page);
   await page.goto("/register");
+  await waitForHydration(page);
 });
 
 const formAlert = (page: Page) => page.locator("form").getByRole("alert");
 const submit = (page: Page) => page.getByRole("button", { name: "Registrer deg" });
 
 const fillInForm = async (page: Page) => {
-  await page.getByLabel("Epost (brukernavn)").fill("ny@example.com");
-  await page.getByLabel("Fornavn").fill("Kari");
-  await page.getByLabel("Etternavn").fill("Nordmann");
-  await page.getByLabel("Passord").fill("korrekt-hest-batteri");
+  await fillAndConfirm(page.getByLabel("Epost (brukernavn)"), "ny@example.com");
+  await fillAndConfirm(page.getByLabel("Fornavn"), "Kari");
+  await fillAndConfirm(page.getByLabel("Etternavn"), "Nordmann");
+  await fillAndConfirm(page.getByLabel("Passord"), "korrekt-hest-batteri");
 };
 
 test.describe("register form", () => {
@@ -28,6 +30,24 @@ test.describe("register form", () => {
 
   test("gives the email field an email input type", async ({ page }) => {
     await expect(page.getByLabel("Epost (brukernavn)")).toHaveAttribute("type", "email");
+  });
+
+  // React Aria's generated ids carry a random prefix that is regenerated on
+  // every client-side render, so a form reached by SPA navigation used to look
+  // like a brand new form to anything fingerprinting it by field id.
+  test("keeps field ids stable when reached by client-side navigation", async ({ page }) => {
+    const ids = () =>
+      page.locator("form input").evaluateAll((els) => els.map((el) => el.id).sort());
+
+    const onDirectLoad = await ids();
+    expect(onDirectLoad).toEqual(["email", "firstName", "lastName", "password"]);
+
+    await page.goto("/login");
+    await page.locator('a[href="/register"]').first().click();
+    await page.waitForURL("**/register");
+    await waitForHydration(page);
+
+    expect(await ids()).toEqual(onDirectLoad);
   });
 
   test("registers the account and redirects to the profile", async ({ page }) => {
@@ -90,5 +110,18 @@ test.describe("register form", () => {
     await submit(page).click({ force: true });
 
     expect(attempts()).toBe(1);
+  });
+
+  // A password manager fills as soon as it sees the fields, which can land
+  // before the bundle runs. react-hook-form defaultValues used to overwrite
+  // the email field during mount, wiping the fill.
+  test("keeps a fill that lands before hydration", async ({ page }) => {
+    await fillBeforeHydration(page, "/register", {
+      email: "manager@example.com",
+      password: "filled-by-manager",
+    });
+
+    await expect(page.locator('input[name="email"]')).toHaveValue("manager@example.com");
+    await expect(page.locator('input[name="password"]')).toHaveValue("filled-by-manager");
   });
 });

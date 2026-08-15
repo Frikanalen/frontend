@@ -32,6 +32,7 @@ export const VideoCreateForm = ({
       <div className="flex flex-col gap-4">
         <FormError error={error} />
         <Input
+          id="video-name"
           {...register("name")}
           placeholder={"Videotittel"}
           label={"Videotittel"}
@@ -39,6 +40,7 @@ export const VideoCreateForm = ({
           isRequired
         />
         <Textarea
+          id="video-description"
           {...register("description")}
           classNames={{ input: "py-2" }} // heroui bug? margins very stingy
           placeholder={"Beskrivelse"}

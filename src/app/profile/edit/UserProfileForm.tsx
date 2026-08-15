@@ -23,18 +23,21 @@ export const UserProfileForm = ({ user, className }: { user: User; className?: s
       <div className="flex flex-col gap-4">
         <FormError error={error} />
         <Input
+          id="firstName"
           {...register("firstName")}
           autoComplete={"given-name"}
           label={"Fornavn"}
           labelPlacement={"outside-top"}
         />
         <Input
+          id="lastName"
           {...register("lastName")}
           autoComplete={"family-name"}
           label={"Etternavn"}
           labelPlacement={"outside-top"}
         />
         <Input
+          id="phoneNumber"
           {...register("phoneNumber")}
           type={"tel"}
           autoComplete={"tel"}

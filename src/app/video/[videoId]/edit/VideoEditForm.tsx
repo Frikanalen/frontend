@@ -29,7 +29,12 @@ export const VideoEditForm = ({ video }: { video: Video }) => {
     <div>
       <Form onSubmit={onSubmit}>
         <FormError error={error} />
-        <Input label={"Navn"} labelPlacement={"outside-top"} {...register("name")} />
+        <Input
+          label={"Navn"}
+          labelPlacement={"outside-top"}
+          id="video-name"
+          {...register("name")}
+        />
         <MDXEditorField
           className={"w-full"}
           label={"Beskrivelse"}

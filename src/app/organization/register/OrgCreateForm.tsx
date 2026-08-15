@@ -26,18 +26,21 @@ export const OrgCreateForm = ({ className }: { className?: string }) => {
           label={"Organisasjonens navn"}
           labelPlacement={"outside-top"}
           isRequired
+          id="org-name"
           {...register("name")}
         />
         <Input
           label={"Organisasjonens nettside"}
           labelPlacement={"outside-top"}
           type={"url"}
+          id="org-homepage"
           {...register("homepage")}
         />
         <Textarea
           label={"En kort beskrivelse av organisasjonen"}
           labelPlacement={"outside-top"}
           classNames={{ input: "py-2" }} // heroui bug? margins very stingy
+          id="org-description"
           {...register("description")}
           isRequired
         />
@@ -46,6 +49,7 @@ export const OrgCreateForm = ({ className }: { className?: string }) => {
             label={"Besøksadresse"}
             labelPlacement={"outside-top"}
             isRequired
+            id="org-streetAddress"
             {...register("streetAddress")}
             classNames={{ input: "py-2" }} // heroui bug? margins very stingy
           />
@@ -53,6 +57,7 @@ export const OrgCreateForm = ({ className }: { className?: string }) => {
             label={"Postadresse"}
             labelPlacement={"outside-top"}
             isRequired
+            id="org-postalAddress"
             {...register("postalAddress")}
             classNames={{ input: "py-2" }} // heroui bug? margins very stingy
           />

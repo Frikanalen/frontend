@@ -9,9 +9,7 @@ import { FormError } from "@/components/form/FormError";
 
 export const UserRegisterForm = ({ className }: { className?: string }) => {
   const { mutateAsync } = useUserRegisterCreate();
-  const form = useForm<NewUserRequest>({
-    defaultValues: { email: "", firstName: "", lastName: "", password: "" },
-  });
+  const form = useForm<NewUserRequest>();
   const { register } = form;
 
   const { onSubmit, error, isSubmitting } = useApiFormSubmit(form, async (data) => {
@@ -25,6 +23,7 @@ export const UserRegisterForm = ({ className }: { className?: string }) => {
       <div className="flex flex-col gap-4">
         <FormError error={error} />
         <Input
+          id="email"
           {...register("email")}
           type={"email"}
           label={"Epost (brukernavn)"}
@@ -33,6 +32,7 @@ export const UserRegisterForm = ({ className }: { className?: string }) => {
           isRequired
         />
         <Input
+          id="firstName"
           {...register("firstName")}
           autoComplete={"given-name"}
           label={"Fornavn"}
@@ -40,6 +40,7 @@ export const UserRegisterForm = ({ className }: { className?: string }) => {
           isRequired
         />
         <Input
+          id="lastName"
           {...register("lastName")}
           autoComplete={"family-name"}
           label={"Etternavn"}
@@ -47,6 +48,7 @@ export const UserRegisterForm = ({ className }: { className?: string }) => {
           isRequired
         />
         <Input
+          id="password"
           {...register("password")}
           label={"Passord"}
           type={"password"}
