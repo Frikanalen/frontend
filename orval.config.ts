@@ -36,15 +36,21 @@ export default defineConfig({
           path: "./src/api/mutator/serverFetch.ts",
           name: "serverFetch",
         },
-        // Prefix "ssr"; operationId if present; else build from verb+route
-        operationName: (op, route, verb) =>
-          "ssr" +
-          (op.operationId ?? `${verb}${route}`)
-            .replace(/[{}]/g, "")
-            .split(/[\/_-]/)
-            .filter(Boolean)
-            .map((s) => s[0].toUpperCase() + s.slice(1))
-            .join(""),
+        // Prefix "ssr"; operationId if present; else build from verb+route.
+        // The annotation matters: orval types operationId as `any`, which
+        // would otherwise leave every link in the chain below untyped.
+        operationName: (op, route, verb) => {
+          const base: string = op.operationId ?? `${verb}${route}`;
+          return (
+            "ssr" +
+            base
+              .replace(/[{}]/g, "")
+              .split(/[\/_-]/)
+              .filter(Boolean)
+              .map((s) => s[0].toUpperCase() + s.slice(1))
+              .join("")
+          );
+        },
       },
     },
     hooks: {
