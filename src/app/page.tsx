@@ -1,9 +1,9 @@
 import { Live } from "@/components/stream/live";
 import { scheduleitemsList } from "@/generated/scheduleitems/scheduleitems";
+import { formatOsloDateISO } from "../lib/formatOsloDateISO";
 
 export default async function Home() {
-  const date = new Date().toISOString().split("T")[0];
-
+  const date = formatOsloDateISO(new Date());
   const { data } = await scheduleitemsList({ date });
 
   return (
