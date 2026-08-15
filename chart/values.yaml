@@ -2,10 +2,10 @@ replicaCount: 1
 
 image:
   repository: ghcr.io/frikanalen/frontend
-  # NEXT_PUBLIC_* values are embedded by Next.js at build time. The staging
-  # image is built with NEXT_PUBLIC_DJANGO_URL=https://staging.frikanalen.no.
-  tag: staging
+  tag: ""
   pullPolicy: Always
+
+djangoUrl: "https://beta.frikanalen.no"
 
 service:
   type: ClusterIP

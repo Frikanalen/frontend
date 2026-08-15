@@ -18,6 +18,9 @@ spec:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default "latest" }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: DJANGO_URL
+              value: {{ .Values.djangoUrl | quote }}
           ports:
             - containerPort: 3000
               protocol: TCP
