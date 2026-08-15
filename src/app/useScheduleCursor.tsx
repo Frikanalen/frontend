@@ -10,18 +10,28 @@ type ScheduleCursor = {
 };
 
 // Gets the index of the current program in the given schedule item list, or -1 if not found.
-export const getCurrentProgramIndex = (now: Date, schedule: ScheduleitemRead[]) =>
-  schedule.findIndex((item) => isWithinInterval(now, interval(item.starttime, item.endtime)));
+export const getCurrentProgramIndex = (
+  now: Date,
+  schedule: ScheduleitemRead[],
+) =>
+  schedule.findIndex((item) =>
+    isWithinInterval(now, interval(item.starttime, item.endtime)),
+  );
 
 // Gets the upcoming program on the given schedule, according to given date.
-const getScheduleCursor = (now: Date, schedule: ScheduleitemRead[]): ScheduleCursor => ({
+const getScheduleCursor = (
+  now: Date,
+  schedule: ScheduleitemRead[],
+): ScheduleCursor => ({
   currentProgram: schedule.at(getCurrentProgramIndex(now, schedule)),
   nextProgram: schedule.at(getCurrentProgramIndex(now, schedule) + 1),
 });
 
 // Get the currently airing, and the upcoming program, according to user system clock.
 // The clock is updated once per second, and all uses of this hook will trigger updates at the same time.
-export const useScheduleCursor = (schedule: ScheduleitemRead[]): ScheduleCursor => {
+export const useScheduleCursor = (
+  schedule: ScheduleitemRead[],
+): ScheduleCursor => {
   const [scheduleCursor, setScheduleCursor] = useState<ScheduleCursor>(() =>
     getScheduleCursor(new Date(), schedule),
   );
@@ -30,7 +40,8 @@ export const useScheduleCursor = (schedule: ScheduleitemRead[]): ScheduleCursor 
   // trigger a state update.
   const update = () => {
     const cursor = getScheduleCursor(new Date(), schedule);
-    if (cursor.currentProgram?.id != scheduleCursor.currentProgram?.id) setScheduleCursor(cursor);
+    if (cursor.currentProgram?.id != scheduleCursor.currentProgram?.id)
+      setScheduleCursor(cursor);
   };
 
   // update the current clock once per second. With useHarmonicInterval,

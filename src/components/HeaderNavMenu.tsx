@@ -5,7 +5,13 @@ import { NavLink } from "@/components/NavLink";
 import Link from "next/link";
 import { User } from "@/generated/frikanalenDjangoAPI.schemas";
 
-export const HeaderNavMenu = ({ className, user }: { className?: string; user: User | null }) => {
+export const HeaderNavMenu = ({
+  className,
+  user,
+}: {
+  className?: string;
+  user: User | null;
+}) => {
   return (
     <Navbar className={className} isBlurred={false}>
       <NavbarContent>

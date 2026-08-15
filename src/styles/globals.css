@@ -8,10 +8,7 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --tw-prose-headings: #f00 !important;
-  --video-border-radius: 10px 10px 0 0;
+    --tw-prose-headings: #f00 !important;
+    --video-border-radius: 10px 10px 0 0;
 }
-@page {
-  size: A4;
-  margin: 15mm;
-}
+@page { size: A4; margin: 15mm; }

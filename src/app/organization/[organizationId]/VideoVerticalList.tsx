@@ -11,8 +11,18 @@ export const VideoVerticalList = ({ videos }: { videos: Video[] }) => {
     >
       <div className="flex flex-col gap-4">
         {videos.map((video) => (
-          <Card as={Link} key={video.id} className="shrink-0" href={`/video/${video.id}`}>
-            <Image alt="" className="aspect-video" src={video.largeThumbnailUrl} width={"100%"} />
+          <Card
+            as={Link}
+            key={video.id}
+            className="shrink-0"
+            href={`/video/${video.id}`}
+          >
+            <Image
+              alt=""
+              className="aspect-video"
+              src={video.largeThumbnailUrl}
+              width={"100%"}
+            />
             <CardFooter
               className={
                 "bg-content1/70" +

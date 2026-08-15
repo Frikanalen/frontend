@@ -1,4 +1,4 @@
-export const MoonIcon = ({ className }: { className?: string }) => {
+export const MoonIcon = ({className}:{className?:string}) => {
   return (
     <svg
       aria-hidden="true"

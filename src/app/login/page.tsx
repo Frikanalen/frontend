@@ -17,7 +17,6 @@ const UserLoginFormSchema = z.object({
 export default function Login() {
   const form = useForm<LoginRequest>({
     resolver: zodResolver(UserLoginFormSchema),
-    defaultValues: { email: "", password: "" },
   });
   const { register, formState } = form;
   const { mutateAsync } = useUserLoginCreate();
