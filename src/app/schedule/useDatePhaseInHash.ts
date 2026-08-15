@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 
 const readHash = () => (typeof window === "undefined" ? "" : window.location.hash.slice(1)); // "3" from "#3"
 
@@ -30,12 +30,15 @@ export function phaseOf(date: Date): Phase {
  */
 export const useDatePhaseInHash = () => {
   const hash = useSyncExternalStore(subscribeHash, readHash, () => "");
-  const defaultPhaseRef = useRef<Phase>(phaseOf(new Date()));
-  const phase: Phase = useMemo(() => parsePhase(hash) ?? defaultPhaseRef.current, [hash]);
+  // Pinned at first render. A ref would work too, but reading one during
+  // render is flagged by react-hooks/refs; a lazy useState initializer is the
+  // render-safe way to hold a write-once value.
+  const [defaultPhase] = useState<Phase>(() => phaseOf(new Date()));
+  const phase: Phase = useMemo(() => parsePhase(hash) ?? defaultPhase, [hash, defaultPhase]);
   // reflect the default phase into the URL once, keeping history clean.
   useEffect(() => {
-    if (hash === "") setPhase(defaultPhaseRef.current, { replace: true });
-  }, [hash]);
+    if (hash === "") setPhase(defaultPhase, { replace: true });
+  }, [hash, defaultPhase]);
 
   return [phase, setPhase] as const;
 };
