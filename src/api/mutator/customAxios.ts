@@ -1,8 +1,10 @@
 import Axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from "axios";
-import { env } from "@/lib/env";
 
+// Relative baseURL: this runs in the browser, so requests go to the same
+// origin the page was served from (staging or production), which the
+// ingress already routes to the matching Django backend under /api.
 export const AXIOS_INSTANCE = Axios.create({
-  baseURL: env.NEXT_PUBLIC_DJANGO_URL,
+  baseURL: "",
   xsrfCookieName: "csrftoken",
   xsrfHeaderName: "x-csrftoken",
   withXSRFToken: true,
