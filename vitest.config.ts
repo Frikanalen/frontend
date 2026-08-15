@@ -4,6 +4,8 @@ import path from "path";
 export default defineConfig({
   test: {
     environment: "happy-dom",
+    // Playwright owns the browser-level suite in e2e/; vitest stays on units.
+    exclude: ["e2e/**", "node_modules/**"],
     coverage: {
       provider: "v8",
       reporter: ["text", "json", "html", "lcov"],

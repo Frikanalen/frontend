@@ -5,20 +5,23 @@ import { Button, Form, Input, Textarea } from "@heroui/react";
 import { useOrganizationCreate } from "@/generated/organization/organization";
 import { useRouter } from "next/navigation";
 import cx from "classnames";
+import { useApiFormSubmit } from "@/lib/useApiFormSubmit";
+import { FormError } from "@/components/form/FormError";
 export const OrgCreateForm = ({ className }: { className?: string }) => {
-  const { register, handleSubmit } = useForm<OrganizationRequest>();
+  const form = useForm<OrganizationRequest>();
+  const { register } = form;
   const router = useRouter();
   const { mutateAsync } = useOrganizationCreate();
+
+  const { onSubmit, error, isSubmitting } = useApiFormSubmit(form, async (data) => {
+    const { data: org } = await mutateAsync({ data });
+    router.push(`/organization/${org.id}`);
+  });
+
   return (
-    <Form
-      onSubmit={handleSubmit(async (data) => {
-        const { data: org } = await mutateAsync({ data });
-        router.push(`/organization/${org.id}`);
-      })}
-      className={cx("block", className)}
-      autoComplete={"off"}
-    >
+    <Form onSubmit={onSubmit} className={cx("block", className)} autoComplete={"off"}>
       <div className="flex flex-col gap-4">
+        <FormError error={error} />
         <Input
           label={"Organisasjonens navn"}
           labelPlacement={"outside-top"}
@@ -28,6 +31,7 @@ export const OrgCreateForm = ({ className }: { className?: string }) => {
         <Input
           label={"Organisasjonens nettside"}
           labelPlacement={"outside-top"}
+          type={"url"}
           {...register("homepage")}
         />
         <Textarea
@@ -54,7 +58,9 @@ export const OrgCreateForm = ({ className }: { className?: string }) => {
           />
         </div>
         <div className="ml-auto">
-          <Button type={"submit"}>Opprett organisasjon</Button>
+          <Button type={"submit"} isLoading={isSubmitting}>
+            Opprett organisasjon
+          </Button>
         </div>
       </div>
     </Form>

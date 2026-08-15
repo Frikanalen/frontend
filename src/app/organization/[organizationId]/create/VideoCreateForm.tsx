@@ -1,11 +1,13 @@
 "use client";
 import { Category, VideoCreateRequest } from "@/generated/frikanalenDjangoAPI.schemas";
-import { Button, Input, Textarea } from "@heroui/react";
+import { Button, Form, Input, Textarea } from "@heroui/react";
 import { Categories } from "@/app/organization/[organizationId]/create/Categories";
 import { useVideosCreate } from "@/generated/videos/videos";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import cx from "classnames";
+import { useApiFormSubmit } from "@/lib/useApiFormSubmit";
+import { FormError } from "@/components/form/FormError";
 export const VideoCreateForm = ({
   organizationId,
   categories,
@@ -17,16 +19,18 @@ export const VideoCreateForm = ({
 }) => {
   const { mutateAsync } = useVideosCreate();
   const router = useRouter();
-  const { register, handleSubmit, control } = useForm<VideoCreateRequest>();
+  const form = useForm<VideoCreateRequest>({ defaultValues: { organization: organizationId } });
+  const { register, control } = form;
+
+  const { onSubmit, error, isSubmitting } = useApiFormSubmit(form, async (data) => {
+    const response = await mutateAsync({ data });
+    router.push(`/video/${response.data.id}/upload`);
+  });
+
   return (
-    <form
-      onSubmit={handleSubmit((data) =>
-        mutateAsync({ data }).then((response) => router.push(`/video/${response.data.id}/upload`)),
-      )}
-      className={cx("block", className)}
-      autoComplete={"off"}
-    >
+    <Form onSubmit={onSubmit} className={cx("block", className)} autoComplete={"off"}>
       <div className="flex flex-col gap-4">
+        <FormError error={error} />
         <Input
           {...register("name")}
           placeholder={"Videotittel"}
@@ -43,12 +47,13 @@ export const VideoCreateForm = ({
           maxLength={255}
           isRequired
         />
-        <input type={"hidden"} {...register("organization")} value={organizationId} />
         <Categories control={control} name={"categories"} categories={categories} />
         <div className="p-2 ml-auto">
-          <Button type="submit">Lag video</Button>
+          <Button type="submit" isLoading={isSubmitting}>
+            Lag video
+          </Button>
         </div>
       </div>
-    </form>
+    </Form>
   );
 };
