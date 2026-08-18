@@ -30,6 +30,7 @@
     "axios": "^1.19.0",
     "classnames": "^2.5.1",
     "clsx": "^2.1.1",
+    "dashjs": "^4.7.4",
     "date-fns": "^4.4.0",
     "framer-motion": "12.23.12",
     "markdown-to-jsx": "^9.10.2",
