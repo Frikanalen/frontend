@@ -19,10 +19,10 @@ export interface IngestDescription {
 
 const STATE_MESSAGES: Record<IngestStateEnum, string> = {
   [IngestStateEnum.pending]: "Filen ligger i kø.",
-  [IngestStateEnum.probing]: "Vi ser på filen du sendte.",
-  [IngestStateEnum.archiving]: "Vi tar vare på originalfilen.",
-  [IngestStateEnum.transcoding]: "Vi lager visningskopier.",
-  [IngestStateEnum.done]: "Videoen er klar.",
+  [IngestStateEnum.probing]: "Analyserer originalfil...",
+  [IngestStateEnum.archiving]: "Arkiverer originalfil...",
+  [IngestStateEnum.transcoding]: "Lager visningskopier...",
+  [IngestStateEnum.done]: "Videoen er klar!",
   [IngestStateEnum.failed]: "Noe gikk galt under behandlingen.",
 };
 
