@@ -5937,30 +5937,6 @@ paths:
           schema:
             type: string
             format: date-time
-        - name: format__fsname
-          in: query
-          description: |-
-            * `large_thumb` - large_thumb
-            * `broadcast` - broadcast
-            * `vc1` - vc1
-            * `med_thumb` - med_thumb
-            * `small_thumb` - small_thumb
-            * `original` - original
-            * `theora` - theora
-            * `srt` - srt
-            * `cloudflare_id` - cloudflare_id
-          schema:
-            type: string
-            enum:
-              - broadcast
-              - cloudflare_id
-              - large_thumb
-              - med_thumb
-              - original
-              - small_thumb
-              - srt
-              - theora
-              - vc1
         - name: integrated_lufs__isnull
           in: query
           schema:
@@ -5983,6 +5959,32 @@ paths:
           required: false
           schema:
             type: string
+        - name: variant
+          in: query
+          description: |-
+            * `large_thumb` - Large thumbnail
+            * `broadcast` - Broadcast master
+            * `vc1` - VC-1
+            * `med_thumb` - Medium thumbnail
+            * `small_thumb` - Small thumbnail
+            * `original` - Original upload
+            * `theora` - Ogg Theora
+            * `srt` - SubRip subtitles
+            * `cloudflare_id` - Cloudflare Stream identifier
+            * `dash` - MPEG-DASH manifest
+          schema:
+            type: string
+            enum:
+              - broadcast
+              - cloudflare_id
+              - dash
+              - large_thumb
+              - med_thumb
+              - original
+              - small_thumb
+              - srt
+              - theora
+              - vc1
         - name: video_id
           in: query
           schema:
@@ -11654,8 +11656,8 @@ components:
       properties:
         video:
           type: integer
-        format:
-          type: integer
+        variant:
+          $ref: '#/components/schemas/VideoFileVariantEnum'
         filename:
           type: string
           maxLength: 256
@@ -11850,16 +11852,17 @@ components:
         id:
           type: integer
           readOnly: true
-        fsname:
-          type: string
+        variant:
+          allOf:
+            - $ref: '#/components/schemas/VideoFileVariantEnum'
           readOnly: true
         filename:
           type: string
           readOnly: true
       required:
         - filename
-        - fsname
         - id
+        - variant
     ScheduleitemsCreateDurationErrorComponent:
       type: object
       properties:
@@ -13606,8 +13609,8 @@ components:
           readOnly: true
         video:
           type: integer
-        format:
-          type: integer
+        variant:
+          $ref: '#/components/schemas/VideoFileVariantEnum'
         filename:
           type: string
           maxLength: 256
@@ -13624,16 +13627,16 @@ components:
       required:
         - createdTime
         - filename
-        - format
         - id
+        - variant
         - video
     VideoFileRequest:
       type: object
       properties:
         video:
           type: integer
-        format:
-          type: integer
+        variant:
+          $ref: '#/components/schemas/VideoFileVariantEnum'
         filename:
           type: string
           maxLength: 256
@@ -13650,8 +13653,32 @@ components:
           title: True peak LUFS of file defined in ITU R.128
       required:
         - filename
-        - format
+        - variant
         - video
+    VideoFileVariantEnum:
+      description: |-
+        * `large_thumb` - Large thumbnail
+        * `broadcast` - Broadcast master
+        * `vc1` - VC-1
+        * `med_thumb` - Medium thumbnail
+        * `small_thumb` - Small thumbnail
+        * `original` - Original upload
+        * `theora` - Ogg Theora
+        * `srt` - SubRip subtitles
+        * `cloudflare_id` - Cloudflare Stream identifier
+        * `dash` - MPEG-DASH manifest
+      type: string
+      enum:
+        - large_thumb
+        - broadcast
+        - vc1
+        - med_thumb
+        - small_thumb
+        - original
+        - theora
+        - srt
+        - cloudflare_id
+        - dash
     VideoRequest:
       description: 'The read serializer: the organization arrives whole.'
       type: object
@@ -13717,14 +13744,14 @@ components:
         mapping:
           non_field_errors: '#/components/schemas/VideofilesCreateNonFieldErrorsErrorComponent'
           video: '#/components/schemas/VideofilesCreateVideoErrorComponent'
-          format: '#/components/schemas/VideofilesCreateFormatErrorComponent'
+          variant: '#/components/schemas/VideofilesCreateVariantErrorComponent'
           filename: '#/components/schemas/VideofilesCreateFilenameErrorComponent'
           integrated_lufs: '#/components/schemas/VideofilesCreateIntegratedLufsErrorComponent'
           truepeak_lufs: '#/components/schemas/VideofilesCreateTruepeakLufsErrorComponent'
       oneOf:
         - $ref: '#/components/schemas/VideofilesCreateNonFieldErrorsErrorComponent'
         - $ref: '#/components/schemas/VideofilesCreateVideoErrorComponent'
-        - $ref: '#/components/schemas/VideofilesCreateFormatErrorComponent'
+        - $ref: '#/components/schemas/VideofilesCreateVariantErrorComponent'
         - $ref: '#/components/schemas/VideofilesCreateFilenameErrorComponent'
         - $ref: '#/components/schemas/VideofilesCreateIntegratedLufsErrorComponent'
         - $ref: '#/components/schemas/VideofilesCreateTruepeakLufsErrorComponent'
@@ -13763,32 +13790,6 @@ components:
             - null_characters_not_allowed
             - required
             - surrogate_characters_not_allowed
-        detail:
-          type: string
-      required:
-        - attr
-        - code
-        - detail
-    VideofilesCreateFormatErrorComponent:
-      type: object
-      properties:
-        attr:
-          description: '* `format` - format'
-          type: string
-          enum:
-            - format
-        code:
-          description: |-
-            * `does_not_exist` - does_not_exist
-            * `incorrect_type` - incorrect_type
-            * `null` - null
-            * `required` - required
-          type: string
-          enum:
-            - does_not_exist
-            - incorrect_type
-            - 'null'
-            - required
         detail:
           type: string
       required:
@@ -13875,6 +13876,30 @@ components:
       required:
         - errors
         - type
+    VideofilesCreateVariantErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `variant` - variant'
+          type: string
+          enum:
+            - variant
+        code:
+          description: |-
+            * `invalid_choice` - invalid_choice
+            * `null` - null
+            * `required` - required
+          type: string
+          enum:
+            - invalid_choice
+            - 'null'
+            - required
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
     VideofilesCreateVideoErrorComponent:
       type: object
       properties:
@@ -13932,11 +13957,11 @@ components:
         propertyName: attr
         mapping:
           video_id: '#/components/schemas/VideofilesListVideoIdErrorComponent'
-          format__fsname: '#/components/schemas/VideofilesListFormat_fsnameErrorComponent'
+          variant: '#/components/schemas/VideofilesListVariantErrorComponent'
           created_time: '#/components/schemas/VideofilesListCreatedTimeErrorComponent'
       oneOf:
         - $ref: '#/components/schemas/VideofilesListVideoIdErrorComponent'
-        - $ref: '#/components/schemas/VideofilesListFormat_fsnameErrorComponent'
+        - $ref: '#/components/schemas/VideofilesListVariantErrorComponent'
         - $ref: '#/components/schemas/VideofilesListCreatedTimeErrorComponent'
     VideofilesListErrorResponse400:
       discriminator:
@@ -13947,25 +13972,6 @@ components:
       oneOf:
         - $ref: '#/components/schemas/VideofilesListValidationError'
         - $ref: '#/components/schemas/ParseErrorResponse'
-    VideofilesListFormat_fsnameErrorComponent:
-      type: object
-      properties:
-        attr:
-          description: '* `format__fsname` - format__fsname'
-          type: string
-          enum:
-            - format__fsname
-        code:
-          description: '* `invalid_choice` - invalid_choice'
-          type: string
-          enum:
-            - invalid_choice
-        detail:
-          type: string
-      required:
-        - attr
-        - code
-        - detail
     VideofilesListValidationError:
       type: object
       properties:
@@ -13978,6 +13984,25 @@ components:
       required:
         - errors
         - type
+    VideofilesListVariantErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `variant` - variant'
+          type: string
+          enum:
+            - variant
+        code:
+          description: '* `invalid_choice` - invalid_choice'
+          type: string
+          enum:
+            - invalid_choice
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
     VideofilesListVideoIdErrorComponent:
       type: object
       properties:
@@ -14003,14 +14028,14 @@ components:
         mapping:
           non_field_errors: '#/components/schemas/VideofilesPartialUpdateNonFieldErrorsErrorComponent'
           video: '#/components/schemas/VideofilesPartialUpdateVideoErrorComponent'
-          format: '#/components/schemas/VideofilesPartialUpdateFormatErrorComponent'
+          variant: '#/components/schemas/VideofilesPartialUpdateVariantErrorComponent'
           filename: '#/components/schemas/VideofilesPartialUpdateFilenameErrorComponent'
           integrated_lufs: '#/components/schemas/VideofilesPartialUpdateIntegratedLufsErrorComponent'
           truepeak_lufs: '#/components/schemas/VideofilesPartialUpdateTruepeakLufsErrorComponent'
       oneOf:
         - $ref: '#/components/schemas/VideofilesPartialUpdateNonFieldErrorsErrorComponent'
         - $ref: '#/components/schemas/VideofilesPartialUpdateVideoErrorComponent'
-        - $ref: '#/components/schemas/VideofilesPartialUpdateFormatErrorComponent'
+        - $ref: '#/components/schemas/VideofilesPartialUpdateVariantErrorComponent'
         - $ref: '#/components/schemas/VideofilesPartialUpdateFilenameErrorComponent'
         - $ref: '#/components/schemas/VideofilesPartialUpdateIntegratedLufsErrorComponent'
         - $ref: '#/components/schemas/VideofilesPartialUpdateTruepeakLufsErrorComponent'
@@ -14049,32 +14074,6 @@ components:
             - null_characters_not_allowed
             - required
             - surrogate_characters_not_allowed
-        detail:
-          type: string
-      required:
-        - attr
-        - code
-        - detail
-    VideofilesPartialUpdateFormatErrorComponent:
-      type: object
-      properties:
-        attr:
-          description: '* `format` - format'
-          type: string
-          enum:
-            - format
-        code:
-          description: |-
-            * `does_not_exist` - does_not_exist
-            * `incorrect_type` - incorrect_type
-            * `null` - null
-            * `required` - required
-          type: string
-          enum:
-            - does_not_exist
-            - incorrect_type
-            - 'null'
-            - required
         detail:
           type: string
       required:
@@ -14161,6 +14160,30 @@ components:
       required:
         - errors
         - type
+    VideofilesPartialUpdateVariantErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `variant` - variant'
+          type: string
+          enum:
+            - variant
+        code:
+          description: |-
+            * `invalid_choice` - invalid_choice
+            * `null` - null
+            * `required` - required
+          type: string
+          enum:
+            - invalid_choice
+            - 'null'
+            - required
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
     VideofilesPartialUpdateVideoErrorComponent:
       type: object
       properties:
@@ -14200,14 +14223,14 @@ components:
         mapping:
           non_field_errors: '#/components/schemas/VideofilesUpdateNonFieldErrorsErrorComponent'
           video: '#/components/schemas/VideofilesUpdateVideoErrorComponent'
-          format: '#/components/schemas/VideofilesUpdateFormatErrorComponent'
+          variant: '#/components/schemas/VideofilesUpdateVariantErrorComponent'
           filename: '#/components/schemas/VideofilesUpdateFilenameErrorComponent'
           integrated_lufs: '#/components/schemas/VideofilesUpdateIntegratedLufsErrorComponent'
           truepeak_lufs: '#/components/schemas/VideofilesUpdateTruepeakLufsErrorComponent'
       oneOf:
         - $ref: '#/components/schemas/VideofilesUpdateNonFieldErrorsErrorComponent'
         - $ref: '#/components/schemas/VideofilesUpdateVideoErrorComponent'
-        - $ref: '#/components/schemas/VideofilesUpdateFormatErrorComponent'
+        - $ref: '#/components/schemas/VideofilesUpdateVariantErrorComponent'
         - $ref: '#/components/schemas/VideofilesUpdateFilenameErrorComponent'
         - $ref: '#/components/schemas/VideofilesUpdateIntegratedLufsErrorComponent'
         - $ref: '#/components/schemas/VideofilesUpdateTruepeakLufsErrorComponent'
@@ -14246,32 +14269,6 @@ components:
             - null_characters_not_allowed
             - required
             - surrogate_characters_not_allowed
-        detail:
-          type: string
-      required:
-        - attr
-        - code
-        - detail
-    VideofilesUpdateFormatErrorComponent:
-      type: object
-      properties:
-        attr:
-          description: '* `format` - format'
-          type: string
-          enum:
-            - format
-        code:
-          description: |-
-            * `does_not_exist` - does_not_exist
-            * `incorrect_type` - incorrect_type
-            * `null` - null
-            * `required` - required
-          type: string
-          enum:
-            - does_not_exist
-            - incorrect_type
-            - 'null'
-            - required
         detail:
           type: string
       required:
@@ -14358,6 +14355,30 @@ components:
       required:
         - errors
         - type
+    VideofilesUpdateVariantErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `variant` - variant'
+          type: string
+          enum:
+            - variant
+        code:
+          description: |-
+            * `invalid_choice` - invalid_choice
+            * `null` - null
+            * `required` - required
+          type: string
+          enum:
+            - invalid_choice
+            - 'null'
+            - required
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
     VideofilesUpdateVideoErrorComponent:
       type: object
       properties:
