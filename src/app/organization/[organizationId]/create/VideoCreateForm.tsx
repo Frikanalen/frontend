@@ -5,17 +5,14 @@ import { Categories } from "@/app/organization/[organizationId]/create/Categorie
 import { useVideosCreate } from "@/generated/videos/videos";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
-import cx from "classnames";
 import { useApiFormSubmit } from "@/lib/useApiFormSubmit";
 import { FormError } from "@/components/form/FormError";
 export const VideoCreateForm = ({
   organizationId,
   categories,
-  className,
 }: {
   organizationId: number;
   categories: Category[];
-  className?: string;
 }) => {
   const { mutateAsync } = useVideosCreate();
   const router = useRouter();
@@ -28,7 +25,7 @@ export const VideoCreateForm = ({
   });
 
   return (
-    <Form onSubmit={onSubmit} className={cx("block", className)} autoComplete={"off"}>
+    <Form onSubmit={onSubmit} className="block" autoComplete={"off"}>
       <div className="flex flex-col gap-4">
         <FormError error={error} />
         <Input

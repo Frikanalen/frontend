@@ -23,13 +23,17 @@ export const ModalIshPrototype = ({
 export const ModalIshPrototypeBody = ({
   children,
   className,
+  aspectVideo = false,
 }: {
   children: ReactNode;
   className?: string;
+  /** Shapes the card like the video player it's standing in for. Off by default — most callers are forms. */
+  aspectVideo?: boolean;
 }) => (
   <section
     className={cx(
-      "lg:aspect-video bg-background text-foreground rounded-xl border-1 border-primary-200 p-8 min-h-72",
+      "bg-background text-foreground rounded-xl border-1 border-primary-200 p-8 min-h-72",
+      aspectVideo && "lg:aspect-video",
       className,
     )}
   >
