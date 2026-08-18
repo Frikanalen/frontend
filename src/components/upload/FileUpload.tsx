@@ -2,8 +2,12 @@
 import { Button, Link, Progress } from "@heroui/react";
 import { useEffect, useRef } from "react";
 import { useTusUpload } from "@/lib/upload/useTusUpload";
+import { useIngestProgress } from "@/lib/upload/useIngestProgress";
 import { Alert } from "@heroui/alert";
 import { useRouter } from "next/navigation";
+
+/** How long the "klar" message stays up before we move the user along. */
+const REDIRECT_DELAY_MS = 2000;
 
 export const FileUpload = ({
   videoId,
@@ -29,28 +33,68 @@ export const FileUpload = ({
     isSuccess,
   } = useTusUpload(videoId, uploadToken, uploadEndpoint);
 
+  // Transferring the bytes is only the first half. Until ingest has probed,
+  // archived and transcoded the file there is nothing to watch on the video
+  // page, and the upload may still fail in a way the browser never sees.
+  const { description, isError: ingestUnreachable } = useIngestProgress(videoId, isSuccess);
+
   const router = useRouter();
   useEffect(() => {
-    if (isSuccess) setTimeout(() => router.push(`/video/${videoId}`), 5000);
-  }, [isSuccess, router, videoId]);
+    if (description?.phase !== "done") return;
+    const timer = setTimeout(() => router.push(`/video/${videoId}`), REDIRECT_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, [description?.phase, router, videoId]);
+
+  const isIngesting = isSuccess && description?.phase !== "done" && description?.phase !== "failed";
 
   return (
-    <div>
+    <div className="space-y-4">
       <form>
         <input type={"file"} ref={ref} onChange={onFileListChange} hidden />
       </form>
+
       <Progress value={progress} hidden={!isUploading} showValueLabel label={`Laster opp...`} />
-      {isSuccess && (
-        <Alert color="success" className={"prose dark:prose-invert"}>
-          <h3>Videoen er lastet opp!</h3>
-          <p>Det vil ta noe tid før kopier blir ferdige og videoen blir synlig.</p>
+
+      {isIngesting && (
+        <Progress
+          // Ingest reports progress within its current step, not across the
+          // whole pipeline, so a step with nothing to report gets a bar that
+          // says so rather than a misleading zero.
+          value={description?.percentage ?? undefined}
+          isIndeterminate={description?.percentage == null}
+          showValueLabel={description?.percentage != null}
+          label={description?.message ?? "Filen er lastet opp. Vi behandler den nå."}
+        />
+      )}
+
+      {description?.phase === "stalled" && <Alert color="warning">{description.message}</Alert>}
+
+      {isSuccess && ingestUnreachable && (
+        <Alert color="warning" className={"prose dark:prose-invert"}>
           <p>
-            Du blir videresendt til
-            <Link href={`/video/${videoId}`}>videosiden</Link>
+            Filen er lastet opp, men vi får ikke kontakt for å følge behandlingen. Se på{" "}
+            <Link href={`/video/${videoId}`}>videosiden</Link> om litt.
           </p>
         </Alert>
       )}
-      {!file && (
+
+      {description?.phase === "done" && (
+        <Alert color="success" className={"prose dark:prose-invert"}>
+          <h3>Videoen er klar!</h3>
+          <p>
+            Du blir sendt til <Link href={`/video/${videoId}`}>videosiden</Link>.
+          </p>
+        </Alert>
+      )}
+
+      {description?.phase === "failed" && (
+        <div className={"space-y-4"}>
+          <Alert color="danger">{description.message}</Alert>
+          <Button onPress={() => ref.current?.click()}>Velg en annen fil</Button>
+        </div>
+      )}
+
+      {!file && !isSuccess && (
         <div className={"flex flex-col gap-4 w-fit"}>
           <div>
             <p>Velg en fil å laste opp.</p>
@@ -60,7 +104,9 @@ export const FileUpload = ({
           </div>
         </div>
       )}
-      {isError && <Alert color="danger">Error: ${error?.message}</Alert>}
+
+      {isError && <Alert color="danger">Opplastingen feilet: {error?.message}</Alert>}
+
       {isReady && !isSuccess && (
         <div className={"prose dark:prose-invert"}>
           <Button onPress={start} disabled={!isReady}>
