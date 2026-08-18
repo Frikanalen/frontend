@@ -4,7 +4,8 @@ import cx from "classnames";
 /**
  * As you may be able to tell, I'm not sure what to name this -
  * it's a container component for single pages with not a lot of UI,
- * like user signup forms, etc.
+ * like user signup forms, etc. Positions and width-constrains the page;
+ * the actual card is ModalIshPrototypeBody.
  */
 export const ModalIshPrototype = ({
   children,
@@ -14,9 +15,7 @@ export const ModalIshPrototype = ({
   className?: string;
 }) => (
   <main className={cx("grow max-w-3xl w-full px-2 lg:py-12 flex flex-col", className)}>
-    <section className="bg-background text-foreground rounded-xl border-1 border-primary-200 p-8 min-h-72">
-      {children}
-    </section>
+    {children}
   </main>
 );
 
@@ -32,7 +31,8 @@ export const ModalIshPrototypeBody = ({
 }) => (
   <section
     className={cx(
-      "bg-background text-foreground rounded-xl border-1 border-primary-200 p-8 min-h-72",
+      // Echoes the header nav pill's rounded-xl/shadow-lg treatment rather than a bordered box.
+      "bg-background text-foreground rounded-xl shadow-lg p-8 min-h-72",
       aspectVideo && "lg:aspect-video",
       className,
     )}
