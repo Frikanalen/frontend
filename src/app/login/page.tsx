@@ -1,6 +1,7 @@
 "use client";
 import { Button, Form, Input } from "@heroui/react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import z from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -15,6 +16,7 @@ const UserLoginFormSchema = z.object({
 });
 
 export default function Login() {
+  const router = useRouter();
   const form = useForm<LoginRequest>({
     resolver: zodResolver(UserLoginFormSchema),
   });
@@ -24,7 +26,8 @@ export default function Login() {
   const { onSubmit, error, isSubmitting } = useApiFormSubmit(form, async (data) => {
     await mutateAsync({ data });
     // we force a refresh because profile data is rendered server-side
-    window.location.assign("/profile");
+    router.push("/profile");
+    router.refresh();
   });
 
   return (
