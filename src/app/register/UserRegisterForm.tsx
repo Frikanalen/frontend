@@ -3,11 +3,13 @@ import { NewUserRequest } from "@/generated/frikanalenDjangoAPI.schemas";
 import cx from "classnames";
 import { Button, Form, Input } from "@heroui/react";
 import { useForm } from "react-hook-form";
+import { useRouter } from "next/navigation";
 import { useUserRegisterCreate } from "@/generated/user/user";
 import { useApiFormSubmit } from "@/lib/useApiFormSubmit";
 import { FormError } from "@/components/form/FormError";
 
 export const UserRegisterForm = ({ className }: { className?: string }) => {
+  const router = useRouter();
   const { mutateAsync } = useUserRegisterCreate();
   const form = useForm<NewUserRequest>();
   const { register } = form;
@@ -15,7 +17,8 @@ export const UserRegisterForm = ({ className }: { className?: string }) => {
   const { onSubmit, error, isSubmitting } = useApiFormSubmit(form, async (data) => {
     await mutateAsync({ data });
     // we force a refresh because profile data is rendered server-side
-    window.location.assign("/profile");
+    router.push("/profile");
+    router.refresh();
   });
 
   return (
