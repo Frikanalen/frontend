@@ -70,20 +70,21 @@ jobs:
       # it. Without this, a Playwright bump would silently re-download every
       # browser mid-run instead of failing with an actionable message.
       - name: Verify the image matches the installed Playwright
+        # Container jobs default to `sh`, not `bash`, so this stays POSIX: no
+        # process substitution, and the absent paths come back out of the
+        # pipeline rather than from a variable assigned inside one.
         run: |
-          missing=0
-          while read -r dir; do
-            if [ ! -d "$dir" ]; then
-              echo "::error::$dir is not present in the container image"
-              missing=1
-            fi
-          done < <(npx playwright install --dry-run | awk '/Install location:/ { print $3 }')
-          if [ "$missing" -ne 0 ]; then
-            echo "::error::Container image is out of sync with @playwright/test \
-          $(node -p 'require("@playwright/test/package.json").version'). \
-          Bump the container tag in this workflow to match."
+          set -eu
+          absent=$(npx playwright install --dry-run \
+            | awk '/Install location:/ { print $3 }' \
+            | while read -r dir; do [ -d "$dir" ] || echo "$dir"; done)
+          if [ -n "$absent" ]; then
+            version=$(node -p 'require("@playwright/test/package.json").version')
+            echo "::error::Container image is out of sync with @playwright/test $version. Bump the container tag in this workflow to match. Absent from the image:"
+            echo "$absent" | sed 's/^/  /'
             exit 1
           fi
+          echo "Image ships every browser this Playwright resolves to."
 
       # The suite stubs every backend call at the network layer, so this needs
       # no Django; DJANGO_URL points at a closed port to keep that honest.
