@@ -92,6 +92,12 @@ jobs:
         run: yarn test:e2e
         env:
           DJANGO_URL: http://127.0.0.1:9/
+          # The container runs as root, but the runner mounts $HOME as
+          # /github/home owned by pwuser, and Firefox refuses to start as root
+          # from another user's home. Chromium and WebKit do not care. Scoped
+          # to this step so the yarn cache keeps resolving against the home
+          # directory setup-node already used.
+          HOME: /root
 
       - name: Upload Playwright report
         uses: actions/upload-artifact@v4
