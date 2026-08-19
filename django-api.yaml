@@ -4,7 +4,7 @@ info:
   version: 1.1.0
   description: API for Frikanalen
 paths:
-  /api/:
+  /api:
     get:
       operationId: root_retrieve
       description: The root of the FK API / web services
@@ -131,7 +131,7 @@ paths:
         - tokenAuth: []
         - cookieAuth: []
         - {}
-  /api/asrun/:
+  /api/asrun:
     get:
       operationId: asrun_list
       description: A historic log over what was sent through playout.
@@ -408,7 +408,7 @@ paths:
         - cookieAuth: []
       tags:
         - asrun
-  /api/asrun/{id}/:
+  /api/asrun/{id}:
     get:
       operationId: asrun_retrieve
       description: A historic log over what was sent through playout.
@@ -947,7 +947,7 @@ paths:
         - cookieAuth: []
       tags:
         - asrun
-  /api/categories/:
+  /api/categories:
     get:
       operationId: categories_list
       parameters:
@@ -1223,7 +1223,7 @@ paths:
         - cookieAuth: []
       tags:
         - categories
-  /api/categories/{id}/:
+  /api/categories/{id}:
     get:
       operationId: categories_retrieve
       parameters:
@@ -1767,7 +1767,7 @@ paths:
         - cookieAuth: []
       tags:
         - categories
-  /api/csrf/:
+  /api/csrf:
     get:
       operationId: csrf_retrieve
       responses:
@@ -2780,7 +2780,7 @@ paths:
         - cookieAuth: []
       tags:
         - obtain-token
-  /api/organization/:
+  /api/organization:
     get:
       operationId: organization_list
       parameters:
@@ -3596,7 +3596,7 @@ paths:
         - cookieAuth: []
       tags:
         - organization
-  /api/scheduleitems/:
+  /api/scheduleitems:
     get:
       operationId: scheduleitems_list
       description: |-
@@ -3911,7 +3911,7 @@ paths:
         - cookieAuth: []
       tags:
         - scheduleitems
-  /api/scheduleitems/{id}/:
+  /api/scheduleitems/{id}:
     get:
       operationId: scheduleitems_retrieve
       description: |-
@@ -5922,7 +5922,7 @@ paths:
         - {}
       tags:
         - user
-  /api/videofiles/:
+  /api/videofiles:
     get:
       operationId: videofiles_list
       description: Video file list and detail endpoint.
@@ -5972,6 +5972,7 @@ paths:
             * `srt` - SubRip subtitles
             * `cloudflare_id` - Cloudflare Stream identifier
             * `dash` - MPEG-DASH manifest
+            * `webm_med` - Medium-quality WebM
           schema:
             type: string
             enum:
@@ -5985,6 +5986,7 @@ paths:
               - srt
               - theora
               - vc1
+              - webm_med
         - name: video_id
           in: query
           schema:
@@ -6251,10 +6253,10 @@ paths:
       parameters:
         - name: id
           in: path
+          description: A unique integer value identifying this video file.
           required: true
           schema:
-            type: string
-            pattern: ^\d+$
+            type: integer
       responses:
         '200':
           description: ''
@@ -6384,10 +6386,10 @@ paths:
       parameters:
         - name: id
           in: path
+          description: A unique integer value identifying this video file.
           required: true
           schema:
-            type: string
-            pattern: ^\d+$
+            type: integer
       requestBody:
         required: true
         content:
@@ -6523,10 +6525,10 @@ paths:
       parameters:
         - name: id
           in: path
+          description: A unique integer value identifying this video file.
           required: true
           schema:
-            type: string
-            pattern: ^\d+$
+            type: integer
       requestBody:
         content:
           application/json:
@@ -6661,10 +6663,10 @@ paths:
       parameters:
         - name: id
           in: path
+          description: A unique integer value identifying this video file.
           required: true
           schema:
-            type: string
-            pattern: ^\d+$
+            type: integer
       responses:
         '204':
           description: No response body
@@ -6784,7 +6786,7 @@ paths:
         - cookieAuth: []
       tags:
         - videofiles
-  /api/videos/:
+  /api/videos:
     get:
       operationId: videos_list
       description: |-
@@ -13667,6 +13669,7 @@ components:
         * `srt` - SubRip subtitles
         * `cloudflare_id` - Cloudflare Stream identifier
         * `dash` - MPEG-DASH manifest
+        * `webm_med` - Medium-quality WebM
       type: string
       enum:
         - large_thumb
@@ -13679,6 +13682,7 @@ components:
         - srt
         - cloudflare_id
         - dash
+        - webm_med
     VideoRequest:
       description: 'The read serializer: the organization arrives whole.'
       type: object
