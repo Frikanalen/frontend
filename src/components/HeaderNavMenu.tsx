@@ -13,9 +13,15 @@ export const HeaderNavMenu = ({
   user: User | null;
 }) => {
   return (
-    <Navbar className={className} isBlurred={false}>
+    // Labelled because the archive's pagination adds a second navigation
+    // landmark to the page, and two unnamed ones are indistinguishable when
+    // jumping between landmarks.
+    <Navbar aria-label="Hovedmeny" className={className} isBlurred={false}>
       <NavbarContent>
         <NavLink href="/">Direkte</NavLink>
+        <NavLink href="/video" activeRegexp={new RegExp("/video.*")}>
+          Arkiv
+        </NavLink>
         <NavLink href="/schedule" activeRegexp={new RegExp("/schedule.*")}>
           Sendeplan
         </NavLink>
