@@ -14,7 +14,7 @@ export default function NotFound() {
           <p>Det er bare å beklage &mdash; video «{videoId}» er ikke å oppdrive.</p>
         </div>
         <div className="flex justify-end">
-          <Link href="/archive">Til mediearkivet</Link>
+          <Link href="/video">Til mediearkivet</Link>
         </div>
       </ModalIshPrototypeBody>
     </ModalIshPrototype>
