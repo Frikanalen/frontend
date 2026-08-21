@@ -9,26 +9,36 @@ export const ARCHIVE_PAGE_SIZE = 24;
 export type ArchiveScope = { id: number; name: string };
 
 /**
- * The archive's own URL shape, shared by the search box, the pagination links
- * and the organization pages so they can't drift apart.
+ * The archive's own URL shape, shared by the search box, the category chips,
+ * the pagination links and the organization pages so they can't drift apart.
  *
- * Both narrowings are optional and independent: a query alone searches
- * everything, an organization alone lists that organization's videos, and
- * together they search within it. Page 1 is left implicit to keep the URL a
- * user is most likely to share or bookmark free of noise.
+ * Every narrowing is optional and independent: a query alone searches
+ * everything, an organization alone lists that organization's videos, a
+ * category alone lists that category, and any combination narrows further.
+ * Page 1 is left implicit to keep the URL a user is most likely to share or
+ * bookmark free of noise.
+ *
+ * Callers pass only what they mean to keep, which is how the search box drops
+ * the active category: its suggestions are drawn from the whole archive, so
+ * the search it runs has to span the whole archive too, or a suggestion could
+ * be visibly offered and then filtered out of its own results. Narrowing is
+ * the chips' job, and they preserve the query.
  */
 export const archiveSearchUrl = ({
   query = "",
   organization,
+  category = "",
   page = 1,
 }: {
   query?: string;
   organization?: number;
+  category?: string;
   page?: number;
 }) => {
   const params = new URLSearchParams();
   if (query) params.set("q", query);
   if (organization !== undefined) params.set("organization", String(organization));
+  if (category) params.set("category", category);
   if (page > 1) params.set("page", String(page));
 
   const search = params.toString();
@@ -68,3 +78,11 @@ export const parseOrganization = (value: string | string[] | undefined) => {
 
   return organization > 0 ? organization : undefined;
 };
+
+/**
+ * Category names arrive as untrusted text, and are passed to the API as they
+ * came: the filter validates each name against the real categories and
+ * rejects one it doesn't have, so an invented name is a 400 that
+ * SearchResults reports rather than a silently empty archive.
+ */
+export const parseCategory = (value: string | string[] | undefined) => firstValue(value).trim();
