@@ -88,7 +88,7 @@ export default async function RootLayout({
         <Providers>
           <div className="flex flex-col items-center min-h-screen">
             <header className="w-full max-w-5xl px-2">
-              <Logo className="w-100 pt-12 text-default-foreground/80" />
+              <Logo className="w-full max-w-100 pt-12 text-default-foreground/80" />
               <HeaderNavMenu user={user} className="my-6 rounded-xl bg-background/80 shadow-lg" />
             </header>
             <div className="flex grow flex-col w-full items-center">{children}</div>
