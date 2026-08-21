@@ -31,6 +31,12 @@ jobs:
   test:
     name: Lint and test
     runs-on: ubuntu-latest
+    # Ships the browsers and their system libraries prebuilt, which replaces a
+    # ~470MB browser cache and a 181-package apt install on every run. The tag
+    # MUST track @playwright/test in package.json: the image bakes in the
+    # browser builds for exactly one Playwright release. The version check
+    # below fails the run if the two drift apart.
+    container: mcr.microsoft.com/playwright:v1.62.1-noble
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
@@ -38,8 +44,11 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v5
         with:
-          # orval's engines field requires >=22.18.
-          node-version: "22.18"
+          # Matches the Dockerfile's node:24 base so CI runs what ships. Also
+          # satisfies orval's engines field, which requires >=22.18. Pinned
+          # here rather than inherited from the container image so that a
+          # Playwright image bump cannot move the Node version by surprise.
+          node-version: "24"
           cache: yarn
 
       - name: Install dependencies
@@ -57,16 +66,25 @@ jobs:
       - name: Unit tests
         run: npx vitest run
 
-      - name: Cache Playwright browsers
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            playwright-${{ runner.os }}-
-
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps
+      # Guards the container tag above against package.json drifting ahead of
+      # it. Without this, a Playwright bump would silently re-download every
+      # browser mid-run instead of failing with an actionable message.
+      - name: Verify the image matches the installed Playwright
+        # Container jobs default to `sh`, not `bash`, so this stays POSIX: no
+        # process substitution, and the absent paths come back out of the
+        # pipeline rather than from a variable assigned inside one.
+        run: |
+          set -eu
+          absent=$(npx playwright install --dry-run \
+            | awk '/Install location:/ { print $3 }' \
+            | while read -r dir; do [ -d "$dir" ] || echo "$dir"; done)
+          if [ -n "$absent" ]; then
+            version=$(node -p 'require("@playwright/test/package.json").version')
+            echo "::error::Container image is out of sync with @playwright/test $version. Bump the container tag in this workflow to match. Absent from the image:"
+            echo "$absent" | sed 's/^/  /'
+            exit 1
+          fi
+          echo "Image ships every browser this Playwright resolves to."
 
       # The suite stubs every backend call at the network layer, so this needs
       # no Django; DJANGO_URL points at a closed port to keep that honest.
@@ -74,6 +92,12 @@ jobs:
         run: yarn test:e2e
         env:
           DJANGO_URL: http://127.0.0.1:9/
+          # The container runs as root, but the runner mounts $HOME as
+          # /github/home owned by pwuser, and Firefox refuses to start as root
+          # from another user's home. Chromium and WebKit do not care. Scoped
+          # to this step so the yarn cache keeps resolving against the home
+          # directory setup-node already used.
+          HOME: /root
 
       - name: Upload Playwright report
         uses: actions/upload-artifact@v4
