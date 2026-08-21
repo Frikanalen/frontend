@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import { FormEvent, KeyboardEvent, useId, useState } from "react";
 import { GoSearch } from "react-icons/go";
 import { useDebounce } from "react-use";
-import { archiveSearchUrl } from "@/app/video/archiveSearchUrl";
+import { ArchiveScope, archiveSearchUrl } from "@/app/video/archiveSearchUrl";
 
 /** A single letter matches most of the archive, so its suggestions are noise. */
 const MIN_QUERY_LENGTH = 2;
@@ -34,9 +34,20 @@ const optionClassName = (isActive: boolean) =>
  * The form is a plain GET to /video, so Enter still searches if the client
  * bundle hasn't loaded; onSubmit only upgrades that to a client-side
  * navigation.
+ *
+ * A `scope` narrows every one of those paths - suggestions, Enter, the
+ * submit button and the no-JS GET - to a single organization, so the box on
+ * an organization's page searches that organization rather than the archive.
  */
-export const ArchiveSearch = ({ initialQuery = "" }: { initialQuery?: string }) => {
+export const ArchiveSearch = ({
+  initialQuery = "",
+  scope,
+}: {
+  initialQuery?: string;
+  scope?: ArchiveScope;
+}) => {
   const router = useRouter();
+  const label = scope ? `Søk i videoer fra ${scope.name}` : "Søk i arkivet";
   const [query, setQuery] = useState(initialQuery);
   const [suggestFor, setSuggestFor] = useState(initialQuery.trim());
   const [isOpen, setIsOpen] = useState(false);
@@ -62,7 +73,7 @@ export const ArchiveSearch = ({ initialQuery = "" }: { initialQuery?: string }) 
   const isPanelOpen = isOpen && suggestFor.length >= MIN_QUERY_LENGTH;
 
   const { data, isFetching, isError } = useVideosList(
-    { q: suggestFor, publish_on_web: true, limit: SUGGESTION_LIMIT },
+    { q: suggestFor, publish_on_web: true, limit: SUGGESTION_LIMIT, organization: scope?.id },
     {
       query: {
         enabled: isPanelOpen,
@@ -102,7 +113,7 @@ export const ArchiveSearch = ({ initialQuery = "" }: { initialQuery?: string }) 
     if (!trimmed) return;
 
     setIsOpen(false);
-    router.push(archiveSearchUrl(trimmed));
+    router.push(archiveSearchUrl({ query: trimmed, organization: scope?.id }));
   };
 
   const onSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -136,8 +147,15 @@ export const ArchiveSearch = ({ initialQuery = "" }: { initialQuery?: string }) 
     <search>
       <form className="relative" action="/video" method="get" onSubmit={onSubmit}>
         <label className="sr-only" htmlFor={`${listboxId}-input`}>
-          Søk i arkivet
+          {label}
         </label>
+
+        {/*
+          Keeps the narrowing on the query string when the form submits as a
+          plain GET, so a visitor without the client bundle searches the
+          organization they were looking at rather than the whole archive.
+        */}
+        {scope && <input type="hidden" name="organization" value={scope.id} />}
         <input
           id={`${listboxId}-input`}
           name="q"
@@ -145,7 +163,7 @@ export const ArchiveSearch = ({ initialQuery = "" }: { initialQuery?: string }) 
           role="combobox"
           autoComplete="off"
           enterKeyHint="search"
-          placeholder="Søk i arkivet"
+          placeholder={label}
           value={query}
           aria-autocomplete="list"
           // Only while the listbox exists: an IDREF to an element that was
@@ -243,7 +261,7 @@ export const ArchiveSearch = ({ initialQuery = "" }: { initialQuery?: string }) 
                 onClick={runSearch}
               >
                 <GoSearch aria-hidden className="size-4 shrink-0" />
-                Vis alle treff på «{suggestFor}»
+                Vis alle treff på «{suggestFor}»{scope && ` fra ${scope.name}`}
               </li>
             </ul>
           </div>

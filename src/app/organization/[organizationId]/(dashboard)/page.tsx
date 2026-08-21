@@ -9,6 +9,7 @@ import { AdminAlert } from "@/app/organization/[organizationId]/AdminAlert";
 import { getUserOrNull } from "@/app/getUserOrNull";
 import { RecentVideos } from "@/app/organization/[organizationId]/RecentVideos";
 import { EditorInfo } from "@/app/organization/[organizationId]/EditorInfo";
+import { ArchiveSearch } from "@/app/video/ArchiveSearch";
 import { Metadata } from "next";
 import { ssrOrganizationRetrieve } from "@/generated/ssr/organization/organization";
 
@@ -51,21 +52,23 @@ export default async function Page({ params }: OrgPageProps) {
 
   if (!organization.fkmember && !isAdmin) return notFound();
 
+  // No <main> of its own: organization/layout.tsx already provides the page's
+  // one main landmark, and nesting a second inside it leaves the document
+  // with two.
   return (
-    <main className="w-full max-w-5xl h-fit px-2">
-      <div className="grow rounded-lg p-4 space-y-4">
-        <OrgBlurb organization={organization} />
-        {isAdmin && <AdminAlert organizationId={organizationId} />}
-        <RecentVideos organization={organization} />
-        <EditorInfo organization={organization} />
-      </div>
-    </main>
+    <div className="grow rounded-lg p-4 space-y-6">
+      <OrgBlurb organization={organization} />
+      {isAdmin && <AdminAlert organizationId={organizationId} />}
+      <ArchiveSearch scope={{ id: organization.id, name: organization.name }} />
+      <RecentVideos organization={organization} />
+      <EditorInfo organization={organization} />
+    </div>
   );
 }
 
 const OrgBlurb = ({ organization }: { organization: Organization }) => (
   <div className={"prose dark:prose-invert max-w-2xl"}>
-    <h2>{organization.name}</h2>
+    <h1>{organization.name}</h1>
     <Markdown options={{ wrapper: Fragment }}>
       {organization.description || "*organisasjonen har ikke lagt opp en beskrivelse av seg selv*"}
     </Markdown>
