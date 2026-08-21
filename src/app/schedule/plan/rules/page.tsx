@@ -99,8 +99,8 @@ export default async function Page() {
         </ul>
 
         <p>
-          Gå tilbake til <Link href="/profile">brukersiden</Link> og velg{" "}
-          <em>Programmer sendeplanen</em> under riktig organisasjon.
+          Gå tilbake til <Link href="/profile">Min side</Link> og velg <em>Programmer sendeplan</em>{" "}
+          under riktig organisasjon.
         </p>
       </article>
     </main>
