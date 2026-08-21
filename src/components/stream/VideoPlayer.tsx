@@ -8,6 +8,8 @@ import {
   MediaProvider,
   MediaProviderAdapter,
   Poster,
+  useMediaRemote,
+  useMediaState,
   VideoSrc,
 } from "@vidstack/react";
 import { defaultLayoutIcons, DefaultVideoLayout } from "@vidstack/react/player/layouts/default";
@@ -33,6 +35,27 @@ const loadDashjs = async () => {
 
 const onProviderChange = (provider: MediaProviderAdapter | null) => {
   if (isDASHProvider(provider)) provider.library = loadDashjs;
+};
+
+// With `load="play"` vidstack only renders its load layout — a small centre play button — until
+// playback starts, and its click-to-play gestures don't exist yet. Cover the whole poster so any
+// click starts the video. The real play button stays on top for keyboard and screen reader users.
+const StartOnClick = () => {
+  const started = useMediaState("started");
+  const remote = useMediaRemote();
+
+  if (started) return null;
+
+  return (
+    <div
+      aria-hidden
+      className="absolute inset-0 z-40 cursor-pointer"
+      onPointerUp={(event) => {
+        if (event.button !== 0) return;
+        remote.play(event.nativeEvent);
+      }}
+    />
+  );
 };
 
 export const VideoPlayer = ({
@@ -62,6 +85,7 @@ export const VideoPlayer = ({
           <p>Det kan drøye en stund.</p>
         </div>
       )}
+      <StartOnClick />
       <MediaProvider>
         <Poster className={cx("vds-poster", { "blur-md": mediaPending })} src={poster} />
       </MediaProvider>
