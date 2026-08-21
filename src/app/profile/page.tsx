@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { GoCalendar } from "react-icons/go";
-import { getCookiesFromRequest } from "@/app/profile/getCookiesFromRequest";
+import { getCookiesFromRequest } from "@/lib/getCookiesFromRequest";
 import { getUserOrNull } from "@/app/getUserOrNull";
 import { AccountHeader } from "@/app/profile/AccountHeader";
 import { ActionLink } from "@/app/profile/ActionLink";

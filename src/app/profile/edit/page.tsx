@@ -1,4 +1,4 @@
-import { getCookiesFromRequest } from "@/app/profile/getCookiesFromRequest";
+import { getCookiesFromRequest } from "@/lib/getCookiesFromRequest";
 import { getUserOrNull } from "@/app/getUserOrNull";
 import { redirect } from "next/navigation";
 import { UserProfileForm } from "@/app/profile/edit/UserProfileForm";

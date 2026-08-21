@@ -1,4 +1,4 @@
-import { getCookiesFromRequest } from "@/app/profile/getCookiesFromRequest";
+import { getCookiesFromRequest } from "@/lib/getCookiesFromRequest";
 import { organizationRetrieve } from "@/generated/organization/organization";
 import { OrgAdminPage } from "@/app/organization/[organizationId]/OrgAdminPage";
 import { forbidden, notFound, redirect } from "next/navigation";

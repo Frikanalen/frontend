@@ -1,5 +1,5 @@
 import { getUserOrNull } from "@/app/getUserOrNull";
-import { getCookiesFromRequest } from "@/app/profile/getCookiesFromRequest";
+import { getCookiesFromRequest } from "@/lib/getCookiesFromRequest";
 import type { Organization } from "@/generated/frikanalenDjangoAPI.schemas";
 import { organizationList } from "@/generated/organization/organization";
 import { schedulingPolicyRetrieve } from "@/generated/scheduling/scheduling";

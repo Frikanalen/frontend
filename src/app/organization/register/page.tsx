@@ -1,5 +1,5 @@
 import { OrgCreateForm } from "@/app/organization/register/OrgCreateForm";
-import { getCookiesFromRequest } from "@/app/profile/getCookiesFromRequest";
+import { getCookiesFromRequest } from "@/lib/getCookiesFromRequest";
 import { getUserOrNull } from "@/app/getUserOrNull";
 
 export default async function Page() {

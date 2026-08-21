@@ -1,6 +1,6 @@
 import { getUserOrNull } from "@/app/getUserOrNull";
 import { profileIsAdminOrMember } from "@/app/organization/[organizationId]/admin/profileIsAdminOrMember";
-import { getCookiesFromRequest } from "@/app/profile/getCookiesFromRequest";
+import { getCookiesFromRequest } from "@/lib/getCookiesFromRequest";
 import { SchedulePlanner } from "@/app/schedule/plan/SchedulePlanner";
 import { organizationRetrieve } from "@/generated/organization/organization";
 import { schedulingPolicyRetrieve } from "@/generated/scheduling/scheduling";

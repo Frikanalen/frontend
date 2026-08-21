@@ -1,9 +1,9 @@
-import { getCookiesFromRequest } from "@/app/profile/getCookiesFromRequest";
+import { getCookiesFromRequest } from "@/lib/getCookiesFromRequest";
 import { videosRetrieve, videosUploadTokenRetrieve } from "@/generated/videos/videos";
 import { profileIsAdminOrMember } from "@/app/organization/[organizationId]/admin/profileIsAdminOrMember";
 import { forbidden } from "next/navigation";
 
-import { ModalIshPrototype, ModalIshPrototypeBody } from "@/app/profile/ModalIshPrototype";
+import { PageShell, PageShellBody } from "@/components/layout/PageShell";
 import { getUserOrNull } from "@/app/getUserOrNull";
 import { FileUpload } from "@/components/upload/FileUpload";
 import { CreateFlowSteps } from "@/components/videoCreateFlow/CreateFlowSteps";
@@ -21,8 +21,8 @@ export default async function Page({ params }: { params: Promise<{ videoId: stri
   });
 
   return (
-    <ModalIshPrototype>
-      <ModalIshPrototypeBody className={"space-y-4"}>
+    <PageShell>
+      <PageShellBody className={"space-y-4"}>
         <CreateFlowSteps current="upload" />
         <div className="prose dark:prose-invert">
           <h2>Last opp originalfil for {video.name}</h2>
@@ -32,7 +32,7 @@ export default async function Page({ params }: { params: Promise<{ videoId: stri
           uploadEndpoint={uploadToken.uploadUrl}
           uploadToken={uploadToken.uploadToken}
         />
-      </ModalIshPrototypeBody>
-    </ModalIshPrototype>
+      </PageShellBody>
+    </PageShell>
   );
 }

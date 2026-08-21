@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import Markdown from "markdown-to-jsx";
 import { Fragment } from "react";
 import { Organization } from "@/generated/frikanalenDjangoAPI.schemas";
-import { getCookiesFromRequest } from "@/app/profile/getCookiesFromRequest";
+import { getCookiesFromRequest } from "@/lib/getCookiesFromRequest";
 import { profileIsAdminOrMember } from "@/app/organization/[organizationId]/admin/profileIsAdminOrMember";
 import { AdminAlert } from "@/app/organization/[organizationId]/AdminAlert";
 import { getUserOrNull } from "@/app/getUserOrNull";
