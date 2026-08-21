@@ -9211,6 +9211,895 @@ paths:
         - cookieAuth: []
       tags:
         - videos
+  /api/videos/{video_id}/images:
+    get:
+      operationId: videos_images_list
+      description: Editorial image metadata; image bytes are uploaded through tusd.
+      parameters:
+      - name: limit
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: offset
+        required: false
+        in: query
+        description: The initial index from which to return the results.
+        schema:
+          type: integer
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - in: query
+        name: role
+        schema:
+          type: string
+          enum:
+          - behind_the_scenes
+          - cast_ensemble
+          - channel_logo
+          - episode_still
+          - key_art_titled
+          - key_art_untitled
+          - location
+          - network_logo
+          - news_event
+          - portrait_full_body
+          - portrait_half_body
+          - portrait_headshot
+          - show_logo
+          - show_still
+        description: |-
+          * `network_logo` - Network logo
+          * `channel_logo` - Channel logo
+          * `show_logo` - Show logo
+          * `show_still` - Show still
+          * `episode_still` - Episode still
+          * `key_art_titled` - Key art with title
+          * `key_art_untitled` - Key art without title
+          * `behind_the_scenes` - Behind the scenes
+          * `location` - Location
+          * `news_event` - News event
+          * `portrait_headshot` - Portrait, headshot
+          * `portrait_half_body` - Portrait, half body
+          * `portrait_full_body` - Portrait, full body
+          * `cast_ensemble` - Cast ensemble
+      - in: path
+        name: video_id
+        schema:
+          type: string
+          pattern: ^\d+$
+        required: true
+      tags:
+      - videos
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VideosImagesListErrorResponse400'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: authentication_failed
+                      detail: Incorrect authentication credentials.
+                      attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: not_authenticated
+                      detail: Authentication credentials were not provided.
+                      attr: null
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse403'
+              examples:
+                PermissionDenied:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: permission_denied
+                      detail: You do not have permission to perform this action.
+                      attr: null
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+              examples:
+                NotFound:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: not_found
+                      detail: Not found.
+                      attr: null
+          description: ''
+        '405':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse405'
+              examples:
+                MethodNotAllowed:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: method_not_allowed
+                      detail: Method "get" not allowed.
+                      attr: null
+          description: ''
+        '406':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse406'
+              examples:
+                NotAcceptable:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: not_acceptable
+                      detail: Could not satisfy the request Accept header.
+                      attr: null
+          description: ''
+        '415':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse415'
+              examples:
+                UnsupportedMediaType:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: unsupported_media_type
+                      detail: Unsupported media type "application/json" in request.
+                      attr: null
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+              examples:
+                APIException:
+                  value:
+                    type: server_error
+                    errors:
+                    - code: error
+                      detail: A server error occurred.
+                      attr: null
+          description: ''
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedProgramImageList'
+          description: ''
+    post:
+      operationId: videos_images_create
+      description: Editorial image metadata; image bytes are uploaded through tusd.
+      parameters:
+      - in: path
+        name: video_id
+        schema:
+          type: string
+          pattern: ^\d+$
+        required: true
+      tags:
+      - videos
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProgramImageRegistrationRequest'
+        required: true
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VideosImagesCreateErrorResponse400'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: authentication_failed
+                      detail: Incorrect authentication credentials.
+                      attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: not_authenticated
+                      detail: Authentication credentials were not provided.
+                      attr: null
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse403'
+              examples:
+                PermissionDenied:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: permission_denied
+                      detail: You do not have permission to perform this action.
+                      attr: null
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+              examples:
+                NotFound:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: not_found
+                      detail: Not found.
+                      attr: null
+          description: ''
+        '405':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse405'
+              examples:
+                MethodNotAllowed:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: method_not_allowed
+                      detail: Method "get" not allowed.
+                      attr: null
+          description: ''
+        '406':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse406'
+              examples:
+                NotAcceptable:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: not_acceptable
+                      detail: Could not satisfy the request Accept header.
+                      attr: null
+          description: ''
+        '415':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse415'
+              examples:
+                UnsupportedMediaType:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: unsupported_media_type
+                      detail: Unsupported media type "application/json" in request.
+                      attr: null
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+              examples:
+                APIException:
+                  value:
+                    type: server_error
+                    errors:
+                    - code: error
+                      detail: A server error occurred.
+                      attr: null
+          description: ''
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProgramImageRegistration'
+          description: ''
+  /api/videos/{video_id}/images/{id}:
+    get:
+      operationId: videos_images_retrieve
+      description: Editorial image metadata; image bytes are uploaded through tusd.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^\d+$
+        required: true
+      - in: path
+        name: video_id
+        schema:
+          type: string
+          pattern: ^\d+$
+        required: true
+      tags:
+      - videos
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VideosImagesRetrieveErrorResponse400'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: authentication_failed
+                      detail: Incorrect authentication credentials.
+                      attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: not_authenticated
+                      detail: Authentication credentials were not provided.
+                      attr: null
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse403'
+              examples:
+                PermissionDenied:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: permission_denied
+                      detail: You do not have permission to perform this action.
+                      attr: null
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+              examples:
+                NotFound:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: not_found
+                      detail: Not found.
+                      attr: null
+          description: ''
+        '405':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse405'
+              examples:
+                MethodNotAllowed:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: method_not_allowed
+                      detail: Method "get" not allowed.
+                      attr: null
+          description: ''
+        '406':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse406'
+              examples:
+                NotAcceptable:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: not_acceptable
+                      detail: Could not satisfy the request Accept header.
+                      attr: null
+          description: ''
+        '415':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse415'
+              examples:
+                UnsupportedMediaType:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: unsupported_media_type
+                      detail: Unsupported media type "application/json" in request.
+                      attr: null
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+              examples:
+                APIException:
+                  value:
+                    type: server_error
+                    errors:
+                    - code: error
+                      detail: A server error occurred.
+                      attr: null
+          description: ''
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProgramImage'
+          description: ''
+    put:
+      operationId: videos_images_update
+      description: Editorial image metadata; image bytes are uploaded through tusd.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^\d+$
+        required: true
+      - in: path
+        name: video_id
+        schema:
+          type: string
+          pattern: ^\d+$
+        required: true
+      tags:
+      - videos
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProgramImageRequest'
+        required: true
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VideosImagesUpdateErrorResponse400'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: authentication_failed
+                      detail: Incorrect authentication credentials.
+                      attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: not_authenticated
+                      detail: Authentication credentials were not provided.
+                      attr: null
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse403'
+              examples:
+                PermissionDenied:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: permission_denied
+                      detail: You do not have permission to perform this action.
+                      attr: null
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+              examples:
+                NotFound:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: not_found
+                      detail: Not found.
+                      attr: null
+          description: ''
+        '405':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse405'
+              examples:
+                MethodNotAllowed:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: method_not_allowed
+                      detail: Method "get" not allowed.
+                      attr: null
+          description: ''
+        '406':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse406'
+              examples:
+                NotAcceptable:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: not_acceptable
+                      detail: Could not satisfy the request Accept header.
+                      attr: null
+          description: ''
+        '415':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse415'
+              examples:
+                UnsupportedMediaType:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: unsupported_media_type
+                      detail: Unsupported media type "application/json" in request.
+                      attr: null
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+              examples:
+                APIException:
+                  value:
+                    type: server_error
+                    errors:
+                    - code: error
+                      detail: A server error occurred.
+                      attr: null
+          description: ''
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProgramImage'
+          description: ''
+    patch:
+      operationId: videos_images_partial_update
+      description: Editorial image metadata; image bytes are uploaded through tusd.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^\d+$
+        required: true
+      - in: path
+        name: video_id
+        schema:
+          type: string
+          pattern: ^\d+$
+        required: true
+      tags:
+      - videos
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedProgramImageRequest'
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VideosImagesPartialUpdateErrorResponse400'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: authentication_failed
+                      detail: Incorrect authentication credentials.
+                      attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: not_authenticated
+                      detail: Authentication credentials were not provided.
+                      attr: null
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse403'
+              examples:
+                PermissionDenied:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: permission_denied
+                      detail: You do not have permission to perform this action.
+                      attr: null
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+              examples:
+                NotFound:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: not_found
+                      detail: Not found.
+                      attr: null
+          description: ''
+        '405':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse405'
+              examples:
+                MethodNotAllowed:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: method_not_allowed
+                      detail: Method "get" not allowed.
+                      attr: null
+          description: ''
+        '406':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse406'
+              examples:
+                NotAcceptable:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: not_acceptable
+                      detail: Could not satisfy the request Accept header.
+                      attr: null
+          description: ''
+        '415':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse415'
+              examples:
+                UnsupportedMediaType:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: unsupported_media_type
+                      detail: Unsupported media type "application/json" in request.
+                      attr: null
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+              examples:
+                APIException:
+                  value:
+                    type: server_error
+                    errors:
+                    - code: error
+                      detail: A server error occurred.
+                      attr: null
+          description: ''
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProgramImage'
+          description: ''
+    delete:
+      operationId: videos_images_destroy
+      description: Editorial image metadata; image bytes are uploaded through tusd.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^\d+$
+        required: true
+      - in: path
+        name: video_id
+        schema:
+          type: string
+          pattern: ^\d+$
+        required: true
+      tags:
+      - videos
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VideosImagesDestroyErrorResponse400'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: authentication_failed
+                      detail: Incorrect authentication credentials.
+                      attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: not_authenticated
+                      detail: Authentication credentials were not provided.
+                      attr: null
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse403'
+              examples:
+                PermissionDenied:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: permission_denied
+                      detail: You do not have permission to perform this action.
+                      attr: null
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+              examples:
+                NotFound:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: not_found
+                      detail: Not found.
+                      attr: null
+          description: ''
+        '405':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse405'
+              examples:
+                MethodNotAllowed:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: method_not_allowed
+                      detail: Method "get" not allowed.
+                      attr: null
+          description: ''
+        '406':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse406'
+              examples:
+                NotAcceptable:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: not_acceptable
+                      detail: Could not satisfy the request Accept header.
+                      attr: null
+          description: ''
+        '415':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse415'
+              examples:
+                UnsupportedMediaType:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: unsupported_media_type
+                      detail: Unsupported media type "application/json" in request.
+                      attr: null
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+              examples:
+                APIException:
+                  value:
+                    type: server_error
+                    errors:
+                    - code: error
+                      detail: A server error occurred.
+                      attr: null
+          description: ''
+        '204':
+          description: No response body
   /api/videos/{id}/upload_token:
     get:
       operationId: videos_upload_token_retrieve
@@ -9470,862 +10359,6 @@ paths:
         - cookieAuth: []
       tags:
         - videos
-  /api/program-images:
-    get:
-      operationId: program_images_list
-      description: Editorial image metadata; image bytes are uploaded through tusd.
-      parameters:
-        - name: limit
-          in: query
-          description: Number of results to return per page.
-          required: false
-          schema:
-            type: integer
-        - name: offset
-          in: query
-          description: The initial index from which to return the results.
-          required: false
-          schema:
-            type: integer
-        - name: ordering
-          in: query
-          description: Which field to use when ordering the results.
-          required: false
-          schema:
-            type: string
-        - name: role
-          in: query
-          description: |-
-            * `network_logo` - Network logo
-            * `channel_logo` - Channel logo
-            * `show_logo` - Show logo
-            * `show_still` - Show still
-            * `episode_still` - Episode still
-            * `key_art_titled` - Key art with title
-            * `key_art_untitled` - Key art without title
-            * `behind_the_scenes` - Behind the scenes
-            * `location` - Location
-            * `news_event` - News event
-            * `portrait_headshot` - Portrait, headshot
-            * `portrait_half_body` - Portrait, half body
-            * `portrait_full_body` - Portrait, full body
-            * `cast_ensemble` - Cast ensemble
-          schema:
-            type: string
-            enum:
-              - behind_the_scenes
-              - cast_ensemble
-              - channel_logo
-              - episode_still
-              - key_art_titled
-              - key_art_untitled
-              - location
-              - network_logo
-              - news_event
-              - portrait_full_body
-              - portrait_half_body
-              - portrait_headshot
-              - show_logo
-              - show_still
-        - name: video_id
-          in: query
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PaginatedProgramImageList'
-        '400':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProgramImagesListErrorResponse400'
-        '401':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse401'
-              examples:
-                AuthenticationFailed:
-                  value:
-                    type: client_error
-                    errors:
-                      - code: authentication_failed
-                        detail: Incorrect authentication credentials.
-                        attr: null
-                NotAuthenticated:
-                  value:
-                    type: client_error
-                    errors:
-                      - code: not_authenticated
-                        detail: Authentication credentials were not provided.
-                        attr: null
-        '403':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse403'
-              examples:
-                PermissionDenied:
-                  value:
-                    type: client_error
-                    errors:
-                      - code: permission_denied
-                        detail: You do not have permission to perform this action.
-                        attr: null
-        '404':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse404'
-              examples:
-                NotFound:
-                  value:
-                    type: client_error
-                    errors:
-                      - code: not_found
-                        detail: Not found.
-                        attr: null
-        '405':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse405'
-              examples:
-                MethodNotAllowed:
-                  value:
-                    type: client_error
-                    errors:
-                      - code: method_not_allowed
-                        detail: Method "get" not allowed.
-                        attr: null
-        '406':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse406'
-              examples:
-                NotAcceptable:
-                  value:
-                    type: client_error
-                    errors:
-                      - code: not_acceptable
-                        detail: Could not satisfy the request Accept header.
-                        attr: null
-        '415':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse415'
-              examples:
-                UnsupportedMediaType:
-                  value:
-                    type: client_error
-                    errors:
-                      - code: unsupported_media_type
-                        detail: Unsupported media type "application/json" in request.
-                        attr: null
-        '500':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse500'
-              examples:
-                APIException:
-                  value:
-                    type: server_error
-                    errors:
-                      - code: error
-                        detail: A server error occurred.
-                        attr: null
-      security:
-        - tokenAuth: []
-        - cookieAuth: []
-      tags:
-        - program-images
-    post:
-      operationId: program_images_create
-      description: Editorial image metadata; image bytes are uploaded through tusd.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ProgramImageRegistrationRequest'
-      responses:
-        '201':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProgramImageRegistration'
-        '400':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProgramImagesCreateErrorResponse400'
-        '401':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse401'
-              examples:
-                AuthenticationFailed:
-                  value:
-                    type: client_error
-                    errors:
-                      - code: authentication_failed
-                        detail: Incorrect authentication credentials.
-                        attr: null
-                NotAuthenticated:
-                  value:
-                    type: client_error
-                    errors:
-                      - code: not_authenticated
-                        detail: Authentication credentials were not provided.
-                        attr: null
-        '403':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse403'
-              examples:
-                PermissionDenied:
-                  value:
-                    type: client_error
-                    errors:
-                      - code: permission_denied
-                        detail: You do not have permission to perform this action.
-                        attr: null
-        '404':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse404'
-              examples:
-                NotFound:
-                  value:
-                    type: client_error
-                    errors:
-                      - code: not_found
-                        detail: Not found.
-                        attr: null
-        '405':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse405'
-              examples:
-                MethodNotAllowed:
-                  value:
-                    type: client_error
-                    errors:
-                      - code: method_not_allowed
-                        detail: Method "get" not allowed.
-                        attr: null
-        '406':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse406'
-              examples:
-                NotAcceptable:
-                  value:
-                    type: client_error
-                    errors:
-                      - code: not_acceptable
-                        detail: Could not satisfy the request Accept header.
-                        attr: null
-        '415':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse415'
-              examples:
-                UnsupportedMediaType:
-                  value:
-                    type: client_error
-                    errors:
-                      - code: unsupported_media_type
-                        detail: Unsupported media type "application/json" in request.
-                        attr: null
-        '500':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse500'
-              examples:
-                APIException:
-                  value:
-                    type: server_error
-                    errors:
-                      - code: error
-                        detail: A server error occurred.
-                        attr: null
-      security:
-        - tokenAuth: []
-        - cookieAuth: []
-      tags:
-        - program-images
-  /api/program-images/{id}:
-    get:
-      operationId: program_images_retrieve
-      description: Editorial image metadata; image bytes are uploaded through tusd.
-      parameters:
-        - name: id
-          in: path
-          description: A unique integer value identifying this program image.
-          required: true
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProgramImage'
-        '400':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProgramImagesRetrieveErrorResponse400'
-        '401':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse401'
-              examples:
-                AuthenticationFailed:
-                  value:
-                    type: client_error
-                    errors:
-                      - code: authentication_failed
-                        detail: Incorrect authentication credentials.
-                        attr: null
-                NotAuthenticated:
-                  value:
-                    type: client_error
-                    errors:
-                      - code: not_authenticated
-                        detail: Authentication credentials were not provided.
-                        attr: null
-        '403':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse403'
-              examples:
-                PermissionDenied:
-                  value:
-                    type: client_error
-                    errors:
-                      - code: permission_denied
-                        detail: You do not have permission to perform this action.
-                        attr: null
-        '404':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse404'
-              examples:
-                NotFound:
-                  value:
-                    type: client_error
-                    errors:
-                      - code: not_found
-                        detail: Not found.
-                        attr: null
-        '405':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse405'
-              examples:
-                MethodNotAllowed:
-                  value:
-                    type: client_error
-                    errors:
-                      - code: method_not_allowed
-                        detail: Method "get" not allowed.
-                        attr: null
-        '406':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse406'
-              examples:
-                NotAcceptable:
-                  value:
-                    type: client_error
-                    errors:
-                      - code: not_acceptable
-                        detail: Could not satisfy the request Accept header.
-                        attr: null
-        '415':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse415'
-              examples:
-                UnsupportedMediaType:
-                  value:
-                    type: client_error
-                    errors:
-                      - code: unsupported_media_type
-                        detail: Unsupported media type "application/json" in request.
-                        attr: null
-        '500':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse500'
-              examples:
-                APIException:
-                  value:
-                    type: server_error
-                    errors:
-                      - code: error
-                        detail: A server error occurred.
-                        attr: null
-      security:
-        - tokenAuth: []
-        - cookieAuth: []
-      tags:
-        - program-images
-    put:
-      operationId: program_images_update
-      description: Editorial image metadata; image bytes are uploaded through tusd.
-      parameters:
-        - name: id
-          in: path
-          description: A unique integer value identifying this program image.
-          required: true
-          schema:
-            type: integer
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ProgramImageRequest'
-      responses:
-        '200':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProgramImage'
-        '400':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProgramImagesUpdateErrorResponse400'
-        '401':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse401'
-              examples:
-                AuthenticationFailed:
-                  value:
-                    type: client_error
-                    errors:
-                      - code: authentication_failed
-                        detail: Incorrect authentication credentials.
-                        attr: null
-                NotAuthenticated:
-                  value:
-                    type: client_error
-                    errors:
-                      - code: not_authenticated
-                        detail: Authentication credentials were not provided.
-                        attr: null
-        '403':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse403'
-              examples:
-                PermissionDenied:
-                  value:
-                    type: client_error
-                    errors:
-                      - code: permission_denied
-                        detail: You do not have permission to perform this action.
-                        attr: null
-        '404':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse404'
-              examples:
-                NotFound:
-                  value:
-                    type: client_error
-                    errors:
-                      - code: not_found
-                        detail: Not found.
-                        attr: null
-        '405':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse405'
-              examples:
-                MethodNotAllowed:
-                  value:
-                    type: client_error
-                    errors:
-                      - code: method_not_allowed
-                        detail: Method "get" not allowed.
-                        attr: null
-        '406':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse406'
-              examples:
-                NotAcceptable:
-                  value:
-                    type: client_error
-                    errors:
-                      - code: not_acceptable
-                        detail: Could not satisfy the request Accept header.
-                        attr: null
-        '415':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse415'
-              examples:
-                UnsupportedMediaType:
-                  value:
-                    type: client_error
-                    errors:
-                      - code: unsupported_media_type
-                        detail: Unsupported media type "application/json" in request.
-                        attr: null
-        '500':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse500'
-              examples:
-                APIException:
-                  value:
-                    type: server_error
-                    errors:
-                      - code: error
-                        detail: A server error occurred.
-                        attr: null
-      security:
-        - tokenAuth: []
-        - cookieAuth: []
-      tags:
-        - program-images
-    patch:
-      operationId: program_images_partial_update
-      description: Editorial image metadata; image bytes are uploaded through tusd.
-      parameters:
-        - name: id
-          in: path
-          description: A unique integer value identifying this program image.
-          required: true
-          schema:
-            type: integer
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PatchedProgramImageRequest'
-      responses:
-        '200':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProgramImage'
-        '400':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProgramImagesPartialUpdateErrorResponse400'
-        '401':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse401'
-              examples:
-                AuthenticationFailed:
-                  value:
-                    type: client_error
-                    errors:
-                      - code: authentication_failed
-                        detail: Incorrect authentication credentials.
-                        attr: null
-                NotAuthenticated:
-                  value:
-                    type: client_error
-                    errors:
-                      - code: not_authenticated
-                        detail: Authentication credentials were not provided.
-                        attr: null
-        '403':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse403'
-              examples:
-                PermissionDenied:
-                  value:
-                    type: client_error
-                    errors:
-                      - code: permission_denied
-                        detail: You do not have permission to perform this action.
-                        attr: null
-        '404':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse404'
-              examples:
-                NotFound:
-                  value:
-                    type: client_error
-                    errors:
-                      - code: not_found
-                        detail: Not found.
-                        attr: null
-        '405':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse405'
-              examples:
-                MethodNotAllowed:
-                  value:
-                    type: client_error
-                    errors:
-                      - code: method_not_allowed
-                        detail: Method "get" not allowed.
-                        attr: null
-        '406':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse406'
-              examples:
-                NotAcceptable:
-                  value:
-                    type: client_error
-                    errors:
-                      - code: not_acceptable
-                        detail: Could not satisfy the request Accept header.
-                        attr: null
-        '415':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse415'
-              examples:
-                UnsupportedMediaType:
-                  value:
-                    type: client_error
-                    errors:
-                      - code: unsupported_media_type
-                        detail: Unsupported media type "application/json" in request.
-                        attr: null
-        '500':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse500'
-              examples:
-                APIException:
-                  value:
-                    type: server_error
-                    errors:
-                      - code: error
-                        detail: A server error occurred.
-                        attr: null
-      security:
-        - tokenAuth: []
-        - cookieAuth: []
-      tags:
-        - program-images
-    delete:
-      operationId: program_images_destroy
-      description: Editorial image metadata; image bytes are uploaded through tusd.
-      parameters:
-        - name: id
-          in: path
-          description: A unique integer value identifying this program image.
-          required: true
-          schema:
-            type: integer
-      responses:
-        '204':
-          description: No response body
-        '400':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProgramImagesDestroyErrorResponse400'
-        '401':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse401'
-              examples:
-                AuthenticationFailed:
-                  value:
-                    type: client_error
-                    errors:
-                      - code: authentication_failed
-                        detail: Incorrect authentication credentials.
-                        attr: null
-                NotAuthenticated:
-                  value:
-                    type: client_error
-                    errors:
-                      - code: not_authenticated
-                        detail: Authentication credentials were not provided.
-                        attr: null
-        '403':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse403'
-              examples:
-                PermissionDenied:
-                  value:
-                    type: client_error
-                    errors:
-                      - code: permission_denied
-                        detail: You do not have permission to perform this action.
-                        attr: null
-        '404':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse404'
-              examples:
-                NotFound:
-                  value:
-                    type: client_error
-                    errors:
-                      - code: not_found
-                        detail: Not found.
-                        attr: null
-        '405':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse405'
-              examples:
-                MethodNotAllowed:
-                  value:
-                    type: client_error
-                    errors:
-                      - code: method_not_allowed
-                        detail: Method "get" not allowed.
-                        attr: null
-        '406':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse406'
-              examples:
-                NotAcceptable:
-                  value:
-                    type: client_error
-                    errors:
-                      - code: not_acceptable
-                        detail: Could not satisfy the request Accept header.
-                        attr: null
-        '415':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse415'
-              examples:
-                UnsupportedMediaType:
-                  value:
-                    type: client_error
-                    errors:
-                      - code: unsupported_media_type
-                        detail: Unsupported media type "application/json" in request.
-                        attr: null
-        '500':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse500'
-              examples:
-                APIException:
-                  value:
-                    type: server_error
-                    errors:
-                      - code: error
-                        detail: A server error occurred.
-                        attr: null
-      security:
-        - tokenAuth: []
-        - cookieAuth: []
-      tags:
-        - program-images
 components:
   parameters:
     X-CSRFToken:
@@ -19602,112 +19635,44 @@ components:
         - id
         - purpose
         - startTime
-    ProgramImageRegistration:
-      description: Trusted archive metadata reported by ingest after publication.
-      type: object
-      properties:
-        id:
-          type: integer
-          readOnly: true
-        video:
-          type: integer
-        role:
-          $ref: '#/components/schemas/RoleEnum'
-        filename:
-          type: string
-          maxLength: 300
-        mediaType:
-          $ref: '#/components/schemas/MediaTypeEnum'
-        width:
-          type: integer
-          maximum: 65535
-          minimum: 1
-        height:
-          type: integer
-          maximum: 65535
-          minimum: 1
-        url:
-          type: string
-          readOnly: true
-        createdTime:
-          type: string
-          format: date-time
-          readOnly: true
-      required:
-        - createdTime
-        - filename
-        - height
-        - id
-        - mediaType
-        - role
-        - url
-        - video
-        - width
     MediaTypeEnum:
+      enum:
+      - image/jpeg
+      - image/png
+      - image/webp
+      type: string
       description: |-
         * `image/jpeg` - JPEG
         * `image/png` - PNG
         * `image/webp` - WebP
-      type: string
-      enum:
-        - image/jpeg
-        - image/png
-        - image/webp
-    RoleEnum:
-      description: |-
-        * `network_logo` - Network logo
-        * `channel_logo` - Channel logo
-        * `show_logo` - Show logo
-        * `show_still` - Show still
-        * `episode_still` - Episode still
-        * `key_art_titled` - Key art with title
-        * `key_art_untitled` - Key art without title
-        * `behind_the_scenes` - Behind the scenes
-        * `location` - Location
-        * `news_event` - News event
-        * `portrait_headshot` - Portrait, headshot
-        * `portrait_half_body` - Portrait, half body
-        * `portrait_full_body` - Portrait, full body
-        * `cast_ensemble` - Cast ensemble
-      type: string
-      enum:
-        - network_logo
-        - channel_logo
-        - show_logo
-        - show_still
-        - episode_still
-        - key_art_titled
-        - key_art_untitled
-        - behind_the_scenes
-        - location
-        - news_event
-        - portrait_headshot
-        - portrait_half_body
-        - portrait_full_body
-        - cast_ensemble
     PaginatedProgramImageList:
       type: object
+      required:
+      - count
+      - results
       properties:
         count:
           type: integer
           example: 123
         next:
           type: string
+          nullable: true
           format: uri
           example: http://api.example.org/accounts/?offset=400&limit=100
-          nullable: true
         previous:
           type: string
+          nullable: true
           format: uri
           example: http://api.example.org/accounts/?offset=200&limit=100
-          nullable: true
         results:
           type: array
           items:
             $ref: '#/components/schemas/ProgramImage'
-      required:
-        - count
-        - results
+    PatchedProgramImageRequest:
+      type: object
+      properties:
+        role:
+          $ref: '#/components/schemas/RoleEnum'
     ProgramImage:
       type: object
       properties:
@@ -19724,7 +19689,7 @@ components:
           readOnly: true
         mediaType:
           allOf:
-            - $ref: '#/components/schemas/MediaTypeEnum'
+          - $ref: '#/components/schemas/MediaTypeEnum'
           readOnly: true
         width:
           type: integer
@@ -19740,34 +19705,67 @@ components:
           format: date-time
           readOnly: true
       required:
-        - createdTime
-        - filename
-        - height
-        - id
-        - mediaType
-        - role
-        - url
-        - video
-        - width
-    ProgramImageRequest:
+      - createdTime
+      - filename
+      - height
+      - id
+      - mediaType
+      - role
+      - url
+      - video
+      - width
+    ProgramImageRegistration:
       type: object
-      properties:
-        role:
-          $ref: '#/components/schemas/RoleEnum'
-      required:
-        - role
-    ProgramImageRegistrationRequest:
       description: Trusted archive metadata reported by ingest after publication.
-      type: object
       properties:
+        id:
+          type: integer
+          readOnly: true
         video:
           type: integer
+          readOnly: true
         role:
           $ref: '#/components/schemas/RoleEnum'
         filename:
           type: string
           maxLength: 300
+        mediaType:
+          $ref: '#/components/schemas/MediaTypeEnum'
+        width:
+          type: integer
+          maximum: 65535
+          minimum: 1
+        height:
+          type: integer
+          maximum: 65535
+          minimum: 1
+        url:
+          type: string
+          readOnly: true
+        createdTime:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - createdTime
+      - filename
+      - height
+      - id
+      - mediaType
+      - role
+      - url
+      - video
+      - width
+    ProgramImageRegistrationRequest:
+      type: object
+      description: Trusted archive metadata reported by ingest after publication.
+      properties:
+        role:
+          $ref: '#/components/schemas/RoleEnum'
+        filename:
+          type: string
           minLength: 1
+          maxLength: 300
         mediaType:
           $ref: '#/components/schemas/MediaTypeEnum'
         width:
@@ -19779,228 +19777,94 @@ components:
           maximum: 65535
           minimum: 1
       required:
-        - filename
-        - height
-        - mediaType
-        - role
-        - video
-        - width
-    ProgramImagesDestroyErrorResponse400:
-      discriminator:
-        propertyName: type
-        mapping:
-          client_error: '#/components/schemas/ParseErrorResponse'
-      oneOf:
-        - $ref: '#/components/schemas/ParseErrorResponse'
-    ProgramImagesPartialUpdateErrorResponse400:
-      discriminator:
-        propertyName: type
-        mapping:
-          validation_error: '#/components/schemas/ProgramImagesPartialUpdateValidationError'
-          client_error: '#/components/schemas/ParseErrorResponse'
-      oneOf:
-        - $ref: '#/components/schemas/ProgramImagesPartialUpdateValidationError'
-        - $ref: '#/components/schemas/ParseErrorResponse'
-    ProgramImagesPartialUpdateValidationError:
+      - filename
+      - height
+      - mediaType
+      - role
+      - width
+    ProgramImageRequest:
       type: object
       properties:
-        type:
-          $ref: '#/components/schemas/ValidationErrorEnum'
-        errors:
-          type: array
-          items:
-            $ref: '#/components/schemas/ProgramImagesPartialUpdateError'
+        role:
+          $ref: '#/components/schemas/RoleEnum'
       required:
-        - errors
-        - type
-    ProgramImagesPartialUpdateError:
-      discriminator:
-        propertyName: attr
-        mapping:
-          non_field_errors: '#/components/schemas/ProgramImagesPartialUpdateNonFieldErrorsErrorComponent'
-          role: '#/components/schemas/ProgramImagesPartialUpdateRoleErrorComponent'
+      - role
+    RoleEnum:
+      enum:
+      - network_logo
+      - channel_logo
+      - show_logo
+      - show_still
+      - episode_still
+      - key_art_titled
+      - key_art_untitled
+      - behind_the_scenes
+      - location
+      - news_event
+      - portrait_headshot
+      - portrait_half_body
+      - portrait_full_body
+      - cast_ensemble
+      type: string
+      description: |-
+        * `network_logo` - Network logo
+        * `channel_logo` - Channel logo
+        * `show_logo` - Show logo
+        * `show_still` - Show still
+        * `episode_still` - Episode still
+        * `key_art_titled` - Key art with title
+        * `key_art_untitled` - Key art without title
+        * `behind_the_scenes` - Behind the scenes
+        * `location` - Location
+        * `news_event` - News event
+        * `portrait_headshot` - Portrait, headshot
+        * `portrait_half_body` - Portrait, half body
+        * `portrait_full_body` - Portrait, full body
+        * `cast_ensemble` - Cast ensemble
+    VideosImagesCreateError:
       oneOf:
-        - $ref: '#/components/schemas/ProgramImagesPartialUpdateNonFieldErrorsErrorComponent'
-        - $ref: '#/components/schemas/ProgramImagesPartialUpdateRoleErrorComponent'
-    ProgramImagesPartialUpdateRoleErrorComponent:
-      type: object
-      properties:
-        attr:
-          description: '* `role` - role'
-          type: string
-          enum:
-            - role
-        code:
-          description: |-
-            * `invalid_choice` - invalid_choice
-            * `null` - null
-            * `required` - required
-          type: string
-          enum:
-            - invalid_choice
-            - 'null'
-            - required
-        detail:
-          type: string
-      required:
-        - attr
-        - code
-        - detail
-    ProgramImagesPartialUpdateNonFieldErrorsErrorComponent:
-      type: object
-      properties:
-        attr:
-          description: '* `non_field_errors` - non_field_errors'
-          type: string
-          enum:
-            - non_field_errors
-        code:
-          description: |-
-            * `invalid` - invalid
-            * `null` - null
-          type: string
-          enum:
-            - invalid
-            - 'null'
-        detail:
-          type: string
-      required:
-        - attr
-        - code
-        - detail
-    ProgramImagesCreateErrorResponse400:
-      discriminator:
-        propertyName: type
-        mapping:
-          validation_error: '#/components/schemas/ProgramImagesCreateValidationError'
-          client_error: '#/components/schemas/ParseErrorResponse'
-      oneOf:
-        - $ref: '#/components/schemas/ProgramImagesCreateValidationError'
-        - $ref: '#/components/schemas/ParseErrorResponse'
-    ProgramImagesCreateValidationError:
-      type: object
-      properties:
-        type:
-          $ref: '#/components/schemas/ValidationErrorEnum'
-        errors:
-          type: array
-          items:
-            $ref: '#/components/schemas/ProgramImagesCreateError'
-      required:
-        - errors
-        - type
-    ProgramImagesCreateError:
+      - $ref: '#/components/schemas/VideosImagesCreateNonFieldErrorsErrorComponent'
+      - $ref: '#/components/schemas/VideosImagesCreateRoleErrorComponent'
+      - $ref: '#/components/schemas/VideosImagesCreateFilenameErrorComponent'
+      - $ref: '#/components/schemas/VideosImagesCreateMediaTypeErrorComponent'
+      - $ref: '#/components/schemas/VideosImagesCreateWidthErrorComponent'
+      - $ref: '#/components/schemas/VideosImagesCreateHeightErrorComponent'
       discriminator:
         propertyName: attr
         mapping:
-          non_field_errors: '#/components/schemas/ProgramImagesCreateNonFieldErrorsErrorComponent'
-          video: '#/components/schemas/ProgramImagesCreateVideoErrorComponent'
-          role: '#/components/schemas/ProgramImagesCreateRoleErrorComponent'
-          filename: '#/components/schemas/ProgramImagesCreateFilenameErrorComponent'
-          media_type: '#/components/schemas/ProgramImagesCreateMediaTypeErrorComponent'
-          width: '#/components/schemas/ProgramImagesCreateWidthErrorComponent'
-          height: '#/components/schemas/ProgramImagesCreateHeightErrorComponent'
+          non_field_errors: '#/components/schemas/VideosImagesCreateNonFieldErrorsErrorComponent'
+          role: '#/components/schemas/VideosImagesCreateRoleErrorComponent'
+          filename: '#/components/schemas/VideosImagesCreateFilenameErrorComponent'
+          media_type: '#/components/schemas/VideosImagesCreateMediaTypeErrorComponent'
+          width: '#/components/schemas/VideosImagesCreateWidthErrorComponent'
+          height: '#/components/schemas/VideosImagesCreateHeightErrorComponent'
+    VideosImagesCreateErrorResponse400:
       oneOf:
-        - $ref: '#/components/schemas/ProgramImagesCreateNonFieldErrorsErrorComponent'
-        - $ref: '#/components/schemas/ProgramImagesCreateVideoErrorComponent'
-        - $ref: '#/components/schemas/ProgramImagesCreateRoleErrorComponent'
-        - $ref: '#/components/schemas/ProgramImagesCreateFilenameErrorComponent'
-        - $ref: '#/components/schemas/ProgramImagesCreateMediaTypeErrorComponent'
-        - $ref: '#/components/schemas/ProgramImagesCreateWidthErrorComponent'
-        - $ref: '#/components/schemas/ProgramImagesCreateHeightErrorComponent'
-    ProgramImagesCreateHeightErrorComponent:
+      - $ref: '#/components/schemas/VideosImagesCreateValidationError'
+      - $ref: '#/components/schemas/ParseErrorResponse'
+      discriminator:
+        propertyName: type
+        mapping:
+          validation_error: '#/components/schemas/VideosImagesCreateValidationError'
+          client_error: '#/components/schemas/ParseErrorResponse'
+    VideosImagesCreateFilenameErrorComponent:
       type: object
       properties:
         attr:
-          description: '* `height` - height'
-          type: string
           enum:
-            - height
-        code:
-          description: |-
-            * `invalid` - invalid
-            * `max_string_length` - max_string_length
-            * `max_value` - max_value
-            * `min_value` - min_value
-            * `null` - null
-            * `required` - required
+          - filename
           type: string
-          enum:
-            - invalid
-            - max_string_length
-            - max_value
-            - min_value
-            - 'null'
-            - required
-        detail:
-          type: string
-      required:
-        - attr
-        - code
-        - detail
-    ProgramImagesCreateWidthErrorComponent:
-      type: object
-      properties:
-        attr:
-          description: '* `width` - width'
-          type: string
-          enum:
-            - width
-        code:
-          description: |-
-            * `invalid` - invalid
-            * `max_string_length` - max_string_length
-            * `max_value` - max_value
-            * `min_value` - min_value
-            * `null` - null
-            * `required` - required
-          type: string
-          enum:
-            - invalid
-            - max_string_length
-            - max_value
-            - min_value
-            - 'null'
-            - required
-        detail:
-          type: string
-      required:
-        - attr
-        - code
-        - detail
-    ProgramImagesCreateMediaTypeErrorComponent:
-      type: object
-      properties:
-        attr:
-          description: '* `media_type` - media_type'
-          type: string
-          enum:
-            - media_type
-        code:
-          description: |-
-            * `invalid_choice` - invalid_choice
-            * `null` - null
-            * `required` - required
-          type: string
-          enum:
-            - invalid_choice
-            - 'null'
-            - required
-        detail:
-          type: string
-      required:
-        - attr
-        - code
-        - detail
-    ProgramImagesCreateFilenameErrorComponent:
-      type: object
-      properties:
-        attr:
           description: '* `filename` - filename'
-          type: string
-          enum:
-            - filename
         code:
+          enum:
+          - blank
+          - invalid
+          - max_length
+          - 'null'
+          - null_characters_not_allowed
+          - required
+          - surrogate_characters_not_allowed
+          type: string
           description: |-
             * `blank` - blank
             * `invalid` - invalid
@@ -20009,103 +19873,113 @@ components:
             * `null_characters_not_allowed` - null_characters_not_allowed
             * `required` - required
             * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed
-          type: string
-          enum:
-            - blank
-            - invalid
-            - max_length
-            - 'null'
-            - null_characters_not_allowed
-            - required
-            - surrogate_characters_not_allowed
         detail:
           type: string
       required:
-        - attr
-        - code
-        - detail
-    ProgramImagesCreateRoleErrorComponent:
+      - attr
+      - code
+      - detail
+    VideosImagesCreateHeightErrorComponent:
       type: object
       properties:
         attr:
-          description: '* `role` - role'
-          type: string
           enum:
-            - role
+          - height
+          type: string
+          description: '* `height` - height'
         code:
+          enum:
+          - invalid
+          - max_string_length
+          - max_value
+          - min_value
+          - 'null'
+          - required
+          type: string
+          description: |-
+            * `invalid` - invalid
+            * `max_string_length` - max_string_length
+            * `max_value` - max_value
+            * `min_value` - min_value
+            * `null` - null
+            * `required` - required
+        detail:
+          type: string
+      required:
+      - attr
+      - code
+      - detail
+    VideosImagesCreateMediaTypeErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+          - media_type
+          type: string
+          description: '* `media_type` - media_type'
+        code:
+          enum:
+          - invalid_choice
+          - 'null'
+          - required
+          type: string
           description: |-
             * `invalid_choice` - invalid_choice
             * `null` - null
             * `required` - required
-          type: string
-          enum:
-            - invalid_choice
-            - 'null'
-            - required
         detail:
           type: string
       required:
-        - attr
-        - code
-        - detail
-    ProgramImagesCreateVideoErrorComponent:
+      - attr
+      - code
+      - detail
+    VideosImagesCreateNonFieldErrorsErrorComponent:
       type: object
       properties:
         attr:
-          description: '* `video` - video'
-          type: string
           enum:
-            - video
-        code:
-          description: |-
-            * `does_not_exist` - does_not_exist
-            * `incorrect_type` - incorrect_type
-            * `null` - null
-            * `required` - required
+          - non_field_errors
           type: string
-          enum:
-            - does_not_exist
-            - incorrect_type
-            - 'null'
-            - required
-        detail:
-          type: string
-      required:
-        - attr
-        - code
-        - detail
-    ProgramImagesCreateNonFieldErrorsErrorComponent:
-      type: object
-      properties:
-        attr:
           description: '* `non_field_errors` - non_field_errors'
-          type: string
-          enum:
-            - non_field_errors
         code:
+          enum:
+          - invalid
+          - 'null'
+          type: string
           description: |-
             * `invalid` - invalid
             * `null` - null
-          type: string
-          enum:
-            - invalid
-            - 'null'
         detail:
           type: string
       required:
-        - attr
-        - code
-        - detail
-    ProgramImagesUpdateErrorResponse400:
-      discriminator:
-        propertyName: type
-        mapping:
-          validation_error: '#/components/schemas/ProgramImagesUpdateValidationError'
-          client_error: '#/components/schemas/ParseErrorResponse'
-      oneOf:
-        - $ref: '#/components/schemas/ProgramImagesUpdateValidationError'
-        - $ref: '#/components/schemas/ParseErrorResponse'
-    ProgramImagesUpdateValidationError:
+      - attr
+      - code
+      - detail
+    VideosImagesCreateRoleErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+          - role
+          type: string
+          description: '* `role` - role'
+        code:
+          enum:
+          - invalid_choice
+          - 'null'
+          - required
+          type: string
+          description: |-
+            * `invalid_choice` - invalid_choice
+            * `null` - null
+            * `required` - required
+        detail:
+          type: string
+      required:
+      - attr
+      - code
+      - detail
+    VideosImagesCreateValidationError:
       type: object
       properties:
         type:
@@ -20113,75 +19987,83 @@ components:
         errors:
           type: array
           items:
-            $ref: '#/components/schemas/ProgramImagesUpdateError'
+            $ref: '#/components/schemas/VideosImagesCreateError'
       required:
-        - errors
-        - type
-    ProgramImagesUpdateError:
-      discriminator:
-        propertyName: attr
-        mapping:
-          non_field_errors: '#/components/schemas/ProgramImagesUpdateNonFieldErrorsErrorComponent'
-          role: '#/components/schemas/ProgramImagesUpdateRoleErrorComponent'
-      oneOf:
-        - $ref: '#/components/schemas/ProgramImagesUpdateNonFieldErrorsErrorComponent'
-        - $ref: '#/components/schemas/ProgramImagesUpdateRoleErrorComponent'
-    ProgramImagesUpdateRoleErrorComponent:
+      - errors
+      - type
+    VideosImagesCreateWidthErrorComponent:
       type: object
       properties:
         attr:
-          description: '* `role` - role'
-          type: string
           enum:
-            - role
+          - width
+          type: string
+          description: '* `width` - width'
         code:
-          description: |-
-            * `invalid_choice` - invalid_choice
-            * `null` - null
-            * `required` - required
-          type: string
           enum:
-            - invalid_choice
-            - 'null'
-            - required
-        detail:
+          - invalid
+          - max_string_length
+          - max_value
+          - min_value
+          - 'null'
+          - required
           type: string
-      required:
-        - attr
-        - code
-        - detail
-    ProgramImagesUpdateNonFieldErrorsErrorComponent:
-      type: object
-      properties:
-        attr:
-          description: '* `non_field_errors` - non_field_errors'
-          type: string
-          enum:
-            - non_field_errors
-        code:
           description: |-
             * `invalid` - invalid
+            * `max_string_length` - max_string_length
+            * `max_value` - max_value
+            * `min_value` - min_value
             * `null` - null
-          type: string
-          enum:
-            - invalid
-            - 'null'
+            * `required` - required
         detail:
           type: string
       required:
-        - attr
-        - code
-        - detail
-    ProgramImagesListErrorResponse400:
+      - attr
+      - code
+      - detail
+    VideosImagesDestroyErrorResponse400:
+      oneOf:
+      - $ref: '#/components/schemas/ParseErrorResponse'
       discriminator:
         propertyName: type
         mapping:
-          validation_error: '#/components/schemas/ProgramImagesListValidationError'
           client_error: '#/components/schemas/ParseErrorResponse'
+    VideosImagesListError:
       oneOf:
-        - $ref: '#/components/schemas/ProgramImagesListValidationError'
-        - $ref: '#/components/schemas/ParseErrorResponse'
-    ProgramImagesListValidationError:
+      - $ref: '#/components/schemas/VideosImagesListRoleErrorComponent'
+      discriminator:
+        propertyName: attr
+        mapping:
+          role: '#/components/schemas/VideosImagesListRoleErrorComponent'
+    VideosImagesListErrorResponse400:
+      oneOf:
+      - $ref: '#/components/schemas/VideosImagesListValidationError'
+      - $ref: '#/components/schemas/ParseErrorResponse'
+      discriminator:
+        propertyName: type
+        mapping:
+          validation_error: '#/components/schemas/VideosImagesListValidationError'
+          client_error: '#/components/schemas/ParseErrorResponse'
+    VideosImagesListRoleErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+          - role
+          type: string
+          description: '* `role` - role'
+        code:
+          enum:
+          - invalid_choice
+          type: string
+          description: '* `invalid_choice` - invalid_choice'
+        detail:
+          type: string
+      required:
+      - attr
+      - code
+      - detail
+    VideosImagesListValidationError:
       type: object
       properties:
         type:
@@ -20189,69 +20071,169 @@ components:
         errors:
           type: array
           items:
-            $ref: '#/components/schemas/ProgramImagesListError'
+            $ref: '#/components/schemas/VideosImagesListError'
       required:
-        - errors
-        - type
-    ProgramImagesListError:
+      - errors
+      - type
+    VideosImagesPartialUpdateError:
+      oneOf:
+      - $ref: '#/components/schemas/VideosImagesPartialUpdateNonFieldErrorsErrorComponent'
+      - $ref: '#/components/schemas/VideosImagesPartialUpdateRoleErrorComponent'
       discriminator:
         propertyName: attr
         mapping:
-          video_id: '#/components/schemas/ProgramImagesListVideoIdErrorComponent'
-          role: '#/components/schemas/ProgramImagesListRoleErrorComponent'
+          non_field_errors: '#/components/schemas/VideosImagesPartialUpdateNonFieldErrorsErrorComponent'
+          role: '#/components/schemas/VideosImagesPartialUpdateRoleErrorComponent'
+    VideosImagesPartialUpdateErrorResponse400:
       oneOf:
-        - $ref: '#/components/schemas/ProgramImagesListVideoIdErrorComponent'
-        - $ref: '#/components/schemas/ProgramImagesListRoleErrorComponent'
-    ProgramImagesListRoleErrorComponent:
+      - $ref: '#/components/schemas/VideosImagesPartialUpdateValidationError'
+      - $ref: '#/components/schemas/ParseErrorResponse'
+      discriminator:
+        propertyName: type
+        mapping:
+          validation_error: '#/components/schemas/VideosImagesPartialUpdateValidationError'
+          client_error: '#/components/schemas/ParseErrorResponse'
+    VideosImagesPartialUpdateNonFieldErrorsErrorComponent:
       type: object
       properties:
         attr:
+          enum:
+          - non_field_errors
+          type: string
+          description: '* `non_field_errors` - non_field_errors'
+        code:
+          enum:
+          - invalid
+          - 'null'
+          type: string
+          description: |-
+            * `invalid` - invalid
+            * `null` - null
+        detail:
+          type: string
+      required:
+      - attr
+      - code
+      - detail
+    VideosImagesPartialUpdateRoleErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+          - role
+          type: string
           description: '* `role` - role'
-          type: string
-          enum:
-            - role
         code:
-          description: '* `invalid_choice` - invalid_choice'
-          type: string
           enum:
-            - invalid_choice
+          - invalid_choice
+          - 'null'
+          - required
+          type: string
+          description: |-
+            * `invalid_choice` - invalid_choice
+            * `null` - null
+            * `required` - required
         detail:
           type: string
       required:
-        - attr
-        - code
-        - detail
-    ProgramImagesListVideoIdErrorComponent:
+      - attr
+      - code
+      - detail
+    VideosImagesPartialUpdateValidationError:
       type: object
       properties:
-        attr:
-          description: '* `video_id` - video_id'
-          type: string
-          enum:
-            - video_id
-        code:
-          description: '* `invalid_choice` - invalid_choice'
-          type: string
-          enum:
-            - invalid_choice
-        detail:
-          type: string
+        type:
+          $ref: '#/components/schemas/ValidationErrorEnum'
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/VideosImagesPartialUpdateError'
       required:
-        - attr
-        - code
-        - detail
-    PatchedProgramImageRequest:
-      type: object
-      properties:
-        role:
-          $ref: '#/components/schemas/RoleEnum'
-    ProgramImagesRetrieveErrorResponse400:
+      - errors
+      - type
+    VideosImagesRetrieveErrorResponse400:
+      oneOf:
+      - $ref: '#/components/schemas/ParseErrorResponse'
       discriminator:
         propertyName: type
         mapping:
           client_error: '#/components/schemas/ParseErrorResponse'
+    VideosImagesUpdateError:
       oneOf:
-        - $ref: '#/components/schemas/ParseErrorResponse'
+      - $ref: '#/components/schemas/VideosImagesUpdateNonFieldErrorsErrorComponent'
+      - $ref: '#/components/schemas/VideosImagesUpdateRoleErrorComponent'
+      discriminator:
+        propertyName: attr
+        mapping:
+          non_field_errors: '#/components/schemas/VideosImagesUpdateNonFieldErrorsErrorComponent'
+          role: '#/components/schemas/VideosImagesUpdateRoleErrorComponent'
+    VideosImagesUpdateErrorResponse400:
+      oneOf:
+      - $ref: '#/components/schemas/VideosImagesUpdateValidationError'
+      - $ref: '#/components/schemas/ParseErrorResponse'
+      discriminator:
+        propertyName: type
+        mapping:
+          validation_error: '#/components/schemas/VideosImagesUpdateValidationError'
+          client_error: '#/components/schemas/ParseErrorResponse'
+    VideosImagesUpdateNonFieldErrorsErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+          - non_field_errors
+          type: string
+          description: '* `non_field_errors` - non_field_errors'
+        code:
+          enum:
+          - invalid
+          - 'null'
+          type: string
+          description: |-
+            * `invalid` - invalid
+            * `null` - null
+        detail:
+          type: string
+      required:
+      - attr
+      - code
+      - detail
+    VideosImagesUpdateRoleErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+          - role
+          type: string
+          description: '* `role` - role'
+        code:
+          enum:
+          - invalid_choice
+          - 'null'
+          - required
+          type: string
+          description: |-
+            * `invalid_choice` - invalid_choice
+            * `null` - null
+            * `required` - required
+        detail:
+          type: string
+      required:
+      - attr
+      - code
+      - detail
+    VideosImagesUpdateValidationError:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/ValidationErrorEnum'
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/VideosImagesUpdateError'
+      required:
+      - errors
+      - type
   securitySchemes:
     cookieAuth:
       type: apiKey

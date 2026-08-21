@@ -1,13 +1,15 @@
 import { getCookiesFromRequest } from "@/lib/getCookiesFromRequest";
-import { ssrVideosRetrieve } from "@/generated/ssr/videos/videos";
+import {
+  ssrVideosImagesList,
+  ssrVideosRetrieve,
+  ssrVideosUploadTokenRetrieve,
+} from "@/generated/ssr/videos/videos";
 import { forbidden, notFound } from "next/navigation";
 import { getUserOrNull } from "@/app/getUserOrNull";
 import { VideoPageProps } from "@/app/video/[videoId]/page";
 import { VideoEditForm } from "@/app/video/[videoId]/edit/VideoEditForm";
 import { ProgramImageManager } from "@/app/video/[videoId]/edit/ProgramImageManager";
-import { ssrProgramImagesList } from "@/generated/ssr/program-images/program-images";
 import { ssrSeriesList } from "@/generated/ssr/series/series";
-import { ssrVideosUploadTokenRetrieve } from "@/generated/ssr/videos/videos";
 
 export default async function Page({ params }: VideoPageProps) {
   const { videoId } = await params;
@@ -32,7 +34,7 @@ export default async function Page({ params }: VideoPageProps) {
       { organization: video.organization.id, limit: 100 },
       { headers, cache: "no-store" },
     ),
-    ssrProgramImagesList({ video_id: Number(videoId), limit: 100 }, { headers, cache: "no-store" }),
+    ssrVideosImagesList(videoId, { limit: 100 }, { headers, cache: "no-store" }),
     ssrVideosUploadTokenRetrieve(videoId, { headers, cache: "no-store" }),
   ]);
   if (seriesResponse.status !== 200)

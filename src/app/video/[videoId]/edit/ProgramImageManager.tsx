@@ -5,10 +5,7 @@ import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { ProgramImage, RoleEnum } from "@/generated/frikanalenDjangoAPI.schemas";
-import {
-  programImagesDestroy,
-  programImagesPartialUpdate,
-} from "@/generated/program-images/program-images";
+import { videosImagesDestroy, videosImagesPartialUpdate } from "@/generated/videos/videos";
 import { formatApiError } from "@/lib/formatApiError";
 import { useTusUpload } from "@/lib/upload/useTusUpload";
 
@@ -85,7 +82,7 @@ export const ProgramImageManager = ({
     setActionError(undefined);
     setActionImageId(image.id);
     try {
-      await programImagesPartialUpdate(image.id, { role: nextRole });
+      await videosImagesPartialUpdate(videoId, image.id.toString(), { role: nextRole });
       setRoleOverrides((current) => ({ ...current, [image.id]: nextRole }));
       router.refresh();
     } catch (error) {
@@ -99,7 +96,7 @@ export const ProgramImageManager = ({
     setActionError(undefined);
     setActionImageId(image.id);
     try {
-      await programImagesDestroy(image.id);
+      await videosImagesDestroy(videoId, image.id.toString());
       setUnpublishedImageIds((current) => new Set(current).add(image.id));
       router.refresh();
     } catch (error) {
