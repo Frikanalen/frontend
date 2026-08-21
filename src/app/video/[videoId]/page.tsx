@@ -60,7 +60,6 @@ export default async function VideoPage({ params }: VideoPageProps) {
     throw new Error(
       `Unexpected status code ${status} when fetching video ${videoId} from ssrVideosRetrieve`,
     );
-  console.log(video.description);
   const user = await getUserOrNull(headers);
   const mayEdit = profileIsAdminOrMember(video.organization.id, user);
 
