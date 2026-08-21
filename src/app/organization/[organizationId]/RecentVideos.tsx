@@ -1,11 +1,16 @@
 import Link from "next/link";
 import { Organization } from "@/generated/frikanalenDjangoAPI.schemas";
 import { ssrVideosList } from "@/generated/ssr/videos/videos";
-import { VideoGrid } from "@/app/video/VideoGrid";
+import { VideoList } from "@/app/video/VideoList";
 import { archiveSearchUrl } from "@/app/video/archiveSearchUrl";
 
-/** Enough to fill three rows of the grid on a wide screen. */
-const RECENT_LIMIT = 12;
+/**
+ * A sample rather than a catalogue: the link below it carries anyone who wants
+ * the rest into the archive, narrowed to this organization. Eight rows is
+ * about a screen of them, which is as much of a profile page as a list of
+ * videos should take before it stops being a profile page.
+ */
+const RECENT_LIMIT = 8;
 
 /**
  * The newest handful of an organization's videos, and a way through to the
@@ -53,7 +58,8 @@ export const RecentVideos = async ({ organization }: { organization: Organizatio
 
       {results.length ? (
         <>
-          <VideoGrid videos={results} showOrganization={false} headingLevel={3} />
+          {/* Every video here is theirs, and the heading above says so. */}
+          <VideoList videos={results} showOrganization={false} />
           {count > results.length && (
             <p>
               <Link

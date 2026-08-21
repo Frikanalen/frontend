@@ -39,7 +39,9 @@ const video = (id, name, episodeNumber) => ({
   episodeNumber,
   duration: "00:05:00",
   durationSec: 300,
-  categories: [],
+  // Set so the series page can be checked for *not* printing it: every episode
+  // of a series shares a category, so the list there leaves it out.
+  categories: ["Kultur"],
   framerate: 25,
   createdTime: "2026-08-21T10:00:00Z",
   updatedTime: "2026-08-21T10:00:00Z",

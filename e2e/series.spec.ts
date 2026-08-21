@@ -19,6 +19,29 @@ test.describe("public series page", () => {
     ]);
   });
 
+  test("tells the episodes apart by number, date and running time", async ({ page }) => {
+    await page.goto("/series/9001");
+
+    const first = page.getByRole("listitem").filter({ hasText: "Første episode" });
+    await expect(first).toContainText("Episode 1");
+    await expect(first).toContainText("5:00");
+    await expect(first).toContainText("21. aug. 2026");
+
+    // Neither is drawn: the header names the organization, and every episode
+    // of a series carries the same category, so both would repeat what the
+    // page has already said.
+    await expect(first).not.toContainText("Kultur");
+    await expect(first).not.toContainText("Havneforeningen");
+  });
+
+  test("leaves the episode number off a video that has none", async ({ page }) => {
+    await page.goto("/series/9001");
+
+    const unnumbered = page.getByRole("listitem").filter({ hasText: "Uten nummer" });
+    await expect(unnumbered).not.toContainText("Episode");
+    await expect(unnumbered).toContainText("21. aug. 2026");
+  });
+
   test("uses the same outer bounds as the navigation header", async ({ page }) => {
     await page.goto("/series/9001");
 
