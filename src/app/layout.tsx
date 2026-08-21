@@ -6,7 +6,7 @@ import { Logo } from "@/components/Logo";
 import { Providers } from "@/app/providers";
 import { ReactNode } from "react";
 import { Footer } from "@/components/layout/Footer";
-import { getCookiesFromRequest } from "@/app/profile/getCookiesFromRequest";
+import { getCookiesFromRequest } from "@/lib/getCookiesFromRequest";
 import { getUserOrNull } from "@/app/getUserOrNull";
 import Head from "next/head";
 const geistSans = Geist({

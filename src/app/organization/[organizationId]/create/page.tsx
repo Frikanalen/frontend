@@ -1,8 +1,8 @@
 import { categoriesList } from "@/generated/categories/categories";
 import { VideoCreateForm } from "@/app/organization/[organizationId]/create/VideoCreateForm";
-import { getCookiesFromRequest } from "@/app/profile/getCookiesFromRequest";
+import { getCookiesFromRequest } from "@/lib/getCookiesFromRequest";
 import { organizationRetrieve } from "@/generated/organization/organization";
-import { ModalIshPrototype, ModalIshPrototypeBody } from "@/app/profile/ModalIshPrototype";
+import { PageShell, PageShellBody } from "@/components/layout/PageShell";
 import { CreateFlowSteps } from "@/components/videoCreateFlow/CreateFlowSteps";
 import { seriesList } from "@/generated/series/series";
 
@@ -20,8 +20,8 @@ export default async function Page({ params }: { params: Promise<{ organizationI
   );
 
   return (
-    <ModalIshPrototype>
-      <ModalIshPrototypeBody className={"space-y-4"}>
+    <PageShell>
+      <PageShellBody className={"space-y-4"}>
         <CreateFlowSteps current="details" />
         <div className={"prose dark:prose-invert"}>
           <h2 className={"mb-1!"}>Ny video</h2>
@@ -36,7 +36,7 @@ export default async function Page({ params }: { params: Promise<{ organizationI
           categories={categories.results}
           series={series.results}
         />
-      </ModalIshPrototypeBody>
-    </ModalIshPrototype>
+      </PageShellBody>
+    </PageShell>
   );
 }

@@ -2,24 +2,17 @@ import { ReactNode } from "react";
 import cx from "classnames";
 
 /**
- * As you may be able to tell, I'm not sure what to name this -
- * it's a container component for single pages with not a lot of UI,
+ * A container component for single pages with not a lot of UI,
  * like user signup forms, etc. Positions and width-constrains the page;
- * the actual card is ModalIshPrototypeBody.
+ * the actual card is PageShellBody.
  */
-export const ModalIshPrototype = ({
-  children,
-  className,
-}: {
-  children: ReactNode;
-  className?: string;
-}) => (
+export const PageShell = ({ children, className }: { children: ReactNode; className?: string }) => (
   <main className={cx("grow max-w-3xl w-full px-2 lg:py-12 flex flex-col", className)}>
     {children}
   </main>
 );
 
-export const ModalIshPrototypeBody = ({
+export const PageShellBody = ({
   children,
   className,
   aspectVideo = false,

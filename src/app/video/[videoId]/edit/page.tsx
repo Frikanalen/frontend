@@ -1,4 +1,4 @@
-import { getCookiesFromRequest } from "@/app/profile/getCookiesFromRequest";
+import { getCookiesFromRequest } from "@/lib/getCookiesFromRequest";
 import { ssrVideosRetrieve } from "@/generated/ssr/videos/videos";
 import { forbidden, notFound } from "next/navigation";
 import { getUserOrNull } from "@/app/getUserOrNull";

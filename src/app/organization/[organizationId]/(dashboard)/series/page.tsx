@@ -1,7 +1,7 @@
 import { getUserOrNull } from "@/app/getUserOrNull";
 import { profileIsAdminOrMember } from "@/app/organization/[organizationId]/admin/profileIsAdminOrMember";
 import { SeriesManager } from "@/app/organization/[organizationId]/series/SeriesManager";
-import { getCookiesFromRequest } from "@/app/profile/getCookiesFromRequest";
+import { getCookiesFromRequest } from "@/lib/getCookiesFromRequest";
 import { organizationRetrieve } from "@/generated/organization/organization";
 import { forbidden, notFound, redirect } from "next/navigation";
 

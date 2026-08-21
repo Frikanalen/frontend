@@ -2,7 +2,7 @@
 import { Organization } from "@/generated/frikanalenDjangoAPI.schemas";
 import { Button, Link } from "@heroui/react";
 
-import { OutstandingVideosList } from "@/app/profile/OutstandingVideosList";
+import { OutstandingVideosList } from "@/app/organization/[organizationId]/OutstandingVideosList";
 import { OrgVideosList } from "@/app/organization/[organizationId]/OrgVideosList";
 
 export const OrgAdminPage = ({ organization }: { organization: Organization }) => {
