@@ -1,4 +1,4 @@
-import { VideoGrid } from "@/app/video/VideoGrid";
+import { VideoList } from "@/app/video/VideoList";
 import { ssrSeriesRetrieve } from "@/generated/ssr/series/series";
 import { ssrVideosList } from "@/generated/ssr/videos/videos";
 import { orderSeriesEpisodes } from "@/app/series/orderSeriesEpisodes";
@@ -69,7 +69,12 @@ export default async function Page({ params }: SeriesPageProps) {
       <section className="space-y-4">
         <h2 className="text-xl font-bold">Episoder</h2>
         {episodes.length ? (
-          <VideoGrid videos={episodes} showOrganization={false} headingLevel={3} />
+          // Neither the organization nor the category is drawn: every episode
+          // of a series shares both, and the header above already names the
+          // organization. What tells two episodes of a weekly programme apart
+          // is the episode number, the date and the running time, which is
+          // what the rows carry instead.
+          <VideoList videos={episodes} showOrganization={false} showCategory={false} />
         ) : (
           <p>Denne serien har ingen publiserte episoder ennå.</p>
         )}
