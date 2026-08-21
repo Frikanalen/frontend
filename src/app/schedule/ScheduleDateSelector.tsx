@@ -7,13 +7,17 @@ import "./date-picker.css";
 export const ScheduleDateSelector = ({
   selected,
   onSelect,
+  className,
 }: {
   selected: PropsSingle["selected"];
   onSelect: PropsSingle["onSelect"];
+  // PopoverTrigger clones this button, so the trigger is what the surrounding
+  // flex row lays out - the caller's ordering classes have to land on it.
+  className?: string;
 }) => (
   <Popover placement={"left-start"}>
     <PopoverTrigger>
-      <Button size={"sm"} variant={"bordered"} className={"min-w-none"}>
+      <Button size={"sm"} variant={"bordered"} className={className}>
         Velg dato
       </Button>
     </PopoverTrigger>
