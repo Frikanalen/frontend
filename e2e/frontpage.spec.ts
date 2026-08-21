@@ -2,10 +2,10 @@ import { expect, test } from "@playwright/test";
 import { stubApi } from "./support/api";
 
 /**
- * The suite runs with DJANGO_URL pointed at a dead port, so the front page's
- * server-side schedule fetch fails for real here - no stubbing required. That
- * is the case this page used to answer with a 500, taking the live stream down
- * with the listing beside it.
+ * The local test backend deliberately has no schedule fixture, so the front
+ * page's server-side schedule fetch receives an error. That is the case this
+ * page used to answer with a 500, taking the live stream down with the listing
+ * beside it.
  */
 test.describe("the front page without a backend", () => {
   test.beforeEach(async ({ page }) => {

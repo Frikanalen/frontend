@@ -1,23 +1,27 @@
 "use client";
-import { Category, VideoCreateRequest } from "@/generated/frikanalenDjangoAPI.schemas";
+import { Category, Series, VideoCreateRequest } from "@/generated/frikanalenDjangoAPI.schemas";
 import { Button, Form, Input, Textarea } from "@heroui/react";
 import { Categories } from "@/app/organization/[organizationId]/create/Categories";
 import { useVideosCreate } from "@/generated/videos/videos";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { useApiFormSubmit } from "@/lib/useApiFormSubmit";
 import { FormError } from "@/components/form/FormError";
+import { SeriesFields } from "@/app/organization/[organizationId]/create/SeriesFields";
 export const VideoCreateForm = ({
   organizationId,
   categories,
+  series,
 }: {
   organizationId: number;
   categories: Category[];
+  series: Series[];
 }) => {
   const { mutateAsync } = useVideosCreate();
   const router = useRouter();
   const form = useForm<VideoCreateRequest>({ defaultValues: { organization: organizationId } });
   const { register, control } = form;
+  const selectedSeries = useWatch({ control, name: "seriesId" });
 
   const { onSubmit, error, isSubmitting } = useApiFormSubmit(form, async (data) => {
     const response = await mutateAsync({ data });
@@ -47,6 +51,14 @@ export const VideoCreateForm = ({
           isRequired
         />
         <Categories control={control} name={"categories"} categories={categories} />
+        <SeriesFields
+          control={control}
+          register={register}
+          series={series}
+          seriesName="seriesId"
+          episodeName="episodeNumber"
+          selectedSeries={selectedSeries}
+        />
         <div className="p-2 ml-auto">
           <Button type="submit" isLoading={isSubmitting}>
             Lag video

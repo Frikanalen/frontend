@@ -4,6 +4,7 @@ import { forbidden, notFound } from "next/navigation";
 import { getUserOrNull } from "@/app/getUserOrNull";
 import { VideoPageProps } from "@/app/video/[videoId]/page";
 import { VideoEditForm } from "@/app/video/[videoId]/edit/VideoEditForm";
+import { ssrSeriesList } from "@/generated/ssr/series/series";
 
 export default async function Page({ params }: VideoPageProps) {
   const { videoId } = await params;
@@ -23,12 +24,19 @@ export default async function Page({ params }: VideoPageProps) {
     );
   if (!user?.editorOf.some(({ id }) => id == video.organization.id)) return forbidden();
 
+  const seriesResponse = await ssrSeriesList(
+    { organization: video.organization.id, limit: 100 },
+    { headers, cache: "no-store" },
+  );
+  if (seriesResponse.status !== 200)
+    throw new Error(`Unexpected status ${seriesResponse.status} when fetching series`);
+
   return (
     <section className={"bg-background rounded-md shadow-lg p-8 space-y-3"}>
       <div className={"prose dark:prose-invert"}>
         <h2>Rediger video</h2>
       </div>
-      <VideoEditForm video={video} />
+      <VideoEditForm video={video} series={seriesResponse.data.results} />
     </section>
   );
 }
