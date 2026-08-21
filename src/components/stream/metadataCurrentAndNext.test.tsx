@@ -25,7 +25,8 @@ const program = (id: number, name: string, organization: string, from: string, t
     endtime: `2026-08-21T${to}:00+02:00`,
     duration: "01:00:00",
     schedulereason: 3,
-    displaceable: false,
+  displaceable: false,
+  weeklySlot: null,
     video: {
       id: id * 10,
       name,

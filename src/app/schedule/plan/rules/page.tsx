@@ -69,6 +69,12 @@ export default async function Page() {
           Hvis det ikke vises jukeboksinnslag, kan sendetiden være en reell åpning, være for kort
           for tilgjengelig fyllstoff, eller den nattlige jobben kan ennå ikke ha kjørt.
         </p>
+        <p>
+          Faste, gjentakende reservasjoner vises som <strong>Ukentlig sendeflate</strong>, også før
+          den nattlige jobben har valgt et konkret program. Disse flatene er ikke ledige. Reelle
+          åpninger kortere enn ti minutter vises heller ikke som valgbare; det holder små
+          avrundingsrester ute av planleggeren.
+        </p>
 
         <h2>Hva kan ikke overskrives?</h2>
         <ul>
@@ -77,9 +83,9 @@ export default async function Page() {
           <li>Programmer i en frosset sendeuke.</li>
         </ul>
         <p>
-          Slike sendinger vises som <strong>Fastlagt sending</strong>. Forsøk på å overlappe dem
-          blir avvist. Du kan endre eller fjerne din egen organisasjons programmer så lenge uken
-          fortsatt er åpen.
+          Slike sendinger vises som <strong>Fastlagt sending</strong> eller{" "}
+          <strong>Ukentlig sendeflate</strong>. Forsøk på å overlappe dem blir avvist. Du kan endre
+          eller fjerne din egen organisasjons programmer så lenge uken fortsatt er åpen.
         </p>
 
         <h2>Praktiske råd</h2>

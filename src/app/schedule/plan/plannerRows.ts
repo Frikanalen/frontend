@@ -1,17 +1,22 @@
-import type { ScheduleitemRead } from "@/generated/frikanalenDjangoAPI.schemas";
+import type { ScheduleitemRead, WeeklySlotRead } from "@/generated/frikanalenDjangoAPI.schemas";
 import { OSLO_TIME_ZONE, inOsloTime } from "@/lib/osloTime";
 import { TZDate } from "@date-fns/tz/date";
-import { addDays, format } from "date-fns";
+import { addDays, addMilliseconds, format, subDays } from "date-fns";
+import { durationMilliseconds } from "./duration";
+
+export const MINIMUM_PLANNER_GAP_MILLISECONDS = 10 * 60 * 1000;
 
 export type PlannerRow =
-  { kind: "gap"; start: Date; end: Date } | { kind: "item"; item: ScheduleitemRead };
+  | { kind: "gap"; start: Date; end: Date }
+  | { kind: "item"; item: ScheduleitemRead }
+  | { kind: "weeklySlot"; slot: WeeklySlotRead; start: Date; end: Date };
 
 export const osloDate = (instant: string | Date) => format(inOsloTime(instant), "yyyy-MM-dd");
 
 export const osloDateTime = (date: string, time: string) => {
   const [year, month, day] = date.split("-").map(Number);
-  const [hour, minute] = time.split(":").map(Number);
-  return new TZDate(year, month - 1, day, hour, minute, 0, OSLO_TIME_ZONE);
+  const [hour, minute, second = 0] = time.split(":").map(Number);
+  return new TZDate(year, month - 1, day, hour, minute, second, OSLO_TIME_ZONE);
 };
 
 export const openDates = (freezeBoundary: string, schedulingHorizon: string) => {
@@ -26,7 +31,52 @@ export const openDates = (freezeBoundary: string, schedulingHorizon: string) => 
   return dates;
 };
 
-export const plannerRows = (items: ScheduleitemRead[], date: string): PlannerRow[] => {
+const overlaps = (start: Date, end: Date, otherStart: Date, otherEnd: Date) =>
+  start < otherEnd && end > otherStart;
+
+const osloWeekday = (instant: Date) => (instant.getDay() + 6) % 7;
+
+const weeklySlotRows = (
+  slots: readonly WeeklySlotRead[],
+  items: ScheduleitemRead[],
+  dayStart: Date,
+  dayEnd: Date,
+) => {
+  const rows: Extract<PlannerRow, { kind: "weeklySlot" }>[] = [];
+
+  // Looking back one complete week also covers slots that begin on an
+  // earlier day and continue across midnight into the selected day.
+  for (let daysAgo = 0; daysAgo < 7; daysAgo += 1) {
+    const occurrenceDay = subDays(dayStart, daysAgo);
+    const occurrenceDate = format(occurrenceDay, "yyyy-MM-dd");
+
+    for (const slot of slots) {
+      if (slot.day !== osloWeekday(occurrenceDay)) continue;
+      const milliseconds = durationMilliseconds(slot.duration);
+      if (milliseconds === undefined || milliseconds <= 0) continue;
+
+      const start = osloDateTime(occurrenceDate, slot.startTime);
+      const end = addMilliseconds(start, milliseconds);
+      if (!overlaps(start, end, dayStart, dayEnd)) continue;
+
+      // The actual schedule is authoritative. This also prevents a drafted
+      // weekly-slot item from appearing once as a programme and once as its
+      // recurring reservation.
+      const occupied = items.some((item) =>
+        overlaps(start, end, new Date(item.starttime), new Date(item.endtime)),
+      );
+      if (!occupied) rows.push({ kind: "weeklySlot", slot, start, end });
+    }
+  }
+
+  return rows;
+};
+
+export const plannerRows = (
+  items: ScheduleitemRead[],
+  slots: readonly WeeklySlotRead[],
+  date: string,
+): PlannerRow[] => {
   const dayStart = osloDateTime(date, "00:00");
   const dayEnd = addDays(dayStart, 1);
   const rows: PlannerRow[] = [];
@@ -40,17 +90,34 @@ export const plannerRows = (items: ScheduleitemRead[], date: string): PlannerRow
     )
     .sort((a, b) => new Date(a.starttime).getTime() - new Date(b.starttime).getTime());
 
-  for (const item of visible) {
-    const start = Math.max(new Date(item.starttime).getTime(), dayStart.getTime());
-    const end = Math.min(new Date(item.endtime).getTime(), dayEnd.getTime());
+  const timeline: Exclude<PlannerRow, { kind: "gap" }>[] = [
+    ...visible.map((item) => ({ kind: "item" as const, item })),
+    ...weeklySlotRows(slots, visible, dayStart, dayEnd),
+  ].sort((a, b) => {
+    const aStart = new Date(a.kind === "item" ? a.item.starttime : a.start).getTime();
+    const bStart = new Date(b.kind === "item" ? b.item.starttime : b.start).getTime();
+    return aStart - bStart;
+  });
 
-    if (start > cursor) rows.push({ kind: "gap", start: new Date(cursor), end: new Date(start) });
-    rows.push({ kind: "item", item });
+  const addGap = (start: number, end: number) => {
+    if (end - start >= MINIMUM_PLANNER_GAP_MILLISECONDS) {
+      rows.push({ kind: "gap", start: new Date(start), end: new Date(end) });
+    }
+  };
+
+  for (const entry of timeline) {
+    const entryStart = entry.kind === "item" ? new Date(entry.item.starttime) : entry.start;
+    const entryEnd = entry.kind === "item" ? new Date(entry.item.endtime) : entry.end;
+    const start = Math.max(entryStart.getTime(), dayStart.getTime());
+    const end = Math.min(entryEnd.getTime(), dayEnd.getTime());
+
+    if (start > cursor) addGap(cursor, start);
+    rows.push(entry);
     cursor = Math.max(cursor, end);
   }
 
   if (cursor < dayEnd.getTime()) {
-    rows.push({ kind: "gap", start: new Date(cursor), end: dayEnd });
+    addGap(cursor, dayEnd.getTime());
   }
 
   return rows;
