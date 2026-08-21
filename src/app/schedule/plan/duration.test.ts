@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isScheduleDuration } from "./duration";
+import { durationMilliseconds, isScheduleDuration } from "./duration";
 
 describe("schedule duration", () => {
   it.each(["00:06:29", "00:06:29.290000", "25:00:00.1"])("accepts %s", (duration) => {
@@ -8,5 +8,15 @@ describe("schedule duration", () => {
 
   it.each(["6:29", "00:66:00", "00:06:29.1234567"])("rejects %s", (duration) => {
     expect(isScheduleDuration(duration)).toBe(false);
+  });
+});
+
+describe("durationMilliseconds", () => {
+  it("parses Django durations, including days and microseconds", () => {
+    expect(durationMilliseconds("1 02:03:04.500000")).toBe(93_784_500);
+  });
+
+  it("rejects malformed durations", () => {
+    expect(durationMilliseconds("not a duration")).toBeUndefined();
   });
 });

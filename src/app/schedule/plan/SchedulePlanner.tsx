@@ -103,7 +103,7 @@ export const SchedulePlanner = ({
   const destroy = useScheduleitemsDestroy();
 
   const items = useMemo(() => schedule.data?.data.results ?? [], [schedule.data]);
-  const rows = useMemo(() => plannerRows(items, date), [items, date]);
+  const rows = useMemo(() => plannerRows(items, policy.weeklySlots, date), [items, policy, date]);
   const isSaving = create.isPending || update.isPending || destroy.isPending;
 
   const refresh = async () => {
@@ -237,6 +237,22 @@ export const SchedulePlanner = ({
                 );
               }
 
+              if (row.kind === "weeklySlot") {
+                return (
+                  <li
+                    className="rounded-lg border border-dashed border-secondary-300 bg-secondary-50 p-3 dark:bg-secondary-950"
+                    key={`weekly-slot-${row.slot.id}-${row.start.toISOString()}`}
+                  >
+                    <div className="font-semibold">
+                      {formatOsloTime(row.start)}–{formatOsloTime(row.end)} Ukentlig sendeflate
+                    </div>
+                    <div className="text-sm text-default-600">
+                      {row.slot.purpose?.name ?? "Program velges automatisk"}
+                    </div>
+                  </li>
+                );
+              }
+
               const item = row.item;
               const canManage =
                 isStaff ||
@@ -257,7 +273,9 @@ export const SchedulePlanner = ({
                         {item.video?.name || item.defaultName || "Uten programnavn"}
                       </div>
                       <div className="text-sm text-default-600">
-                        {statusText(item, manageableOrganizationIds)}
+                        {item.weeklySlot
+                          ? "Ukentlig sendeflate"
+                          : statusText(item, manageableOrganizationIds)}
                         {item.video ? ` · ${item.video.organization.name}` : ""}
                       </div>
                     </div>

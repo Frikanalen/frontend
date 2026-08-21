@@ -4506,7 +4506,7 @@ paths:
       description: |-
         The instants that divide the broadcast schedule into its three states. Every broadcast week runs Monday 00:00 to Monday 00:00, Europe/Oslo, and is drafted two Mondays before it airs, open for member changes for one week, then frozen from the Monday before airing.
 
-        Derive per-item state by comparing `starttime` against these boundaries: before `freezeBoundary` the item is frozen; from `freezeBoundary` up to `schedulingHorizon` it is in the open week, where an item marked `displaceable` can be replaced by a member organization's own pick; beyond `schedulingHorizon` nothing is drafted yet. The values only change on Mondays at midnight Europe/Oslo. Staff accounts are exempt from the freeze.
+        Derive per-item state by comparing `starttime` against these boundaries: before `freezeBoundary` the item is frozen; from `freezeBoundary` up to `schedulingHorizon` it is in the open week, where an item marked `displaceable` can be replaced by a member organization's own pick; beyond `schedulingHorizon` nothing is drafted yet. The values only change on Mondays at midnight Europe/Oslo. Staff accounts are exempt from the freeze. `weeklySlots` describes recurring reserved airtime whether or not its concrete programme has been drafted yet.
       responses:
         '200':
           description: ''
@@ -9712,6 +9712,24 @@ components:
           client_error: '#/components/schemas/ParseErrorResponse'
       oneOf:
         - $ref: '#/components/schemas/ParseErrorResponse'
+    DayEnum:
+      description: |-
+        * `0` - Monday
+        * `1` - Tuesday
+        * `2` - Wednesday
+        * `3` - Thursday
+        * `4` - Friday
+        * `5` - Saturday
+        * `6` - Sunday
+      type: integer
+      enum:
+        - 0
+        - 1
+        - 2
+        - 3
+        - 4
+        - 5
+        - 6
     Error401:
       type: object
       properties:
@@ -11844,6 +11862,10 @@ components:
           description: Whether this item is automatic jukebox filler, which a member organization's own pick replaces when scheduled over it. Deliberate programming is never displaceable. Only meaningful for items starting at or after the freezeBoundary of /api/scheduling/policy; frozen airtime cannot be changed regardless.
           type: boolean
           readOnly: true
+        weeklySlot:
+          type: integer
+          nullable: true
+          readOnly: true
       required:
         - defaultName
         - displaceable
@@ -11853,6 +11875,7 @@ components:
         - schedulereason
         - starttime
         - video
+        - weeklySlot
     ScheduleitemVideo:
       type: object
       properties:
@@ -12483,12 +12506,14 @@ components:
         - 5
     SchedulingPolicy:
       description: |-
-        The broadcast-week policy, as instants to compare schedule items
-        against. Clients should derive per-item state from these rather than
-        re-implement the week arithmetic (see agenda.scheduling.policy):
+        The broadcast-week policy and its recurring reservations.
+
+        Clients should derive per-item state from the boundary instants rather
+        than re-implement the week arithmetic (see agenda.scheduling.policy):
         items before freezeBoundary are frozen, items between freezeBoundary
         and schedulingHorizon are in the open week, and airtime beyond
-        schedulingHorizon has not been drafted yet.
+        schedulingHorizon has not been drafted yet. Weekly slots describe
+        reserved airtime even when no concrete schedule item has been drafted.
       type: object
       properties:
         freezeBoundary:
@@ -12506,10 +12531,17 @@ components:
           type: string
           format: date-time
           readOnly: true
+        weeklySlots:
+          description: Recurring reservations that the automatic scheduler fills before jukebox airtime.
+          type: array
+          items:
+            $ref: '#/components/schemas/WeeklySlotRead'
+          readOnly: true
       required:
         - freezeBoundary
         - schedulingHorizon
         - serverTime
+        - weeklySlots
     SchedulingPolicyRetrieveErrorResponse400:
       discriminator:
         propertyName: type
@@ -16342,6 +16374,47 @@ components:
       required:
         - errors
         - type
+    WeeklySlotPurpose:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+      required:
+        - id
+        - name
+    WeeklySlotRead:
+      description: A recurring reservation shown alongside the drafted schedule.
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        purpose:
+          allOf:
+            - $ref: '#/components/schemas/WeeklySlotPurpose'
+          nullable: true
+          readOnly: true
+        day:
+          allOf:
+            - $ref: '#/components/schemas/DayEnum'
+          readOnly: true
+        startTime:
+          type: string
+          format: time
+          readOnly: true
+        duration:
+          type: string
+          readOnly: true
+      required:
+        - day
+        - duration
+        - id
+        - purpose
+        - startTime
   securitySchemes:
     cookieAuth:
       type: apiKey
