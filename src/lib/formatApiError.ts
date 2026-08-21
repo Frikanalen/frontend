@@ -21,9 +21,19 @@ const formatResponseBody = (data: unknown): string | null => {
 
   if (typeof body.detail === "string") return body.detail;
 
+  // drf-standardized-errors: { type, errors: [{ detail, attr, code }] }
+  if (Array.isArray(body.errors)) {
+    const messages = body.errors.flatMap((entry) => {
+      if (typeof entry !== "object" || entry === null) return [];
+      const detail = (entry as Record<string, unknown>).detail;
+      return typeof detail === "string" ? [detail] : [];
+    });
+    if (messages.length) return messages.join(" ");
+  }
+
   // Serializer errors: { email: ["Denne e-posten er allerede i bruk."] }
   const fieldMessages = Object.values(body).flatMap((value) => {
-    if (typeof value === "string") return [value];
+    if (typeof value === "string" && value !== body.type) return [value];
     if (Array.isArray(value)) return value.filter((entry) => typeof entry === "string");
     return [];
   });

@@ -22,6 +22,14 @@ export const OrgAdminPage = ({ organization }: { organization: Organization }) =
         >
           Ny video
         </Button>
+        <Button
+          as={Link}
+          href={`/organization/${organization.id}/schedule`}
+          color="primary"
+          size="md"
+        >
+          Programmer sendeplanen
+        </Button>
       </div>
       <OrgVideosList organizationId={organization.id} />
       <OutstandingVideosList organizationId={organization.id} />

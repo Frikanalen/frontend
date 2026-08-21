@@ -14,8 +14,9 @@ export const ScheduleItemList = ({ items }: { items: ScheduleitemRead[] }) => {
 
   return (
     <Accordion>
-      {filteredItems.map(({ id, starttime, video }) => {
+      {filteredItems.map(({ id, starttime, video, defaultName }) => {
         const startsAt = formatOsloTime(starttime);
+        const name = video?.name || defaultName || "Uten programnavn";
         return (
           <AccordionItem
             key={id}
@@ -23,29 +24,37 @@ export const ScheduleItemList = ({ items }: { items: ScheduleitemRead[] }) => {
               <div className={"flex"}>
                 <div className={"basis-12 shrink-0"}>{startsAt}</div>
 
-                <Link className={"text-primary-700"} href={`/video/${video.id}`}>
-                  {video.name}
-                  <GoArrowUpRight className={"inline"} />
-                </Link>
+                {video ? (
+                  <Link className={"text-primary-700"} href={`/video/${video.id}`}>
+                    {name}
+                    <GoArrowUpRight className={"inline"} />
+                  </Link>
+                ) : (
+                  <span>{name}</span>
+                )}
               </div>
             }
-            textValue={`${startsAt}: ${video.name}`}
+            textValue={`${startsAt}: ${name}`}
             subtitle={
-              <h4 className={"pl-12"}>
-                Presentert av{" "}
-                <Link
-                  className={"text-primary-700"}
-                  href={`/organization/${video.organization.id}`}
-                >
-                  {video.organization.name}
-                  <GoArrowUpRight className={"inline"} />
-                </Link>
-              </h4>
+              video ? (
+                <h4 className={"pl-12"}>
+                  Presentert av{" "}
+                  <Link
+                    className={"text-primary-700"}
+                    href={`/organization/${video.organization.id}`}
+                  >
+                    {video.organization.name}
+                    <GoArrowUpRight className={"inline"} />
+                  </Link>
+                </h4>
+              ) : null
             }
           >
-            <div className={"pl-12 pb-3"}>
-              <VideoBlurb video={video} />
-            </div>
+            {video ? (
+              <div className={"pl-12 pb-3"}>
+                <VideoBlurb video={video} />
+              </div>
+            ) : null}
           </AccordionItem>
         );
       })}

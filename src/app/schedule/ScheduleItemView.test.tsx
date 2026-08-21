@@ -18,8 +18,11 @@ afterAll(() => {
 const program = (id: number, name: string, from: string) =>
   ({
     id,
+    defaultName: "",
     starttime: `2026-08-21T${from}:00+02:00`,
     endtime: `2026-08-21T${from}:00+02:00`,
+    duration: "01:00:00",
+    schedulereason: 3,
     displaceable: false,
     video: {
       id: id * 10,
@@ -63,5 +66,24 @@ describe("ScheduleItemList", () => {
     expect(screen.getByText("00:30")).toBeDefined();
     expect(screen.getByText("Nattsending")).toBeDefined();
     expect(screen.queryByText("Kveldens konsert")).toBeNull();
+  });
+
+  it("renders a named programme without a video", () => {
+    showTab(2);
+    render(
+      <ScheduleItemList
+        items={[
+          {
+            ...evening,
+            id: 3,
+            defaultName: "Direktesending",
+            video: null,
+          },
+        ]}
+      />,
+    );
+
+    expect(screen.getByText("Direktesending")).toBeDefined();
+    expect(screen.queryByText("Presentert av")).toBeNull();
   });
 });
