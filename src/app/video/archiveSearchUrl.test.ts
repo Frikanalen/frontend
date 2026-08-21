@@ -1,5 +1,16 @@
 import { describe, it, expect } from "vitest";
-import { archiveSearchUrl, parseCategory, parseOrganization, parsePage } from "./archiveSearchUrl";
+import {
+  ArchiveState,
+  archiveSearchUrl,
+  archiveUrlWith,
+  parseCategory,
+  parseLength,
+  parseOrganization,
+  parsePage,
+  parseSort,
+  resolveSort,
+  sortsFor,
+} from "./archiveSearchUrl";
 
 describe("archiveSearchUrl", () => {
   it("puts a plain search on the query string", () => {
@@ -99,5 +110,111 @@ describe("parseCategory", () => {
 
   it.each([undefined, "", "   "])("reads %o as no category", (value) => {
     expect(parseCategory(value)).toBe("");
+  });
+});
+
+describe("archiveSearchUrl, with a length band and a sort", () => {
+  it("carries a length band", () => {
+    expect(archiveSearchUrl({ length: "30-60" })).toBe("/video?length=30-60");
+  });
+
+  it("carries a sort", () => {
+    expect(archiveSearchUrl({ sort: "lengst" })).toBe("/video?sort=lengst");
+  });
+
+  it("combines every narrowing there is", () => {
+    expect(
+      archiveSearchUrl({
+        query: "musikk",
+        organization: 82,
+        category: "Kultur",
+        length: "under-10",
+        sort: "tittel",
+        page: 2,
+      }),
+    ).toBe("/video?q=musikk&organization=82&category=Kultur&length=under-10&sort=tittel&page=2");
+  });
+});
+
+describe("archiveUrlWith", () => {
+  const state: ArchiveState = {
+    query: "musikk",
+    organization: 82,
+    category: "Kultur",
+    length: "30-60",
+    sort: "nyest",
+    page: 7,
+  };
+
+  it("changes one narrowing and leaves the rest alone", () => {
+    expect(archiveUrlWith(state, { category: "Idrett" })).toBe(
+      "/video?q=musikk&organization=82&category=Idrett&length=30-60&sort=nyest",
+    );
+  });
+
+  it("drops a narrowing when handed an empty one", () => {
+    expect(archiveUrlWith(state, { length: "" })).toBe(
+      "/video?q=musikk&organization=82&category=Kultur&sort=nyest",
+    );
+  });
+
+  it("drops the organization when handed no id", () => {
+    expect(archiveUrlWith(state, { organization: undefined })).toBe(
+      "/video?q=musikk&category=Kultur&length=30-60&sort=nyest",
+    );
+  });
+
+  // Otherwise narrowing from page 7 lands on page 7 of a result set that may
+  // now have two pages, which reads as an empty archive.
+  it("always goes back to the first page", () => {
+    expect(archiveUrlWith(state, {})).not.toContain("page=");
+  });
+});
+
+describe("parseLength", () => {
+  it("reads a band the archive has", () => {
+    expect(parseLength("30-60")).toBe("30-60");
+  });
+
+  it.each([undefined, "", "40-50", "kort", "0"])("drops %o", (value) => {
+    expect(parseLength(value)).toBe("");
+  });
+});
+
+describe("parseSort", () => {
+  it("reads a sort the archive has", () => {
+    expect(parseSort("lengst")).toBe("lengst");
+  });
+
+  it.each([undefined, "", "-created_time", "name", "tilfeldig"])("drops %o", (value) => {
+    expect(parseSort(value)).toBe("");
+  });
+});
+
+describe("resolveSort", () => {
+  it("ranks a search by relevance when nothing was chosen", () => {
+    expect(resolveSort("", true)).toBe("relevans");
+  });
+
+  it("puts the newest first when there is nothing to rank", () => {
+    expect(resolveSort("", false)).toBe("nyest");
+  });
+
+  it("keeps a sort that was chosen", () => {
+    expect(resolveSort("tittel", true)).toBe("tittel");
+    expect(resolveSort("tittel", false)).toBe("tittel");
+  });
+
+  // What is left in the URL when a search is cleared while sorted by
+  // relevance: there is no longer anything for the API to rank.
+  it("falls back when relevance outlives the query that earned it", () => {
+    expect(resolveSort("relevans", false)).toBe("nyest");
+  });
+});
+
+describe("sortsFor", () => {
+  it("offers relevance only alongside a query", () => {
+    expect(sortsFor(true)).toContain("relevans");
+    expect(sortsFor(false)).not.toContain("relevans");
   });
 });
