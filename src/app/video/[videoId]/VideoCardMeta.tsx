@@ -20,6 +20,15 @@ export const VideoCardMeta = ({ video }: { video: Video }) => {
               {video.organization.name}
             </Link>
           </h2>
+          {video.series && (
+            <p>
+              Serie:{" "}
+              <Link href={`/series/${video.series.id}`} className="font-semibold">
+                {video.series.name}
+              </Link>
+              {video.episodeNumber ? ` · episode ${video.episodeNumber}` : ""}
+            </p>
+          )}
 
           <div className={"prose dark:prose-invert text-foreground"}>
             {!!video.organization.description?.length && (

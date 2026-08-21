@@ -1,6 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Playwright may run while a developer has `next dev` open for this same
+  // checkout. A separate build directory gives the test server its own lock
+  // and cache without disturbing that session.
+  distDir: process.env.PLAYWRIGHT_TEST ? ".next-playwright" : ".next",
   output: "standalone",
   experimental: {
     authInterrupts: true,

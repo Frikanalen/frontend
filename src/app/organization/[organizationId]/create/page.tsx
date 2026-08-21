@@ -4,6 +4,7 @@ import { getCookiesFromRequest } from "@/app/profile/getCookiesFromRequest";
 import { organizationRetrieve } from "@/generated/organization/organization";
 import { ModalIshPrototype, ModalIshPrototypeBody } from "@/app/profile/ModalIshPrototype";
 import { CreateFlowSteps } from "@/components/videoCreateFlow/CreateFlowSteps";
+import { seriesList } from "@/generated/series/series";
 
 export default async function Page({ params }: { params: Promise<{ organizationId: string }> }) {
   const { data: categories } = await categoriesList();
@@ -13,6 +14,10 @@ export default async function Page({ params }: { params: Promise<{ organizationI
   const { data: organization } = await organizationRetrieve(organizationId, {
     headers,
   });
+  const { data: series } = await seriesList(
+    { organization: parseInt(organizationId), limit: 100 },
+    { headers },
+  );
 
   return (
     <ModalIshPrototype>
@@ -26,7 +31,11 @@ export default async function Page({ params }: { params: Promise<{ organizationI
             bli bedt om å laste opp en originalfil for denne videoen.
           </p>
         </div>
-        <VideoCreateForm organizationId={parseInt(organizationId)} categories={categories.results} />
+        <VideoCreateForm
+          organizationId={parseInt(organizationId)}
+          categories={categories.results}
+          series={series.results}
+        />
       </ModalIshPrototypeBody>
     </ModalIshPrototype>
   );

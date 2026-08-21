@@ -8,6 +8,7 @@ import { profileIsAdminOrMember } from "@/app/organization/[organizationId]/admi
 import { AdminAlert } from "@/app/organization/[organizationId]/AdminAlert";
 import { getUserOrNull } from "@/app/getUserOrNull";
 import { RecentVideos } from "@/app/organization/[organizationId]/RecentVideos";
+import { OrganizationSeries } from "@/app/organization/[organizationId]/OrganizationSeries";
 import { EditorInfo } from "@/app/organization/[organizationId]/EditorInfo";
 import { ArchiveSearch } from "@/app/video/ArchiveSearch";
 import { Metadata } from "next";
@@ -59,6 +60,7 @@ export default async function Page({ params }: OrgPageProps) {
     <div className="grow rounded-lg p-4 space-y-6">
       <OrgBlurb organization={organization} />
       {isAdmin && <AdminAlert organizationId={organizationId} />}
+      <OrganizationSeries organizationId={organization.id} />
       <ArchiveSearch scope={{ id: organization.id, name: organization.name }} />
       <RecentVideos organization={organization} />
       <EditorInfo organization={organization} />

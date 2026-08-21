@@ -24,6 +24,14 @@ export const OrgAdminPage = ({ organization }: { organization: Organization }) =
         </Button>
         <Button
           as={Link}
+          href={`/organization/${organization.id}/series`}
+          color="primary"
+          size="md"
+        >
+          Administrer serier
+        </Button>
+        <Button
+          as={Link}
           href={`/organization/${organization.id}/schedule`}
           color="primary"
           size="md"
