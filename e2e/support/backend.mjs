@@ -48,6 +48,32 @@ const video = (id, name, episodeNumber) => ({
   largeThumbnailUrl: thumbnail,
 });
 
+/**
+ * The archive's facets. Beredskap carries no videos, so it also stands in for
+ * the empty category the rail is expected to leave out.
+ */
+const categories = [
+  { id: 114, name: "Kultur", desc: "", videocount: 243 },
+  { id: 113, name: "Idrett", desc: "", videocount: 66 },
+  { id: 112, name: "Beredskap", desc: "", videocount: 0 },
+];
+
+/** More than four pages of them, so the archive has pagination to draw. */
+const ARCHIVE_COUNT = 100;
+
+/**
+ * A row of the archive listing, numbered by its position so a test can tell
+ * which page it is looking at. Everything the result row draws is filled in:
+ * a running time, a date and a category.
+ */
+const archiveVideo = (index) => ({
+  ...video(1000 + index, `Arkivvideo ${index + 1}`, null),
+  duration: "00:26:06",
+  durationSec: 1566,
+  categories: ["Kultur"],
+  createdTime: "2011-03-09T10:00:00Z",
+});
+
 const json = (response, status, body) => {
   response.writeHead(status, { "content-type": "application/json" });
   response.end(JSON.stringify(body));
@@ -74,6 +100,32 @@ createServer((request, response) => {
         video(20, "Tredje episode", 3),
         video(10, "Første episode", 1),
       ],
+    });
+  }
+
+  if (url.pathname === "/api/categories")
+    return json(response, 200, {
+      count: categories.length,
+      next: null,
+      previous: null,
+      results: categories,
+    });
+
+  // The archive listing. The narrowings are not applied - which slice comes
+  // back is not what these tests are about - but the window is, so a page
+  // number in the URL produces the rows that page should hold.
+  if (url.pathname === "/api/videos") {
+    const limit = Number(url.searchParams.get("limit") ?? 24);
+    const offset = Number(url.searchParams.get("offset") ?? 0);
+    const size = Math.max(0, Math.min(limit, ARCHIVE_COUNT - offset));
+
+    return json(response, 200, {
+      count: ARCHIVE_COUNT,
+      next: null,
+      previous: null,
+      results: Array.from({ length: size }, (_, index) =>
+        archiveVideo(offset + index),
+      ),
     });
   }
 

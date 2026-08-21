@@ -1,18 +1,21 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
-import Link from "next/link";
 import { Suspense, cache } from "react";
 import { ArchiveSearch } from "@/app/video/ArchiveSearch";
-import { CategoryFilter } from "@/app/video/CategoryFilter";
-import { LatestVideos } from "@/app/video/LatestVideos";
+import { ArchiveFilters } from "@/app/video/ArchiveFilters";
+import { ActiveFilters } from "@/app/video/ActiveFilters";
+import { ResultsSkeleton } from "@/app/video/ResultsSkeleton";
 import { SearchResults } from "@/app/video/SearchResults";
 import {
+  ARCHIVE_LENGTHS,
   ArchiveScope,
-  archiveSearchUrl,
+  ArchiveState,
   firstValue,
   parseCategory,
+  parseLength,
   parseOrganization,
   parsePage,
+  parseSort,
 } from "@/app/video/archiveSearchUrl";
 import { ssrOrganizationRetrieve } from "@/generated/ssr/organization/organization";
 
@@ -33,20 +36,29 @@ const loadScope = cache(async (organization: number): Promise<ArchiveScope | nul
   return status === 200 ? { id: data.id, name: data.name } : null;
 });
 
-const scopeFrom = async (searchParams: Awaited<ArchivePageProps["searchParams"]>) => {
-  const organization = parseOrganization(searchParams.organization);
-
-  return organization === undefined ? null : loadScope(organization);
-};
+/** Everything the URL says about what to show, in the shape the page passes around. */
+const stateFrom = (params: Awaited<ArchivePageProps["searchParams"]>): ArchiveState => ({
+  query: firstValue(params.q).trim(),
+  organization: parseOrganization(params.organization),
+  category: parseCategory(params.category),
+  length: parseLength(params.length),
+  sort: parseSort(params.sort),
+  page: parsePage(params.page),
+});
 
 export async function generateMetadata({ searchParams }: ArchivePageProps): Promise<Metadata> {
-  const params = await searchParams;
-  const query = firstValue(params.q).trim();
-  const category = parseCategory(params.category);
-  const scope = await scopeFrom(params);
+  const state = stateFrom(await searchParams);
+  const scope = state.organization === undefined ? null : await loadScope(state.organization);
 
   return {
-    title: [query && `«${query}»`, scope?.name, category, "Arkiv", "Frikanalen"]
+    title: [
+      state.query && `«${state.query}»`,
+      scope?.name,
+      state.category,
+      state.length && ARCHIVE_LENGTHS[state.length].label,
+      "Arkiv",
+      "Frikanalen",
+    ]
       .filter(Boolean)
       .join(" - "),
     description: scope
@@ -55,92 +67,122 @@ export async function generateMetadata({ searchParams }: ArchivePageProps): Prom
   };
 }
 
+/**
+ * The archive: two and a half thousand videos, and the tools to find one.
+ *
+ * Laid out as a search application rather than as a landing page - a search
+ * field, a rail of facets and a column of results - because that is what
+ * people come here to do. The version this replaces put a wall of category
+ * chips between the search box and the content, showed the twelve newest
+ * videos and then stopped, and gave each result a thumbnail, a title and an
+ * organization: nothing about how long a video runs, when it arrived, or what
+ * it is about, which are the three things that decide whether to open it.
+ *
+ * Everything the page shows is in its URL - query, organization, category,
+ * length band, sort, page - so every view of the archive can be linked to, and
+ * every control on the page is an ordinary link that works before the client
+ * bundle arrives. The search box is the one exception, and it degrades to a
+ * plain GET.
+ */
 export default async function ArchivePage({ searchParams }: ArchivePageProps) {
   const params = await searchParams;
-  const query = firstValue(params.q).trim();
-  const category = parseCategory(params.category);
-  const page = parsePage(params.page);
-  const scope = await scopeFrom(params);
+  const state = stateFrom(params);
+  const scope = state.organization === undefined ? null : await loadScope(state.organization);
 
   // An id that names no organization is a 404 rather than a silently dropped
   // filter: a page headed "0 videoer" for an organization that was never
   // there reads as an empty archive rather than as a bad link.
-  if (scope === null && parseOrganization(params.organization) !== undefined) return notFound();
+  if (scope === null && state.organization !== undefined) return notFound();
 
-  const isNarrowed = Boolean(query || category || scope);
+  const isNarrowed = Boolean(state.query || state.category || state.length || scope);
+
+  // A new set of narrowings gets its own fallback, rather than leaving the
+  // previous page's results up while the next ones load. The sort is in the
+  // key too: reordering replaces every row on screen.
+  const resultsKey = [
+    scope?.id ?? "",
+    state.query,
+    state.category,
+    state.length,
+    state.sort,
+    state.page,
+  ].join(":");
 
   return (
-    <main className="w-full max-w-5xl grow px-2">
+    <main className="w-full max-w-5xl grow px-2 pb-12">
       {/*
         A surface between the body's radial gradient and the text on top of it.
-        The gradient is dimmer than it was, which fixed the contrast on its own,
-        but a page whose text sits on a plain surface rather than straight on a
-        glow is the easier one to read, and it keeps the archive legible if the
-        gradient is ever brightened again.
 
-        Half-opaque rather than more: the gradient behind it is already dim, and
-        at /70 the panel swallowed it entirely and left the page flat. At /50
-        the glow still reads through, and the worst text contrast stays well
-        clear of the 4.5:1 that normal text needs.
+        It earns its place on contrast rather than on decoration: the secondary
+        text on this page is `text-foreground/75`, and straight on the gradient
+        that lands at 3.5:1 in the dark theme - under the 4.5:1 normal text
+        needs. Over this it clears it in both themes. Half-opaque rather than
+        more, so the glow still reads through and the page doesn't go flat.
 
-        Darker than the controls it holds: the search field, chips and
-        pagination links keep their opaque `bg-background`, so they sit as
-        darker wells on this rather than dissolving into it.
+        The rows, chips and rail inside keep their own opaque backgrounds, so
+        they sit as distinct surfaces on this rather than dissolving into it.
       */}
-      <div className="space-y-8 rounded-2xl bg-background/50 p-4 shadow-lg sm:p-6">
-        <h1 className="text-4xl font-black">{scope ? scope.name : "Arkiv"}</h1>
+      <div className="rounded-2xl bg-background/60 p-4 shadow-lg sm:p-6">
+        <header className="space-y-4">
+          <h1 className="text-3xl font-black sm:text-4xl">{scope ? scope.name : "Arkiv"}</h1>
 
-        <ArchiveSearch initialQuery={query} scope={scope ?? undefined} />
+          <ArchiveSearch initialQuery={state.query} scope={scope ?? undefined} />
 
-        {!isNarrowed && (
-          <p className="max-w-prose text-lg">
-            Her ligger videoene som har vært sendt på Frikanalen. Søk etter tittel, tema eller
-            organisasjonen som står bak - eller bla gjennom kategoriene under.
-          </p>
-        )}
+          {!isNarrowed && (
+            <p className="max-w-prose text-foreground/75">
+              Videoene som har vært sendt på Frikanalen, helt tilbake til 2009. Søk etter tittel,
+              tema eller organisasjonen som står bak - eller bla gjennom dem med filtrene.
+            </p>
+          )}
+          {/*
+            The rail is twenty-odd links, and it comes before the results in
+            the document because that is where it is on screen - reading order
+            and visual order agreeing is worth keeping. That leaves a keyboard
+            user twenty Tab presses from the first result on every archive
+            page, which is exactly the repeated block a bypass link is for.
+            Invisible until it is focused, so it costs nothing to everyone
+            else.
+          */}
+          <a
+            href="#arkiv-resultater"
+            className="sr-only rounded-lg bg-background px-4 py-2 text-small shadow-lg ring-2 ring-focus focus:not-sr-only focus:inline-block"
+          >
+            Hopp til resultatene
+          </a>
+        </header>
 
         {/*
-          Only off an organization's page: there the heading already names one
-          narrowing, and a second row of them competing with it reads as two
-          filters arguing rather than one page about one organization.
-
-          Its own Suspense boundary, so a slow category list never holds up the
-          results below it - and no fallback, because a row of chips appearing
-          late is less distracting than a placeholder for one.
+          Explicit placement rather than auto-flow, so the results column is in
+          the same place whether or not the filters have streamed in yet.
+          Without it a suspended rail would let the results start in column
+          one and jump across when it arrived.
         */}
-        {!scope && (
-          <Suspense fallback={null}>
-            <CategoryFilter query={query} activeCategory={category} />
-          </Suspense>
-        )}
+        <div className="mt-6 grid gap-5 lg:grid-cols-[13rem_1fr] lg:gap-8">
+          <div className="lg:col-start-1 lg:row-start-1 lg:sticky lg:top-6 lg:self-start">
+            {/* No fallback: a rail appearing a moment late is less distracting
+                than a placeholder for one, and nothing below it moves when it
+                lands. */}
+            <Suspense fallback={null}>
+              <ArchiveFilters state={state} />
+            </Suspense>
+          </div>
 
-        {isNarrowed ? (
-          // Keyed on the narrowings so a new search swaps in its own fallback
-          // rather than leaving the previous page's results up while it loads.
-          <Suspense
-            key={`${scope?.id ?? ""}:${query}:${category}:${page}`}
-            fallback={<p className="text-foreground/75">Søker …</p>}
+          {/* min-w-0 so a long title can't push the column wider than its share
+              of the grid - a grid item's default minimum is its content.
+              tabIndex -1 so the bypass link above can move focus here, and not
+              only the viewport. */}
+          <div
+            id="arkiv-resultater"
+            tabIndex={-1}
+            className="min-w-0 space-y-5 outline-hidden lg:col-start-2 lg:row-start-1"
           >
-            <SearchResults
-              query={query}
-              page={page}
-              scope={scope ?? undefined}
-              category={category}
-            />
-          </Suspense>
-        ) : (
-          <Suspense fallback={<p className="text-foreground/75">Henter de nyeste videoene …</p>}>
-            <LatestVideos />
-          </Suspense>
-        )}
+            <ActiveFilters state={state} scope={scope ?? undefined} />
 
-        {scope && (
-          <p>
-            <Link className="underline" href={archiveSearchUrl({ query })}>
-              {query ? `Søk etter «${query}» i hele arkivet` : "Se hele arkivet"}
-            </Link>
-          </p>
-        )}
+            <Suspense key={resultsKey} fallback={<ResultsSkeleton />}>
+              <SearchResults state={state} scope={scope ?? undefined} />
+            </Suspense>
+          </div>
+        </div>
       </div>
     </main>
   );

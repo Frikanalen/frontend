@@ -273,3 +273,104 @@ test.describe("archive search", () => {
     await expect(page.getByRole("listbox")).toBeHidden();
   });
 });
+
+/**
+ * The archive itself, rather than the box at the top of it. These read the
+ * server-rendered page, so they run against the fixture backend rather than
+ * against routes installed in the browser.
+ */
+test.describe("archive browsing", () => {
+  /** The desktop rail. Its facets are also rendered into the phone's
+   *  disclosure, which is display:none here but still in the DOM. */
+  const rail = (page: Page) => page.getByRole("complementary", { name: "Filtrer og sorter" });
+
+  const results = (page: Page) => page.getByRole("region", { name: "Søkeresultater" });
+
+  test("lists the archive itself, a page at a time", async ({ page }) => {
+    await page.goto("/video");
+
+    await expect(page.getByRole("status").filter({ hasText: "videoer" })).toContainText(
+      "side 1 av 5",
+    );
+    // Counted by their titles rather than by list items: the pagination below
+    // the rows is a list of its own, inside the same section.
+    await expect(results(page).getByRole("heading", { level: 3 })).toHaveCount(24);
+  });
+
+  test("gives every result the running time, date and category it was missing", async ({
+    page,
+  }) => {
+    await page.goto("/video");
+
+    const first = results(page).getByRole("listitem").first();
+    await expect(first).toContainText("26:06");
+    await expect(first).toContainText("9. mars 2011");
+    await expect(first).toContainText("Kultur");
+    // Drawn as a clock reading, and spelled out for anyone who can't see it.
+    await expect(first.getByText("Varighet 26 minutter")).toBeAttached();
+  });
+
+  test("narrows to a category without throwing away the search on screen", async ({ page }) => {
+    await page.goto("/video?q=musikk");
+
+    await rail(page)
+      .getByRole("link", { name: /^Kultur/ })
+      .click();
+
+    await page.waitForURL("**/video?q=musikk&category=Kultur");
+  });
+
+  test("counts a category only while the archive is what is being counted", async ({ page }) => {
+    await page.goto("/video");
+    await expect(rail(page).getByRole("link", { name: "Kultur, 243 videoer" })).toBeVisible();
+
+    // Beside "n treff på …" the archive-wide count is a promise the filter
+    // cannot keep, so it goes away rather than misleading.
+    await page.goto("/video?q=musikk");
+    await expect(rail(page).getByRole("link", { name: "Kultur, 243 videoer" })).toBeHidden();
+    await expect(rail(page).getByRole("link", { name: "Kultur" })).toBeVisible();
+  });
+
+  test("leaves out a category that leads nowhere", async ({ page }) => {
+    await page.goto("/video");
+
+    await expect(rail(page).getByRole("link", { name: /Beredskap/ })).toBeHidden();
+  });
+
+  test("takes off one narrowing at a time", async ({ page }) => {
+    await page.goto("/video?q=musikk&category=Kultur&length=under-10");
+
+    await page.getByRole("link", { name: "Fjern filteret Kultur" }).click();
+
+    await page.waitForURL("**/video?q=musikk&length=under-10");
+    await expect(page.getByRole("link", { name: "Fjern filteret «musikk»" })).toBeVisible();
+  });
+
+  test("goes back to the first page when the narrowing changes", async ({ page }) => {
+    await page.goto("/video?page=4");
+
+    await rail(page)
+      .getByRole("link", { name: /^Kultur/ })
+      .click();
+
+    await page.waitForURL("**/video?category=Kultur");
+  });
+
+  test("says which page of the results you are on", async ({ page }) => {
+    await page.goto("/video?page=3");
+
+    const pages = page.getByRole("navigation", { name: "Sider med treff" });
+    await expect(pages.getByText("3", { exact: true })).toHaveAttribute("aria-current", "page");
+    await expect(pages.getByRole("link", { name: "Side 5" })).toBeVisible();
+  });
+
+  test("gets a keyboard user past the rail in one press", async ({ page }) => {
+    await page.goto("/video");
+    await waitForHydration(page);
+
+    await page.getByRole("link", { name: "Hopp til resultatene" }).focus();
+    await page.keyboard.press("Enter");
+
+    await expect(page.locator("#arkiv-resultater")).toBeFocused();
+  });
+});
