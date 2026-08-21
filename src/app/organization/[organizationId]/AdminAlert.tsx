@@ -9,9 +9,8 @@ export const AdminAlert = ({ organizationId }: { organizationId: string }) => {
       <div className="flex flex-col gap-1 text-warning-600">
         <h3 className={"font-bold"}>OBS: Betaversjon</h3>
         <p>
-          Dette er en forhåndsvisning av organisasjonens offentlige profil hos Frikanalen. Det kan
-          være at videoer som ikke er synlige for offentligheten, likevel vil vises i f. eks.
-          &raquot;nyeste videoer&laquot; her.
+          Dette er organisasjonens offentlige profil hos Frikanalen, slik alle andre ser den. Bare
+          publiserte videoer vises her - dine upubliserte finner du på administratorsiden.
         </p>
         <div></div>
         <Link className={"text-warning-800"} href={`/organization/${organizationId}/admin`}>

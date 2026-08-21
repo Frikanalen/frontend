@@ -233,6 +233,33 @@ test.describe("archive search", () => {
     expect(urls.at(-1)).toContain("q=musikk");
   });
 
+  // The list endpoint does not hide unpublished videos on its own, so every
+  // public-facing caller has to ask for the filter by name. This one is
+  // reachable from the browser; the server-rendered callers are not.
+  test("asks only for published videos", async ({ page }) => {
+    const urls = await stubSuggestions(page, [MUSIKK]);
+    await page.goto("/video");
+    await waitForHydration(page);
+
+    await searchBox(page).fill("musikk");
+
+    await expect(page.getByRole("option", { name: new RegExp(MUSIKK.name) })).toBeVisible();
+    expect(urls.at(-1)).toContain("publish_on_web=true");
+  });
+
+  test("searches the whole archive when nothing narrows it to an organization", async ({
+    page,
+  }) => {
+    const urls = await stubSuggestions(page, [MUSIKK]);
+    await page.goto("/video");
+    await waitForHydration(page);
+
+    await searchBox(page).fill("musikk");
+
+    await expect(page.getByRole("option", { name: new RegExp(MUSIKK.name) })).toBeVisible();
+    expect(urls.at(-1)).not.toContain("organization=");
+  });
+
   test("dismisses the suggestions on Escape", async ({ page }) => {
     await stubSuggestions(page, [MUSIKK]);
     await page.goto("/video");
