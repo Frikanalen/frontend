@@ -51,6 +51,20 @@ describe("formatApiError", () => {
     expect(formatApiError(error)).toBe("Tjenesten er utilgjengelig.");
   });
 
+  it("extracts details from standardized DRF errors", () => {
+    const error = axiosErrorWith({
+      type: "validation_error",
+      errors: [
+        { code: "invalid", detail: "Tiden kolliderer med et annet program.", attr: "duration" },
+        { code: "invalid", detail: "Velg et annet tidspunkt.", attr: "starttime" },
+      ],
+    });
+
+    expect(formatApiError(error)).toBe(
+      "Tiden kolliderer med et annet program. Velg et annet tidspunkt.",
+    );
+  });
+
   it("falls back to the axios message when the body carries no usable text", () => {
     const error = axiosErrorWith({ unexpected: { nested: true } });
     expect(formatApiError(error)).toBe("Request failed with status code 400");

@@ -11,6 +11,7 @@ import { useEffect } from "react";
 const orgAdminLink = (id: number) => `/organization/${id}/admin`;
 const orgCreateLink = (id: number) => `/organization/${id}/create`;
 const orgPageLink = (id: number) => `/organization/${id}`;
+const orgScheduleLink = (id: number) => `/organization/${id}/schedule`;
 
 const UserOrgRole = ({ org, isEditor }: { org: SimpleOrg; isEditor?: boolean }) => (
   <div key={org.id} className={"basis-24 border-l-2 pl-4 flex flex-col"}>
@@ -23,9 +24,12 @@ const UserOrgRole = ({ org, isEditor }: { org: SimpleOrg; isEditor?: boolean }) 
       ) : (
         <div>Du er medlem av denne organisasjonen.</div>
       )}
-      <div className="flex gap-2 justify-end">
+      <div className="flex flex-wrap gap-2 justify-end">
         <Button as={Link} href={orgCreateLink(org.id)} color="primary" size="md">
           Ny video
+        </Button>
+        <Button as={Link} href={orgScheduleLink(org.id)} color="primary" size="md">
+          Programmer sendeplanen
         </Button>
         <Button as={Link} href={orgAdminLink(org.id)} color="primary" size="md">
           Administrasjon
@@ -68,6 +72,7 @@ export const OrgList = ({
       router.prefetch(orgPageLink(id));
       router.prefetch(orgAdminLink(id));
       router.prefetch(orgCreateLink(id));
+      router.prefetch(orgScheduleLink(id));
     });
   }, [memberOf, router]);
 

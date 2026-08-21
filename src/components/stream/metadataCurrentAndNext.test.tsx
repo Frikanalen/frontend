@@ -20,8 +20,11 @@ afterAll(() => {
 const program = (id: number, name: string, organization: string, from: string, to: string) =>
   ({
     id,
+    defaultName: "",
     starttime: `2026-08-21T${from}:00+02:00`,
     endtime: `2026-08-21T${to}:00+02:00`,
+    duration: "01:00:00",
+    schedulereason: 3,
     displaceable: false,
     video: {
       id: id * 10,

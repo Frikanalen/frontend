@@ -5,7 +5,7 @@ import pluginQuery from "@tanstack/eslint-plugin-query";
 // eslint-config-next 16 ships flat config directly, so FlatCompat/@eslint/eslintrc
 // (removed in ESLint 10) is no longer needed.
 const eslintConfig = [
-  { ignores: ["src/generated/**", ".next/**"] },
+  { ignores: ["src/generated/**", ".next/**", ".claude/worktrees/**"] },
   ...coreWebVitals,
   ...nextTypescript,
   ...pluginQuery.configs["flat/recommended"],

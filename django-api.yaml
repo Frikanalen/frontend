@@ -6812,7 +6812,11 @@ paths:
 
         `name__icontains` - substring is part of name/title of the video
 
-        `organization` - Frikanalen ID of organization behind video
+        `organization` - Frikanalen ID of organization behind video.  Given
+                         alongside `q`, it also narrows the search to that
+                         organization's own videos: the organization's name
+                         stops counting as a match, since it would otherwise
+                         return the whole catalogue.
 
         `played_count_web` - the number of times this video was played on the web
 
@@ -7132,7 +7136,11 @@ paths:
 
         `name__icontains` - substring is part of name/title of the video
 
-        `organization` - Frikanalen ID of organization behind video
+        `organization` - Frikanalen ID of organization behind video.  Given
+                         alongside `q`, it also narrows the search to that
+                         organization's own videos: the organization's name
+                         stops counting as a match, since it would otherwise
+                         return the whole catalogue.
 
         `played_count_web` - the number of times this video was played on the web
 
@@ -11623,10 +11631,16 @@ components:
           type: integer
           nullable: true
         schedulereason:
+          description: |-
+            Staff may choose provenance. Member writes are always recorded as User.
+
+            * `1` - Legacy
+            * `2` - Administrative
+            * `3` - User
+            * `4` - Automatic
+            * `5` - Jukebox
           allOf:
             - $ref: '#/components/schemas/SchedulereasonEnum'
-          maximum: 2147483647
-          minimum: -2147483648
         starttime:
           type: string
           format: date-time
@@ -11734,10 +11748,16 @@ components:
           type: integer
           nullable: true
         schedulereason:
+          description: |-
+            Staff may choose provenance. Member writes are always recorded as User.
+
+            * `1` - Legacy
+            * `2` - Administrative
+            * `3` - User
+            * `4` - Automatic
+            * `5` - Jukebox
           allOf:
             - $ref: '#/components/schemas/SchedulereasonEnum'
-          maximum: 2147483647
-          minimum: -2147483648
         starttime:
           type: string
           format: date-time
@@ -11759,10 +11779,16 @@ components:
           type: integer
           nullable: true
         schedulereason:
+          description: |-
+            Staff may choose provenance. Member writes are always recorded as User.
+
+            * `1` - Legacy
+            * `2` - Administrative
+            * `3` - User
+            * `4` - Automatic
+            * `5` - Jukebox
           allOf:
             - $ref: '#/components/schemas/SchedulereasonEnum'
-          maximum: 2147483647
-          minimum: -2147483648
         starttime:
           type: string
           format: date-time
@@ -11793,8 +11819,17 @@ components:
         id:
           type: integer
           readOnly: true
+        defaultName:
+          type: string
+          readOnly: true
         video:
-          $ref: '#/components/schemas/ScheduleitemVideo'
+          allOf:
+            - $ref: '#/components/schemas/ScheduleitemVideo'
+          nullable: true
+        schedulereason:
+          allOf:
+            - $ref: '#/components/schemas/SchedulereasonEnum'
+          readOnly: true
         starttime:
           type: string
           format: date-time
@@ -11802,14 +11837,20 @@ components:
           type: string
           format: date-time
           readOnly: true
+        duration:
+          type: string
+          readOnly: true
         displaceable:
           description: Whether this item is automatic jukebox filler, which a member organization's own pick replaces when scheduled over it. Deliberate programming is never displaceable. Only meaningful for items starting at or after the freezeBoundary of /api/scheduling/policy; frozen airtime cannot be changed regardless.
           type: boolean
           readOnly: true
       required:
+        - defaultName
         - displaceable
+        - duration
         - endtime
         - id
+        - schedulereason
         - starttime
         - video
     ScheduleitemVideo:
@@ -11948,14 +11989,10 @@ components:
         code:
           description: |-
             * `invalid_choice` - invalid_choice
-            * `max_value` - max_value
-            * `min_value` - min_value
             * `null` - null
           type: string
           enum:
             - invalid_choice
-            - max_value
-            - min_value
             - 'null'
         detail:
           type: string
@@ -12190,14 +12227,10 @@ components:
         code:
           description: |-
             * `invalid_choice` - invalid_choice
-            * `max_value` - max_value
-            * `min_value` - min_value
             * `null` - null
           type: string
           enum:
             - invalid_choice
-            - max_value
-            - min_value
             - 'null'
         detail:
           type: string
@@ -12359,14 +12392,10 @@ components:
         code:
           description: |-
             * `invalid_choice` - invalid_choice
-            * `max_value` - max_value
-            * `min_value` - min_value
             * `null` - null
           type: string
           enum:
             - invalid_choice
-            - max_value
-            - min_value
             - 'null'
         detail:
           type: string
@@ -12546,6 +12575,10 @@ components:
           description: Is the user a member of staff?
           type: boolean
           readOnly: true
+        identityConfirmed:
+          description: Whether the identity of this user has been confirmed by Frikanalen management.
+          type: boolean
+          readOnly: true
         dateJoined:
           type: string
           format: date-time
@@ -12579,6 +12612,7 @@ components:
         - editorOf
         - email
         - id
+        - identityConfirmed
         - isStaff
         - memberOf
     UserDestroyErrorResponse400:

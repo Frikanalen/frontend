@@ -9,7 +9,7 @@ export const ProfileButtons = () => {
   const { mutateAsync } = useUserLogoutCreate();
 
   return (
-    <div className="flex gap-2 py-2">
+    <div className="flex flex-wrap gap-2 py-2">
       <Button as={Link} href={`/profile/edit`}>
         Endre profil
       </Button>

@@ -56,34 +56,41 @@ export const MetadataCurrentAndNext = ({ schedule }: { schedule: ScheduleitemRea
         </div>
       )}
       <Accordion itemClasses={{ indicator: "text-primary-foreground" }}>
-        {rows.map(({ key, label, item: { video } }) => (
-          <AccordionItem
-            key={key}
-            textValue={`${label} ${video.name}`}
-            title={
-              <div className={"flex"}>
-                <div className={"basis-12 shrink-0"}>{label}</div>
-                {video.name}
-              </div>
-            }
-            subtitle={
-              <h4 className={"text-medium pl-12 text-primary-600"}>
-                av{" "}
-                <Link
-                  className={"text-primary-700"}
-                  href={`/organization/${video.organization.id}`}
-                >
-                  {video.organization.name}
-                  <GoArrowUpRight />
-                </Link>
-              </h4>
-            }
-          >
-            <div className={"pl-12 pb-3"}>
-              <VideoBlurb video={video} />
-            </div>
-          </AccordionItem>
-        ))}
+        {rows.map(({ key, label, item: { video, defaultName } }) => {
+          const name = video?.name || defaultName || "Uten programnavn";
+          return (
+            <AccordionItem
+              key={key}
+              textValue={`${label} ${name}`}
+              title={
+                <div className={"flex"}>
+                  <div className={"basis-12 shrink-0"}>{label}</div>
+                  {name}
+                </div>
+              }
+              subtitle={
+                video ? (
+                  <h4 className={"text-medium pl-12 text-primary-600"}>
+                    av{" "}
+                    <Link
+                      className={"text-primary-700"}
+                      href={`/organization/${video.organization.id}`}
+                    >
+                      {video.organization.name}
+                      <GoArrowUpRight />
+                    </Link>
+                  </h4>
+                ) : null
+              }
+            >
+              {video ? (
+                <div className={"pl-12 pb-3"}>
+                  <VideoBlurb video={video} />
+                </div>
+              ) : null}
+            </AccordionItem>
+          );
+        })}
       </Accordion>
     </>
   );
