@@ -3,12 +3,14 @@ import { ssrVideosList } from "@/generated/ssr/videos/videos";
 import { VideoGrid } from "@/app/video/VideoGrid";
 import { ARCHIVE_PAGE_SIZE, ArchiveScope, archiveSearchUrl } from "@/app/video/archiveSearchUrl";
 
+const RESULTS_HEADING_ID = "archive-results";
+
 const pageLinkClassName =
   "rounded-medium bg-background px-4 py-2 text-small shadow-sm ring-1 ring-default-300";
 
 /**
  * One page of `/api/videos`, narrowed by a free-text query, by an
- * organization, or by both.
+ * organization, by a category, or by any combination of them.
  *
  * No cookies are forwarded: this is the public archive, so it deliberately
  * sees what a signed-out visitor sees. `publish_on_web` matches the backend's
@@ -19,10 +21,12 @@ export const SearchResults = async ({
   query,
   page,
   scope,
+  category = "",
 }: {
   query: string;
   page: number;
   scope?: ArchiveScope;
+  category?: string;
 }) => {
   // A backend that is down or slow reports itself here rather than throwing
   // the whole page away: the search field above stays on screen, holding what
@@ -35,6 +39,9 @@ export const SearchResults = async ({
       // relevance ordering that a real query is ranked by.
       ...(query ? { q: query } : { ordering: "-id" }),
       ...(scope ? { organization: scope.id } : {}),
+      // A repeatable parameter, and one the API validates against the real
+      // categories - so an invented name comes back 400 rather than empty.
+      ...(category ? { categories__name__icontains: [category] } : {}),
       publish_on_web: true,
       limit: ARCHIVE_PAGE_SIZE,
       offset: (page - 1) * ARCHIVE_PAGE_SIZE,
@@ -44,6 +51,22 @@ export const SearchResults = async ({
     console.error(`Archive search for "${query}" could not reach the API:`, error);
     return null;
   });
+
+  // The category is the only narrowing here the API can reject, so a 400
+  // while one is set is a name it doesn't recognise - a stale link or a
+  // hand-edited URL - and saying so beats blaming the search.
+  if (response?.status === 400 && category)
+    return (
+      <div className="space-y-4">
+        <p role="alert">Kategorien «{category}» finnes ikke.</p>
+        <Link
+          className={pageLinkClassName}
+          href={archiveSearchUrl({ query, organization: scope?.id })}
+        >
+          {query ? `Søk etter «${query}» i hele arkivet` : "Tilbake til arkivet"}
+        </Link>
+      </div>
+    );
 
   if (response?.status !== 200)
     return (
@@ -61,15 +84,20 @@ export const SearchResults = async ({
   const lastPage = Math.max(1, Math.ceil(count / ARCHIVE_PAGE_SIZE));
 
   const pageUrl = (target: number) =>
-    archiveSearchUrl({ query, organization: scope?.id, page: target });
+    archiveSearchUrl({ query, organization: scope?.id, category, page: target });
+
+  /** Names the active narrowings, so both the count and the empty state read
+   *  the same way whichever of them is set. */
+  const narrowing =
+    (scope ? ` fra ${scope.name}` : "") + (category ? ` i kategorien ${category}` : "");
 
   if (!results.length)
     return (
       <div className="space-y-4">
         <p>
           {query
-            ? `Ingen videoer matcher «${query}»${scope ? ` fra ${scope.name}` : ""}${page > 1 ? " på denne siden" : ""}.`
-            : `${scope?.name ?? "Arkivet"} har ingen videoer her ennå.`}
+            ? `Ingen videoer matcher «${query}»${narrowing}${page > 1 ? " på denne siden" : ""}.`
+            : `Ingen videoer${narrowing || " i arkivet"} ennå.`}
         </p>
         {page > 1 && (
           <Link className={pageLinkClassName} href={pageUrl(1)}>
@@ -90,14 +118,21 @@ export const SearchResults = async ({
     );
 
   return (
-    <div className="space-y-6">
+    <section aria-labelledby={RESULTS_HEADING_ID} className="space-y-6">
+      {/* Unseen, but it gives the grid below a section of its own, so its
+          cards can be h3 like every other grid on the page. The count under
+          it can't do that job: role="status" replaces the heading role. */}
+      <h2 id={RESULTS_HEADING_ID} className="sr-only">
+        Søkeresultater
+      </h2>
+
       <p role="status" className="text-sm text-foreground/75">
         {query ? `${count} treff på «${query}»` : `${count} videoer`}
-        {scope && ` fra ${scope.name}`}
+        {narrowing}
         {lastPage > 1 && ` – side ${page} av ${lastPage}`}
       </p>
 
-      <VideoGrid videos={results} showOrganization={!scope} />
+      <VideoGrid videos={results} showOrganization={!scope} headingLevel={3} />
 
       {lastPage > 1 && (
         <nav className="flex justify-between" aria-label="Sider med treff">
@@ -115,6 +150,6 @@ export const SearchResults = async ({
           )}
         </nav>
       )}
-    </div>
+    </section>
   );
 };
