@@ -9,6 +9,7 @@ import { ScheduleDateSelector } from "@/app/schedule/ScheduleDateSelector";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo } from "react";
 import { TZDate } from "@date-fns/tz/date";
+import { OSLO_TIME_ZONE } from "@/lib/osloTime";
 import { Phase, useDatePhaseInHash } from "@/app/schedule/useDatePhaseInHash";
 
 export const ScheduleNavBar = ({
@@ -21,7 +22,7 @@ export const ScheduleNavBar = ({
   date: string;
 }) => {
   const parsedDate = useMemo(
-    () => new TZDate(parseInt(year), parseInt(month) - 1, parseInt(date), 0, 0, 0, "Europe/Oslo"),
+    () => new TZDate(parseInt(year), parseInt(month) - 1, parseInt(date), 0, 0, 0, OSLO_TIME_ZONE),
     [year, month, date],
   );
   const router = useRouter();

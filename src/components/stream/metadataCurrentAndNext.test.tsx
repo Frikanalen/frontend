@@ -3,12 +3,14 @@ import { cleanup, render, screen } from "@testing-library/react";
 import { MetadataCurrentAndNext } from "./metadataCurrentAndNext";
 import { ScheduleitemRead } from "@/generated/frikanalenDjangoAPI.schemas";
 
-// The component formats start times on the viewer's own clock, so the suite
-// pins a timezone rather than asserting whatever the machine happens to use.
+// The start times below are Oslo's, so the suite runs somewhere else on
+// purpose - the same premise as the phase tests. Pinned to Oslo, "20:00" would
+// come out right even if the component read the viewer's clock, which is how
+// the times went on being local long after the phases were fixed.
 const ORIGINAL_TZ = process.env.TZ;
 
 beforeAll(() => {
-  process.env.TZ = "Europe/Oslo";
+  process.env.TZ = "America/New_York";
 });
 
 afterAll(() => {
@@ -54,7 +56,12 @@ afterEach(() => {
 });
 
 describe("MetadataCurrentAndNext", () => {
-  it("shows the program on air and the one coming up", () => {
+  it("runs in a timezone that would give a different answer", () => {
+    // Guards the premise above: read locally, the 20:00 below reads 14:00 here.
+    expect(new Date("2026-08-21T20:00:00+02:00").getHours()).not.toBe(20);
+  });
+
+  it("shows the program on air and the one coming up, on Oslo's clock", () => {
     render(<MetadataCurrentAndNext schedule={[onAir, later]} />);
 
     expect(screen.getByText("Nå:")).toBeDefined();
