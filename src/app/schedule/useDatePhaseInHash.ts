@@ -1,3 +1,4 @@
+import { TZDate } from "@date-fns/tz/date";
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 
 const readHash = () => (typeof window === "undefined" ? "" : window.location.hash.slice(1)); // "3" from "#3"
@@ -17,7 +18,10 @@ const subscribeHash = (cb: () => void) => {
 export type Phase = 0 | 1 | 2 | 3;
 
 export function phaseOf(date: Date): Phase {
-  const h = date.getHours(); // 0–23
+  // The phases describe the Norwegian broadcast day, so the hour has to be read
+  // in Oslo. Reading the viewer's own clock sorts programs into the wrong tab
+  // for everyone outside the timezone - and into the wrong day around midnight.
+  const h = new TZDate(date, "Europe/Oslo").getHours(); // 0–23
   const bucket = Math.floor(h / 6);
   // bucket order is [night, morning, day, evening]
   const remap: Phase[] = [3, 0, 1, 2];
@@ -43,7 +47,7 @@ export const useDatePhaseInHash = () => {
   return [phase, setPhase] as const;
 };
 
-function parsePhase(h: string): 0 | 1 | 2 | 3 | null {
+export function parsePhase(h: string): 0 | 1 | 2 | 3 | null {
   if (h.length === 2 && h[0] === "p") {
     const n = h.charCodeAt(1) - 48;
     return n >= 0 && n <= 3 ? (n as 0 | 1 | 2 | 3) : null;

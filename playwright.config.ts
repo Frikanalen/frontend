@@ -21,9 +21,9 @@ export default defineConfig({
   ],
   webServer: {
     command: `npx next dev --port ${PORT}`,
-    // The front page server-fetches the schedule and fails without Django, so
-    // readiness is probed on /login, which renders from the client alone.
-    url: `${baseURL}/login`,
+    // The front page degrades to an empty schedule when Django is absent, so
+    // it serves as the readiness probe as well as being covered by a spec.
+    url: `${baseURL}/`,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
     // The suite stubs every /api call it depends on, so no Django is needed;
