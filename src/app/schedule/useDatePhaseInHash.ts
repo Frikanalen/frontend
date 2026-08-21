@@ -1,5 +1,5 @@
-import { TZDate } from "@date-fns/tz/date";
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { inOsloTime } from "@/lib/osloTime";
 
 const readHash = () => (typeof window === "undefined" ? "" : window.location.hash.slice(1)); // "3" from "#3"
 
@@ -21,7 +21,7 @@ export function phaseOf(date: Date): Phase {
   // The phases describe the Norwegian broadcast day, so the hour has to be read
   // in Oslo. Reading the viewer's own clock sorts programs into the wrong tab
   // for everyone outside the timezone - and into the wrong day around midnight.
-  const h = new TZDate(date, "Europe/Oslo").getHours(); // 0–23
+  const h = inOsloTime(date).getHours(); // 0–23
   const bucket = Math.floor(h / 6);
   // bucket order is [night, morning, day, evening]
   const remap: Phase[] = [3, 0, 1, 2];

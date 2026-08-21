@@ -1,6 +1,6 @@
 import { ScheduleitemRead } from "@/generated/frikanalenDjangoAPI.schemas";
 import { Accordion, AccordionItem, Link } from "@heroui/react";
-import { format } from "date-fns";
+import { formatOsloTime } from "@/lib/osloTime";
 import { useScheduleCursor } from "@/app/useScheduleCursor";
 import { VideoBlurb } from "@/app/videoBlurb";
 import { GoArrowUpRight } from "react-icons/go";
@@ -25,7 +25,7 @@ export const MetadataCurrentAndNext = ({ schedule }: { schedule: ScheduleitemRea
       ? [
           {
             key: "next",
-            label: format(new Date(nextProgram.starttime), "HH:mm"),
+            label: formatOsloTime(nextProgram.starttime),
             item: nextProgram,
           },
         ]
