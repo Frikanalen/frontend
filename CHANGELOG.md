@@ -1,6 +1,52 @@
 2025-05-31 
 # Changelog
 
+## [3.0.0](https://github.com/Frikanalen/frontend/compare/v2.0.4...v3.0.0) (2026-08-22)
+
+
+### ⚠ BREAKING CHANGES
+
+* **schedule:** needs Frikanalen/django-api#65 deployed; the planner reads `source` off the policy endpoint.
+
+### Features
+
+* Add series management and public pages ([#38](https://github.com/Frikanalen/frontend/issues/38)) ([0c0181b](https://github.com/Frikanalen/frontend/commit/0c0181bfd03f974422f445e3befb26bce83240da))
+* **archive:** browse by category and by what is newest ([#30](https://github.com/Frikanalen/frontend/issues/30)) ([9e3184e](https://github.com/Frikanalen/frontend/commit/9e3184ec381302845c64f071f44d8d069711acde))
+* **archive:** rebuild /video as a faceted search over the whole archive ([#44](https://github.com/Frikanalen/frontend/issues/44)) ([b376535](https://github.com/Frikanalen/frontend/commit/b3765351021f09177ec6a401d21fabeb454cde2d))
+* **archive:** search the video archive from a new /video page ([#28](https://github.com/Frikanalen/frontend/issues/28)) ([f818d42](https://github.com/Frikanalen/frontend/commit/f818d42a84a10861e77ac8beea3745b5032fcf77))
+* **organization:** give the org page a real archive of its own ([#29](https://github.com/Frikanalen/frontend/issues/29)) ([914b5a6](https://github.com/Frikanalen/frontend/commit/914b5a62d757ff28c0fb181bc7c0ce88c6ce44b3))
+* **player:** prefer DASH sources, with a self-hosted dash.js ([#23](https://github.com/Frikanalen/frontend/issues/23)) ([58c01ff](https://github.com/Frikanalen/frontend/commit/58c01ff1759480eb733d0f25c7dd7ddc484e47f2))
+* **profile:** rebuild the signed-in landing page around the work ([#39](https://github.com/Frikanalen/frontend/issues/39)) ([701fdcc](https://github.com/Frikanalen/frontend/commit/701fdccf02a8a6e0f467a81e562b43bca92d1a2a))
+* **schedule:** add organization schedule planner ([#36](https://github.com/Frikanalen/frontend/issues/36)) ([4c51b73](https://github.com/Frikanalen/frontend/commit/4c51b73fe7f055836ecb786f9b8470d922cbfb68))
+* **schedule:** read the weekly slot's source as `source` ([#48](https://github.com/Frikanalen/frontend/issues/48)) ([8f19327](https://github.com/Frikanalen/frontend/commit/8f1932738ca5f881473500cb01f8179d1485e69e))
+* **schedule:** render recurring weekly slots ([#37](https://github.com/Frikanalen/frontend/issues/37)) ([1a27ff6](https://github.com/Frikanalen/frontend/commit/1a27ff63a2893c00e2908041aa26f3fe54abb5c3))
+* **upload:** follow the ingest through to a video that exists ([dee008a](https://github.com/Frikanalen/frontend/commit/dee008a572020d95fe273358609fd7277fe90aa9))
+* **video:** put the archive's row list on the series and organization pages ([#45](https://github.com/Frikanalen/frontend/issues/45)) ([53a79ee](https://github.com/Frikanalen/frontend/commit/53a79ee38ebff53cadc1b94bc72451a04af5c551))
+
+
+### Bug Fixes
+
+* **ci:** build separate staging frontend image ([bf7443f](https://github.com/Frikanalen/frontend/commit/bf7443f397ac74f21da90cebe1e7e302973807f0))
+* **ci:** let release-please read its config so the chart version tracks releases ([#11](https://github.com/Frikanalen/frontend/issues/11)) ([a6b6c1c](https://github.com/Frikanalen/frontend/commit/a6b6c1ca036932270c3a2383944a3f72083409d9))
+* give customAxios an absolute baseURL on the server ([#15](https://github.com/Frikanalen/frontend/issues/15)) ([395ccdc](https://github.com/Frikanalen/frontend/commit/395ccdc4f75af1503b8c2f0b39bf100eb7bbb561))
+* hold the default schedule phase in state, not a ref ([cd24010](https://github.com/Frikanalen/frontend/commit/cd24010ec2ff40f74e9fc17df400873828104399))
+* Improve upload state messages ([dfd27e2](https://github.com/Frikanalen/frontend/commit/dfd27e2f19e29a47ae9db334221bd0dbab6e612d))
+* **layout:** stop the logo forcing sideways scroll on phones ([#40](https://github.com/Frikanalen/frontend/issues/40)) ([25fb010](https://github.com/Frikanalen/frontend/commit/25fb010f86d8a6218aaedba6c0ae18c0b0342ccb))
+* **layout:** tighten the logo's top padding on phones ([#47](https://github.com/Frikanalen/frontend/issues/47)) ([25f1253](https://github.com/Frikanalen/frontend/commit/25f12534b37a882077a06b5ba7d7f031505633fb))
+* resolve eslint warnings for anonymous exports and location.assign ([#22](https://github.com/Frikanalen/frontend/issues/22)) ([4f5933b](https://github.com/Frikanalen/frontend/commit/4f5933b2593cc143e8c3301b543d2078728a9a03))
+* **schedule:** fit the nav bar on a phone ([#43](https://github.com/Frikanalen/frontend/issues/43)) ([86bdf35](https://github.com/Frikanalen/frontend/commit/86bdf350a896d06cb36b24446d3d7d18cd3910ad))
+* **schedule:** handle an absent schedule on the front page ([#31](https://github.com/Frikanalen/frontend/issues/31)) ([5590b59](https://github.com/Frikanalen/frontend/commit/5590b599e2827bfb0729d6a256f8794b75686352))
+* **schedule:** print programme times on Oslo's clock, not the viewer's ([#35](https://github.com/Frikanalen/frontend/issues/35)) ([57b6756](https://github.com/Frikanalen/frontend/commit/57b675632972ce6d3257ce3cce7f697f3d757104))
+* ship @swc/helpers esm files in the standalone output ([e6f0038](https://github.com/Frikanalen/frontend/commit/e6f003876e02d6a6cab5357e08d35f5929582c68))
+* stop baking Django API URL into the frontend image at build time ([#12](https://github.com/Frikanalen/frontend/issues/12)) ([4ca900b](https://github.com/Frikanalen/frontend/commit/4ca900b1298b92e63f1b4d14753be83d940545cf))
+* type the orval operationName chain and adopt Next 16 tsconfig ([c490471](https://github.com/Frikanalen/frontend/commit/c49047122b5a1eac1c48389c0516d233668a9114))
+* use a relative URL for the live stream playlist ([#16](https://github.com/Frikanalen/frontend/issues/16)) ([c2c0b4a](https://github.com/Frikanalen/frontend/commit/c2c0b4a966f3282d81f300cea6312e83b057e75b))
+* use valid autocomplete tokens on the login and register forms ([6025276](https://github.com/Frikanalen/frontend/commit/6025276f0597fbd36b81c2c695f45321d2449745)), closes [#10](https://github.com/Frikanalen/frontend/issues/10)
+* **video:** let a click anywhere in the box start playback ([#32](https://github.com/Frikanalen/frontend/issues/32)) ([dd4e727](https://github.com/Frikanalen/frontend/commit/dd4e72708b24c6ca72a44b7bdf7c1d13828b9909))
+* **video:** match ModalIshPrototype's card to the header nav pill ([#26](https://github.com/Frikanalen/frontend/issues/26)) ([10150f3](https://github.com/Frikanalen/frontend/commit/10150f303f6a693f1f200d238753c54d687aa088))
+* **video:** stop double-boxing the create-video step ([#25](https://github.com/Frikanalen/frontend/issues/25)) ([e139b3f](https://github.com/Frikanalen/frontend/commit/e139b3fce1c9b41a40e3a39d09ca522f906447e1))
+* **video:** unify create -&gt; upload flow layout ([#24](https://github.com/Frikanalen/frontend/issues/24)) ([e9729cd](https://github.com/Frikanalen/frontend/commit/e9729cd3ef88221182b86a4a8363009c80915acd))
+
 ## [2.0.4](https://github.com/Frikanalen/frontend/compare/v2.0.3...v2.0.4) (2025-12-18)
 
 
