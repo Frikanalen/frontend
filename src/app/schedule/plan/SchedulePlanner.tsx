@@ -247,7 +247,7 @@ export const SchedulePlanner = ({
                       {formatOsloTime(row.start)}–{formatOsloTime(row.end)} Ukentlig sendeflate
                     </div>
                     <div className="text-sm text-default-600">
-                      {row.slot.purpose?.name ?? "Program velges automatisk"}
+                      {row.slot.source?.name ?? "Program velges automatisk"}
                     </div>
                   </li>
                 );

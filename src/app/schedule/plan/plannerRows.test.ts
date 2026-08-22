@@ -16,7 +16,7 @@ const item = (id: number, starttime: string, endtime: string): ScheduleitemRead 
 
 const slot = (overrides: Partial<WeeklySlotRead> = {}): WeeklySlotRead => ({
   id: 7,
-  purpose: { id: 3, name: "Fast ukesending" },
+  source: { id: 3, name: "Fast ukesending" },
   day: 4,
   startTime: "12:00:00",
   duration: "01:00:00",

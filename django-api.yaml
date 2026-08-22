@@ -19594,18 +19594,6 @@ components:
       required:
         - errors
         - type
-    WeeklySlotPurpose:
-      type: object
-      properties:
-        id:
-          type: integer
-          readOnly: true
-        name:
-          type: string
-          readOnly: true
-      required:
-        - id
-        - name
     WeeklySlotRead:
       description: A recurring reservation shown alongside the drafted schedule.
       type: object
@@ -19613,9 +19601,9 @@ components:
         id:
           type: integer
           readOnly: true
-        purpose:
+        source:
           allOf:
-            - $ref: "#/components/schemas/WeeklySlotPurpose"
+            - $ref: "#/components/schemas/WeeklySlotSource"
           nullable: true
           readOnly: true
         day:
@@ -19633,8 +19621,21 @@ components:
         - day
         - duration
         - id
-        - purpose
+        - source
         - startTime
+    WeeklySlotSource:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          description: Shown wherever a slot names its source, including the public planner.
+          type: string
+          readOnly: true
+      required:
+        - id
+        - name
     MediaTypeEnum:
       enum:
       - image/jpeg
