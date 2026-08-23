@@ -12,8 +12,7 @@ export default function About() {
   return (
     <div className="space-y-10">
       <h1 className={"text-4xl font-black text-black dark:text-green-200"}>
-        Frikanalen er
-        <br /> sivilsamfunnets videoplatform.
+        Frikanalen er sivilsamfunnets videoplatform.
       </h1>
       <div className="prose dark:prose-invert prose-lg max-w-none">
         <div>
@@ -35,7 +34,6 @@ export default function About() {
       </div>
       <AccordionLinkGroup>
         <AccordionLink href="/about/statutes">Våre vedtekter</AccordionLink>
-        <AccordionLink href="/about/join">Bli med</AccordionLink>
         <AccordionLink href="/about/contact">Kontakt oss</AccordionLink>
       </AccordionLinkGroup>
     </div>

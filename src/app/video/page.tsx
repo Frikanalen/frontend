@@ -94,8 +94,6 @@ export default async function ArchivePage({ searchParams }: ArchivePageProps) {
   // there reads as an empty archive rather than as a bad link.
   if (scope === null && state.organization !== undefined) return notFound();
 
-  const isNarrowed = Boolean(state.query || state.category || state.length || scope);
-
   // A new set of narrowings gets its own fallback, rather than leaving the
   // previous page's results up while the next ones load. The sort is in the
   // key too: reordering replaces every row on screen.
@@ -110,78 +108,67 @@ export default async function ArchivePage({ searchParams }: ArchivePageProps) {
 
   return (
     <main className="w-full max-w-5xl grow px-2 pb-12">
-      {/*
-        A surface between the body's radial gradient and the text on top of it.
+      <header className="space-y-4">
+        {/* An organization's name heads its own view of the archive, but the
+            unnarrowed page had nothing to say beyond the word already in the
+            nav, so there it is a heading for screen readers only - the page
+            keeps its h1, and the rows below keep something to be nested
+            under, without printing a label nobody needed. */}
+        {scope ? (
+          <h1 className="text-3xl font-black sm:text-4xl">{scope.name}</h1>
+        ) : (
+          <h1 className="sr-only">Arkiv</h1>
+        )}
 
-        It earns its place on contrast rather than on decoration: the secondary
-        text on this page is `text-foreground/75`, and straight on the gradient
-        that lands at 3.5:1 in the dark theme - under the 4.5:1 normal text
-        needs. Over this it clears it in both themes. Half-opaque rather than
-        more, so the glow still reads through and the page doesn't go flat.
-
-        The rows, chips and rail inside keep their own opaque backgrounds, so
-        they sit as distinct surfaces on this rather than dissolving into it.
-      */}
-      <div className="rounded-2xl bg-background/60 p-4 shadow-lg sm:p-6">
-        <header className="space-y-4">
-          <h1 className="text-3xl font-black sm:text-4xl">{scope ? scope.name : "Arkiv"}</h1>
-
-          <ArchiveSearch initialQuery={state.query} scope={scope ?? undefined} />
-
-          {!isNarrowed && (
-            <p className="max-w-prose text-foreground/75">
-              Videoene som har vært sendt på Frikanalen, helt tilbake til 2009. Søk etter tittel,
-              tema eller organisasjonen som står bak - eller bla gjennom dem med filtrene.
-            </p>
-          )}
-          {/*
-            The rail is twenty-odd links, and it comes before the results in
-            the document because that is where it is on screen - reading order
-            and visual order agreeing is worth keeping. That leaves a keyboard
-            user twenty Tab presses from the first result on every archive
-            page, which is exactly the repeated block a bypass link is for.
-            Invisible until it is focused, so it costs nothing to everyone
-            else.
-          */}
-          <a
-            href="#arkiv-resultater"
-            className="sr-only rounded-lg bg-background px-4 py-2 text-small shadow-lg ring-2 ring-focus focus:not-sr-only focus:inline-block"
-          >
-            Hopp til resultatene
-          </a>
-        </header>
+        <ArchiveSearch initialQuery={state.query} scope={scope ?? undefined} />
 
         {/*
-          Explicit placement rather than auto-flow, so the results column is in
-          the same place whether or not the filters have streamed in yet.
-          Without it a suspended rail would let the results start in column
-          one and jump across when it arrived.
+          The rail is twenty-odd links, and it comes before the results in
+          the document because that is where it is on screen - reading order
+          and visual order agreeing is worth keeping. That leaves a keyboard
+          user twenty Tab presses from the first result on every archive
+          page, which is exactly the repeated block a bypass link is for.
+          Invisible until it is focused, so it costs nothing to everyone
+          else.
         */}
-        <div className="mt-6 grid gap-5 lg:grid-cols-[13rem_1fr] lg:gap-8">
-          <div className="lg:col-start-1 lg:row-start-1 lg:sticky lg:top-6 lg:self-start">
-            {/* No fallback: a rail appearing a moment late is less distracting
-                than a placeholder for one, and nothing below it moves when it
-                lands. */}
-            <Suspense fallback={null}>
-              <ArchiveFilters state={state} />
-            </Suspense>
-          </div>
+        <a
+          href="#arkiv-resultater"
+          className="sr-only rounded-lg bg-background px-4 py-2 text-small shadow-lg ring-2 ring-focus focus:not-sr-only focus:inline-block"
+        >
+          Hopp til resultatene
+        </a>
+      </header>
 
-          {/* min-w-0 so a long title can't push the column wider than its share
-              of the grid - a grid item's default minimum is its content.
-              tabIndex -1 so the bypass link above can move focus here, and not
-              only the viewport. */}
-          <div
-            id="arkiv-resultater"
-            tabIndex={-1}
-            className="min-w-0 space-y-5 outline-hidden lg:col-start-2 lg:row-start-1"
-          >
-            <ActiveFilters state={state} scope={scope ?? undefined} />
+      {/*
+        Explicit placement rather than auto-flow, so the results column is in
+        the same place whether or not the filters have streamed in yet.
+        Without it a suspended rail would let the results start in column
+        one and jump across when it arrived.
+      */}
+      <div className="mt-6 grid gap-5 lg:grid-cols-[13rem_1fr] lg:gap-8">
+        <div className="lg:col-start-1 lg:row-start-1 lg:sticky lg:top-6 lg:self-start">
+          {/* No fallback: a rail appearing a moment late is less distracting
+              than a placeholder for one, and nothing below it moves when it
+              lands. */}
+          <Suspense fallback={null}>
+            <ArchiveFilters state={state} />
+          </Suspense>
+        </div>
 
-            <Suspense key={resultsKey} fallback={<ResultsSkeleton />}>
-              <SearchResults state={state} scope={scope ?? undefined} />
-            </Suspense>
-          </div>
+        {/* min-w-0 so a long title can't push the column wider than its share
+            of the grid - a grid item's default minimum is its content.
+            tabIndex -1 so the bypass link above can move focus here, and not
+            only the viewport. */}
+        <div
+          id="arkiv-resultater"
+          tabIndex={-1}
+          className="min-w-0 space-y-5 outline-hidden lg:col-start-2 lg:row-start-1"
+        >
+          <ActiveFilters state={state} scope={scope ?? undefined} />
+
+          <Suspense key={resultsKey} fallback={<ResultsSkeleton />}>
+            <SearchResults state={state} scope={scope ?? undefined} />
+          </Suspense>
         </div>
       </div>
     </main>

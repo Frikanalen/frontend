@@ -7,6 +7,7 @@ import Link from "next/link";
 export const NavLink = ({
   href,
   activeRegexp,
+  onNavigate,
   children,
 }: {
   href: string;
@@ -15,6 +16,8 @@ export const NavLink = ({
    * The button will show active state if current path matches it.
    */
   activeRegexp?: RegExp;
+  /** Called when the link is followed - the mobile drawer closes itself this way. */
+  onNavigate?: () => void;
   children: ReactNode;
 }) => {
   const path = usePathname();
@@ -22,7 +25,9 @@ export const NavLink = ({
   const isActive = !activeRegexp ? href === path : activeRegexp.test(path);
   return (
     <NavbarItem isActive={isActive}>
-      <Link href={href}>{children}</Link>
+      <Link href={href} onClick={onNavigate}>
+        {children}
+      </Link>
     </NavbarItem>
   );
 };
