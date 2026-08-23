@@ -1,4 +1,4 @@
-import React from "react";
+import React, { ReactNode } from "react";
 import "@vidstack/react/player/styles/default/theme.css";
 import "@vidstack/react/player/styles/default/layouts/video.css";
 import {
@@ -58,16 +58,29 @@ const StartOnClick = () => {
   );
 };
 
+// Anything drawn over the still frame - the schedule listing on the front page -
+// belongs to the poster, not to the stream: once playback starts it goes away and
+// leaves the picture and vidstack's own controls alone.
+const BeforePlayback = ({ children }: { children: ReactNode }) => {
+  const started = useMediaState("started");
+
+  if (started) return null;
+
+  return <>{children}</>;
+};
+
 export const VideoPlayer = ({
   title,
   src,
   poster,
   mediaPending,
+  overlay,
 }: {
   title: string;
   src: string | VideoSrc | DASHSrc | (VideoSrc | DASHSrc)[];
   poster?: string;
   mediaPending?: boolean;
+  overlay?: ReactNode;
 }) => {
   return (
     <MediaPlayer
@@ -86,6 +99,7 @@ export const VideoPlayer = ({
         </div>
       )}
       <StartOnClick />
+      {overlay && <BeforePlayback>{overlay}</BeforePlayback>}
       <MediaProvider>
         <Poster className={cx("vds-poster", { "blur-md": mediaPending })} src={poster} />
       </MediaProvider>

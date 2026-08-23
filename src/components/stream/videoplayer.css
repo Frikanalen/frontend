@@ -1,5 +1,30 @@
-
 .vds-video-layout {
-    --video-border-radius: 0.75rem;
-    --video-border: none;
+  --video-border-radius: 0.75rem;
+  --video-border: none;
+}
+
+/*
+  The live stream has no poster frame, so before playback there is nothing in
+  the player but its own background, which vidstack paints pure black. Against
+  the light theme's near-white page that reads as a hole cut out of the
+  layout, so it is lifted to a very dark neutral grey - a flat surface, dark
+  enough to carry the white listing drawn over it, with no gradient or tint.
+
+  Set through vidstack's own `--video-bg`, the hook its video layout reads for
+  this, rather than by overriding the background directly - its own rule is
+  `[data-media-player][data-layout="video"]` and outranks a plain one here.
+  Not on `.vds-poster`: that is `display: none` whenever there is no poster
+  image, which is exactly the case this is for. Once a video is playing the
+  picture covers it entirely; the colour shows only in the letterbox bars
+  beside a non-16:9 frame.
+
+  In the dark theme the page is already near-black, the contrast never arises,
+  and black is the right surround for a picture, so black stays.
+*/
+[data-media-player] {
+  --video-bg: #242424;
+}
+
+.dark [data-media-player] {
+  --video-bg: #000;
 }

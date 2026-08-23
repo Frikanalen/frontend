@@ -131,7 +131,22 @@ export const SearchResults = async ({
     );
 
   return (
-    <section aria-labelledby={RESULTS_HEADING_ID} className="space-y-4">
+    // A surface for the results column alone, rather than the page-wide box
+    // this replaces. The count, the rows and the pagination are the text that
+    // needs it: straight on the body's radial gradient the secondary lines
+    // among them land at 3.8:1 in the dark theme, under the 4.5:1 normal text
+    // needs. The rows keep their own opaque hover and focus backgrounds, so
+    // they still read as distinct surfaces sitting on this one.
+    //
+    // The wash goes the way the theme does. Translucent black is what the dark
+    // theme wants - it deepens the ground behind pale text - but in the light
+    // theme the text is dark, and the same black pulls the panel toward the
+    // text rather than away from it: 3.0:1 on those secondary lines, worse
+    // than no surface at all. White does there what black does here.
+    <section
+      aria-labelledby={RESULTS_HEADING_ID}
+      className="space-y-4 rounded-2xl bg-white/60 p-3 sm:p-4 dark:bg-black/30"
+    >
       {/* Unseen, but it gives the list below a section of its own, so its rows
           can be h3 like every other list on the page. The count under it can't
           do that job: role="status" replaces the heading role. */}
