@@ -18,8 +18,16 @@ import { nb } from "date-fns/locale/nb";
 export const OutstandingVideosList = ({ organizationId }: { organizationId: number }) => {
   const { data } = useVideosList({
     organization: organizationId,
-    properImport: false,
-  } as VideosListParams);
+    // Snake_case, like every other video filter: query parameters are not
+    // camelized on the wire, only request bodies are. `false` now selects
+    // the unfinished videos rather than lifting the filter, so the server
+    // returns exactly this list. The cast goes away once the schema is
+    // regenerated -- until then VideosListParams has no such field.
+    proper_import: false,
+  } as unknown as VideosListParams);
+  // Redundant while the parameter above lands, but it is behind a cast and
+  // therefore not type-checked; a silently ignored filter would otherwise
+  // show every video under a "you have unimported videos" warning.
   const videos = data?.data.results.filter((v) => !v.properImport) ?? [];
   return (
     <div className={"space-y-4"}>
