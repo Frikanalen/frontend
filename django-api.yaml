@@ -16156,6 +16156,42 @@ components:
       type: string
       enum:
         - validation_error
+    VideoFileLink:
+      type: object
+      properties:
+        url:
+          type: string
+        mimeType:
+          type: string
+          nullable: true
+      required:
+        - mimeType
+        - url
+    VideoFiles:
+      type: object
+      properties:
+        largeThumb:
+          $ref: "#/components/schemas/VideoFileLink"
+        broadcast:
+          $ref: "#/components/schemas/VideoFileLink"
+        vc1:
+          $ref: "#/components/schemas/VideoFileLink"
+        medThumb:
+          $ref: "#/components/schemas/VideoFileLink"
+        smallThumb:
+          $ref: "#/components/schemas/VideoFileLink"
+        original:
+          $ref: "#/components/schemas/VideoFileLink"
+        theora:
+          $ref: "#/components/schemas/VideoFileLink"
+        srt:
+          $ref: "#/components/schemas/VideoFileLink"
+        cloudflareId:
+          $ref: "#/components/schemas/VideoFileLink"
+        dash:
+          $ref: "#/components/schemas/VideoFileLink"
+        webmMed:
+          $ref: "#/components/schemas/VideoFileLink"
     Video:
       description: "The read serializer: the organization arrives whole."
       type: object
@@ -16175,9 +16211,8 @@ components:
           maxLength: 2048
           nullable: true
         files:
-          type: object
-          additionalProperties:
-            type: string
+          allOf:
+            - $ref: "#/components/schemas/VideoFiles"
           readOnly: true
         creator:
           type: string
@@ -16310,9 +16345,8 @@ components:
           maxLength: 2048
           nullable: true
         files:
-          type: object
-          additionalProperties:
-            type: string
+          allOf:
+            - $ref: "#/components/schemas/VideoFiles"
           readOnly: true
         creator:
           type: string
