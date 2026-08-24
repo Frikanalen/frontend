@@ -14,7 +14,12 @@ const BAZAR = { id: 623283, name: "Bazar Børud spesial", organization: "Norea M
 const asVideo = ({ id, name, organization }: typeof MUSIKK) => ({
   id,
   name,
-  largeThumbnailUrl: THUMBNAIL,
+  files: {
+    largeThumb: {
+      url: THUMBNAIL,
+      mimeType: "image/jpeg",
+    },
+  },
   organization: { id: 54, name: organization },
 });
 

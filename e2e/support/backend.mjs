@@ -27,7 +27,12 @@ const series = {
 const video = (id, name, episodeNumber) => ({
   id,
   name,
-  files: {},
+  files: {
+    largeThumb: {
+      url: thumbnail,
+      mimeType: "image/jpeg",
+    },
+  },
   creator: "editor@example.test",
   organization,
   series: {
@@ -46,8 +51,6 @@ const video = (id, name, episodeNumber) => ({
   createdTime: "2026-08-21T10:00:00Z",
   updatedTime: "2026-08-21T10:00:00Z",
   uploadedTime: null,
-  ogvUrl: null,
-  largeThumbnailUrl: thumbnail,
 });
 
 /**
