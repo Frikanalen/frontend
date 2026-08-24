@@ -1,31 +1,38 @@
 "use client";
-import { Video } from "@/generated/frikanalenDjangoAPI.schemas";
+import type { Video, VideoFiles } from "@/generated/frikanalenDjangoAPI.schemas";
 import VideoPlayer from "@/components/stream/VideoPlayer";
 import { notFound } from "next/navigation";
-import { DASHMimeType, DASHSrc, VideoMimeType, VideoSrc } from "@vidstack/react";
+import {
+  DASH_VIDEO_TYPES,
+  VIDEO_TYPES,
+  type DASHMimeType,
+  type DASHSrc,
+  type VideoMimeType,
+  type VideoSrc,
+} from "@vidstack/react";
 import { VideoCardMeta } from "@/app/video/[videoId]/VideoCardMeta";
-
-type DjangoVariant = "dash" | "webmMed" | "theora";
 
 // Ordered by preference: vidstack plays the first source it finds a provider for,
 // so DASH wins wherever Media Source Extensions are available and the progressive
 // files serve as the fallback everywhere else — WebM ahead of the ageing Theora.
-// Keys are the camelCased variant names the API hands back in `video.files`.
-const djangoToMimeTable: Record<DjangoVariant, VideoMimeType | DASHMimeType> = {
-  dash: "application/dash+xml",
-  webmMed: "video/webm",
-  theora: "video/ogg",
-} as const;
+const playbackPreference = [
+  "dash",
+  "webmMed",
+  "theora",
+] as const satisfies readonly (keyof VideoFiles)[];
 
-export const djangoVideoFilesToVidstackSrcList = (videoFiles: {
-  [key: string]: string;
-}): (VideoSrc | DASHSrc)[] =>
-  (Object.entries(djangoToMimeTable) as [DjangoVariant, VideoMimeType | DASHMimeType][])
-    .filter(([variant]) => !!videoFiles[variant]?.length)
-    .map(([variant, mimetype]) => ({
-      type: mimetype,
-      src: videoFiles[variant],
-    }));
+const isVidstackVideoMimeType = (
+  mimeType: string | null,
+): mimeType is VideoMimeType | DASHMimeType =>
+  mimeType !== null && (VIDEO_TYPES.has(mimeType) || DASH_VIDEO_TYPES.has(mimeType));
+
+export const djangoVideoFilesToVidstackSrcList = (videoFiles: VideoFiles): (VideoSrc | DASHSrc)[] =>
+  playbackPreference.flatMap((variant) => {
+    const file = videoFiles[variant];
+    if (!file || !isVidstackVideoMimeType(file.mimeType)) return [];
+
+    return [{ type: file.mimeType, src: file.url }];
+  });
 
 export const VideoCard = ({ video }: { video: Video }) => {
   if (!video.organization.fkmember) return notFound();
@@ -34,7 +41,7 @@ export const VideoCard = ({ video }: { video: Video }) => {
       <VideoPlayer
         title={video.name}
         src={djangoVideoFilesToVidstackSrcList(video.files)}
-        poster={video.files.largeThumb}
+        poster={video.files.largeThumb?.url}
       />
       <VideoCardMeta video={video} />
     </div>

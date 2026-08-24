@@ -80,7 +80,7 @@ const VideoRow = ({
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           alt=""
-          src={video.largeThumbnailUrl}
+          src={video.files.largeThumb?.url}
           loading="lazy"
           decoding="async"
           className="absolute inset-0 size-full object-cover transition-transform duration-300 after:absolute after:inset-0 after:bg-content2 after:content-[''] group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"

@@ -1,4 +1,5 @@
 import { ssrVideosRetrieve } from "@/generated/ssr/videos/videos";
+import { notFound } from "next/navigation";
 
 export const alt = "";
 export const size = { width: 1200, height: 630 };
@@ -14,5 +15,8 @@ export default async function Image({ params }: { params: Promise<{ videoId: str
       `Unexpected status code ${status} when fetching video ${videoId} from ssrVideosRetrieve`,
     );
 
-  return await fetch(video.files["largeThumb"]);
+  const thumbnail = video.files.largeThumb;
+  if (!thumbnail) return notFound();
+
+  return await fetch(thumbnail.url);
 }

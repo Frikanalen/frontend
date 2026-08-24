@@ -26,7 +26,7 @@ export const VideoCardForAdmin = ({ video: video }: { video: Video }) => {
       <VideoPlayer
         title={video.name}
         src={videoFiles}
-        poster={video.files.largeThumb}
+        poster={video.files.largeThumb?.url}
         mediaPending={mediaPending}
       />
       <VideoCardMeta video={video} />

@@ -238,7 +238,7 @@ export const ArchiveSearch = ({
                     removeWrapper
                     disableSkeleton
                     alt=""
-                    src={video.largeThumbnailUrl}
+                    src={video.files.largeThumb?.url}
                     width={96}
                     height={54}
                     className="aspect-video w-24 shrink-0 rounded-md object-cover"
