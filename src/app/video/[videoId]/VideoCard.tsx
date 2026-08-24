@@ -1,5 +1,5 @@
 "use client";
-import { Video, VideoFileVariantEnum } from "@/generated/frikanalenDjangoAPI.schemas";
+import { Video } from "@/generated/frikanalenDjangoAPI.schemas";
 import VideoPlayer from "@/components/stream/VideoPlayer";
 import { notFound } from "next/navigation";
 import { DASHMimeType, DASHSrc, VideoMimeType, VideoSrc } from "@vidstack/react";
@@ -9,9 +9,11 @@ type DjangoVariant = "dash" | "webmMed" | "theora";
 
 // Ordered by preference: vidstack plays the first source it finds a provider for,
 // so DASH wins wherever Media Source Extensions are available and the progressive
-// files serve as the fallback everywhere else.
-const djangoToMimeTable: Partial<Record<VideoFileVariantEnum, VideoMimeType | DASHMimeType>> = {
+// files serve as the fallback everywhere else — WebM ahead of the ageing Theora.
+// Keys are the camelCased variant names the API hands back in `video.files`.
+const djangoToMimeTable: Record<DjangoVariant, VideoMimeType | DASHMimeType> = {
   dash: "application/dash+xml",
+  webmMed: "video/webm",
   theora: "video/ogg",
 } as const;
 
