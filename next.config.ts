@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
   // and cache without disturbing that session.
   distDir: process.env.PLAYWRIGHT_TEST ? ".next-playwright" : ".next",
   output: "standalone",
+  staticPageGenerationTimeout: 180,
   experimental: {
     authInterrupts: true,
   },
