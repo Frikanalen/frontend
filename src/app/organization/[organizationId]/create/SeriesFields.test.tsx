@@ -1,16 +1,10 @@
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { ReactNode } from "react";
-import { useForm, useWatch } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { Series } from "@/generated/frikanalenDjangoAPI.schemas";
 import { nextEpisodeNumber, SeriesFields } from "./SeriesFields";
 import type { SeriesOption } from "./SeriesFields";
-
-type InputProps = React.InputHTMLAttributes<HTMLInputElement> & {
-  isDisabled?: boolean;
-  label: string;
-  labelPlacement?: string;
-};
 
 type SelectProps = {
   children: (_item: { id: string; name: string }) => ReactNode;
@@ -27,15 +21,6 @@ type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
 };
 
 vi.mock("@heroui/react", () => ({
-  Input: ({ isDisabled, label, labelPlacement, ...props }: InputProps) => {
-    void labelPlacement;
-    return (
-      <label>
-        {label}
-        <input aria-label={label} disabled={isDisabled} {...props} />
-      </label>
-    );
-  },
   Button: ({ children, onPress, ...props }: ButtonProps) => (
     <button onClick={onPress} {...props}>
       {children}
@@ -63,7 +48,6 @@ vi.mock("@heroui/react", () => ({
 
 type Values = {
   seriesId: number | null;
-  episodeNumber: number | null;
 };
 
 const availableSeries = [
@@ -75,30 +59,23 @@ const Harness = ({
   onSubmit,
   onSeriesChange,
   onCreateSeries,
-  showEpisodeNumber,
 }: {
   onSubmit: (_values: Values) => void;
   onSeriesChange?: (_series: SeriesOption | null) => void;
   onCreateSeries?: () => void;
-  showEpisodeNumber?: boolean;
 }) => {
   const form = useForm<Values>({
-    defaultValues: { seriesId: null, episodeNumber: null },
+    defaultValues: { seriesId: null },
   });
-  const selectedSeries = useWatch({ control: form.control, name: "seriesId" });
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)}>
       <SeriesFields
         control={form.control}
-        register={form.register}
         series={availableSeries}
         seriesName="seriesId"
-        episodeName="episodeNumber"
-        selectedSeries={selectedSeries}
         onSeriesChange={onSeriesChange}
         onCreateSeries={onCreateSeries}
-        showEpisodeNumber={showEpisodeNumber}
       />
       <button type="submit">Lagre</button>
     </form>
@@ -113,32 +90,27 @@ describe("SeriesFields", () => {
     expect(nextEpisodeNumber(null)).toBeNull();
   });
 
-  it("offers the organization's series and keeps episode numbering disabled without one", () => {
+  it("offers the organization's series and makes its optional state clear", () => {
     render(<Harness onSubmit={vi.fn()} />);
 
     expect(screen.getByRole("option", { name: "Ingen serie" })).toBeDefined();
     expect(screen.getByRole("option", { name: "Havna vår" })).toBeDefined();
     expect(screen.getByRole("option", { name: "Kveldssending" })).toBeDefined();
-    expect((screen.getByLabelText("Episodenummer") as HTMLInputElement).disabled).toBe(true);
+    expect(screen.getByText("La stå som «Ingen serie» for en enkeltstående video.")).toBeDefined();
+    expect(screen.queryByLabelText("Episodenummer")).toBeNull();
   });
 
-  it("enables numbering after selection and submits numeric values", async () => {
+  it("submits the selected series as a numeric id", async () => {
     const onSubmit = vi.fn();
     render(<Harness onSubmit={onSubmit} />);
 
     fireEvent.change(screen.getByLabelText("Serie (valgfritt)"), { target: { value: "7" } });
-    const episodeNumber = screen.getByLabelText("Episodenummer");
-    expect((episodeNumber as HTMLInputElement).disabled).toBe(false);
-
-    fireEvent.change(episodeNumber, { target: { value: "4" } });
     fireEvent.click(screen.getByRole("button", { name: "Lagre" }));
 
-    await waitFor(() =>
-      expect(onSubmit).toHaveBeenCalledWith({ seriesId: 7, episodeNumber: 4 }, expect.anything()),
-    );
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledWith({ seriesId: 7 }, expect.anything()));
   });
 
-  it("returns to the seasonless choice and disables numbering again", async () => {
+  it("returns to the standalone-video choice", async () => {
     const onSubmit = vi.fn();
     render(<Harness onSubmit={onSubmit} />);
 
@@ -146,7 +118,6 @@ describe("SeriesFields", () => {
     fireEvent.change(series, { target: { value: "7" } });
     fireEvent.change(series, { target: { value: "none" } });
 
-    expect((screen.getByLabelText("Episodenummer") as HTMLInputElement).disabled).toBe(true);
     fireEvent.click(screen.getByRole("button", { name: "Lagre" }));
     await waitFor(() =>
       expect(onSubmit).toHaveBeenCalledWith({ seriesId: null }, expect.anything()),
@@ -161,11 +132,9 @@ describe("SeriesFields", () => {
     expect(onSeriesChange).toHaveBeenCalledWith(availableSeries[0]);
   });
 
-  it("replaces the episode field with series creation in the video creation form", () => {
+  it("offers series creation when requested by the parent form", () => {
     const onCreateSeries = vi.fn();
-    render(
-      <Harness onSubmit={vi.fn()} onCreateSeries={onCreateSeries} showEpisodeNumber={false} />,
-    );
+    render(<Harness onSubmit={vi.fn()} onCreateSeries={onCreateSeries} />);
 
     expect(screen.queryByLabelText("Episodenummer")).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "Opprett ny serie" }));
