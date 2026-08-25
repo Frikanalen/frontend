@@ -9,7 +9,13 @@ export const MINIMUM_PLANNER_GAP_MILLISECONDS = 10 * 60 * 1000;
 export type PlannerRow =
   | { kind: "gap"; start: Date; end: Date }
   | { kind: "item"; item: ScheduleitemRead }
-  | { kind: "weeklySlot"; slot: WeeklySlotRead; start: Date; end: Date };
+  | {
+      kind: "weeklySlot";
+      slot: WeeklySlotRead;
+      start: Date;
+      end: Date;
+      items: ScheduleitemRead[];
+    };
 
 export const osloDate = (instant: string | Date) => format(inOsloTime(instant), "yyyy-MM-dd");
 
@@ -59,13 +65,39 @@ const weeklySlotRows = (
       const end = addMilliseconds(start, milliseconds);
       if (!overlaps(start, end, dayStart, dayEnd)) continue;
 
-      // The actual schedule is authoritative. This also prevents a drafted
-      // weekly-slot item from appearing once as a programme and once as its
-      // recurring reservation.
-      const occupied = items.some((item) =>
-        overlaps(start, end, new Date(item.starttime), new Date(item.endtime)),
+      // A slot is an airtime reservation the scheduler fills with one or
+      // more programmes, so it owns the items that name it.
+      const members = items
+        .filter(
+          (item) =>
+            item.weeklySlot === slot.id &&
+            overlaps(start, end, new Date(item.starttime), new Date(item.endtime)),
+        )
+        .sort((a, b) => new Date(a.starttime).getTime() - new Date(b.starttime).getTime());
+
+      // The actual schedule is authoritative: airtime taken by programming
+      // that does not belong to the slot is no longer a live reservation.
+      const taken = items.some(
+        (item) =>
+          item.weeklySlot !== slot.id &&
+          overlaps(start, end, new Date(item.starttime), new Date(item.endtime)),
       );
-      if (!occupied) rows.push({ kind: "weeklySlot", slot, start, end });
+      if (members.length === 0 && taken) continue;
+
+      // Programming may overrun its reservation; the row still has to cover
+      // it so the surrounding gaps stay honest.
+      const spanStart = members.length
+        ? new Date(
+            Math.min(start.getTime(), ...members.map((item) => new Date(item.starttime).getTime())),
+          )
+        : start;
+      const spanEnd = members.length
+        ? new Date(
+            Math.max(end.getTime(), ...members.map((item) => new Date(item.endtime).getTime())),
+          )
+        : end;
+
+      rows.push({ kind: "weeklySlot", slot, start: spanStart, end: spanEnd, items: members });
     }
   }
 
@@ -90,9 +122,14 @@ export const plannerRows = (
     )
     .sort((a, b) => new Date(a.starttime).getTime() - new Date(b.starttime).getTime());
 
+  const slotRows = weeklySlotRows(slots, visible, dayStart, dayEnd);
+  const claimed = new Set(slotRows.flatMap((row) => row.items.map((item) => item.id)));
+
   const timeline: Exclude<PlannerRow, { kind: "gap" }>[] = [
-    ...visible.map((item) => ({ kind: "item" as const, item })),
-    ...weeklySlotRows(slots, visible, dayStart, dayEnd),
+    ...visible
+      .filter((item) => !claimed.has(item.id))
+      .map((item) => ({ kind: "item" as const, item })),
+    ...slotRows,
   ].sort((a, b) => {
     const aStart = new Date(a.kind === "item" ? a.item.starttime : a.start).getTime();
     const bStart = new Date(b.kind === "item" ? b.item.starttime : b.start).getTime();
