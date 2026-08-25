@@ -74,13 +74,43 @@ describe("plannerRows", () => {
     );
   });
 
-  it("does not duplicate a weekly slot once it has a schedule item", () => {
-    const scheduled = {
-      ...item(1, "2026-08-21T12:00:00+02:00", "2026-08-21T13:00:00+02:00"),
+  it("nests the programmes a weekly slot has been filled with", () => {
+    const first = {
+      ...item(1, "2026-08-21T12:00:00+02:00", "2026-08-21T12:30:00+02:00"),
+      weeklySlot: 7,
+    };
+    const second = {
+      ...item(2, "2026-08-21T12:30:00+02:00", "2026-08-21T13:00:00+02:00"),
       weeklySlot: 7,
     };
 
-    const rows = plannerRows([scheduled], [slot()], "2026-08-21");
+    const rows = plannerRows([second, first], [slot()], "2026-08-21");
+
+    expect(rows.map((row) => row.kind)).toEqual(["gap", "weeklySlot", "gap"]);
+    expect(rows[1].kind === "weeklySlot" && rows[1].items.map(({ id }) => id)).toEqual([1, 2]);
+  });
+
+  it("covers programming that overruns its weekly slot", () => {
+    const overrunning = {
+      ...item(1, "2026-08-21T12:00:00+02:00", "2026-08-21T13:30:00+02:00"),
+      weeklySlot: 7,
+    };
+
+    const rows = plannerRows([overrunning], [slot()], "2026-08-21");
+
+    expect(rows.map((row) => row.kind)).toEqual(["gap", "weeklySlot", "gap"]);
+    expect(rows[1].kind === "weeklySlot" && rows[1].end.toISOString()).toBe(
+      "2026-08-21T11:30:00.000Z",
+    );
+    expect(rows[2].kind === "gap" && rows[2].start.toISOString()).toBe("2026-08-21T11:30:00.000Z");
+  });
+
+  it("drops a weekly slot whose airtime other programming has taken", () => {
+    const rows = plannerRows(
+      [item(1, "2026-08-21T12:00:00+02:00", "2026-08-21T13:00:00+02:00")],
+      [slot()],
+      "2026-08-21",
+    );
 
     expect(rows.map((row) => row.kind)).toEqual(["gap", "item", "gap"]);
   });

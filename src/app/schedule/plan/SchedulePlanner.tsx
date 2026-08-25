@@ -173,6 +173,60 @@ export const SchedulePlanner = ({
     }
   };
 
+  const renderItem = (item: ScheduleitemRead, insideSlot: boolean) => {
+    const canManage =
+      isStaff || Boolean(item.video && manageableOrganizationIds.has(item.video.organization.id));
+    return (
+      <li
+        className={`rounded-lg border p-3 ${
+          item.displaceable
+            ? "border-dashed border-warning-400 bg-warning-50 dark:bg-warning-950"
+            : "border-default-200"
+        } ${insideSlot ? "bg-content1" : ""}`}
+        key={`item-${item.id}`}
+      >
+        <div className="flex flex-wrap items-start gap-2">
+          <div className="min-w-0">
+            <div className="font-semibold">
+              {formatOsloTime(item.starttime)}–{formatOsloTime(item.endtime)}{" "}
+              {item.video?.name || item.defaultName || "Uten programnavn"}
+            </div>
+            <div className="text-sm text-default-600">
+              {item.weeklySlot && !insideSlot
+                ? "Ukentlig sendeflate"
+                : statusText(item, manageableOrganizationIds)}
+              {item.video ? ` · ${item.video.organization.name}` : ""}
+            </div>
+          </div>
+          <div className="ms-auto flex gap-2">
+            {item.displaceable ? (
+              <Button
+                color="primary"
+                size="sm"
+                onPress={() => pickSlot(new Date(item.starttime), new Date(item.endtime), item)}
+              >
+                Erstatt
+              </Button>
+            ) : null}
+            {canManage && item.video && !item.displaceable ? (
+              <Button
+                size="sm"
+                onPress={() => pickSlot(new Date(item.starttime), new Date(item.endtime), item)}
+              >
+                Endre
+              </Button>
+            ) : null}
+            {canManage && !item.displaceable ? (
+              <Button color="danger" size="sm" variant="light" onPress={() => remove(item)}>
+                Fjern
+              </Button>
+            ) : null}
+          </div>
+        </div>
+      </li>
+    );
+  };
+
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(20rem,2fr)]">
       <section className="space-y-4">
@@ -220,17 +274,21 @@ export const SchedulePlanner = ({
           {schedule.isLoading ? <p>Laster sendeplan…</p> : null}
           {schedule.isError ? <p role="alert">{formatApiError(schedule.error)}</p> : null}
           <ol className="space-y-2">
-            {rows.map((row, index) => {
+            {rows.map((row) => {
               if (row.kind === "gap") {
                 return (
                   <li
-                    className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-dashed border-success-400 bg-success-50 p-3 dark:bg-success-950"
+                    className="flex flex-wrap items-center gap-2 rounded-lg border border-dashed border-success-400 bg-success-50 p-3 dark:bg-success-950"
                     key={`gap-${row.start.toISOString()}`}
                   >
                     <span>
                       <strong>{formatOsloTime(row.start)}</strong>–{formatOsloTime(row.end)} Ledig
                     </span>
-                    <Button size="sm" onPress={() => pickSlot(row.start, row.end)}>
+                    <Button
+                      className="ms-auto"
+                      size="sm"
+                      onPress={() => pickSlot(row.start, row.end)}
+                    >
                       Legg inn program
                     </Button>
                   </li>
@@ -249,72 +307,20 @@ export const SchedulePlanner = ({
                     <div className="text-sm text-default-600">
                       {row.slot.source?.name ?? "Program velges automatisk"}
                     </div>
+                    {row.items.length > 0 ? (
+                      <ol className="mt-3 space-y-2">
+                        {row.items.map((item) => renderItem(item, true))}
+                      </ol>
+                    ) : (
+                      <p className="mt-3 text-sm text-default-500">
+                        Ingen programmer er lagt inn i sendeflaten ennå.
+                      </p>
+                    )}
                   </li>
                 );
               }
 
-              const item = row.item;
-              const canManage =
-                isStaff ||
-                Boolean(item.video && manageableOrganizationIds.has(item.video.organization.id));
-              return (
-                <li
-                  className={`rounded-lg border p-3 ${
-                    item.displaceable
-                      ? "border-dashed border-warning-400 bg-warning-50 dark:bg-warning-950"
-                      : "border-default-200"
-                  }`}
-                  key={`item-${item.id}-${index}`}
-                >
-                  <div className="flex flex-wrap items-start justify-between gap-2">
-                    <div>
-                      <div className="font-semibold">
-                        {formatOsloTime(item.starttime)}–{formatOsloTime(item.endtime)}{" "}
-                        {item.video?.name || item.defaultName || "Uten programnavn"}
-                      </div>
-                      <div className="text-sm text-default-600">
-                        {item.weeklySlot
-                          ? "Ukentlig sendeflate"
-                          : statusText(item, manageableOrganizationIds)}
-                        {item.video ? ` · ${item.video.organization.name}` : ""}
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      {item.displaceable ? (
-                        <Button
-                          color="primary"
-                          size="sm"
-                          onPress={() =>
-                            pickSlot(new Date(item.starttime), new Date(item.endtime), item)
-                          }
-                        >
-                          Erstatt
-                        </Button>
-                      ) : null}
-                      {canManage && item.video && !item.displaceable ? (
-                        <Button
-                          size="sm"
-                          onPress={() =>
-                            pickSlot(new Date(item.starttime), new Date(item.endtime), item)
-                          }
-                        >
-                          Endre
-                        </Button>
-                      ) : null}
-                      {canManage && !item.displaceable ? (
-                        <Button
-                          color="danger"
-                          size="sm"
-                          variant="light"
-                          onPress={() => remove(item)}
-                        >
-                          Fjern
-                        </Button>
-                      ) : null}
-                    </div>
-                  </div>
-                </li>
-              );
+              return renderItem(row.item, false);
             })}
           </ol>
         </div>
