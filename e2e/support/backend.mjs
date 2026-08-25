@@ -88,8 +88,22 @@ createServer((request, response) => {
   const url = new URL(request.url ?? "/", `http://127.0.0.1:${port}`);
 
   if (url.pathname === "/health") return json(response, 200, { ok: true });
+  if (url.pathname === `/api/organization/${organization.id}`)
+    return json(response, 200, organization);
   if (url.pathname === `/api/series/${series.id}`)
     return json(response, 200, series);
+
+  if (
+    url.pathname === "/api/series" &&
+    url.searchParams.get("organization") === String(organization.id)
+  ) {
+    return json(response, 200, {
+      count: 1,
+      next: null,
+      previous: null,
+      results: [series],
+    });
+  }
 
   if (
     url.pathname === "/api/videos" &&

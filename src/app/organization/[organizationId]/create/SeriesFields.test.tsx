@@ -3,7 +3,8 @@ import { ReactNode } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { Series } from "@/generated/frikanalenDjangoAPI.schemas";
-import { SeriesFields } from "./SeriesFields";
+import { nextEpisodeNumber, SeriesFields } from "./SeriesFields";
+import type { SeriesOption } from "./SeriesFields";
 
 type InputProps = React.InputHTMLAttributes<HTMLInputElement> & {
   isDisabled?: boolean;
@@ -15,9 +16,14 @@ type SelectProps = {
   children: (_item: { id: string; name: string }) => ReactNode;
   items: { id: string; name: string }[];
   label: string;
+  description?: string;
   onBlur: () => void;
   onSelectionChange: (_keys: Set<string>) => void;
   selectedKeys: Set<string>;
+};
+
+type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
+  onPress?: () => void;
 };
 
 vi.mock("@heroui/react", () => ({
@@ -30,6 +36,11 @@ vi.mock("@heroui/react", () => ({
       </label>
     );
   },
+  Button: ({ children, onPress, ...props }: ButtonProps) => (
+    <button onClick={onPress} {...props}>
+      {children}
+    </button>
+  ),
   Select: ({ children, items, label, onBlur, onSelectionChange, selectedKeys }: SelectProps) => (
     <label>
       {label}
@@ -56,11 +67,21 @@ type Values = {
 };
 
 const availableSeries = [
-  { id: 7, name: "Havna vår", synopsis: "", imageUrl: "" },
-  { id: 8, name: "Kveldssending", synopsis: "", imageUrl: "" },
+  { id: 7, name: "Havna vår", synopsis: "", imageUrl: "", episodeCount: 3 },
+  { id: 8, name: "Kveldssending", synopsis: "", imageUrl: "", episodeCount: 6 },
 ] as Series[];
 
-const Harness = ({ onSubmit }: { onSubmit: (_values: Values) => void }) => {
+const Harness = ({
+  onSubmit,
+  onSeriesChange,
+  onCreateSeries,
+  showEpisodeNumber,
+}: {
+  onSubmit: (_values: Values) => void;
+  onSeriesChange?: (_series: SeriesOption | null) => void;
+  onCreateSeries?: () => void;
+  showEpisodeNumber?: boolean;
+}) => {
   const form = useForm<Values>({
     defaultValues: { seriesId: null, episodeNumber: null },
   });
@@ -75,6 +96,9 @@ const Harness = ({ onSubmit }: { onSubmit: (_values: Values) => void }) => {
         seriesName="seriesId"
         episodeName="episodeNumber"
         selectedSeries={selectedSeries}
+        onSeriesChange={onSeriesChange}
+        onCreateSeries={onCreateSeries}
+        showEpisodeNumber={showEpisodeNumber}
       />
       <button type="submit">Lagre</button>
     </form>
@@ -84,6 +108,11 @@ const Harness = ({ onSubmit }: { onSubmit: (_values: Values) => void }) => {
 afterEach(cleanup);
 
 describe("SeriesFields", () => {
+  it("suggests the number after the series' latest episode", () => {
+    expect(nextEpisodeNumber(availableSeries[0])).toBe(4);
+    expect(nextEpisodeNumber(null)).toBeNull();
+  });
+
   it("offers the organization's series and keeps episode numbering disabled without one", () => {
     render(<Harness onSubmit={vi.fn()} />);
 
@@ -97,7 +126,7 @@ describe("SeriesFields", () => {
     const onSubmit = vi.fn();
     render(<Harness onSubmit={onSubmit} />);
 
-    fireEvent.change(screen.getByLabelText("Serie"), { target: { value: "7" } });
+    fireEvent.change(screen.getByLabelText("Serie (valgfritt)"), { target: { value: "7" } });
     const episodeNumber = screen.getByLabelText("Episodenummer");
     expect((episodeNumber as HTMLInputElement).disabled).toBe(false);
 
@@ -113,7 +142,7 @@ describe("SeriesFields", () => {
     const onSubmit = vi.fn();
     render(<Harness onSubmit={onSubmit} />);
 
-    const series = screen.getByLabelText("Serie");
+    const series = screen.getByLabelText("Serie (valgfritt)");
     fireEvent.change(series, { target: { value: "7" } });
     fireEvent.change(series, { target: { value: "none" } });
 
@@ -122,5 +151,24 @@ describe("SeriesFields", () => {
     await waitFor(() =>
       expect(onSubmit).toHaveBeenCalledWith({ seriesId: null }, expect.anything()),
     );
+  });
+
+  it("reports the selected series so the creation form can suggest the next episode", () => {
+    const onSeriesChange = vi.fn();
+    render(<Harness onSubmit={vi.fn()} onSeriesChange={onSeriesChange} />);
+
+    fireEvent.change(screen.getByLabelText("Serie (valgfritt)"), { target: { value: "7" } });
+    expect(onSeriesChange).toHaveBeenCalledWith(availableSeries[0]);
+  });
+
+  it("replaces the episode field with series creation in the video creation form", () => {
+    const onCreateSeries = vi.fn();
+    render(
+      <Harness onSubmit={vi.fn()} onCreateSeries={onCreateSeries} showEpisodeNumber={false} />,
+    );
+
+    expect(screen.queryByLabelText("Episodenummer")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Opprett ny serie" }));
+    expect(onCreateSeries).toHaveBeenCalledOnce();
   });
 });

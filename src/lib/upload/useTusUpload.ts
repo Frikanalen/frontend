@@ -10,9 +10,14 @@ export function useTusUpload(
   uploadToken: string,
   endpoint: string,
   additionalMetadata?: Record<string, string>,
+  initialFile?: File,
 ): UseTusUploadReturn {
   const uploadRef = useRef<tus.Upload | null>(null);
-  const [state, dispatch] = useReducer(tusUploadReducer, tusUploadInitialState);
+  const [state, dispatch] = useReducer(tusUploadReducer, {
+    ...tusUploadInitialState,
+    isReady: Boolean(initialFile),
+    file: initialFile ?? null,
+  });
 
   const uploadHooks = useMemo<Pick<UploadOptions, "onError" | "onProgress" | "onSuccess">>(
     () => ({

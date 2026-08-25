@@ -1,5 +1,5 @@
 import { Series } from "@/generated/frikanalenDjangoAPI.schemas";
-import { Input, Select, SelectItem } from "@heroui/react";
+import { Button, Input, Select, SelectItem } from "@heroui/react";
 import {
   Control,
   Controller,
@@ -9,6 +9,11 @@ import {
   UseFormRegister,
 } from "react-hook-form";
 
+export type SeriesOption = Pick<Series, "id" | "name" | "episodeCount">;
+
+export const nextEpisodeNumber = (series: SeriesOption | null) =>
+  series ? series.episodeCount + 1 : null;
+
 export const SeriesFields = <T extends FieldValues>({
   control,
   register,
@@ -16,26 +21,38 @@ export const SeriesFields = <T extends FieldValues>({
   seriesName,
   episodeName,
   selectedSeries,
+  onCreateSeries,
+  onSeriesChange,
+  showEpisodeNumber = true,
 }: {
   control: Control<T>;
   register: UseFormRegister<T>;
-  series: Series[];
+  series: SeriesOption[];
   seriesName: Path<T>;
   episodeName: Path<T>;
   selectedSeries: number | null | undefined;
-}) => (
-  <div className="grid gap-4 sm:grid-cols-[2fr_1fr]">
+  onCreateSeries?: () => void;
+  onSeriesChange?: (_series: SeriesOption | null) => void;
+  showEpisodeNumber?: boolean;
+}) => {
+  const seriesSelect = (
     <Controller
       control={control}
       name={seriesName}
       render={({ field }) => (
         <Select
-          label="Serie"
+          label="Serie (valgfritt)"
+          description={
+            showEpisodeNumber ? "La stå som «Ingen serie» for en enkeltstående video." : undefined
+          }
           labelPlacement="outside-top"
           selectedKeys={new Set([field.value ? String(field.value) : "none"])}
           onSelectionChange={(keys) => {
             const key = Array.from(keys)[0];
-            field.onChange(key === "none" ? null : Number(key));
+            const selected =
+              key === "none" ? null : (series.find(({ id }) => id === Number(key)) ?? null);
+            field.onChange(selected?.id ?? null);
+            onSeriesChange?.(selected);
           }}
           onBlur={field.onBlur}
           items={[
@@ -47,16 +64,48 @@ export const SeriesFields = <T extends FieldValues>({
         </Select>
       )}
     />
-    <Input
-      type="number"
-      min={1}
-      label="Episodenummer"
-      labelPlacement="outside-top"
-      isDisabled={!selectedSeries}
-      {...register(episodeName, {
-        disabled: !selectedSeries,
-        setValueAs: (value) => (value === "" ? null : Number(value)) as PathValue<T, Path<T>>,
-      })}
-    />
-  </div>
-);
+  );
+
+  if (!showEpisodeNumber) {
+    return (
+      <div className="space-y-1">
+        <div className="grid items-end gap-4 sm:grid-cols-[2fr_1fr]">
+          {seriesSelect}
+          {onCreateSeries && (
+            <Button
+              type="button"
+              variant="flat"
+              className="w-full sm:w-fit"
+              onPress={onCreateSeries}
+            >
+              Opprett ny serie
+            </Button>
+          )}
+        </div>
+        <p className="text-xs text-foreground-500">
+          La stå som «Ingen serie» for en enkeltstående video.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid gap-4 sm:grid-cols-[2fr_1fr]">
+      {seriesSelect}
+      <Input
+        type="number"
+        min={1}
+        label="Episodenummer"
+        description={
+          selectedSeries ? "Neste nummer foreslås automatisk, men kan endres." : undefined
+        }
+        labelPlacement="outside-top"
+        isDisabled={!selectedSeries}
+        {...register(episodeName, {
+          disabled: !selectedSeries,
+          setValueAs: (value) => (value === "" ? null : Number(value)) as PathValue<T, Path<T>>,
+        })}
+      />
+    </div>
+  );
+};
