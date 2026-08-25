@@ -13,10 +13,14 @@ export const FileUpload = ({
   videoId,
   uploadEndpoint,
   uploadToken,
+  initialFile,
+  autoStart = false,
 }: {
   videoId: string;
   uploadEndpoint: string;
   uploadToken: string | undefined;
+  initialFile?: File;
+  autoStart?: boolean;
 }) => {
   const ref = useRef<HTMLInputElement>(null);
   // fixme: this is probably not really nullable, this is just a DB schema issue.
@@ -31,7 +35,11 @@ export const FileUpload = ({
     isError,
     error,
     isSuccess,
-  } = useTusUpload(videoId, uploadToken, uploadEndpoint);
+  } = useTusUpload(videoId, uploadToken, uploadEndpoint, undefined, initialFile);
+
+  useEffect(() => {
+    if (autoStart && isReady) start();
+  }, [autoStart, isReady, start]);
 
   // Transferring the bytes is only the first half. Until ingest has probed,
   // archived and transcoded the file there is nothing to watch on the video
@@ -107,7 +115,7 @@ export const FileUpload = ({
 
       {isError && <Alert color="danger">Opplastingen feilet: {error?.message}</Alert>}
 
-      {isReady && !isSuccess && (
+      {isReady && !isSuccess && !autoStart && (
         <div className={"prose dark:prose-invert"}>
           <Button onPress={start} disabled={!isReady}>
             Last opp {file?.name}

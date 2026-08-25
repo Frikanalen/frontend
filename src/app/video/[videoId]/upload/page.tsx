@@ -6,7 +6,6 @@ import { forbidden } from "next/navigation";
 import { PageShell, PageShellBody } from "@/components/layout/PageShell";
 import { getUserOrNull } from "@/app/getUserOrNull";
 import { FileUpload } from "@/components/upload/FileUpload";
-import { CreateFlowSteps } from "@/components/videoCreateFlow/CreateFlowSteps";
 
 export default async function Page({ params }: { params: Promise<{ videoId: string }> }) {
   const { videoId } = await params;
@@ -23,7 +22,6 @@ export default async function Page({ params }: { params: Promise<{ videoId: stri
   return (
     <PageShell>
       <PageShellBody className={"space-y-4"}>
-        <CreateFlowSteps current="upload" />
         <div className="prose dark:prose-invert">
           <h2>Last opp originalfil for {video.name}</h2>
         </div>
