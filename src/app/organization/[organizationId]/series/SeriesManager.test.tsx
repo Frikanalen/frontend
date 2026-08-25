@@ -22,6 +22,12 @@ vi.mock("@/generated/series/series", () => ({
   useSeriesPartialUpdate: () => ({ mutateAsync: api.update }),
 }));
 
+vi.mock("./SeriesEpisodeOrder", () => ({
+  SeriesEpisodeOrder: ({ seriesId }: { seriesId: number }) => (
+    <div>Episoderekkefølge for {seriesId}</div>
+  ),
+}));
+
 type ButtonProps = {
   as?: ElementType;
   children: ReactNode;
@@ -145,6 +151,7 @@ describe("SeriesManager", () => {
     expect((screen.getByLabelText("Beskrivelse") as HTMLTextAreaElement).value).toBe(
       "Historier fra kaia.",
     );
+    expect(screen.getByText("Episoderekkefølge for 4")).toBeDefined();
 
     fireEvent.change(screen.getByLabelText("Navn"), { target: { value: "Havna" } });
     fireEvent.click(screen.getByRole("button", { name: "Lagre" }));
@@ -171,6 +178,7 @@ describe("SeriesManager", () => {
     expect(screen.getByRole("heading", { name: "Ny serie" })).toBeDefined();
     expect((screen.getByLabelText("Navn") as HTMLInputElement).value).toBe("");
     expect((screen.getByLabelText("Beskrivelse") as HTMLTextAreaElement).value).toBe("");
+    expect(screen.queryByText("Episoderekkefølge for 4")).toBeNull();
   });
 
   it("shows a failed mutation in the form", async () => {

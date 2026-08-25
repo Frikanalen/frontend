@@ -3,7 +3,7 @@ import { Category, Series, VideoCreateRequest } from "@/generated/frikanalenDjan
 import { Button, Form, Input, Textarea } from "@heroui/react";
 import { Categories } from "@/app/organization/[organizationId]/create/Categories";
 import { useVideosCreate, videosUploadTokenRetrieve } from "@/generated/videos/videos";
-import { useForm, useWatch } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { useApiFormSubmit } from "@/lib/useApiFormSubmit";
 import { FormError } from "@/components/form/FormError";
@@ -39,7 +39,6 @@ export const VideoCreateForm = ({
   const router = useRouter();
   const form = useForm<VideoCreateRequest>({ defaultValues: { organization: organizationId } });
   const { register, control } = form;
-  const selectedSeries = useWatch({ control, name: "seriesId" });
   const [availableSeries, setAvailableSeries] = useState<SeriesOption[]>(series);
   const [isSeriesModalOpen, setSeriesModalOpen] = useState(false);
   const [videoFile, setVideoFile] = useState<File | null>(null);
@@ -130,14 +129,10 @@ export const VideoCreateForm = ({
           <Categories control={control} name={"categories"} categories={categories} />
           <SeriesFields
             control={control}
-            register={register}
             series={availableSeries}
             seriesName="seriesId"
-            episodeName="episodeNumber"
-            selectedSeries={selectedSeries}
             onCreateSeries={() => setSeriesModalOpen(true)}
             onSeriesChange={selectSeries}
-            showEpisodeNumber={false}
           />
           <VideoFileDropzone
             file={videoFile}

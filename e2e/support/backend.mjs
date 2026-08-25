@@ -24,6 +24,18 @@ const series = {
   episodeCount: 3,
 };
 
+const member = {
+  id: 42,
+  email: "editor@example.test",
+  isStaff: false,
+  identityConfirmed: true,
+  dateJoined: "2026-01-01T00:00:00Z",
+  editorOf: [{ id: organization.id, name: organization.name }],
+  memberOf: [],
+  firstName: "Test",
+  lastName: "Editor",
+};
+
 const video = (id, name, episodeNumber) => ({
   id,
   name,
@@ -88,6 +100,11 @@ createServer((request, response) => {
   const url = new URL(request.url ?? "/", `http://127.0.0.1:${port}`);
 
   if (url.pathname === "/health") return json(response, 200, { ok: true });
+  if (
+    url.pathname === "/api/user" &&
+    request.headers.cookie?.includes("e2e-member=1")
+  )
+    return json(response, 200, member);
   if (url.pathname === `/api/organization/${organization.id}`)
     return json(response, 200, organization);
   if (url.pathname === `/api/series/${series.id}`)

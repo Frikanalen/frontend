@@ -1,5 +1,5 @@
 "use client";
-import { useForm, useWatch } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { PatchedVideoRequest, Series, Video } from "@/generated/frikanalenDjangoAPI.schemas";
 import { useRouter } from "next/navigation";
 import { Button, Form, Input } from "@heroui/react";
@@ -10,6 +10,7 @@ import { videosPartialUpdate } from "@/generated/videos/videos";
 import { useApiFormSubmit } from "@/lib/useApiFormSubmit";
 import { FormError } from "@/components/form/FormError";
 import { SeriesFields } from "@/app/organization/[organizationId]/create/SeriesFields";
+import type { SeriesOption } from "@/app/organization/[organizationId]/create/SeriesFields";
 
 export const VideoEditForm = ({ video, series }: { video: Video; series: Series[] }) => {
   const form = useForm<PatchedVideoRequest>({
@@ -18,12 +19,20 @@ export const VideoEditForm = ({ video, series }: { video: Video; series: Series[
       header: video.header,
       description: video.description,
       seriesId: video.series?.id ?? null,
-      episodeNumber: video.episodeNumber,
     },
   });
   const { register, control } = form;
-  const selectedSeries = useWatch({ control, name: "seriesId" });
   const router = useRouter();
+
+  const selectSeries = (selected: SeriesOption | null) => {
+    const originalSeriesId = video.series?.id ?? null;
+    const selectedSeriesId = selected?.id ?? null;
+    form.setValue(
+      "episodeNumber",
+      selectedSeriesId === originalSeriesId ? (video.episodeNumber ?? null) : null,
+      { shouldDirty: true },
+    );
+  };
 
   const { onSubmit, error, isSubmitting } = useApiFormSubmit(form, async (payload) => {
     const update = await videosPartialUpdate(video.id.toString(), payload);
@@ -51,11 +60,9 @@ export const VideoEditForm = ({ video, series }: { video: Video; series: Series[
         />
         <SeriesFields
           control={control}
-          register={register}
           series={series}
           seriesName="seriesId"
-          episodeName="episodeNumber"
-          selectedSeries={selectedSeries}
+          onSeriesChange={selectSeries}
         />
         <div className={"ml-auto"}>
           <Button type={"submit"} isLoading={isSubmitting}>
