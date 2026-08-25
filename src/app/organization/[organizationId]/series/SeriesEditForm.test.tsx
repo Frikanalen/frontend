@@ -1,11 +1,20 @@
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { InputHTMLAttributes, ReactNode, TextareaHTMLAttributes } from "react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { FormHTMLAttributes, InputHTMLAttributes, ReactNode, TextareaHTMLAttributes } from "react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Series } from "@/generated/frikanalenDjangoAPI.schemas";
 import { SeriesEditForm } from "./SeriesEditForm";
-import type { SeriesMetadataAction } from "./seriesMetadata";
 
 type FieldProps = { label: string; labelPlacement?: string };
+
+const api = vi.hoisted(() => ({
+  mutateAsync: vi.fn(),
+  refresh: vi.fn(),
+}));
+
+vi.mock("@/generated/series/series", () => ({
+  useSeriesPartialUpdate: () => ({ mutateAsync: api.mutateAsync }),
+}));
+vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: api.refresh }) }));
 
 vi.mock("@heroui/react", () => ({
   Button: ({
@@ -19,6 +28,9 @@ vi.mock("@heroui/react", () => ({
     <button disabled={isLoading} {...props}>
       {children}
     </button>
+  ),
+  Form: ({ children, ...props }: FormHTMLAttributes<HTMLFormElement>) => (
+    <form {...props}>{children}</form>
   ),
   Input: ({
     label,
@@ -57,14 +69,14 @@ const series = {
 } as Series;
 
 afterEach(cleanup);
+beforeEach(() => {
+  api.mutateAsync.mockReset().mockResolvedValue({ data: series });
+  api.refresh.mockReset();
+});
 
 describe("SeriesEditForm", () => {
   it("loads and saves the series name and description", async () => {
-    const updateAction = vi.fn<SeriesMetadataAction>(async () => ({
-      status: "success",
-      message: "Serieopplysningene er lagret.",
-    }));
-    render(<SeriesEditForm series={series} updateAction={updateAction} />);
+    render(<SeriesEditForm series={series} />);
 
     expect((screen.getByLabelText("Navn") as HTMLInputElement).value).toBe("Havna vår");
     expect((screen.getByLabelText("Beskrivelse") as HTMLTextAreaElement).value).toBe(
@@ -77,24 +89,25 @@ describe("SeriesEditForm", () => {
     });
     fireEvent.click(screen.getByRole("button", { name: "Lagre" }));
 
-    await waitFor(() => expect(updateAction).toHaveBeenCalledOnce());
-    const submitted = updateAction.mock.calls[0][1];
-    expect(submitted.get("name")).toBe("Havna");
-    expect(submitted.get("synopsis")).toBe("Nye historier.");
+    await waitFor(() =>
+      expect(api.mutateAsync).toHaveBeenCalledWith({
+        id: "4",
+        data: { name: "Havna", synopsis: "Nye historier." },
+      }),
+    );
+    expect(api.refresh).toHaveBeenCalledOnce();
     expect((await screen.findByRole("status")).textContent).toBe("Serieopplysningene er lagret.");
   });
 
   it("shows metadata update failures", async () => {
-    const updateAction: SeriesMetadataAction = async () => ({
-      status: "error",
-      message: "Serien kunne ikke lagres.",
-    });
-    render(<SeriesEditForm series={series} updateAction={updateAction} />);
+    api.mutateAsync.mockRejectedValueOnce(new Error("Serien kunne ikke lagres."));
+    render(<SeriesEditForm series={series} />);
 
     fireEvent.click(screen.getByRole("button", { name: "Lagre" }));
 
     await waitFor(() =>
       expect(screen.getByRole("alert").textContent).toBe("Serien kunne ikke lagres."),
     );
+    expect(api.refresh).not.toHaveBeenCalled();
   });
 });

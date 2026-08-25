@@ -90,6 +90,14 @@ test.describe("series management", () => {
   });
 
   test("edits series metadata on the dedicated page", async ({ page }) => {
+    const patches: Record<string, unknown>[] = [];
+    await page.route("**/api/series/9001", (route) => {
+      if (route.request().method() !== "PATCH") return route.fallback();
+      const data = route.request().postDataJSON() as Record<string, unknown>;
+      patches.push(data);
+      return route.fulfill({ status: 200, json: { ...series, ...data } });
+    });
+
     const response = await page.goto("/organization/3/series/9001");
     expect(response?.status()).toBe(200);
     expect(await response!.text()).toContain('value="Havna vår"');
@@ -102,6 +110,7 @@ test.describe("series management", () => {
     await page.getByRole("button", { name: "Lagre", exact: true }).click();
 
     await expect(page.getByRole("status")).toHaveText("Serieopplysningene er lagret.");
+    expect(patches).toEqual([{ name: "Havna", synopsis: "Nye historier fra kaia." }]);
   });
 
   test("reorders and consecutively renumbers every episode from the series editor", async ({

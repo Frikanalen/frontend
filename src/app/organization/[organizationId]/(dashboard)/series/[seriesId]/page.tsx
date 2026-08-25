@@ -2,7 +2,6 @@ import { getUserOrNull } from "@/app/getUserOrNull";
 import { profileIsAdminOrMember } from "@/app/organization/[organizationId]/admin/profileIsAdminOrMember";
 import { SeriesEditForm } from "@/app/organization/[organizationId]/series/SeriesEditForm";
 import { SeriesEpisodeOrder } from "@/app/organization/[organizationId]/series/SeriesEpisodeOrder";
-import { updateSeriesMetadata } from "@/app/organization/[organizationId]/series/updateSeriesMetadata";
 import { organizationRetrieve } from "@/generated/organization/organization";
 import { ssrSeriesRetrieve } from "@/generated/ssr/series/series";
 import { getCookiesFromRequest } from "@/lib/getCookiesFromRequest";
@@ -35,7 +34,6 @@ export default async function Page({
   if (seriesResponse.data.organization.id !== organizationNumber) return notFound();
 
   const series = seriesResponse.data;
-  const updateMetadata = updateSeriesMetadata.bind(null, seriesNumber);
 
   return (
     <section className="space-y-6 p-4">
@@ -51,7 +49,7 @@ export default async function Page({
           Tilbake til serier
         </Link>
       </div>
-      <SeriesEditForm series={series} updateAction={updateMetadata} />
+      <SeriesEditForm series={series} />
       <SeriesEpisodeOrder seriesId={series.id} />
     </section>
   );
