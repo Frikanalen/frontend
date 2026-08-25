@@ -64,7 +64,7 @@ export const NewSeriesModal = ({
           <ModalHeader>Opprett ny serie</ModalHeader>
           <ModalBody className="w-full gap-4">
             <p className="text-sm text-foreground-500">
-              Serien velges automatisk for videoen når den er opprettet.
+              Oppgi et navn og eventuelt en kort beskrivelse av serien.
             </p>
             <FormError error={error} />
             <Input

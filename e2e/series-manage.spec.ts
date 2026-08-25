@@ -63,6 +63,47 @@ test.beforeEach(async ({ page, baseURL }) => {
 });
 
 test.describe("series management", () => {
+  test("creates a series from the list-page modal", async ({ page }) => {
+    const requests: Record<string, unknown>[] = [];
+    await page.route("**/api/series", (route) => {
+      if (route.request().method() !== "POST") return route.fallback();
+      requests.push(route.request().postDataJSON() as Record<string, unknown>);
+      return route.fulfill({
+        status: 201,
+        json: { ...series, id: 9002, name: "Nytt fra fjorden", episodeCount: 0 },
+      });
+    });
+
+    await page.goto("/organization/3/series");
+    await waitForHydration(page);
+    await page.getByRole("button", { name: "Ny serie" }).click();
+
+    const dialog = page.getByRole("dialog", { name: "Opprett ny serie" });
+    await dialog.getByLabel("Serienavn").fill("Nytt fra fjorden");
+    await dialog.getByLabel("Beskrivelse (valgfritt)").fill("Ukentlige reportasjer.");
+    await dialog.getByRole("button", { name: "Opprett serie" }).click();
+
+    await expect(dialog).toBeHidden();
+    expect(requests).toEqual([
+      { name: "Nytt fra fjorden", synopsis: "Ukentlige reportasjer.", organization: 3 },
+    ]);
+  });
+
+  test("edits series metadata on the dedicated page", async ({ page }) => {
+    const response = await page.goto("/organization/3/series/9001");
+    expect(response?.status()).toBe(200);
+    expect(await response!.text()).toContain('value="Havna vår"');
+    await waitForHydration(page);
+
+    await expect(page).toHaveURL("/organization/3/series/9001");
+    await expect(page.getByRole("heading", { name: "Seriedetaljer" })).toBeVisible();
+    await page.getByLabel("Navn").fill("Havna");
+    await page.getByLabel("Beskrivelse").fill("Nye historier fra kaia.");
+    await page.getByRole("button", { name: "Lagre", exact: true }).click();
+
+    await expect(page.getByRole("status")).toHaveText("Serieopplysningene er lagret.");
+  });
+
   test("reorders and consecutively renumbers every episode from the series editor", async ({
     page,
   }) => {
@@ -82,7 +123,8 @@ test.describe("series management", () => {
     expect(response?.status()).toBe(200);
     await waitForHydration(page);
 
-    await page.getByRole("button", { name: "Rediger" }).click();
+    await page.getByRole("link", { name: "Rediger" }).click();
+    await expect(page).toHaveURL("/organization/3/series/9001");
     await expect(page.getByRole("heading", { name: "Episoderekkefølge" })).toBeVisible();
 
     const editor = page.locator("section").filter({
