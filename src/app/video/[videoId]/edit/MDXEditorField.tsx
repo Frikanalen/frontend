@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useMemo, useRef } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef } from "react";
 import {
   useController,
   type Control,
@@ -9,7 +9,7 @@ import {
   type RegisterOptions,
 } from "react-hook-form";
 import { ForwardRefEditor } from "./ForwardRefEditor";
-import type { MDXEditorMethods, MDXEditorProps } from "@mdxeditor/editor";
+import type { MDXEditorMethods, MDXEditorProps, Translation } from "@mdxeditor/editor";
 import { Card, CardBody } from "@heroui/react";
 import { Alert } from "@heroui/alert";
 
@@ -51,12 +51,12 @@ export function MDXEditorField<
 
   // Stable, unique ids for ARIA associations
   const baseId = useId();
-  const labelId = `${baseId}-label`;
   const descId = `${baseId}-desc`;
   const errId = `${baseId}-error`;
 
   const isRequired = !!rules?.required;
   const isInvalid = !!fieldState.error;
+  const editorTranslation = editorProps?.translation;
 
   // When RHF default values or `reset()` change the field value,
   // push it into the MDXEditor instance (prop is read once at mount).
@@ -81,23 +81,30 @@ export function MDXEditorField<
     return ids.join(" ") || undefined;
   }, [description, isInvalid, descId, errId]);
 
+  const translate = useCallback<Translation>(
+    (key, defaultValue, interpolations = {}) => {
+      if (key === "contentArea.editableMarkdown" && label) return label;
+      if (editorTranslation) return editorTranslation(key, defaultValue, interpolations);
+
+      return Object.entries(interpolations).reduce(
+        (value, [name, replacement]) => value.replaceAll(`{{${name}}}`, String(replacement)),
+        defaultValue,
+      );
+    },
+    [editorTranslation, label],
+  );
+
   return (
     <div className={className}>
       {label && (
-        <label
-          id={labelId}
-          // HeroUI Text for consistent typography
-          className="mb-2 block text-sm"
-          // Associate to the editor region below
-          htmlFor={baseId}
-        >
+        <p className="mb-2 block text-sm">
           {label}
           {isRequired && (
             <span className="ml-1 text-danger-600" aria-hidden="true">
               *
             </span>
           )}
-        </label>
+        </p>
       )}
 
       {description && (
@@ -110,7 +117,6 @@ export function MDXEditorField<
         role="group"
         className={isInvalid ? "border border-danger-500" : undefined}
         aria-describedby={describedBy}
-        aria-labelledby={label ? labelId : undefined}
       >
         <CardBody className="w-full bg-default-100 p-0">
           <ForwardRefEditor
@@ -123,6 +129,7 @@ export function MDXEditorField<
             aria-invalid={isInvalid || undefined}
             aria-describedby={describedBy}
             {...editorProps}
+            translation={translate}
           />
         </CardBody>
       </Card>
