@@ -24,7 +24,8 @@ export default function InitializedMDXEditor({
 }: { editorRef: ForwardedRef<MDXEditorMethods> | null } & MDXEditorProps) {
   return (
     <MDXEditor
-      contentEditableClassName="prose! dark:prose-invert! h-80 grow max-w-none!"
+      className="min-w-0 max-w-full"
+      contentEditableClassName="prose! dark:prose-invert! h-56 grow max-w-none! sm:h-80"
       plugins={[
         headingsPlugin({ allowedHeadingLevels: [3, 4, 5, 6] }),
         listsPlugin(),
@@ -32,7 +33,8 @@ export default function InitializedMDXEditor({
         thematicBreakPlugin(),
         markdownShortcutPlugin(),
         toolbarPlugin({
-          toolbarClassName: "bg-content2! dark:bg-primary-100! rounded-b-none!",
+          toolbarClassName:
+            "flex-wrap! rounded-b-none! bg-content2! dark:bg-primary-100! sm:flex-nowrap!",
           toolbarContents: () => (
             <>
               <BlockTypeSelect />

@@ -13,10 +13,10 @@ import {
   ModalContent,
   ModalFooter,
   ModalHeader,
-  Textarea,
 } from "@heroui/react";
 import { useForm } from "react-hook-form";
 import type { SeriesOption } from "@/app/organization/[organizationId]/create/SeriesFields";
+import { MDXEditorField } from "@/app/video/[videoId]/edit/MDXEditorField";
 
 const emptyValues = (organization: number): SeriesWriteRequest => ({
   name: "",
@@ -54,13 +54,21 @@ export const NewSeriesModal = ({
 
   return (
     <Modal
+      size="3xl"
+      scrollBehavior="inside"
+      classNames={{
+        base: "m-0 h-[100dvh] max-h-[100dvh] max-w-full rounded-none sm:m-6 sm:h-auto sm:max-h-[calc(100dvh-3rem)] sm:max-w-3xl sm:rounded-large",
+        header: "px-4 sm:px-6",
+        body: "min-w-0 px-4 sm:px-6",
+        footer: "px-4 sm:px-6",
+      }}
       isOpen={isOpen}
       onOpenChange={handleOpenChange}
       isDismissable={!isSubmitting}
       hideCloseButton={isSubmitting}
     >
       <ModalContent>
-        <Form onSubmit={onSubmit} className="w-full">
+        <Form onSubmit={onSubmit} className="flex h-full min-h-0 w-full flex-col">
           <ModalHeader>Opprett ny serie</ModalHeader>
           <ModalBody className="w-full gap-4">
             <p className="text-sm text-foreground-500">
@@ -73,11 +81,18 @@ export const NewSeriesModal = ({
               isRequired
               {...form.register("name")}
             />
-            <Textarea
+            <MDXEditorField
+              className="min-w-0 w-full"
+              control={form.control}
+              name="synopsis"
               label="Beskrivelse (valgfritt)"
-              labelPlacement="outside-top"
-              maxLength={2048}
-              {...form.register("synopsis")}
+              placeholder="Beskrivelse"
+              rules={{
+                maxLength: {
+                  value: 2048,
+                  message: "Beskrivelsen kan ikke være lengre enn 2048 tegn.",
+                },
+              }}
             />
           </ModalBody>
           <ModalFooter className="w-full">

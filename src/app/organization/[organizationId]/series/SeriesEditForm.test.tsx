@@ -2,6 +2,7 @@ import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/re
 import { FormHTMLAttributes, InputHTMLAttributes, ReactNode, TextareaHTMLAttributes } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Series } from "@/generated/frikanalenDjangoAPI.schemas";
+import type { Control, RegisterOptions } from "react-hook-form";
 import { SeriesEditForm } from "./SeriesEditForm";
 
 type FieldProps = { label: string; labelPlacement?: string };
@@ -15,6 +16,29 @@ vi.mock("@/generated/series/series", () => ({
   useSeriesPartialUpdate: () => ({ mutateAsync: api.mutateAsync }),
 }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: api.refresh }) }));
+vi.mock("@/app/video/[videoId]/edit/MDXEditorField", async () => {
+  const { useController } = await import("react-hook-form");
+
+  return {
+    MDXEditorField: ({
+      control,
+      label,
+      rules,
+    }: {
+      control: Control<{ synopsis: string }>;
+      label: string;
+      rules?: RegisterOptions<{ synopsis: string }, "synopsis">;
+    }) => {
+      const { field } = useController({ control, name: "synopsis", rules });
+      return (
+        <label>
+          {label}
+          <textarea aria-label={label} {...field} value={field.value ?? ""} />
+        </label>
+      );
+    },
+  };
+});
 
 vi.mock("@heroui/react", () => ({
   Button: ({
