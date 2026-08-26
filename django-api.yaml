@@ -13763,13 +13763,8 @@ components:
           type: string
           maxLength: 255
           minLength: 1
-        header:
-          type: string
-          maxLength: 2048
-          nullable: true
         description:
           type: string
-          maxLength: 2048
           nullable: true
         seriesId:
           type: integer
@@ -13968,13 +13963,8 @@ components:
         name:
           type: string
           maxLength: 255
-        header:
-          type: string
-          maxLength: 2048
-          nullable: true
         description:
           type: string
-          maxLength: 2048
           nullable: true
         organization:
           allOf:
@@ -16202,13 +16192,8 @@ components:
         name:
           type: string
           maxLength: 255
-        header:
-          type: string
-          maxLength: 2048
-          nullable: true
         description:
           type: string
-          maxLength: 2048
           nullable: true
         files:
           allOf:
@@ -16336,13 +16321,8 @@ components:
         name:
           type: string
           maxLength: 255
-        header:
-          type: string
-          maxLength: 2048
-          nullable: true
         description:
           type: string
-          maxLength: 2048
           nullable: true
         files:
           allOf:
@@ -16465,13 +16445,8 @@ components:
           type: string
           maxLength: 255
           minLength: 1
-        header:
-          type: string
-          maxLength: 2048
-          nullable: true
         description:
           type: string
-          maxLength: 2048
           nullable: true
         organization:
           type: integer
@@ -16632,13 +16607,8 @@ components:
           type: string
           maxLength: 255
           minLength: 1
-        header:
-          type: string
-          maxLength: 2048
-          nullable: true
         description:
           type: string
-          maxLength: 2048
           nullable: true
         seriesId:
           type: integer
@@ -17423,13 +17393,11 @@ components:
         code:
           description: |-
             * `invalid` - invalid
-            * `max_length` - max_length
             * `null_characters_not_allowed` - null_characters_not_allowed
             * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed
           type: string
           enum:
             - invalid
-            - max_length
             - null_characters_not_allowed
             - surrogate_characters_not_allowed
         detail:
@@ -17494,7 +17462,6 @@ components:
         mapping:
           non_field_errors: "#/components/schemas/VideosCreateNonFieldErrorsErrorComponent"
           name: "#/components/schemas/VideosCreateNameErrorComponent"
-          header: "#/components/schemas/VideosCreateHeaderErrorComponent"
           description: "#/components/schemas/VideosCreateDescriptionErrorComponent"
           organization: "#/components/schemas/VideosCreateOrganizationErrorComponent"
           series_id: "#/components/schemas/VideosCreateSeriesIdErrorComponent"
@@ -17512,7 +17479,6 @@ components:
       oneOf:
         - $ref: "#/components/schemas/VideosCreateNonFieldErrorsErrorComponent"
         - $ref: "#/components/schemas/VideosCreateNameErrorComponent"
-        - $ref: "#/components/schemas/VideosCreateHeaderErrorComponent"
         - $ref: "#/components/schemas/VideosCreateDescriptionErrorComponent"
         - $ref: "#/components/schemas/VideosCreateOrganizationErrorComponent"
         - $ref: "#/components/schemas/VideosCreateSeriesIdErrorComponent"
@@ -17552,32 +17518,6 @@ components:
           enum:
             - invalid
             - "null"
-        detail:
-          type: string
-      required:
-        - attr
-        - code
-        - detail
-    VideosCreateHeaderErrorComponent:
-      type: object
-      properties:
-        attr:
-          description: "* `header` - header"
-          type: string
-          enum:
-            - header
-        code:
-          description: |-
-            * `invalid` - invalid
-            * `max_length` - max_length
-            * `null_characters_not_allowed` - null_characters_not_allowed
-            * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed
-          type: string
-          enum:
-            - invalid
-            - max_length
-            - null_characters_not_allowed
-            - surrogate_characters_not_allowed
         detail:
           type: string
       required:
@@ -18653,13 +18593,11 @@ components:
         code:
           description: |-
             * `invalid` - invalid
-            * `max_length` - max_length
             * `null_characters_not_allowed` - null_characters_not_allowed
             * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed
           type: string
           enum:
             - invalid
-            - max_length
             - null_characters_not_allowed
             - surrogate_characters_not_allowed
         detail:
@@ -18724,7 +18662,6 @@ components:
         mapping:
           non_field_errors: "#/components/schemas/VideosPartialUpdateNonFieldErrorsErrorComponent"
           name: "#/components/schemas/VideosPartialUpdateNameErrorComponent"
-          header: "#/components/schemas/VideosPartialUpdateHeaderErrorComponent"
           description: "#/components/schemas/VideosPartialUpdateDescriptionErrorComponent"
           series_id: "#/components/schemas/VideosPartialUpdateSeriesIdErrorComponent"
           episode_number: "#/components/schemas/VideosPartialUpdateEpisodeNumberErrorComponent"
@@ -18741,7 +18678,6 @@ components:
       oneOf:
         - $ref: "#/components/schemas/VideosPartialUpdateNonFieldErrorsErrorComponent"
         - $ref: "#/components/schemas/VideosPartialUpdateNameErrorComponent"
-        - $ref: "#/components/schemas/VideosPartialUpdateHeaderErrorComponent"
         - $ref: "#/components/schemas/VideosPartialUpdateDescriptionErrorComponent"
         - $ref: "#/components/schemas/VideosPartialUpdateSeriesIdErrorComponent"
         - $ref: "#/components/schemas/VideosPartialUpdateEpisodeNumberErrorComponent"
@@ -18780,32 +18716,6 @@ components:
           enum:
             - invalid
             - "null"
-        detail:
-          type: string
-      required:
-        - attr
-        - code
-        - detail
-    VideosPartialUpdateHeaderErrorComponent:
-      type: object
-      properties:
-        attr:
-          description: "* `header` - header"
-          type: string
-          enum:
-            - header
-        code:
-          description: |-
-            * `invalid` - invalid
-            * `max_length` - max_length
-            * `null_characters_not_allowed` - null_characters_not_allowed
-            * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed
-          type: string
-          enum:
-            - invalid
-            - max_length
-            - null_characters_not_allowed
-            - surrogate_characters_not_allowed
         detail:
           type: string
       required:
@@ -19118,13 +19028,11 @@ components:
         code:
           description: |-
             * `invalid` - invalid
-            * `max_length` - max_length
             * `null_characters_not_allowed` - null_characters_not_allowed
             * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed
           type: string
           enum:
             - invalid
-            - max_length
             - null_characters_not_allowed
             - surrogate_characters_not_allowed
         detail:
@@ -19189,7 +19097,6 @@ components:
         mapping:
           non_field_errors: "#/components/schemas/VideosUpdateNonFieldErrorsErrorComponent"
           name: "#/components/schemas/VideosUpdateNameErrorComponent"
-          header: "#/components/schemas/VideosUpdateHeaderErrorComponent"
           description: "#/components/schemas/VideosUpdateDescriptionErrorComponent"
           series_id: "#/components/schemas/VideosUpdateSeriesIdErrorComponent"
           episode_number: "#/components/schemas/VideosUpdateEpisodeNumberErrorComponent"
@@ -19206,7 +19113,6 @@ components:
       oneOf:
         - $ref: "#/components/schemas/VideosUpdateNonFieldErrorsErrorComponent"
         - $ref: "#/components/schemas/VideosUpdateNameErrorComponent"
-        - $ref: "#/components/schemas/VideosUpdateHeaderErrorComponent"
         - $ref: "#/components/schemas/VideosUpdateDescriptionErrorComponent"
         - $ref: "#/components/schemas/VideosUpdateSeriesIdErrorComponent"
         - $ref: "#/components/schemas/VideosUpdateEpisodeNumberErrorComponent"
@@ -19245,32 +19151,6 @@ components:
           enum:
             - invalid
             - "null"
-        detail:
-          type: string
-      required:
-        - attr
-        - code
-        - detail
-    VideosUpdateHeaderErrorComponent:
-      type: object
-      properties:
-        attr:
-          description: "* `header` - header"
-          type: string
-          enum:
-            - header
-        code:
-          description: |-
-            * `invalid` - invalid
-            * `max_length` - max_length
-            * `null_characters_not_allowed` - null_characters_not_allowed
-            * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed
-          type: string
-          enum:
-            - invalid
-            - max_length
-            - null_characters_not_allowed
-            - surrogate_characters_not_allowed
         detail:
           type: string
       required:

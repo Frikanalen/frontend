@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll, afterEach } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { ScheduleItemList } from "./ScheduleItemView";
 import { ScheduleitemRead } from "@/generated/frikanalenDjangoAPI.schemas";
 
@@ -23,12 +23,12 @@ const program = (id: number, name: string, from: string) =>
     endtime: `2026-08-21T${from}:00+02:00`,
     duration: "01:00:00",
     schedulereason: 3,
-  displaceable: false,
-  weeklySlot: null,
+    displaceable: false,
+    weeklySlot: null,
     video: {
       id: id * 10,
       name,
-      header: "",
+      description: `${name} — programbeskrivelse`,
       organization: { id, name: "Norsk Presse", description: "" },
       categories: [],
       files: [],
@@ -56,6 +56,8 @@ describe("ScheduleItemList", () => {
 
     expect(screen.getByText("20:00")).toBeDefined();
     expect(screen.getByText("Kveldens konsert")).toBeDefined();
+    fireEvent.click(screen.getByRole("button"));
+    expect(screen.getByText("Kveldens konsert — programbeskrivelse")).toBeDefined();
   });
 
   it("keeps a small-hours program in Natt, labelled as such", () => {

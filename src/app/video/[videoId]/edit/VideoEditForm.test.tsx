@@ -81,8 +81,7 @@ const otherSeries = {
 const editedVideo = {
   id: 42,
   name: "Reportasje",
-  header: "Ingress",
-  description: "Beskrivelse",
+  description: "Ingress\n\nBeskrivelse",
   series: existingSeries,
   episodeNumber: 2,
 } as unknown as Video;

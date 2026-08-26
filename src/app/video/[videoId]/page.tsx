@@ -41,7 +41,7 @@ export async function generateMetadata({ params }: VideoPageProps): Promise<Meta
       releaseDate: video.createdTime,
       url: `https://frikanalen.no/video/${video.id}`,
     },
-    description: `Video av ${video.organization.name}: ${video.header?.length ? video.header : video.description}`,
+    description: `Video av ${video.organization.name}: ${video.description || ""}`,
   };
 }
 

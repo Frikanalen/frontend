@@ -13,7 +13,7 @@ export const VideoBlurb = ({ video }: { video: ScheduleitemVideo }) => {
       )}
       <div>
         <div className="prose dark:prose-invert [&>*]:leading-6">
-          <Markdown options={{ wrapper: Fragment }}>{video.header || ""}</Markdown>
+          <Markdown options={{ wrapper: Fragment }}>{video.description || ""}</Markdown>
         </div>
       </div>
     </div>

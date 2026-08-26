@@ -39,7 +39,6 @@ export const VideoCardMeta = ({ video }: { video: Video }) => {
           </div>
         </div>
         <div>
-          {video.header?.length && <h4>{video.header}</h4>}
           <div className={"prose dark:prose-invert first-child:mt-0!"}>
             <Markdown options={{ wrapper: Fragment }}>
               {video.description ?? "*videoen har ingen beskrivelse*"}

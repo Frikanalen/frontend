@@ -16,7 +16,6 @@ export const VideoEditForm = ({ video, series }: { video: Video; series: Series[
   const form = useForm<PatchedVideoRequest>({
     defaultValues: {
       name: video.name,
-      header: video.header,
       description: video.description,
       seriesId: video.series?.id ?? null,
     },
