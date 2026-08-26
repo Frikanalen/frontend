@@ -113,6 +113,78 @@ test.describe("series management", () => {
     expect(patches).toEqual([{ name: "Havna", synopsis: "Nye historier fra kaia." }]);
   });
 
+  test("adds multiple videos and explains why assigned videos are unavailable", async ({
+    page,
+  }) => {
+    const availableA = { ...video(40, "Fjordglimt", null), series: null, episodeNumber: null };
+    const availableB = { ...video(41, "Havnelangs", null), series: null, episodeNumber: null };
+    const otherSeries = { ...series, id: 9002, name: "Kveldssending" };
+    const assignedElsewhere = {
+      ...video(42, "Allerede brukt", 1),
+      series: otherSeries,
+      episodeNumber: 1,
+    };
+    const patches: { id: string; data: Record<string, unknown> }[] = [];
+
+    await page.route("**/api/videos?**", (route) => {
+      const params = new URL(route.request().url()).searchParams;
+      if (params.get("organization") !== "3" || params.has("series")) return route.fallback();
+      return route.fulfill({
+        status: 200,
+        json: {
+          count: 4,
+          next: null,
+          previous: null,
+          results: [availableA, availableB, assignedElsewhere, episodes[0]],
+        },
+      });
+    });
+    await page.route("**/api/videos/*", (route: Route) => {
+      if (route.request().method() !== "PATCH") return route.fallback();
+      const id = new URL(route.request().url()).pathname.split("/").at(-1)!;
+      const data = route.request().postDataJSON() as Record<string, unknown>;
+      patches.push({ id, data });
+      return route.fulfill({
+        status: 200,
+        json: { ...video(Number(id), `Video ${id}`, null), ...data },
+      });
+    });
+
+    await page.goto("/organization/3/series/9001");
+    await waitForHydration(page);
+    await page.getByRole("button", { name: "Legg til i serien" }).click();
+
+    const dialog = page.getByRole("dialog", { name: "Legg videoer til serien" });
+    await expect(dialog).toBeVisible();
+    await dialog.getByLabel("Søk i organisasjonens videoer").fill("fjord");
+
+    await expect(
+      dialog.getByRole("button").filter({ hasText: "Videoen er allerede i denne serien." }),
+    ).toBeDisabled();
+    await expect(
+      dialog
+        .getByRole("button")
+        .filter({ hasText: "Videoen er allerede i serien «Kveldssending»." }),
+    ).toBeDisabled();
+
+    await dialog.getByRole("button").filter({ hasText: "Fjordglimt" }).click();
+    await dialog.getByRole("button").filter({ hasText: "Havnelangs" }).click();
+    await dialog.getByRole("button", { name: "Legg til 2 videoer" }).click();
+
+    await expect(dialog).toBeHidden();
+    await expect(page.getByRole("status")).toHaveText("2 videoer ble lagt til i serien.");
+    await expect.poll(() => patches.length).toBe(5);
+    expect(patches).toEqual(
+      expect.arrayContaining([
+        { id: "20", data: { episodeNumber: null } },
+        { id: "20", data: { episodeNumber: 2 } },
+        { id: "30", data: { episodeNumber: 3 } },
+        { id: "40", data: { seriesId: 9001, episodeNumber: 4 } },
+        { id: "41", data: { seriesId: 9001, episodeNumber: 5 } },
+      ]),
+    );
+  });
+
   test("reorders and consecutively renumbers every episode from the series editor", async ({
     page,
   }) => {
