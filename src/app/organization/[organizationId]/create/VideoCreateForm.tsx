@@ -1,6 +1,6 @@
 "use client";
 import { Category, Series, VideoCreateRequest } from "@/generated/frikanalenDjangoAPI.schemas";
-import { Button, Form, Input, Textarea } from "@heroui/react";
+import { Button, Form, Input } from "@heroui/react";
 import { Categories } from "@/app/organization/[organizationId]/create/Categories";
 import { useVideosCreate, videosUploadTokenRetrieve } from "@/generated/videos/videos";
 import { useForm } from "react-hook-form";
@@ -16,6 +16,7 @@ import { NewSeriesModal } from "@/app/organization/[organizationId]/create/NewSe
 import { FileUpload } from "@/components/upload/FileUpload";
 import { useState } from "react";
 import { VideoFileDropzone } from "@/app/organization/[organizationId]/create/VideoFileDropzone";
+import { MDXEditorField } from "@/app/video/[videoId]/edit/MDXEditorField";
 
 type UploadJob = {
   videoId: string;
@@ -116,15 +117,18 @@ export const VideoCreateForm = ({
             labelPlacement={"outside-top"}
             isRequired
           />
-          <Textarea
-            id="video-description"
-            {...register("description")}
-            classNames={{ input: "py-2" }} // heroui bug? margins very stingy
-            placeholder={"Beskrivelse"}
-            label={"Beskrivelse"}
-            labelPlacement={"outside-top"}
-            maxLength={255}
-            isRequired
+          <MDXEditorField
+            name="description"
+            control={control}
+            label="Beskrivelse"
+            placeholder="Beskrivelse"
+            rules={{
+              required: "Beskrivelse er påkrevd.",
+              maxLength: {
+                value: 2048,
+                message: "Beskrivelsen kan ikke være lengre enn 2048 tegn.",
+              },
+            }}
           />
           <Categories control={control} name={"categories"} categories={categories} />
           <SeriesFields

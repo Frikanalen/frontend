@@ -4,7 +4,8 @@ import { FormError } from "@/components/form/FormError";
 import { Series } from "@/generated/frikanalenDjangoAPI.schemas";
 import { SeriesUpdateMutationBody, useSeriesPartialUpdate } from "@/generated/series/series";
 import { useApiFormSubmit } from "@/lib/useApiFormSubmit";
-import { Button, Form, Input, Textarea } from "@heroui/react";
+import { MDXEditorField } from "@/app/video/[videoId]/edit/MDXEditorField";
+import { Button, Form, Input } from "@heroui/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -47,13 +48,16 @@ export const SeriesEditForm = ({ series }: { series: Series }) => {
           maxLength={255}
           isRequired
         />
-        <Textarea
-          {...form.register("synopsis")}
+        <MDXEditorField
+          control={form.control}
           name="synopsis"
           label="Beskrivelse"
-          labelPlacement="outside-top"
-          defaultValue={series.synopsis ?? ""}
-          maxLength={2048}
+          rules={{
+            maxLength: {
+              value: 2048,
+              message: "Beskrivelsen kan ikke være lengre enn 2048 tegn.",
+            },
+          }}
         />
         <div className="flex justify-end">
           <Button type="submit" color="primary" isLoading={isSubmitting}>
