@@ -5,19 +5,27 @@ import { Video } from "@/generated/frikanalenDjangoAPI.schemas";
 import { useVideosList, useVideosPartialUpdate } from "@/generated/videos/videos";
 import { formatApiError } from "@/lib/formatApiError";
 import { orderSeriesEpisodes } from "@/app/series/orderSeriesEpisodes";
+import { AddSeriesVideosModal } from "@/app/organization/[organizationId]/series/AddSeriesVideosModal";
 import { Button, Spinner } from "@heroui/react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
 const EPISODE_LIMIT = 1000;
 
-export const SeriesEpisodeOrder = ({ seriesId }: { seriesId: number }) => {
+export const SeriesEpisodeOrder = ({
+  organizationId,
+  seriesId,
+}: {
+  organizationId: number;
+  seriesId: number;
+}) => {
   const list = useVideosList({ series: seriesId, limit: EPISODE_LIMIT });
   const update = useVideosPartialUpdate();
   const [orderedIds, setOrderedIds] = useState<number[] | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const [addedCount, setAddedCount] = useState<number | null>(null);
 
   const fetchedEpisodes = useMemo(
     () => orderSeriesEpisodes(list.data?.data.results ?? []),
@@ -47,11 +55,13 @@ export const SeriesEpisodeOrder = ({ seriesId }: { seriesId: number }) => {
     setOrderedIds(next);
     setError(null);
     setSaved(false);
+    setAddedCount(null);
   };
 
   const save = async () => {
     setError(null);
     setSaved(false);
+    setAddedCount(null);
     setIsSaving(true);
 
     try {
@@ -92,18 +102,38 @@ export const SeriesEpisodeOrder = ({ seriesId }: { seriesId: number }) => {
 
   return (
     <section className="space-y-4 rounded-large border border-default-200 p-4 sm:p-6">
-      <div>
-        <h2 className="text-xl font-bold">Episoderekkefølge</h2>
-        <p className="text-sm text-foreground-500">
-          Flytt episodene til ønsket rekkefølge. Ved lagring nummereres hele serien fortløpende fra
-          1.
-        </p>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h2 className="text-xl font-bold">Episoderekkefølge</h2>
+          <p className="text-sm text-foreground-500">
+            Flytt episodene til ønsket rekkefølge. Ved lagring nummereres hele serien fortløpende
+            fra 1.
+          </p>
+        </div>
+        <AddSeriesVideosModal
+          organizationId={organizationId}
+          seriesId={seriesId}
+          episodes={episodes}
+          isDisabled={list.isPending || list.isError || isTruncated}
+          onAdded={(count) => {
+            setOrderedIds(null);
+            setSaved(false);
+            setAddedCount(count);
+          }}
+        />
       </div>
 
       <FormError error={error} />
       {saved && (
         <p role="status" className="text-sm text-success-700">
           Episoderekkefølgen er lagret.
+        </p>
+      )}
+      {addedCount !== null && (
+        <p role="status" className="text-sm text-success-700">
+          {addedCount === 1
+            ? "1 video ble lagt til i serien."
+            : `${addedCount} videoer ble lagt til i serien.`}
         </p>
       )}
 

@@ -50,7 +50,7 @@ export default async function Page({
         </Link>
       </div>
       <SeriesEditForm series={series} />
-      <SeriesEpisodeOrder seriesId={series.id} />
+      <SeriesEpisodeOrder organizationId={organizationNumber} seriesId={series.id} />
     </section>
   );
 }

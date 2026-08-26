@@ -23,6 +23,20 @@ vi.mock("@/generated/videos/videos", () => ({
   useVideosPartialUpdate: () => ({ mutateAsync: api.update }),
 }));
 
+vi.mock("./AddSeriesVideosModal", () => ({
+  AddSeriesVideosModal: ({
+    isDisabled,
+    onAdded,
+  }: {
+    isDisabled: boolean;
+    onAdded: (_count: number) => void;
+  }) => (
+    <button disabled={isDisabled} onClick={() => onAdded(2)}>
+      Legg til i serien
+    </button>
+  ),
+}));
+
 vi.mock("next/link", () => ({
   default: ({ children, href, ...props }: { children: ReactNode; href: string }) => (
     <a href={href} {...props}>
@@ -70,7 +84,7 @@ describe("SeriesEpisodeOrder", () => {
     api.videos = [video(3, "Uten nummer", null), video(2, "Andre", 5), video(1, "Første", 2)];
     api.count = api.videos.length;
 
-    render(<SeriesEpisodeOrder seriesId={4} />);
+    render(<SeriesEpisodeOrder organizationId={9} seriesId={4} />);
 
     const rows = screen.getAllByRole("listitem");
     expect(within(rows[0]).getByText("Første")).toBeDefined();
@@ -85,7 +99,7 @@ describe("SeriesEpisodeOrder", () => {
     api.videos = [video(1, "Første", 1), video(2, "Andre", 2)];
     api.count = api.videos.length;
 
-    render(<SeriesEpisodeOrder seriesId={4} />);
+    render(<SeriesEpisodeOrder organizationId={9} seriesId={4} />);
 
     expect(
       (screen.getByRole("button", { name: "Lagre rekkefølge" }) as HTMLButtonElement).disabled,
@@ -109,7 +123,7 @@ describe("SeriesEpisodeOrder", () => {
     api.videos = [video(1, "Første", 2), video(2, "Andre", 5)];
     api.count = api.videos.length;
 
-    render(<SeriesEpisodeOrder seriesId={4} />);
+    render(<SeriesEpisodeOrder organizationId={9} seriesId={4} />);
     fireEvent.click(screen.getByRole("button", { name: "Lagre rekkefølge" }));
 
     await waitFor(() => expect(api.update).toHaveBeenCalledTimes(4));
@@ -121,7 +135,7 @@ describe("SeriesEpisodeOrder", () => {
     api.videos = [video(1, "Første", 2)];
     api.count = 1001;
 
-    render(<SeriesEpisodeOrder seriesId={4} />);
+    render(<SeriesEpisodeOrder organizationId={9} seriesId={4} />);
 
     expect(screen.getByRole("alert").textContent).toContain("flere enn 1000 episoder");
     expect(
@@ -134,11 +148,19 @@ describe("SeriesEpisodeOrder", () => {
     api.count = 1;
     api.update.mockRejectedValueOnce(new Error("Episoden kunne ikke lagres."));
 
-    render(<SeriesEpisodeOrder seriesId={4} />);
+    render(<SeriesEpisodeOrder organizationId={9} seriesId={4} />);
     fireEvent.click(screen.getByRole("button", { name: "Lagre rekkefølge" }));
 
     await waitFor(() =>
       expect(screen.getByRole("alert").textContent).toBe("Episoden kunne ikke lagres."),
     );
+  });
+
+  it("reports videos added through the picker", () => {
+    render(<SeriesEpisodeOrder organizationId={9} seriesId={4} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Legg til i serien" }));
+
+    expect(screen.getByRole("status").textContent).toBe("2 videoer ble lagt til i serien.");
   });
 });
