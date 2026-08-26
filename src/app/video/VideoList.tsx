@@ -41,10 +41,6 @@ const VideoRow = ({
   // sits inside one series or one organization switches off the facts its own
   // heading has already given.
   //
-  // `header`, the one-line summary, is deliberately not among them. Four
-  // videos in five don't have one, and of those that do a fair number repeat
-  // the title verbatim, so a line that appeared on one row in five would make
-  // the list look ragged for something most rows can't say.
   const facts: ReactNode[] = [];
   if (video.episodeNumber) facts.push(`Episode ${video.episodeNumber}`);
   if (video.createdTime)

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeAll, afterAll, beforeEach, afterEach } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { MetadataCurrentAndNext } from "./metadataCurrentAndNext";
 import { ScheduleitemRead } from "@/generated/frikanalenDjangoAPI.schemas";
 
@@ -25,12 +25,12 @@ const program = (id: number, name: string, organization: string, from: string, t
     endtime: `2026-08-21T${to}:00+02:00`,
     duration: "01:00:00",
     schedulereason: 3,
-  displaceable: false,
-  weeklySlot: null,
+    displaceable: false,
+    weeklySlot: null,
     video: {
       id: id * 10,
       name,
-      header: "",
+      description: `${name} — programbeskrivelse`,
       organization: { id, name: organization, description: "" },
       categories: [],
       files: [],
@@ -72,6 +72,8 @@ describe("MetadataCurrentAndNext", () => {
     expect(screen.getByText("Nyhetssendingen")).toBeDefined();
     expect(screen.getByText("20:00")).toBeDefined();
     expect(screen.getByText("Kveldens konsert")).toBeDefined();
+    fireEvent.click(screen.getAllByRole("button")[0]);
+    expect(screen.getByText("Nyhetssendingen — programbeskrivelse")).toBeDefined();
     expect(organizationLinks()).toEqual(["/organization/1", "/organization/2"]);
   });
 
