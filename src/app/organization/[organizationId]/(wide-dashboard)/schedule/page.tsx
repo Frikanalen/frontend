@@ -19,7 +19,7 @@ export default async function Page({ params }: { params: Promise<{ organizationI
   if (!user) redirect("/login");
   if (!user.isStaff && !profileIsAdminOrMember(organizationIdNumber, user)) forbidden();
 
-  const organizationResponse = await organizationRetrieve(organizationId, { headers });
+  const organizationResponse = await organizationRetrieve(organizationIdNumber, { headers });
   if (organizationResponse.status === 404) notFound();
   const organization = organizationResponse.data;
   const policy = (await schedulingPolicyRetrieve()).data;

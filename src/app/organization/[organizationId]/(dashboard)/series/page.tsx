@@ -15,7 +15,7 @@ export default async function Page({ params }: { params: Promise<{ organizationI
   if (!user) return redirect("/login");
   if (!profileIsAdminOrMember(id, user)) return forbidden();
 
-  const response = await organizationRetrieve(organizationId, { headers });
+  const response = await organizationRetrieve(id, { headers });
   if (response.status === 404) return notFound();
   if (response.status !== 200) throw new Error(`Kunne ikke hente organisasjon ${organizationId}`);
 

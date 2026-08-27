@@ -8,13 +8,14 @@ import { seriesList } from "@/generated/series/series";
 export default async function Page({ params }: { params: Promise<{ organizationId: string }> }) {
   const { data: categories } = await categoriesList();
   const { organizationId } = await params;
+  const organizationIdNum = parseInt(organizationId);
 
   const headers = await getCookiesFromRequest();
-  const { data: organization } = await organizationRetrieve(organizationId, {
+  const { data: organization } = await organizationRetrieve(organizationIdNum, {
     headers,
   });
   const { data: series } = await seriesList(
-    { organization: parseInt(organizationId), limit: 100 },
+    { organization: organizationIdNum, limit: 100 },
     { headers },
   );
 
@@ -22,7 +23,7 @@ export default async function Page({ params }: { params: Promise<{ organizationI
     <PageShell>
       <PageShellBody className={"space-y-4"}>
         <VideoCreateForm
-          organizationId={parseInt(organizationId)}
+          organizationId={organizationIdNum}
           organizationName={organization.name}
           categories={categories.results}
           series={series.results}

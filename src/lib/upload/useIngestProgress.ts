@@ -20,7 +20,7 @@ export const useIngestProgress = (
   videoId: string,
   enabled: boolean,
 ): { description: IngestDescription | null; isError: boolean } => {
-  const { data, isError } = useVideosIngestRetrieve(videoId, {
+  const { data, isError } = useVideosIngestRetrieve(Number(videoId), {
     query: {
       enabled,
       refetchInterval: (query) => {

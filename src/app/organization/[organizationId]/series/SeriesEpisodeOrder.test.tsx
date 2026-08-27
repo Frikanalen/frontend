@@ -111,10 +111,10 @@ describe("SeriesEpisodeOrder", () => {
     fireEvent.click(screen.getByRole("button", { name: "Lagre rekkefølge" }));
 
     await waitFor(() => expect(api.update).toHaveBeenCalledTimes(4));
-    expect(api.update).toHaveBeenCalledWith({ id: "2", data: { episodeNumber: null } });
-    expect(api.update).toHaveBeenCalledWith({ id: "1", data: { episodeNumber: null } });
-    expect(api.update).toHaveBeenCalledWith({ id: "2", data: { episodeNumber: 1 } });
-    expect(api.update).toHaveBeenCalledWith({ id: "1", data: { episodeNumber: 2 } });
+    expect(api.update).toHaveBeenCalledWith({ id: 2, data: { episodeNumber: null } });
+    expect(api.update).toHaveBeenCalledWith({ id: 1, data: { episodeNumber: null } });
+    expect(api.update).toHaveBeenCalledWith({ id: 2, data: { episodeNumber: 1 } });
+    expect(api.update).toHaveBeenCalledWith({ id: 1, data: { episodeNumber: 2 } });
     expect(api.refetch).toHaveBeenCalledOnce();
     expect((await screen.findByRole("status")).textContent).toBe("Episoderekkefølgen er lagret.");
   });
@@ -127,8 +127,8 @@ describe("SeriesEpisodeOrder", () => {
     fireEvent.click(screen.getByRole("button", { name: "Lagre rekkefølge" }));
 
     await waitFor(() => expect(api.update).toHaveBeenCalledTimes(4));
-    expect(api.update).toHaveBeenCalledWith({ id: "1", data: { episodeNumber: 1 } });
-    expect(api.update).toHaveBeenCalledWith({ id: "2", data: { episodeNumber: 2 } });
+    expect(api.update).toHaveBeenCalledWith({ id: 1, data: { episodeNumber: 1 } });
+    expect(api.update).toHaveBeenCalledWith({ id: 2, data: { episodeNumber: 2 } });
   });
 
   it("does not save an incomplete list", () => {

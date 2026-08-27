@@ -11,11 +11,11 @@ export default async function Page({ params }: { params: Promise<{ videoId: stri
   const { videoId } = await params;
   const headers = await getCookiesFromRequest();
 
-  const { data: video } = await videosRetrieve(videoId, { headers });
+  const { data: video } = await videosRetrieve(Number(videoId), { headers });
   const user = await getUserOrNull(headers);
   const mayEdit = profileIsAdminOrMember(video.organization.id, user);
   if (!mayEdit) return forbidden();
-  const { data: uploadToken } = await videosUploadTokenRetrieve(videoId, {
+  const { data: uploadToken } = await videosUploadTokenRetrieve(Number(videoId), {
     headers,
   });
 

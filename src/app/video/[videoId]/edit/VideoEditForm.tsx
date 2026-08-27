@@ -34,7 +34,7 @@ export const VideoEditForm = ({ video, series }: { video: Video; series: Series[
   };
 
   const { onSubmit, error, isSubmitting } = useApiFormSubmit(form, async (payload) => {
-    const update = await videosPartialUpdate(video.id.toString(), payload);
+    const update = await videosPartialUpdate(video.id, payload);
     if (update.status !== 200)
       throw new Error(`Failed to update video ${video.id} with status ${update.status}`);
     await editAction(video.id);

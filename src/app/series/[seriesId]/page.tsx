@@ -10,7 +10,7 @@ type SeriesPageProps = { params: Promise<{ seriesId: string }> };
 
 export async function generateMetadata({ params }: SeriesPageProps): Promise<Metadata> {
   const { seriesId } = await params;
-  const response = await ssrSeriesRetrieve(seriesId, { cache: "no-store" });
+  const response = await ssrSeriesRetrieve(Number(seriesId), { cache: "no-store" });
   if (response.status !== 200 || !response.data.organization.fkmember)
     return { title: "Frikanalen" };
   return {
@@ -27,7 +27,7 @@ export async function generateMetadata({ params }: SeriesPageProps): Promise<Met
 export default async function Page({ params }: SeriesPageProps) {
   const { seriesId } = await params;
   const [seriesResponse, videosResponse] = await Promise.all([
-    ssrSeriesRetrieve(seriesId, { cache: "no-store" }),
+    ssrSeriesRetrieve(Number(seriesId), { cache: "no-store" }),
     ssrVideosList(
       { series: Number(seriesId), publish_on_web: true, ordering: "id", limit: 100 },
       { cache: "no-store" },

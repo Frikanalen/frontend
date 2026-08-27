@@ -51,7 +51,7 @@ export const VideoCreateForm = ({
     const videoId = response.data.id.toString();
 
     try {
-      const tokenResponse = await videosUploadTokenRetrieve(videoId);
+      const tokenResponse = await videosUploadTokenRetrieve(response.data.id);
       if (!tokenResponse.data.uploadToken) throw new Error("No upload token returned");
       setUploadJob({
         videoId,

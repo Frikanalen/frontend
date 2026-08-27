@@ -20,7 +20,7 @@ export type VideoPageProps = {
 export async function generateMetadata({ params }: VideoPageProps): Promise<Metadata> {
   const { videoId } = await params;
 
-  const { data: video, status } = await ssrVideosRetrieve(videoId, {
+  const { data: video, status } = await ssrVideosRetrieve(Number(videoId), {
     cache: "no-store",
     next: { tags: [`video:${videoId}`] },
   });
@@ -49,7 +49,7 @@ export default async function VideoPage({ params }: VideoPageProps) {
   const { videoId } = await params;
   const headers = await getCookiesFromRequest();
 
-  const { data: video, status } = await ssrVideosRetrieve(videoId, {
+  const { data: video, status } = await ssrVideosRetrieve(Number(videoId), {
     headers,
     cache: "no-cache",
     next: { tags: [`video:${videoId}`] },

@@ -14,7 +14,7 @@ export default async function Page({ params }: { params: Promise<{ organizationI
   const user = await getUserOrNull(headers);
   if (!user) return redirect("/login");
 
-  const orgRes = await organizationRetrieve(organizationId, { headers });
+  const orgRes = await organizationRetrieve(organizationIdNum, { headers });
   if (orgRes.status === 404) return notFound();
 
   const organization = orgRes.data;

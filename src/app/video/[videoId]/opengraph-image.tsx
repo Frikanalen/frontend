@@ -9,7 +9,7 @@ export const contentTypes = "image/jpeg";
 export default async function Image({ params }: { params: Promise<{ videoId: string }> }) {
   const { videoId } = await params;
 
-  const { data: video, status } = await ssrVideosRetrieve(videoId);
+  const { data: video, status } = await ssrVideosRetrieve(Number(videoId));
   if (status !== 200)
     throw new Error(
       `Unexpected status code ${status} when fetching video ${videoId} from ssrVideosRetrieve`,

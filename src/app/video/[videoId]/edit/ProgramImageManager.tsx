@@ -82,7 +82,7 @@ export const ProgramImageManager = ({
     setActionError(undefined);
     setActionImageId(image.id);
     try {
-      await videosImagesPartialUpdate(videoId, image.id.toString(), { role: nextRole });
+      await videosImagesPartialUpdate(Number(videoId), image.id, { role: nextRole });
       setRoleOverrides((current) => ({ ...current, [image.id]: nextRole }));
       router.refresh();
     } catch (error) {
@@ -96,7 +96,7 @@ export const ProgramImageManager = ({
     setActionError(undefined);
     setActionImageId(image.id);
     try {
-      await videosImagesDestroy(videoId, image.id.toString());
+      await videosImagesDestroy(Number(videoId), image.id);
       setUnpublishedImageIds((current) => new Set(current).add(image.id));
       router.refresh();
     } catch (error) {

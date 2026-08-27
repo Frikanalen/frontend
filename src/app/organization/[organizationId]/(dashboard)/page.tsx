@@ -18,7 +18,7 @@ type OrgPageProps = { params: Promise<{ organizationId: string }> };
 export async function generateMetadata({ params }: OrgPageProps): Promise<Metadata> {
   const { organizationId } = await params;
 
-  const { data: organization, status } = await ssrOrganizationRetrieve(organizationId, {
+  const { data: organization, status } = await ssrOrganizationRetrieve(Number(organizationId), {
     cache: "no-store",
   });
   if (status !== 200)
@@ -44,7 +44,7 @@ export default async function Page({ params }: OrgPageProps) {
   if (isNaN(organizationIdNum)) return notFound();
 
   const headers = await getCookiesFromRequest();
-  const { data: organization } = await organizationRetrieve(organizationId, {
+  const { data: organization } = await organizationRetrieve(organizationIdNum, {
     headers,
   });
   const profile = await getUserOrNull(headers);

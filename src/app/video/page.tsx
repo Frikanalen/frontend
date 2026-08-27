@@ -29,7 +29,7 @@ type ArchivePageProps = {
  * and would otherwise ask for it twice on every request.
  */
 const loadScope = cache(async (organization: number): Promise<ArchiveScope | null> => {
-  const { data, status } = await ssrOrganizationRetrieve(String(organization), {
+  const { data, status } = await ssrOrganizationRetrieve(organization, {
     cache: "no-store",
   });
 

@@ -24,8 +24,8 @@ export default async function Page({
   if (!profileIsAdminOrMember(organizationNumber, user)) return forbidden();
 
   const [organizationResponse, seriesResponse] = await Promise.all([
-    organizationRetrieve(organizationId, { headers }),
-    ssrSeriesRetrieve(seriesId, { headers, cache: "no-store" }),
+    organizationRetrieve(organizationNumber, { headers }),
+    ssrSeriesRetrieve(seriesNumber, { headers, cache: "no-store" }),
   ]);
   if (organizationResponse.status === 404 || seriesResponse.status === 404) return notFound();
   if (organizationResponse.status !== 200)
