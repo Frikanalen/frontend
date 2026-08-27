@@ -4,10 +4,10 @@ import { SeriesManager } from "@/app/organization/[organizationId]/series/Series
 import { getCookiesFromRequest } from "@/lib/getCookiesFromRequest";
 import { organizationRetrieve } from "@/generated/organization/organization";
 import { forbidden, notFound, redirect } from "next/navigation";
-import { OrganizationParams, parseParams } from "@/lib/routeParams";
+import { OrganizationParams, parseParamsOr404 } from "@/lib/routeParams";
 
 export default async function Page({ params }: { params: Promise<{ organizationId: string }> }) {
-  const { organizationId } = await parseParams(OrganizationParams, params);
+  const { organizationId } = await parseParamsOr404(OrganizationParams, params);
 
   const headers = await getCookiesFromRequest();
   const user = await getUserOrNull(headers);

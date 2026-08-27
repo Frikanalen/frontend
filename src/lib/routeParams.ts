@@ -48,7 +48,7 @@ export const ScheduleDateParams = z
  * URL that simply names nothing. Callers get numbers back, so the raw string
  * stays out of scope and cannot reach the generated client by accident.
  */
-export const parseParams = async <T extends z.ZodType>(
+export const parseParamsOr404 = async <T extends z.ZodType>(
   schema: T,
   params: Promise<unknown>,
 ): Promise<z.infer<T>> => {

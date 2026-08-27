@@ -5,13 +5,13 @@ import { SchedulePlanner } from "@/app/schedule/plan/SchedulePlanner";
 import { organizationRetrieve } from "@/generated/organization/organization";
 import { schedulingPolicyRetrieve } from "@/generated/scheduling/scheduling";
 import { forbidden, notFound, redirect } from "next/navigation";
-import { OrganizationParams, parseParams } from "@/lib/routeParams";
+import { OrganizationParams, parseParamsOr404 } from "@/lib/routeParams";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
 export default async function Page({ params }: { params: Promise<{ organizationId: string }> }) {
-  const { organizationId } = await parseParams(OrganizationParams, params);
+  const { organizationId } = await parseParamsOr404(OrganizationParams, params);
 
   const headers = await getCookiesFromRequest();
   const user = await getUserOrNull(headers);

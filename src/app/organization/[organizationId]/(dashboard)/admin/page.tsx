@@ -4,10 +4,10 @@ import { OrgAdminPage } from "@/app/organization/[organizationId]/OrgAdminPage";
 import { forbidden, notFound, redirect } from "next/navigation";
 import { profileIsAdminOrMember } from "@/app/organization/[organizationId]/admin/profileIsAdminOrMember";
 import { getUserOrNull } from "@/app/getUserOrNull";
-import { OrganizationParams, parseParams } from "@/lib/routeParams";
+import { OrganizationParams, parseParamsOr404 } from "@/lib/routeParams";
 
 export default async function Page({ params }: { params: Promise<{ organizationId: string }> }) {
-  const { organizationId } = await parseParams(OrganizationParams, params);
+  const { organizationId } = await parseParamsOr404(OrganizationParams, params);
 
   const headers = await getCookiesFromRequest();
   const user = await getUserOrNull(headers);

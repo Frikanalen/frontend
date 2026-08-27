@@ -1,6 +1,6 @@
 import { ssrVideosRetrieve } from "@/generated/ssr/videos/videos";
 import { notFound } from "next/navigation";
-import { VideoParams, parseParams } from "@/lib/routeParams";
+import { VideoParams, parseParamsOr404 } from "@/lib/routeParams";
 
 export const alt = "";
 export const size = { width: 1200, height: 630 };
@@ -8,7 +8,7 @@ export const size = { width: 1200, height: 630 };
 export const contentTypes = "image/jpeg";
 
 export default async function Image({ params }: { params: Promise<{ videoId: string }> }) {
-  const { videoId } = await parseParams(VideoParams, params);
+  const { videoId } = await parseParamsOr404(VideoParams, params);
 
   const { data: video, status } = await ssrVideosRetrieve(videoId);
   if (status !== 200)

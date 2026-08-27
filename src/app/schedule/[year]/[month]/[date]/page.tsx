@@ -2,7 +2,7 @@ import { scheduleitemsList } from "@/generated/scheduleitems/scheduleitems";
 
 import { ScheduleNavBar } from "@/app/schedule/ScheduleNavBar";
 import { ScheduleItemList } from "@/app/schedule/ScheduleItemView";
-import { ScheduleDateParams, parseParams } from "@/lib/routeParams";
+import { ScheduleDateParams, parseParamsOr404 } from "@/lib/routeParams";
 
 export const dynamic = "force-dynamic"; // ensure Date() is evaluated at request time
 
@@ -11,7 +11,7 @@ export default async function Schedule({
 }: {
   params: Promise<{ year: string; month: string; date: string }>;
 }) {
-  const { year, month, date } = await parseParams(ScheduleDateParams, params);
+  const { year, month, date } = await parseParamsOr404(ScheduleDateParams, params);
   const data = await scheduleitemsList({ date: `${year}-${month}-${date}` });
 
   const results = data.data.results;

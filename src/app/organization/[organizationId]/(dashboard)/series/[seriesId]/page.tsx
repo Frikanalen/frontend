@@ -7,14 +7,14 @@ import { ssrSeriesRetrieve } from "@/generated/ssr/series/series";
 import { getCookiesFromRequest } from "@/lib/getCookiesFromRequest";
 import Link from "next/link";
 import { forbidden, notFound, redirect } from "next/navigation";
-import { OrganizationSeriesParams, parseParams } from "@/lib/routeParams";
+import { OrganizationSeriesParams, parseParamsOr404 } from "@/lib/routeParams";
 
 export default async function Page({
   params,
 }: {
   params: Promise<{ organizationId: string; seriesId: string }>;
 }) {
-  const { organizationId, seriesId } = await parseParams(OrganizationSeriesParams, params);
+  const { organizationId, seriesId } = await parseParamsOr404(OrganizationSeriesParams, params);
 
   const headers = await getCookiesFromRequest();
   const user = await getUserOrNull(headers);

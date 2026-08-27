@@ -5,12 +5,12 @@ import { orderSeriesEpisodes } from "@/app/series/orderSeriesEpisodes";
 import { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { SeriesParams, parseParams } from "@/lib/routeParams";
+import { SeriesParams, parseParamsOr404 } from "@/lib/routeParams";
 
 type SeriesPageProps = { params: Promise<{ seriesId: string }> };
 
 export async function generateMetadata({ params }: SeriesPageProps): Promise<Metadata> {
-  const { seriesId } = await parseParams(SeriesParams, params);
+  const { seriesId } = await parseParamsOr404(SeriesParams, params);
   const response = await ssrSeriesRetrieve(seriesId, { cache: "no-store" });
   if (response.status !== 200 || !response.data.organization.fkmember)
     return { title: "Frikanalen" };
@@ -26,7 +26,7 @@ export async function generateMetadata({ params }: SeriesPageProps): Promise<Met
 }
 
 export default async function Page({ params }: SeriesPageProps) {
-  const { seriesId } = await parseParams(SeriesParams, params);
+  const { seriesId } = await parseParamsOr404(SeriesParams, params);
   const [seriesResponse, videosResponse] = await Promise.all([
     ssrSeriesRetrieve(seriesId, { cache: "no-store" }),
     ssrVideosList(
