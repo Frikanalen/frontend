@@ -22,7 +22,7 @@ import { format } from "date-fns";
 import { nb } from "date-fns/locale/nb";
 import { FormEvent, useMemo, useState } from "react";
 import { DURATION_PATTERN } from "./duration";
-import { openDates, osloDateTime, plannerRows } from "./plannerRows";
+import { openDates, osloDateTime, plannerItemBounds, plannerRows } from "./plannerRows";
 
 type PickedVideo = Pick<Video, "id" | "name" | "duration">;
 
@@ -174,6 +174,7 @@ export const SchedulePlanner = ({
   };
 
   const renderItem = (item: ScheduleitemRead, insideSlot: boolean) => {
+    const bounds = plannerItemBounds(item, date);
     const canManage =
       isStaff || Boolean(item.video && manageableOrganizationIds.has(item.video.organization.id));
     return (
@@ -188,7 +189,7 @@ export const SchedulePlanner = ({
         <div className="flex flex-wrap items-start gap-2">
           <div className="min-w-0">
             <div className="font-semibold">
-              {formatOsloTime(item.starttime)}–{formatOsloTime(item.endtime)}{" "}
+              {formatOsloTime(bounds.start)}–{formatOsloTime(bounds.end)}{" "}
               {item.video?.name || item.defaultName || "Uten programnavn"}
             </div>
             <div className="text-sm text-default-600">
@@ -203,16 +204,13 @@ export const SchedulePlanner = ({
               <Button
                 color="primary"
                 size="sm"
-                onPress={() => pickSlot(new Date(item.starttime), new Date(item.endtime), item)}
+                onPress={() => pickSlot(bounds.start, bounds.end, item)}
               >
                 Erstatt
               </Button>
             ) : null}
             {canManage && item.video && !item.displaceable ? (
-              <Button
-                size="sm"
-                onPress={() => pickSlot(new Date(item.starttime), new Date(item.endtime), item)}
-              >
+              <Button size="sm" onPress={() => pickSlot(bounds.start, bounds.end, item)}>
                 Endre
               </Button>
             ) : null}
@@ -312,7 +310,7 @@ export const SchedulePlanner = ({
                         {row.items.map((item) => renderItem(item, true))}
                       </ol>
                     ) : (
-                      <p className="mt-3 text-sm text-default-500">
+                      <p className="mt-3 text-sm text-foreground">
                         Ingen programmer er lagt inn i sendeflaten ennå.
                       </p>
                     )}

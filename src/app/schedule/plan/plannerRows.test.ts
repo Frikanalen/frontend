@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { ScheduleitemRead, WeeklySlotRead } from "@/generated/frikanalenDjangoAPI.schemas";
-import { openDates, osloDateTime, plannerRows } from "./plannerRows";
+import { openDates, osloDateTime, plannerItemBounds, plannerRows } from "./plannerRows";
 
 const item = (id: number, starttime: string, endtime: string): ScheduleitemRead => ({
   id,
@@ -39,6 +39,15 @@ describe("plannerRows", () => {
       "2026-08-22",
       "2026-08-23",
     ]);
+  });
+
+  it("clamps a programme crossing midnight to the selected day's lower bound", () => {
+    const crossingMidnight = item(1, "2026-08-20T23:55:00+02:00", "2026-08-21T00:25:00+02:00");
+
+    const bounds = plannerItemBounds(crossingMidnight, "2026-08-21");
+
+    expect(bounds.start.toISOString()).toBe("2026-08-20T22:00:00.000Z");
+    expect(bounds.end.toISOString()).toBe("2026-08-20T22:25:00.000Z");
   });
 
   it("turns unoccupied airtime into selectable gaps", () => {
@@ -106,13 +115,14 @@ describe("plannerRows", () => {
     expect(rows[2].kind === "gap" && rows[2].start.toISOString()).toBe("2026-08-21T11:30:00.000Z");
   });
 
-  it("drops a weekly slot whose airtime other programming has taken", () => {
+  it("keeps an empty weekly slot visible alongside overlapping programming", () => {
     const rows = plannerRows(
       [item(1, "2026-08-21T12:00:00+02:00", "2026-08-21T13:00:00+02:00")],
       [slot()],
       "2026-08-21",
     );
 
-    expect(rows.map((row) => row.kind)).toEqual(["gap", "item", "gap"]);
+    expect(rows.map((row) => row.kind)).toEqual(["gap", "item", "weeklySlot", "gap"]);
+    expect(rows[2].kind === "weeklySlot" && rows[2].items).toEqual([]);
   });
 });

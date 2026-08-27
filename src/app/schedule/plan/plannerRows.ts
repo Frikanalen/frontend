@@ -25,6 +25,16 @@ export const osloDateTime = (date: string, time: string) => {
   return new TZDate(year, month - 1, day, hour, minute, second, OSLO_TIME_ZONE);
 };
 
+export const plannerItemBounds = (item: ScheduleitemRead, date: string) => {
+  const dayStart = osloDateTime(date, "00:00");
+  const dayEnd = addDays(dayStart, 1);
+
+  return {
+    start: new Date(Math.max(new Date(item.starttime).getTime(), dayStart.getTime())),
+    end: new Date(Math.min(new Date(item.endtime).getTime(), dayEnd.getTime())),
+  };
+};
+
 export const openDates = (freezeBoundary: string, schedulingHorizon: string) => {
   const dates: string[] = [];
   let cursor = inOsloTime(freezeBoundary);
@@ -74,15 +84,6 @@ const weeklySlotRows = (
             overlaps(start, end, new Date(item.starttime), new Date(item.endtime)),
         )
         .sort((a, b) => new Date(a.starttime).getTime() - new Date(b.starttime).getTime());
-
-      // The actual schedule is authoritative: airtime taken by programming
-      // that does not belong to the slot is no longer a live reservation.
-      const taken = items.some(
-        (item) =>
-          item.weeklySlot !== slot.id &&
-          overlaps(start, end, new Date(item.starttime), new Date(item.endtime)),
-      );
-      if (members.length === 0 && taken) continue;
 
       // Programming may overrun its reservation; the row still has to cover
       // it so the surrounding gaps stay honest.
