@@ -5,31 +5,18 @@ import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { ProgramImage, RoleEnum } from "@/generated/frikanalenDjangoAPI.schemas";
-import { videosImagesDestroy, videosImagesPartialUpdate } from "@/generated/videos/videos";
+import { videosImagesDestroy } from "@/generated/videos/videos";
 import { formatApiError } from "@/lib/formatApiError";
 import { useTusUpload } from "@/lib/upload/useTusUpload";
 
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
 const ACCEPTED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 
-const imageRoles: ReadonlyArray<{ value: RoleEnum; label: string }> = [
-  { value: RoleEnum.key_art_titled, label: "Nøkkelbilde med tittel" },
-  { value: RoleEnum.key_art_untitled, label: "Nøkkelbilde uten tittel" },
-  { value: RoleEnum.show_still, label: "Programbilde" },
-  { value: RoleEnum.episode_still, label: "Episodebilde" },
-  { value: RoleEnum.show_logo, label: "Programlogo" },
-  { value: RoleEnum.behind_the_scenes, label: "Bak kulissene" },
-  { value: RoleEnum.location, label: "Sted" },
-  { value: RoleEnum.news_event, label: "Nyhetshendelse" },
-  { value: RoleEnum.portrait_headshot, label: "Portrett, hode" },
-  { value: RoleEnum.portrait_half_body, label: "Portrett, halvfigur" },
-  { value: RoleEnum.portrait_full_body, label: "Portrett, helfigur" },
-  { value: RoleEnum.cast_ensemble, label: "Gruppebilde" },
-  { value: RoleEnum.channel_logo, label: "Kanallogo" },
-  { value: RoleEnum.network_logo, label: "Nettverkslogo" },
-];
-
-const roleLabel = (role: RoleEnum) => imageRoles.find(({ value }) => value === role)?.label ?? role;
+// Frikanalen publishes one kind of image: the promotional still that TV-Anytime calls
+// urn:tva:metadata:cs:HowRelatedCS:2012:19, so the role is not the editor's to pick.
+// TODO: no RoleEnum member means "promotional still" yet; key_art_titled is a placeholder
+// until the API grows one (or carries the TVA term itself).
+const PROMOTIONAL_ROLE: RoleEnum = RoleEnum.key_art_titled;
 
 export const ProgramImageManager = ({
   videoId,
@@ -44,17 +31,16 @@ export const ProgramImageManager = ({
 }) => {
   const router = useRouter();
   const fileInput = useRef<HTMLInputElement>(null);
-  const [role, setRole] = useState<RoleEnum>(RoleEnum.key_art_titled);
-  const [roleOverrides, setRoleOverrides] = useState<Record<number, RoleEnum>>({});
   const [unpublishedImageIds, setUnpublishedImageIds] = useState<Set<number>>(new Set());
   const [actionImageId, setActionImageId] = useState<number>();
   const [actionError, setActionError] = useState<string>();
   const [selectionError, setSelectionError] = useState<string>();
-  const uploadMetadata = useMemo(() => ({ uploadKind: "program_image", imageRole: role }), [role]);
+  const uploadMetadata = useMemo(
+    () => ({ uploadKind: "program_image", imageRole: PROMOTIONAL_ROLE }),
+    [],
+  );
   const upload = useTusUpload(String(videoId), uploadToken, uploadEndpoint, uploadMetadata);
-  const images = initialImages
-    .filter(({ id }) => !unpublishedImageIds.has(id))
-    .map((image) => ({ ...image, role: roleOverrides[image.id] ?? image.role }));
+  const images = initialImages.filter(({ id }) => !unpublishedImageIds.has(id));
 
   useEffect(() => {
     if (upload.isSuccess) router.refresh();
@@ -78,20 +64,6 @@ export const ProgramImageManager = ({
     upload.onFileListChange(event);
   };
 
-  const changeRole = async (image: ProgramImage, nextRole: RoleEnum) => {
-    setActionError(undefined);
-    setActionImageId(image.id);
-    try {
-      await videosImagesPartialUpdate(videoId, image.id, { role: nextRole });
-      setRoleOverrides((current) => ({ ...current, [image.id]: nextRole }));
-      router.refresh();
-    } catch (error) {
-      setActionError(formatApiError(error));
-    } finally {
-      setActionImageId(undefined);
-    }
-  };
-
   const unpublish = async (image: ProgramImage) => {
     setActionError(undefined);
     setActionImageId(image.id);
@@ -111,8 +83,8 @@ export const ProgramImageManager = ({
       <div className="prose dark:prose-invert">
         <h2>Bilder</h2>
         <p>
-          Last opp JPEG, PNG eller WebP, opptil 10 MB. Bildet blir kontrollert av ingest og
-          publisert i mediearkivet sammen med videoen.
+          Last opp et promobilde — JPEG, PNG eller WebP, opptil 10 MB. Bildet blir kontrollert
+          av ingest og publisert i mediearkivet sammen med videoen.
         </p>
       </div>
 
@@ -124,28 +96,13 @@ export const ProgramImageManager = ({
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={image.url}
-                alt={roleLabel(image.role)}
+                alt="Promobilde"
                 loading="lazy"
                 className="h-40 w-full rounded-md bg-default-100 object-contain"
               />
               <p className="text-sm text-default-500">
                 {image.width} × {image.height} · {image.mediaType}
               </p>
-              <label className="block space-y-1 text-sm">
-                <span>Bildetype</span>
-                <select
-                  className="w-full rounded-md border border-default-300 bg-background px-3 py-2"
-                  value={image.role}
-                  disabled={actionImageId === image.id}
-                  onChange={(event) => changeRole(image, event.target.value as RoleEnum)}
-                >
-                  {imageRoles.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
               <Button
                 color="danger"
                 variant="light"
@@ -162,22 +119,6 @@ export const ProgramImageManager = ({
       {actionError && <Alert color="danger">{actionError}</Alert>}
 
       <div className="space-y-3 rounded-lg bg-default-50 p-4">
-        <label className="block max-w-md space-y-1 text-sm">
-          <span>Bildetype</span>
-          <select
-            className="w-full rounded-md border border-default-300 bg-background px-3 py-2"
-            value={role}
-            disabled={upload.isUploading}
-            onChange={(event) => setRole(event.target.value as RoleEnum)}
-          >
-            {imageRoles.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </label>
-
         <input
           ref={fileInput}
           type="file"
