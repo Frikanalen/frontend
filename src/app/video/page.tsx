@@ -6,17 +6,7 @@ import { ArchiveFilters } from "@/app/video/ArchiveFilters";
 import { ActiveFilters } from "@/app/video/ActiveFilters";
 import { ResultsSkeleton } from "@/app/video/ResultsSkeleton";
 import { SearchResults } from "@/app/video/SearchResults";
-import {
-  ARCHIVE_LENGTHS,
-  ArchiveScope,
-  ArchiveState,
-  firstValue,
-  parseCategory,
-  parseLength,
-  parseOrganization,
-  parsePage,
-  parseSort,
-} from "@/app/video/archiveSearchUrl";
+import { ARCHIVE_LENGTHS, ArchiveScope, archiveStateFrom } from "@/app/video/archiveSearchUrl";
 import { ssrOrganizationRetrieve } from "@/generated/ssr/organization/organization";
 
 type ArchivePageProps = {
@@ -36,18 +26,8 @@ const loadScope = cache(async (organization: number): Promise<ArchiveScope | nul
   return status === 200 ? { id: data.id, name: data.name } : null;
 });
 
-/** Everything the URL says about what to show, in the shape the page passes around. */
-const stateFrom = (params: Awaited<ArchivePageProps["searchParams"]>): ArchiveState => ({
-  query: firstValue(params.q).trim(),
-  organization: parseOrganization(params.organization),
-  category: parseCategory(params.category),
-  length: parseLength(params.length),
-  sort: parseSort(params.sort),
-  page: parsePage(params.page),
-});
-
 export async function generateMetadata({ searchParams }: ArchivePageProps): Promise<Metadata> {
-  const state = stateFrom(await searchParams);
+  const state = archiveStateFrom(await searchParams);
   const scope = state.organization === undefined ? null : await loadScope(state.organization);
 
   return {
@@ -86,7 +66,7 @@ export async function generateMetadata({ searchParams }: ArchivePageProps): Prom
  */
 export default async function ArchivePage({ searchParams }: ArchivePageProps) {
   const params = await searchParams;
-  const state = stateFrom(params);
+  const state = archiveStateFrom(params);
   const scope = state.organization === undefined ? null : await loadScope(state.organization);
 
   // An id that names no organization is a 404 rather than a silently dropped
