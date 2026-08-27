@@ -14,6 +14,22 @@ vi.mock("@/generated/videos/videos", () => ({ videosPartialUpdate: actions.updat
 vi.mock("./editAction", () => ({ editAction: actions.editAction }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: actions.push }) }));
 vi.mock("./MDXEditorField", () => ({ MDXEditorField: () => null }));
+vi.mock("@/app/organization/[organizationId]/create/NewSeriesModal", () => ({
+  NewSeriesModal: ({
+    organizationId,
+    isOpen,
+    onCreated,
+  }: {
+    organizationId: number;
+    isOpen: boolean;
+    onCreated: (_series: Series) => void;
+  }) =>
+    isOpen ? (
+      <button
+        onClick={() => onCreated({ id: 9, name: "Ny serie", episodeCount: 0 } as Series)}
+      >{`Opprett serie for ${organizationId}`}</button>
+    ) : null,
+}));
 
 type SelectProps = {
   children: (_item: { id: string; name: string }) => ReactNode;
@@ -84,6 +100,7 @@ const editedVideo = {
   description: "Ingress\n\nBeskrivelse",
   series: existingSeries,
   episodeNumber: 2,
+  organization: { id: 3, name: "Havnelaget" },
 } as unknown as Video;
 
 beforeEach(() => {
@@ -119,6 +136,23 @@ describe("VideoEditForm series membership", () => {
     expect(actions.update).toHaveBeenCalledWith(
       42,
       expect.objectContaining({ seriesId: null, episodeNumber: null }),
+    );
+  });
+
+  it("selects a series created from the modal as the video's first episode", async () => {
+    render(<VideoEditForm video={editedVideo} series={[existingSeries, otherSeries]} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Opprett ny serie" }));
+    fireEvent.click(screen.getByRole("button", { name: "Opprett serie for 3" }));
+
+    const seriesSelect = screen.getByLabelText("Serie (valgfritt)") as HTMLSelectElement;
+    expect(seriesSelect.value).toBe("9");
+    fireEvent.click(screen.getByRole("button", { name: "Send inn" }));
+
+    await waitFor(() => expect(actions.update).toHaveBeenCalledOnce());
+    expect(actions.update).toHaveBeenCalledWith(
+      42,
+      expect.objectContaining({ seriesId: 9, episodeNumber: 1 }),
     );
   });
 });
