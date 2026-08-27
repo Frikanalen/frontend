@@ -15,6 +15,31 @@ export const VideoParams = z.object({ videoId: pk });
 export const OrganizationSeriesParams = OrganizationParams.extend({ seriesId: pk });
 
 /**
+ * A schedule day, as the three padded segments the URL carries.
+ *
+ * Checked as a whole rather than segment by segment, because the segments only
+ * mean anything together: "2026-02-31" is three plausible numbers that name no
+ * day, and Date rolls it forward to 3 March rather than rejecting it, so the
+ * round trip through toISOString is what catches it.
+ *
+ * The segments stay strings. Zero padding is what both the API's date filter
+ * and the navigation links either side of the day want, and dropping it here
+ * only means putting it back twice.
+ */
+export const ScheduleDateParams = z
+  .object({
+    year: z.string().regex(/^\d{4}$/),
+    month: z.string().regex(/^\d{2}$/),
+    date: z.string().regex(/^\d{2}$/),
+  })
+  .refine(({ year, month, date }) => {
+    const day = `${year}-${month}-${date}`;
+    const parsed = new Date(`${day}T00:00:00Z`);
+
+    return !Number.isNaN(parsed.getTime()) && parsed.toISOString().startsWith(day);
+  });
+
+/**
  * Resolves and validates a route's params, rendering 404 for anything the
  * router matched but the API could never resolve.
  *
