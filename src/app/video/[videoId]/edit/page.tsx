@@ -10,14 +10,14 @@ import { VideoPageProps } from "@/app/video/[videoId]/page";
 import { VideoEditForm } from "@/app/video/[videoId]/edit/VideoEditForm";
 import { ProgramImageManager } from "@/app/video/[videoId]/edit/ProgramImageManager";
 import { ssrSeriesList } from "@/generated/ssr/series/series";
+import { VideoParams, parseParams } from "@/lib/routeParams";
 
 export default async function Page({ params }: VideoPageProps) {
-  const { videoId } = await params;
-  const videoIdNum = Number(videoId);
+  const { videoId } = await parseParams(VideoParams, params);
   const headers = await getCookiesFromRequest();
   const user = await getUserOrNull(headers);
 
-  const { data: video, status } = await ssrVideosRetrieve(videoIdNum, {
+  const { data: video, status } = await ssrVideosRetrieve(videoId, {
     headers,
     cache: "no-store",
   });
@@ -35,8 +35,8 @@ export default async function Page({ params }: VideoPageProps) {
       { organization: video.organization.id, limit: 100 },
       { headers, cache: "no-store" },
     ),
-    ssrVideosImagesList(videoIdNum, { limit: 100 }, { headers, cache: "no-store" }),
-    ssrVideosUploadTokenRetrieve(videoIdNum, { headers, cache: "no-store" }),
+    ssrVideosImagesList(videoId, { limit: 100 }, { headers, cache: "no-store" }),
+    ssrVideosUploadTokenRetrieve(videoId, { headers, cache: "no-store" }),
   ]);
   if (seriesResponse.status !== 200)
     throw new Error(`Unexpected status ${seriesResponse.status} when fetching series`);

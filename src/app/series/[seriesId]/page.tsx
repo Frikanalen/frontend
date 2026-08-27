@@ -5,12 +5,13 @@ import { orderSeriesEpisodes } from "@/app/series/orderSeriesEpisodes";
 import { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { SeriesParams, parseParams } from "@/lib/routeParams";
 
 type SeriesPageProps = { params: Promise<{ seriesId: string }> };
 
 export async function generateMetadata({ params }: SeriesPageProps): Promise<Metadata> {
-  const { seriesId } = await params;
-  const response = await ssrSeriesRetrieve(Number(seriesId), { cache: "no-store" });
+  const { seriesId } = await parseParams(SeriesParams, params);
+  const response = await ssrSeriesRetrieve(seriesId, { cache: "no-store" });
   if (response.status !== 200 || !response.data.organization.fkmember)
     return { title: "Frikanalen" };
   return {
@@ -25,11 +26,11 @@ export async function generateMetadata({ params }: SeriesPageProps): Promise<Met
 }
 
 export default async function Page({ params }: SeriesPageProps) {
-  const { seriesId } = await params;
+  const { seriesId } = await parseParams(SeriesParams, params);
   const [seriesResponse, videosResponse] = await Promise.all([
-    ssrSeriesRetrieve(Number(seriesId), { cache: "no-store" }),
+    ssrSeriesRetrieve(seriesId, { cache: "no-store" }),
     ssrVideosList(
-      { series: Number(seriesId), publish_on_web: true, ordering: "id", limit: 100 },
+      { series: seriesId, publish_on_web: true, ordering: "id", limit: 100 },
       { cache: "no-store" },
     ),
   ]);

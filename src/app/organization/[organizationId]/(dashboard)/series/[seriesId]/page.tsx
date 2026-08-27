@@ -7,31 +7,29 @@ import { ssrSeriesRetrieve } from "@/generated/ssr/series/series";
 import { getCookiesFromRequest } from "@/lib/getCookiesFromRequest";
 import Link from "next/link";
 import { forbidden, notFound, redirect } from "next/navigation";
+import { OrganizationSeriesParams, parseParams } from "@/lib/routeParams";
 
 export default async function Page({
   params,
 }: {
   params: Promise<{ organizationId: string; seriesId: string }>;
 }) {
-  const { organizationId, seriesId } = await params;
-  const organizationNumber = Number(organizationId);
-  const seriesNumber = Number(seriesId);
-  if (!Number.isInteger(organizationNumber) || !Number.isInteger(seriesNumber)) return notFound();
+  const { organizationId, seriesId } = await parseParams(OrganizationSeriesParams, params);
 
   const headers = await getCookiesFromRequest();
   const user = await getUserOrNull(headers);
   if (!user) return redirect("/login");
-  if (!profileIsAdminOrMember(organizationNumber, user)) return forbidden();
+  if (!profileIsAdminOrMember(organizationId, user)) return forbidden();
 
   const [organizationResponse, seriesResponse] = await Promise.all([
-    organizationRetrieve(organizationNumber, { headers }),
-    ssrSeriesRetrieve(seriesNumber, { headers, cache: "no-store" }),
+    organizationRetrieve(organizationId, { headers }),
+    ssrSeriesRetrieve(seriesId, { headers, cache: "no-store" }),
   ]);
   if (organizationResponse.status === 404 || seriesResponse.status === 404) return notFound();
   if (organizationResponse.status !== 200)
     throw new Error(`Kunne ikke hente organisasjon ${organizationId}`);
   if (seriesResponse.status !== 200) throw new Error(`Kunne ikke hente serie ${seriesId}`);
-  if (seriesResponse.data.organization.id !== organizationNumber) return notFound();
+  if (seriesResponse.data.organization.id !== organizationId) return notFound();
 
   const series = seriesResponse.data;
 
@@ -50,7 +48,7 @@ export default async function Page({
         </Link>
       </div>
       <SeriesEditForm series={series} />
-      <SeriesEpisodeOrder organizationId={organizationNumber} seriesId={series.id} />
+      <SeriesEpisodeOrder organizationId={organizationId} seriesId={series.id} />
     </section>
   );
 }

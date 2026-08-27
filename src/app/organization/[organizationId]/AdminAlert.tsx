@@ -3,7 +3,7 @@ import { Alert } from "@heroui/alert";
 import { Link } from "@heroui/react";
 
 /** A little widget to inform the user that they are an organization admin */
-export const AdminAlert = ({ organizationId }: { organizationId: string }) => {
+export const AdminAlert = ({ organizationId }: { organizationId: number }) => {
   return (
     <Alert variant={"faded"} color={"warning"}>
       <div className="flex flex-col gap-1 text-warning-600">

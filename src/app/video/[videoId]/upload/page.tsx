@@ -2,20 +2,21 @@ import { getCookiesFromRequest } from "@/lib/getCookiesFromRequest";
 import { videosRetrieve, videosUploadTokenRetrieve } from "@/generated/videos/videos";
 import { profileIsAdminOrMember } from "@/app/organization/[organizationId]/admin/profileIsAdminOrMember";
 import { forbidden } from "next/navigation";
+import { VideoParams, parseParams } from "@/lib/routeParams";
 
 import { PageShell, PageShellBody } from "@/components/layout/PageShell";
 import { getUserOrNull } from "@/app/getUserOrNull";
 import { FileUpload } from "@/components/upload/FileUpload";
 
 export default async function Page({ params }: { params: Promise<{ videoId: string }> }) {
-  const { videoId } = await params;
+  const { videoId } = await parseParams(VideoParams, params);
   const headers = await getCookiesFromRequest();
 
-  const { data: video } = await videosRetrieve(Number(videoId), { headers });
+  const { data: video } = await videosRetrieve(videoId, { headers });
   const user = await getUserOrNull(headers);
   const mayEdit = profileIsAdminOrMember(video.organization.id, user);
   if (!mayEdit) return forbidden();
-  const { data: uploadToken } = await videosUploadTokenRetrieve(Number(videoId), {
+  const { data: uploadToken } = await videosUploadTokenRetrieve(videoId, {
     headers,
   });
 

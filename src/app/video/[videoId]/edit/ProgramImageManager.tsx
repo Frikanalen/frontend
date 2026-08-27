@@ -37,7 +37,7 @@ export const ProgramImageManager = ({
   uploadToken,
   initialImages,
 }: {
-  videoId: string;
+  videoId: number;
   uploadEndpoint: string;
   uploadToken: string;
   initialImages: ProgramImage[];
@@ -51,7 +51,7 @@ export const ProgramImageManager = ({
   const [actionError, setActionError] = useState<string>();
   const [selectionError, setSelectionError] = useState<string>();
   const uploadMetadata = useMemo(() => ({ uploadKind: "program_image", imageRole: role }), [role]);
-  const upload = useTusUpload(videoId, uploadToken, uploadEndpoint, uploadMetadata);
+  const upload = useTusUpload(String(videoId), uploadToken, uploadEndpoint, uploadMetadata);
   const images = initialImages
     .filter(({ id }) => !unpublishedImageIds.has(id))
     .map((image) => ({ ...image, role: roleOverrides[image.id] ?? image.role }));
@@ -82,7 +82,7 @@ export const ProgramImageManager = ({
     setActionError(undefined);
     setActionImageId(image.id);
     try {
-      await videosImagesPartialUpdate(Number(videoId), image.id, { role: nextRole });
+      await videosImagesPartialUpdate(videoId, image.id, { role: nextRole });
       setRoleOverrides((current) => ({ ...current, [image.id]: nextRole }));
       router.refresh();
     } catch (error) {
@@ -96,7 +96,7 @@ export const ProgramImageManager = ({
     setActionError(undefined);
     setActionImageId(image.id);
     try {
-      await videosImagesDestroy(Number(videoId), image.id);
+      await videosImagesDestroy(videoId, image.id);
       setUnpublishedImageIds((current) => new Set(current).add(image.id));
       router.refresh();
     } catch (error) {

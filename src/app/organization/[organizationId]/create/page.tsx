@@ -4,18 +4,18 @@ import { getCookiesFromRequest } from "@/lib/getCookiesFromRequest";
 import { organizationRetrieve } from "@/generated/organization/organization";
 import { PageShell, PageShellBody } from "@/components/layout/PageShell";
 import { seriesList } from "@/generated/series/series";
+import { OrganizationParams, parseParams } from "@/lib/routeParams";
 
 export default async function Page({ params }: { params: Promise<{ organizationId: string }> }) {
   const { data: categories } = await categoriesList();
-  const { organizationId } = await params;
-  const organizationIdNum = parseInt(organizationId);
+  const { organizationId } = await parseParams(OrganizationParams, params);
 
   const headers = await getCookiesFromRequest();
-  const { data: organization } = await organizationRetrieve(organizationIdNum, {
+  const { data: organization } = await organizationRetrieve(organizationId, {
     headers,
   });
   const { data: series } = await seriesList(
-    { organization: organizationIdNum, limit: 100 },
+    { organization: organizationId, limit: 100 },
     { headers },
   );
 
@@ -23,7 +23,7 @@ export default async function Page({ params }: { params: Promise<{ organizationI
     <PageShell>
       <PageShellBody className={"space-y-4"}>
         <VideoCreateForm
-          organizationId={organizationIdNum}
+          organizationId={organizationId}
           organizationName={organization.name}
           categories={categories.results}
           series={series.results}
