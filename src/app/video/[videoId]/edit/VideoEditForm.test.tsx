@@ -104,7 +104,7 @@ describe("VideoEditForm series membership", () => {
 
     await waitFor(() => expect(actions.update).toHaveBeenCalledOnce());
     expect(actions.update).toHaveBeenCalledWith(
-      "42",
+      42,
       expect.objectContaining({ seriesId: 8, episodeNumber: null }),
     );
   });
@@ -117,7 +117,7 @@ describe("VideoEditForm series membership", () => {
 
     await waitFor(() => expect(actions.update).toHaveBeenCalledOnce());
     expect(actions.update).toHaveBeenCalledWith(
-      "42",
+      42,
       expect.objectContaining({ seriesId: null, episodeNumber: null }),
     );
   });

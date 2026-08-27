@@ -172,17 +172,17 @@ describe("AddSeriesVideosModal", () => {
 
     await waitFor(() => expect(api.update).toHaveBeenCalledTimes(5));
     expect(api.update).toHaveBeenNthCalledWith(1, {
-      id: "2",
+      id: 2,
       data: { episodeNumber: null },
     });
-    expect(api.update).toHaveBeenCalledWith({ id: "2", data: { episodeNumber: 2 } });
-    expect(api.update).toHaveBeenCalledWith({ id: "3", data: { episodeNumber: 3 } });
+    expect(api.update).toHaveBeenCalledWith({ id: 2, data: { episodeNumber: 2 } });
+    expect(api.update).toHaveBeenCalledWith({ id: 3, data: { episodeNumber: 3 } });
     expect(api.update).toHaveBeenCalledWith({
-      id: "10",
+      id: 10,
       data: { seriesId: 4, episodeNumber: 4 },
     });
     expect(api.update).toHaveBeenCalledWith({
-      id: "11",
+      id: 11,
       data: { seriesId: 4, episodeNumber: 5 },
     });
     expect(api.invalidate).toHaveBeenCalledWith({ queryKey: ["/api/videos"] });

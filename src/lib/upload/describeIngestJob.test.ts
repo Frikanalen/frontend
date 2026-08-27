@@ -7,6 +7,7 @@ const NOW = new Date("2026-08-18T12:00:00Z").getTime();
 const job = (overrides: Partial<IngestJob> = {}): IngestJob => ({
   video: 1,
   state: IngestStateEnum.transcoding,
+  claimedBy: null,
   percentageDone: 50,
   updatedTime: new Date(NOW).toISOString(),
   ...overrides,

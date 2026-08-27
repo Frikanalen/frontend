@@ -76,7 +76,7 @@ export const SeriesEpisodeOrder = ({
             ? []
             : [
                 update.mutateAsync({
-                  id: video.id.toString(),
+                  id: video.id,
                   data: { episodeNumber: null },
                 }),
               ],
@@ -85,7 +85,7 @@ export const SeriesEpisodeOrder = ({
       await Promise.all(
         changedEpisodes.map(({ video, episodeNumber }) =>
           update.mutateAsync({
-            id: video.id.toString(),
+            id: video.id,
             data: { episodeNumber },
           }),
         ),

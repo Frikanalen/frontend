@@ -16,7 +16,7 @@ export const FileUpload = ({
   initialFile,
   autoStart = false,
 }: {
-  videoId: string;
+  videoId: number;
   uploadEndpoint: string;
   uploadToken: string | undefined;
   initialFile?: File;
@@ -35,7 +35,7 @@ export const FileUpload = ({
     isError,
     error,
     isSuccess,
-  } = useTusUpload(videoId, uploadToken, uploadEndpoint, undefined, initialFile);
+  } = useTusUpload(String(videoId), uploadToken, uploadEndpoint, undefined, initialFile);
 
   useEffect(() => {
     if (autoStart && isReady) start();

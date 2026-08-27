@@ -115,7 +115,7 @@ describe("SeriesEditForm", () => {
 
     await waitFor(() =>
       expect(api.mutateAsync).toHaveBeenCalledWith({
-        id: "4",
+        id: 4,
         data: { name: "Havna", synopsis: "Nye historier." },
       }),
     );

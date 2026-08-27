@@ -7,21 +7,19 @@ import { ssrSeriesRetrieve } from "@/generated/ssr/series/series";
 import { getCookiesFromRequest } from "@/lib/getCookiesFromRequest";
 import Link from "next/link";
 import { forbidden, notFound, redirect } from "next/navigation";
+import { OrganizationSeriesParams, parseParamsOr404 } from "@/lib/routeParams";
 
 export default async function Page({
   params,
 }: {
   params: Promise<{ organizationId: string; seriesId: string }>;
 }) {
-  const { organizationId, seriesId } = await params;
-  const organizationNumber = Number(organizationId);
-  const seriesNumber = Number(seriesId);
-  if (!Number.isInteger(organizationNumber) || !Number.isInteger(seriesNumber)) return notFound();
+  const { organizationId, seriesId } = await parseParamsOr404(OrganizationSeriesParams, params);
 
   const headers = await getCookiesFromRequest();
   const user = await getUserOrNull(headers);
   if (!user) return redirect("/login");
-  if (!profileIsAdminOrMember(organizationNumber, user)) return forbidden();
+  if (!profileIsAdminOrMember(organizationId, user)) return forbidden();
 
   const [organizationResponse, seriesResponse] = await Promise.all([
     organizationRetrieve(organizationId, { headers }),
@@ -31,7 +29,7 @@ export default async function Page({
   if (organizationResponse.status !== 200)
     throw new Error(`Kunne ikke hente organisasjon ${organizationId}`);
   if (seriesResponse.status !== 200) throw new Error(`Kunne ikke hente serie ${seriesId}`);
-  if (seriesResponse.data.organization.id !== organizationNumber) return notFound();
+  if (seriesResponse.data.organization.id !== organizationId) return notFound();
 
   const series = seriesResponse.data;
 
@@ -50,7 +48,7 @@ export default async function Page({
         </Link>
       </div>
       <SeriesEditForm series={series} />
-      <SeriesEpisodeOrder organizationId={organizationNumber} seriesId={series.id} />
+      <SeriesEpisodeOrder organizationId={organizationId} seriesId={series.id} />
     </section>
   );
 }

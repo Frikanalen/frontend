@@ -19,7 +19,7 @@ import { VideoFileDropzone } from "@/app/organization/[organizationId]/create/Vi
 import { MDXEditorField } from "@/app/video/[videoId]/edit/MDXEditorField";
 
 type UploadJob = {
-  videoId: string;
+  videoId: number;
   uploadEndpoint: string;
   uploadToken: string;
   file: File;
@@ -48,7 +48,7 @@ export const VideoCreateForm = ({
   const { onSubmit, error, isSubmitting } = useApiFormSubmit(form, async (data) => {
     if (!videoFile) throw new Error("Velg en videofil før du oppretter videoen.");
     const response = await mutateAsync({ data });
-    const videoId = response.data.id.toString();
+    const videoId = response.data.id;
 
     try {
       const tokenResponse = await videosUploadTokenRetrieve(videoId);

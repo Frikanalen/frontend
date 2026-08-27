@@ -13,10 +13,11 @@ import { EditorInfo } from "@/app/organization/[organizationId]/EditorInfo";
 import { ArchiveSearch } from "@/app/video/ArchiveSearch";
 import { Metadata } from "next";
 import { ssrOrganizationRetrieve } from "@/generated/ssr/organization/organization";
+import { OrganizationParams, parseParamsOr404 } from "@/lib/routeParams";
 
 type OrgPageProps = { params: Promise<{ organizationId: string }> };
 export async function generateMetadata({ params }: OrgPageProps): Promise<Metadata> {
-  const { organizationId } = await params;
+  const { organizationId } = await parseParamsOr404(OrganizationParams, params);
 
   const { data: organization, status } = await ssrOrganizationRetrieve(organizationId, {
     cache: "no-store",
@@ -39,9 +40,7 @@ export async function generateMetadata({ params }: OrgPageProps): Promise<Metada
 }
 
 export default async function Page({ params }: OrgPageProps) {
-  const { organizationId } = await params;
-  const organizationIdNum = parseInt(organizationId);
-  if (isNaN(organizationIdNum)) return notFound();
+  const { organizationId } = await parseParamsOr404(OrganizationParams, params);
 
   const headers = await getCookiesFromRequest();
   const { data: organization } = await organizationRetrieve(organizationId, {
@@ -49,7 +48,7 @@ export default async function Page({ params }: OrgPageProps) {
   });
   const profile = await getUserOrNull(headers);
 
-  const isAdmin = profileIsAdminOrMember(organizationIdNum, profile);
+  const isAdmin = profileIsAdminOrMember(organizationId, profile);
 
   if (!organization.fkmember && !isAdmin) return notFound();
 

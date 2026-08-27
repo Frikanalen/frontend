@@ -6,6 +6,7 @@ import { getUserOrNull } from "@/app/getUserOrNull";
 import { VideoCardForAdmin } from "@/app/video/[videoId]/VideoCardForAdmin";
 import { ssrVideosRetrieve } from "@/generated/ssr/videos/videos";
 import { Metadata } from "next";
+import { VideoParams, parseParamsOr404 } from "@/lib/routeParams";
 
 export const revalidate = 60;
 
@@ -18,7 +19,7 @@ export type VideoPageProps = {
 };
 
 export async function generateMetadata({ params }: VideoPageProps): Promise<Metadata> {
-  const { videoId } = await params;
+  const { videoId } = await parseParamsOr404(VideoParams, params);
 
   const { data: video, status } = await ssrVideosRetrieve(videoId, {
     cache: "no-store",
@@ -46,7 +47,7 @@ export async function generateMetadata({ params }: VideoPageProps): Promise<Meta
 }
 
 export default async function VideoPage({ params }: VideoPageProps) {
-  const { videoId } = await params;
+  const { videoId } = await parseParamsOr404(VideoParams, params);
   const headers = await getCookiesFromRequest();
 
   const { data: video, status } = await ssrVideosRetrieve(videoId, {

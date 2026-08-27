@@ -17,7 +17,7 @@ const POLL_INTERVAL_MS = 2000;
  * job reaches a state nothing further will be reported from.
  */
 export const useIngestProgress = (
-  videoId: string,
+  videoId: number,
   enabled: boolean,
 ): { description: IngestDescription | null; isError: boolean } => {
   const { data, isError } = useVideosIngestRetrieve(videoId, {

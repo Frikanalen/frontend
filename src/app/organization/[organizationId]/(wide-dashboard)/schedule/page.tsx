@@ -5,19 +5,18 @@ import { SchedulePlanner } from "@/app/schedule/plan/SchedulePlanner";
 import { organizationRetrieve } from "@/generated/organization/organization";
 import { schedulingPolicyRetrieve } from "@/generated/scheduling/scheduling";
 import { forbidden, notFound, redirect } from "next/navigation";
+import { OrganizationParams, parseParamsOr404 } from "@/lib/routeParams";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
 export default async function Page({ params }: { params: Promise<{ organizationId: string }> }) {
-  const { organizationId } = await params;
-  const organizationIdNumber = Number(organizationId);
-  if (!Number.isInteger(organizationIdNumber)) notFound();
+  const { organizationId } = await parseParamsOr404(OrganizationParams, params);
 
   const headers = await getCookiesFromRequest();
   const user = await getUserOrNull(headers);
   if (!user) redirect("/login");
-  if (!user.isStaff && !profileIsAdminOrMember(organizationIdNumber, user)) forbidden();
+  if (!user.isStaff && !profileIsAdminOrMember(organizationId, user)) forbidden();
 
   const organizationResponse = await organizationRetrieve(organizationId, { headers });
   if (organizationResponse.status === 404) notFound();

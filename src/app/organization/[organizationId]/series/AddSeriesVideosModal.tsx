@@ -94,7 +94,7 @@ export const AddSeriesVideosModal = ({
             ? []
             : [
                 update.mutateAsync({
-                  id: video.id.toString(),
+                  id: video.id,
                   data: { episodeNumber: null },
                 }),
               ],
@@ -102,11 +102,11 @@ export const AddSeriesVideosModal = ({
       );
       await Promise.all([
         ...changedEpisodes.map(({ video, episodeNumber }) =>
-          update.mutateAsync({ id: video.id.toString(), data: { episodeNumber } }),
+          update.mutateAsync({ id: video.id, data: { episodeNumber } }),
         ),
         ...additions.map((video, index) =>
           update.mutateAsync({
-            id: video.id.toString(),
+            id: video.id,
             data: { seriesId, episodeNumber: episodes.length + index + 1 },
           }),
         ),

@@ -1,3 +1,5 @@
+import z from "zod";
+
 /** How many results one page of the archive shows. */
 export const ARCHIVE_PAGE_SIZE = 24;
 
@@ -125,47 +127,37 @@ export const archiveUrlWith = (state: ArchiveState, change: Partial<ArchiveState
   archiveSearchUrl({ ...state, ...change, page: 1 });
 
 /**
- * searchParams hands back a string, an array of them (`?q=a&q=b`), or
- * nothing at all. Only the first value of a repeated parameter is meaningful
- * here.
+ * searchParams hands back a string, an array of them (`?q=a&q=b`), or nothing
+ * at all. Only the first value of a repeated parameter is meaningful here.
  */
-export const firstValue = (value: string | string[] | undefined) =>
-  (Array.isArray(value) ? value[0] : value) ?? "";
-
-/** Page numbers arrive as untrusted text; anything unusable is page 1. */
-export const parsePage = (value: string | string[] | undefined) => {
-  const page = Number.parseInt(firstValue(value), 10);
-
-  return Number.isFinite(page) && page > 0 ? page : 1;
-};
+const first = z.preprocess((value) => (Array.isArray(value) ? value[0] : value) ?? "", z.string());
 
 /**
- * Organization ids arrive as untrusted text too. Anything unusable drops the
- * narrowing entirely rather than standing in for an organization: a scope the
- * visitor didn't ask for is worse than none.
+ * A positive integer as it appears in a URL.
  *
- * Matched whole rather than parsed leniently, because parseInt takes any
- * valid prefix - "1.5e3" and "82abc" would otherwise narrow to organizations
- * 1 and 82, neither of which the visitor asked for.
+ * Matched whole rather than parsed leniently, because parseInt takes any valid
+ * prefix - "1.5e3" and "82abc" would otherwise read as 1 and 82, neither of
+ * which the visitor asked for. Anything else is NaN, for the field to fall
+ * back from.
  */
-export const parseOrganization = (value: string | string[] | undefined) => {
-  const raw = firstValue(value);
-  if (!/^\d+$/.test(raw)) return undefined;
-
-  const organization = Number.parseInt(raw, 10);
-
-  return organization > 0 ? organization : undefined;
-};
+const wholeNumber = first
+  .transform((raw) => (/^\d+$/.test(raw) ? Number(raw) : Number.NaN))
+  .pipe(z.number().int().positive());
 
 /**
- * Category names arrive as untrusted text, and are passed to the API as they
- * came: the filter validates each name against the real categories and
- * rejects one it doesn't have, so an invented name is a 400 that
- * SearchResults reports rather than a silently empty archive.
+ * The same, but absent rather than rejected when it can't be read.
+ *
+ * Spelled as a transform rather than `.optional().catch(undefined)` because an
+ * explicit `{ organization: undefined }` slips past ZodOptional and lands on
+ * the number check; this form is total by construction.
  */
-export const parseCategory = (value: string | string[] | undefined) => firstValue(value).trim();
+const optionalWholeNumber = first.transform((raw) =>
+  /^\d+$/.test(raw) && Number(raw) > 0 ? Number(raw) : undefined,
+);
 
 /**
+ * One of a closed set the archive offers, or nothing.
+ *
  * A length band or a sort the archive doesn't have is dropped rather than
  * reported, unlike a bad category. The difference is who wrote it: a category
  * comes from a link that may simply have gone stale, and is worth explaining,
@@ -173,17 +165,34 @@ export const parseCategory = (value: string | string[] | undefined) => firstValu
  * anything else is a hand-edited URL, and the sensible reading of one is the
  * unfiltered archive in its default order.
  */
-export const parseLength = (value: string | string[] | undefined): ArchiveLength | "" => {
-  const raw = firstValue(value);
+const oneOf = <T extends string>(values: readonly [T, ...T[]]) =>
+  first.pipe(z.enum(values).or(z.literal(""))).catch("");
 
-  return raw in ARCHIVE_LENGTHS ? (raw as ArchiveLength) : "";
-};
+/**
+ * The whole URL read at once, with every field total: a narrowing that cannot
+ * be read falls back rather than failing, because the archive with a filter
+ * dropped is always a better answer than an error page.
+ *
+ * An unusable organization drops the narrowing entirely instead of standing in
+ * for an organization: a scope the visitor didn't ask for is worse than none.
+ * Category names are passed to the API as they came, because only the API
+ * knows the real names - it rejects one it doesn't have, so an invented name
+ * is a 400 that SearchResults reports rather than a silently empty archive.
+ */
+export const ArchiveParams = z
+  .object({
+    q: first.transform((value) => value.trim()).catch(""),
+    organization: optionalWholeNumber,
+    category: first.transform((value) => value.trim()).catch(""),
+    length: oneOf(Object.keys(ARCHIVE_LENGTHS) as [ArchiveLength, ...ArchiveLength[]]),
+    sort: oneOf(Object.keys(ARCHIVE_SORTS) as [ArchiveSort, ...ArchiveSort[]]),
+    page: wholeNumber.catch(1),
+  })
+  .transform(({ q, ...rest }): ArchiveState => ({ query: q, ...rest }));
 
-export const parseSort = (value: string | string[] | undefined): ArchiveSort | "" => {
-  const raw = firstValue(value);
-
-  return raw in ARCHIVE_SORTS ? (raw as ArchiveSort) : "";
-};
+/** Everything the URL says about what to show, in the shape the page passes around. */
+export const archiveStateFrom = (searchParams: unknown): ArchiveState =>
+  ArchiveParams.parse(searchParams);
 
 /**
  * Which order a view is actually in, given what it was asked for.

@@ -10,9 +10,10 @@ import { VideoPageProps } from "@/app/video/[videoId]/page";
 import { VideoEditForm } from "@/app/video/[videoId]/edit/VideoEditForm";
 import { ProgramImageManager } from "@/app/video/[videoId]/edit/ProgramImageManager";
 import { ssrSeriesList } from "@/generated/ssr/series/series";
+import { VideoParams, parseParamsOr404 } from "@/lib/routeParams";
 
 export default async function Page({ params }: VideoPageProps) {
-  const { videoId } = await params;
+  const { videoId } = await parseParamsOr404(VideoParams, params);
   const headers = await getCookiesFromRequest();
   const user = await getUserOrNull(headers);
 

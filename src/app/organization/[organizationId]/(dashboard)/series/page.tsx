@@ -4,16 +4,15 @@ import { SeriesManager } from "@/app/organization/[organizationId]/series/Series
 import { getCookiesFromRequest } from "@/lib/getCookiesFromRequest";
 import { organizationRetrieve } from "@/generated/organization/organization";
 import { forbidden, notFound, redirect } from "next/navigation";
+import { OrganizationParams, parseParamsOr404 } from "@/lib/routeParams";
 
 export default async function Page({ params }: { params: Promise<{ organizationId: string }> }) {
-  const { organizationId } = await params;
-  const id = Number(organizationId);
-  if (!Number.isInteger(id)) return notFound();
+  const { organizationId } = await parseParamsOr404(OrganizationParams, params);
 
   const headers = await getCookiesFromRequest();
   const user = await getUserOrNull(headers);
   if (!user) return redirect("/login");
-  if (!profileIsAdminOrMember(id, user)) return forbidden();
+  if (!profileIsAdminOrMember(organizationId, user)) return forbidden();
 
   const response = await organizationRetrieve(organizationId, { headers });
   if (response.status === 404) return notFound();
@@ -25,7 +24,7 @@ export default async function Page({ params }: { params: Promise<{ organizationI
         <h1 className="text-2xl font-bold">Serier for {response.data.name}</h1>
         <p className="text-foreground/75">Samle videoer som hører sammen.</p>
       </div>
-      <SeriesManager organizationId={id} />
+      <SeriesManager organizationId={organizationId} />
     </section>
   );
 }

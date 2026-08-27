@@ -2,12 +2,8 @@ import { describe, it, expect } from "vitest";
 import {
   ArchiveState,
   archiveSearchUrl,
+  archiveStateFrom,
   archiveUrlWith,
-  parseCategory,
-  parseLength,
-  parseOrganization,
-  parsePage,
-  parseSort,
   resolveSort,
   sortsFor,
 } from "./archiveSearchUrl";
@@ -64,52 +60,6 @@ describe("archiveSearchUrl", () => {
 
   it("escapes what it is given", () => {
     expect(archiveSearchUrl({ query: "rock & roll" })).toBe("/video?q=rock+%26+roll");
-  });
-});
-
-describe("parseOrganization", () => {
-  it("reads a usable id", () => {
-    expect(parseOrganization("82")).toBe(82);
-  });
-
-  it("takes the first of a repeated parameter", () => {
-    expect(parseOrganization(["82", "99"])).toBe(82);
-  });
-
-  // Anything unusable drops the narrowing entirely: standing in for an
-  // organization the visitor didn't ask for is worse than not narrowing.
-  it.each([undefined, "", "abc", "0", "-3", "1.5e3", "82abc", " 82"])("drops %o", (value) => {
-    expect(parseOrganization(value)).toBeUndefined();
-  });
-});
-
-describe("parsePage", () => {
-  it("reads a usable page number", () => {
-    expect(parsePage("4")).toBe(4);
-  });
-
-  it.each([undefined, "", "abc", "0", "-2"])("falls back to page 1 for %o", (value) => {
-    expect(parsePage(value)).toBe(1);
-  });
-});
-
-describe("parseCategory", () => {
-  it("reads a category name", () => {
-    expect(parseCategory("Idrett")).toBe("Idrett");
-  });
-
-  it("takes the first of a repeated parameter", () => {
-    expect(parseCategory(["Idrett", "Kultur"])).toBe("Idrett");
-  });
-
-  // Passed through as given: only the API knows the real category names, and
-  // it rejects one it doesn't have rather than returning an empty archive.
-  it("trims surrounding whitespace", () => {
-    expect(parseCategory("  Idrett  ")).toBe("Idrett");
-  });
-
-  it.each([undefined, "", "   "])("reads %o as no category", (value) => {
-    expect(parseCategory(value)).toBe("");
   });
 });
 
@@ -171,23 +121,75 @@ describe("archiveUrlWith", () => {
   });
 });
 
-describe("parseLength", () => {
-  it("reads a band the archive has", () => {
-    expect(parseLength("30-60")).toBe("30-60");
+describe("archiveStateFrom", () => {
+  it("reads a whole URL", () => {
+    expect(
+      archiveStateFrom({
+        q: "  musikk  ",
+        organization: "82",
+        category: "  Idrett  ",
+        length: "30-60",
+        sort: "lengst",
+        page: "4",
+      }),
+    ).toEqual({
+      query: "musikk",
+      organization: 82,
+      category: "Idrett",
+      length: "30-60",
+      sort: "lengst",
+      page: 4,
+    });
   });
 
-  it.each([undefined, "", "40-50", "kort", "0"])("drops %o", (value) => {
-    expect(parseLength(value)).toBe("");
+  it("reads an empty URL as the unnarrowed archive", () => {
+    expect(archiveStateFrom({})).toEqual({
+      query: "",
+      organization: undefined,
+      category: "",
+      length: "",
+      sort: "",
+      page: 1,
+    });
   });
-});
 
-describe("parseSort", () => {
-  it("reads a sort the archive has", () => {
-    expect(parseSort("lengst")).toBe("lengst");
+  it("takes the first of a repeated parameter", () => {
+    expect(archiveStateFrom({ q: ["musikk", "kultur"], organization: ["82", "99"] })).toMatchObject(
+      {
+        query: "musikk",
+        organization: 82,
+      },
+    );
   });
 
-  it.each([undefined, "", "-created_time", "name", "tilfeldig"])("drops %o", (value) => {
-    expect(parseSort(value)).toBe("");
+  // Anything unusable drops the narrowing entirely: standing in for an
+  // organization the visitor didn't ask for is worse than not narrowing.
+  it.each([undefined, "", "abc", "0", "-3", "1.5e3", "82abc", " 82"])(
+    "drops an organization of %o",
+    (organization) => {
+      expect(archiveStateFrom({ organization }).organization).toBeUndefined();
+    },
+  );
+
+  it.each([undefined, "", "abc", "0", "-2", "1.5", "4abc"])(
+    "falls back to page 1 for %o",
+    (page) => {
+      expect(archiveStateFrom({ page }).page).toBe(1);
+    },
+  );
+
+  // Passed through as given: only the API knows the real category names, and
+  // it rejects one it doesn't have rather than returning an empty archive.
+  it.each([undefined, "", "   "])("reads a category of %o as no category", (category) => {
+    expect(archiveStateFrom({ category }).category).toBe("");
+  });
+
+  it.each([undefined, "", "40-50", "kort", "0"])("drops a length band of %o", (length) => {
+    expect(archiveStateFrom({ length }).length).toBe("");
+  });
+
+  it.each([undefined, "", "-created_time", "name", "tilfeldig"])("drops a sort of %o", (sort) => {
+    expect(archiveStateFrom({ sort }).sort).toBe("");
   });
 });
 

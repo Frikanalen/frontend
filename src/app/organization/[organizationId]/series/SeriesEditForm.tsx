@@ -21,7 +21,7 @@ export const SeriesEditForm = ({ series }: { series: Series }) => {
   });
   const { onSubmit, error, isSubmitting } = useApiFormSubmit(form, async (data) => {
     setSaved(false);
-    await update.mutateAsync({ id: series.id.toString(), data });
+    await update.mutateAsync({ id: series.id, data });
     setSaved(true);
     router.refresh();
   });

@@ -2,13 +2,14 @@ import { getCookiesFromRequest } from "@/lib/getCookiesFromRequest";
 import { videosRetrieve, videosUploadTokenRetrieve } from "@/generated/videos/videos";
 import { profileIsAdminOrMember } from "@/app/organization/[organizationId]/admin/profileIsAdminOrMember";
 import { forbidden } from "next/navigation";
+import { VideoParams, parseParamsOr404 } from "@/lib/routeParams";
 
 import { PageShell, PageShellBody } from "@/components/layout/PageShell";
 import { getUserOrNull } from "@/app/getUserOrNull";
 import { FileUpload } from "@/components/upload/FileUpload";
 
 export default async function Page({ params }: { params: Promise<{ videoId: string }> }) {
-  const { videoId } = await params;
+  const { videoId } = await parseParamsOr404(VideoParams, params);
   const headers = await getCookiesFromRequest();
 
   const { data: video } = await videosRetrieve(videoId, { headers });
