@@ -1,4 +1,5 @@
 "use client";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { PatchedVideoRequest, Series, Video } from "@/generated/frikanalenDjangoAPI.schemas";
 import { useRouter } from "next/navigation";
@@ -11,6 +12,7 @@ import { useApiFormSubmit } from "@/lib/useApiFormSubmit";
 import { FormError } from "@/components/form/FormError";
 import { SeriesFields } from "@/app/organization/[organizationId]/create/SeriesFields";
 import type { SeriesOption } from "@/app/organization/[organizationId]/create/SeriesFields";
+import { NewSeriesModal } from "@/app/organization/[organizationId]/create/NewSeriesModal";
 
 export const VideoEditForm = ({ video, series }: { video: Video; series: Series[] }) => {
   const form = useForm<PatchedVideoRequest>({
@@ -22,6 +24,8 @@ export const VideoEditForm = ({ video, series }: { video: Video; series: Series[
   });
   const { register, control } = form;
   const router = useRouter();
+  const [availableSeries, setAvailableSeries] = useState<SeriesOption[]>(series);
+  const [isSeriesModalOpen, setSeriesModalOpen] = useState(false);
 
   const selectSeries = (selected: SeriesOption | null) => {
     const originalSeriesId = video.series?.id ?? null;
@@ -31,6 +35,12 @@ export const VideoEditForm = ({ video, series }: { video: Video; series: Series[
       selectedSeriesId === originalSeriesId ? (video.episodeNumber ?? null) : null,
       { shouldDirty: true },
     );
+  };
+
+  const seriesCreated = (created: SeriesOption) => {
+    setAvailableSeries((current) => [...current, created]);
+    form.setValue("seriesId", created.id, { shouldDirty: true });
+    form.setValue("episodeNumber", 1, { shouldDirty: true });
   };
 
   const { onSubmit, error, isSubmitting } = useApiFormSubmit(form, async (payload) => {
@@ -59,8 +69,9 @@ export const VideoEditForm = ({ video, series }: { video: Video; series: Series[
         />
         <SeriesFields
           control={control}
-          series={series}
+          series={availableSeries}
           seriesName="seriesId"
+          onCreateSeries={() => setSeriesModalOpen(true)}
           onSeriesChange={selectSeries}
         />
         <div className={"ml-auto"}>
@@ -69,6 +80,12 @@ export const VideoEditForm = ({ video, series }: { video: Video; series: Series[
           </Button>
         </div>
       </Form>
+      <NewSeriesModal
+        organizationId={video.organization.id}
+        isOpen={isSeriesModalOpen}
+        onOpenChange={setSeriesModalOpen}
+        onCreated={seriesCreated}
+      />
     </div>
   );
 };
