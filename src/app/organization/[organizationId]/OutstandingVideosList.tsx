@@ -1,5 +1,8 @@
-import { useVideosList } from "@/generated/videos/videos";
+import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useVideosDestroy, useVideosList } from "@/generated/videos/videos";
 import { VideosListParams } from "@/generated/frikanalenDjangoAPI.schemas";
+import { formatApiError } from "@/lib/formatApiError";
 import {
   Button,
   Chip,
@@ -16,6 +19,9 @@ import { format, parseISO } from "date-fns";
 import { nb } from "date-fns/locale/nb";
 
 export const OutstandingVideosList = ({ organizationId }: { organizationId: number }) => {
+  const queryClient = useQueryClient();
+  const destroy = useVideosDestroy();
+  const [error, setError] = useState<string>();
   const { data } = useVideosList({
     organization: organizationId,
     // Snake_case, like every other video filter: query parameters are not
@@ -29,6 +35,19 @@ export const OutstandingVideosList = ({ organizationId }: { organizationId: numb
   // therefore not type-checked; a silently ignored filter would otherwise
   // show every video under a "you have unimported videos" warning.
   const videos = data?.data.results.filter((v) => !v.properImport) ?? [];
+
+  const remove = async (id: number, name: string) => {
+    if (!window.confirm(`Slett den uimporterte videoen «${name}»?`)) return;
+
+    setError(undefined);
+    try {
+      await destroy.mutateAsync({ id });
+      await queryClient.invalidateQueries({ queryKey: ["/api/videos"] });
+    } catch (cause) {
+      setError(formatApiError(cause));
+    }
+  };
+
   return (
     <div className={"space-y-4"}>
       {!!videos.length && (
@@ -62,7 +81,12 @@ export const OutstandingVideosList = ({ organizationId }: { organizationId: numb
                     <Chip>feil eller ikke importert</Chip>
                   </TableCell>
                   <TableCell className={"space-x-2"}>
-                    <Button as={Link} href={`/organization`} color="danger" size="sm">
+                    <Button
+                      color="danger"
+                      size="sm"
+                      isLoading={destroy.isPending && destroy.variables?.id === r.id}
+                      onPress={() => remove(r.id, r.name)}
+                    >
                       Slett
                     </Button>
                     <Button as={Link} href={`/video/${r.id}/upload`} color="primary" size="sm">
@@ -73,6 +97,11 @@ export const OutstandingVideosList = ({ organizationId }: { organizationId: numb
               ))}
             </TableBody>
           </Table>
+          {error && (
+            <p role="alert" className="text-danger-700 text-sm">
+              Videoen kunne ikke slettes: {error}
+            </p>
+          )}
         </>
       )}
     </div>
