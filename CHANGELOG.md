@@ -1,6 +1,29 @@
 2025-05-31 
 # Changelog
 
+## [3.1.0](https://github.com/Frikanalen/frontend/compare/v3.0.0...v3.1.0) (2026-08-30)
+
+
+### Features
+
+* **schedule:** group programmes under their weekly slot ([#56](https://github.com/Frikanalen/frontend/issues/56)) ([98fa63d](https://github.com/Frikanalen/frontend/commit/98fa63d11154bdd4fb7a16d36ae2981373772ce7))
+* **seo:** add robots policy and sitemap ([#51](https://github.com/Frikanalen/frontend/issues/51)) ([d972708](https://github.com/Frikanalen/frontend/commit/d9727081a1f1f18ab151da51a92c257e69cfbeca))
+* **series:** add dedicated series management ([#55](https://github.com/Frikanalen/frontend/issues/55)) ([ec61c4d](https://github.com/Frikanalen/frontend/commit/ec61c4de9c57e507eec53e2932513bdfa2c712ff))
+* **series:** add videos from episode editor ([#57](https://github.com/Frikanalen/frontend/issues/57)) ([b693d2c](https://github.com/Frikanalen/frontend/commit/b693d2c2dfee3a3c645f48ad4e6faec4ca92312e))
+* **video:** create a series while editing a video ([#61](https://github.com/Frikanalen/frontend/issues/61)) ([df9b4d7](https://github.com/Frikanalen/frontend/commit/df9b4d7880338877607f225e80d41ba825db5ee9))
+* **video:** unify creation and upload ([#54](https://github.com/Frikanalen/frontend/issues/54)) ([2817b76](https://github.com/Frikanalen/frontend/commit/2817b76c6e916aaa68e4d19c2a23a0e9ca497c51))
+* **video:** use API-provided file metadata ([#53](https://github.com/Frikanalen/frontend/issues/53)) ([e973660](https://github.com/Frikanalen/frontend/commit/e973660008b7e3c718570f9ca68abc3f967f9005))
+
+
+### Bug Fixes
+
+* **api:** follow integer path parameters, and parse route params with zod ([#60](https://github.com/Frikanalen/frontend/issues/60)) ([47f8522](https://github.com/Frikanalen/frontend/commit/47f8522f30d7ab8f6cd681dd90dd6f6649a9fdbd))
+* **api:** migrate video header consumers to description ([#59](https://github.com/Frikanalen/frontend/issues/59)) ([17cb6b2](https://github.com/Frikanalen/frontend/commit/17cb6b2ba09e6b033b5006338b0be9645b53e459))
+* **editor:** label Markdown content areas ([cba98f6](https://github.com/Frikanalen/frontend/commit/cba98f69eb5b9df4d3712922a8661a13da4e6fad))
+* **schedule:** clamp planner rows to the day being planned ([#64](https://github.com/Frikanalen/frontend/issues/64)) ([a9c8bb8](https://github.com/Frikanalen/frontend/commit/a9c8bb856d119dd069d85b9ebce2fa3b89ae135a))
+* **video:** delete unimported videos ([#63](https://github.com/Frikanalen/frontend/issues/63)) ([434b90d](https://github.com/Frikanalen/frontend/commit/434b90dcb52ab932ae80bcaf01dfab7ef500ceb7))
+* **videos:** pick WebmMed if dash is not available ([6bf21af](https://github.com/Frikanalen/frontend/commit/6bf21af4fb431b4ee0fb7b4d760f9acd88406866))
+
 ## [3.0.0](https://github.com/Frikanalen/frontend/compare/v2.0.4...v3.0.0) (2026-08-23)
 
 
