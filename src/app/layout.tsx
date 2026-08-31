@@ -100,7 +100,7 @@ export default async function RootLayout({
           <div className="flex flex-col items-center min-h-screen">
             <header className="w-full max-w-5xl px-2">
               <Logo className="w-full max-w-100 pt-6 lg:pt-12 text-default-foreground/80" />
-              <HeaderNavMenu user={user} className="my-3" />
+              <HeaderNavMenu user={user} className="mt-1 mb-3" />
             </header>
             <div className="flex grow flex-col w-full items-center">{children}</div>
             <Footer />
