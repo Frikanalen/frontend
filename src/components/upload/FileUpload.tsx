@@ -1,6 +1,6 @@
 "use client";
 import { Button, Link, Progress } from "@heroui/react";
-import { useEffect, useRef } from "react";
+import { ChangeEventHandler, useCallback, useEffect, useRef, useState } from "react";
 import { useTusUpload } from "@/lib/upload/useTusUpload";
 import { useIngestProgress } from "@/lib/upload/useIngestProgress";
 import { Alert } from "@heroui/alert";
@@ -15,12 +15,15 @@ export const FileUpload = ({
   uploadToken,
   initialFile,
   autoStart = false,
+  onFileChange,
 }: {
   videoId: number;
   uploadEndpoint: string;
   uploadToken: string | undefined;
   initialFile?: File;
   autoStart?: boolean;
+  /** Told which file is on its way up, so a caller naming it can keep up. */
+  onFileChange?: (_file: File) => void;
 }) => {
   const ref = useRef<HTMLInputElement>(null);
   // fixme: this is probably not really nullable, this is just a DB schema issue.
@@ -41,10 +44,32 @@ export const FileUpload = ({
     if (autoStart && isReady) start();
   }, [autoStart, isReady, start]);
 
+  // A video has a single ingest job, so picking a new file after a failure
+  // leaves the old file's verdict in place until ingest gets round to the new
+  // one. Remembering when that verdict was made keeps it from being shown --
+  // and, worse, from being taken as a settled job that ends the polling --
+  // while the replacement is on its way up. Undefined until a file is replaced.
+  const [supersededAt, setSupersededAt] = useState<string | null | undefined>(undefined);
+
   // Transferring the bytes is only the first half. Until ingest has probed,
   // archived and transcoded the file there is nothing to watch on the video
   // page, and the upload may still fail in a way the browser never sees.
-  const { description, isError: ingestUnreachable } = useIngestProgress(videoId, isSuccess);
+  const {
+    description,
+    reportedAt,
+    isError: ingestUnreachable,
+  } = useIngestProgress(videoId, isSuccess, supersededAt);
+
+  const chooseFile = useCallback<ChangeEventHandler<HTMLInputElement>>(
+    (event) => {
+      // Whatever ingest last said was about the file being put aside here.
+      setSupersededAt(reportedAt);
+      onFileListChange(event);
+      const chosen = event.target.files?.[0];
+      if (chosen) onFileChange?.(chosen);
+    },
+    [onFileChange, onFileListChange, reportedAt],
+  );
 
   const router = useRouter();
   useEffect(() => {
@@ -58,7 +83,7 @@ export const FileUpload = ({
   return (
     <div className="space-y-4">
       <form>
-        <input type={"file"} ref={ref} onChange={onFileListChange} hidden />
+        <input type={"file"} ref={ref} onChange={chooseFile} hidden />
       </form>
 
       <Progress value={progress} hidden={!isUploading} showValueLabel label={`Laster opp...`} />

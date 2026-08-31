@@ -1,5 +1,5 @@
 import { expect, test, type Locator, type Page, type Route } from "@playwright/test";
-import { stubApi } from "./support/api";
+import { stubApi, stubPage } from "./support/api";
 import { waitForHydration } from "./support/hydration";
 
 const CREATE_PAGE = "/organization/3/create";
@@ -70,15 +70,6 @@ const stubUpload = async (page: Page) => {
   await page.route(`**/api/videos/${VIDEO_ID}/upload_token`, (route) =>
     answerJson(route, 200, { uploadToken: "upload-token", uploadUrl: "/uploads" }),
   );
-  await page.route(`**/api/videos/${VIDEO_ID}/ingest`, (route) =>
-    answerJson(route, 200, {
-      video: VIDEO_ID,
-      state: "pending",
-      percentageDone: null,
-      errorCode: "",
-      updatedTime: null,
-    }),
-  );
   await page.route("**/uploads**", (route) => {
     const request = route.request();
     const method = request.method();
@@ -115,6 +106,27 @@ const stubUpload = async (page: Page) => {
   });
 
   return requests;
+};
+
+/**
+ * Ingest, one report at a time. A video has a single ingest job, so the same
+ * endpoint answers for every file uploaded to it -- which is the whole point
+ * of the retry test below.
+ */
+const stubIngest = async (page: Page) => {
+  let job: JsonRecord = {
+    video: VIDEO_ID,
+    state: "pending",
+    percentageDone: null,
+    errorCode: "",
+    updatedTime: null,
+  };
+
+  await page.route(`**/api/videos/${VIDEO_ID}/ingest`, (route) => answerJson(route, 200, job));
+
+  return (report: JsonRecord) => {
+    job = { video: VIDEO_ID, percentageDone: null, errorCode: "", ...report };
+  };
 };
 
 test.beforeEach(async ({ page }) => {
@@ -167,6 +179,7 @@ test.describe("video creation", () => {
   test("submits the next episode and starts its upload without a second step", async ({ page }) => {
     const videoRequests = await recordPost(page, "/api/videos", { id: VIDEO_ID });
     const uploadRequests = await stubUpload(page);
+    await stubIngest(page);
 
     await fillRequiredDetails(page);
     await chooseExistingSeries(page);
@@ -190,6 +203,34 @@ test.describe("video creation", () => {
     const createUpload = uploadRequests.find(({ method }) => method === "POST");
     expect(createUpload?.headers["upload-metadata"]).toContain("videoID NzAwMQ==");
     expect(createUpload?.headers["upload-metadata"]).toContain("uploadToken dXBsb2FkLXRva2Vu");
+  });
+
+  test("follows the replacement through when ingest rejects the first file", async ({ page }) => {
+    await recordPost(page, "/api/videos", { id: VIDEO_ID });
+    await stubUpload(page);
+    const report = await stubIngest(page);
+    await stubPage(page, `/video/${VIDEO_ID}`);
+
+    await fillRequiredDetails(page);
+    await selectVideoFile(page);
+    await page.getByRole("button", { name: "Opprett", exact: true }).click();
+
+    report({ state: "failed", errorCode: "not_compliant", updatedTime: "2026-08-21T10:00:00Z" });
+    await expect(page.getByText(/Filformatet kan ikke sendes/)).toBeVisible();
+
+    await selectVideoFile(page, "havna-omkodet.mp4");
+
+    // The job still carries the verdict on the file just replaced: ingest has
+    // not been handed the new one yet, and until it has, that verdict is not
+    // about anything the uploader is waiting for.
+    await expect(
+      page.getByRole("heading", { name: /Laster opp havna-omkodet\.mp4/ }),
+    ).toBeVisible();
+    await expect(page.getByText(/Filformatet kan ikke sendes/)).toHaveCount(0);
+
+    report({ state: "done", percentageDone: 100, updatedTime: "2026-08-21T10:05:00Z" });
+    await expect(page.getByRole("heading", { name: "Videoen er klar!" })).toBeVisible();
+    await expect(page).toHaveURL(new RegExp(`/video/${VIDEO_ID}$`), { timeout: 15_000 });
   });
 
   test("creates and selects a new series with episode one", async ({ page }) => {
