@@ -70,6 +70,13 @@ const stubUpload = async (page: Page) => {
   await page.route(`**/api/videos/${VIDEO_ID}/upload_token`, (route) =>
     answerJson(route, 200, { uploadToken: "upload-token", uploadUrl: "/uploads" }),
   );
+  // The offset tusd would be keeping, taken from what the client says it is
+  // sending rather than from the bytes on the wire: WebKit does not hand
+  // request bodies to routes, so counting those would hold every upload at
+  // zero there and leave the client retrying the same PATCH forever.
+  let length = 0;
+  let offset = 0;
+
   await page.route("**/uploads**", (route) => {
     const request = route.request();
     const method = request.method();
@@ -77,6 +84,8 @@ const stubUpload = async (page: Page) => {
     requests.push({ method, headers: request.headers(), bytes: body?.length ?? 0 });
 
     if (method === "POST") {
+      length = Number(request.headers()["upload-length"] ?? 0);
+      offset = 0;
       return route.fulfill({
         status: 201,
         headers: {
@@ -88,7 +97,9 @@ const stubUpload = async (page: Page) => {
     }
 
     if (method === "PATCH") {
-      const offset = Number(request.headers()["upload-offset"] ?? 0) + (body?.length ?? 0);
+      // A body we cannot see is taken as the rest of the file: these uploads
+      // are a few bytes, and the client sends them in one PATCH.
+      offset = Math.min(length, offset + (body?.length ?? length));
       return route.fulfill({
         status: 204,
         headers: { ...tusHeaders, "Upload-Offset": String(offset) },
@@ -98,7 +109,11 @@ const stubUpload = async (page: Page) => {
     if (method === "HEAD") {
       return route.fulfill({
         status: 200,
-        headers: { ...tusHeaders, "Upload-Length": "5", "Upload-Offset": "0" },
+        headers: {
+          ...tusHeaders,
+          "Upload-Length": String(length),
+          "Upload-Offset": String(offset),
+        },
       });
     }
 
