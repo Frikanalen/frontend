@@ -43,6 +43,17 @@ const ERROR_MESSAGES: Record<string, string> = {
 
 const FAILURE_FALLBACK = "Behandlingen stoppet. Si fra til oss, så ser vi på det.";
 
+/**
+ * A job nobody has reported on yet, as the person waiting sees it. A report
+ * left over from a file they have replaced looks the same to them on purpose:
+ * their file is in the queue, and nothing has been said about it.
+ */
+const QUEUED: IngestDescription = {
+  phase: "waiting",
+  message: STATE_MESSAGES[IngestStateEnum.pending],
+  percentage: null,
+};
+
 const STALLED_MESSAGE =
   "Behandlingen ser ut til å ha stoppet opp. Si fra til oss, så ser vi på det.";
 
@@ -53,8 +64,22 @@ const isStale = (updatedTime: string, now: number): boolean =>
  * Turns an ingest job into something to show a person waiting for their
  * upload. Kept apart from the component so the wording can be tested without
  * rendering anything, and so ingest never has to know any Norwegian.
+ *
+ * `supersededAt` is the time of the last report about a file the uploader has
+ * since replaced. A video has one ingest job, so a second upload finds the
+ * first one's verdict still sitting there; until the timestamp moves, that
+ * verdict is about a file nobody is waiting for any more, and saying so would
+ * fail the new upload before ingest has even opened it. Omitting the argument
+ * means nothing has been replaced; passing `null` means the report being
+ * replaced was one ingest had never got to, which is a timestamp of its own.
  */
-export const describeIngestJob = (job: IngestJob, now: number = Date.now()): IngestDescription => {
+export const describeIngestJob = (
+  job: IngestJob,
+  now: number = Date.now(),
+  supersededAt?: string | null,
+): IngestDescription => {
+  if (supersededAt !== undefined && job.updatedTime === supersededAt) return QUEUED;
+
   if (job.state === IngestStateEnum.failed) {
     return {
       phase: "failed",

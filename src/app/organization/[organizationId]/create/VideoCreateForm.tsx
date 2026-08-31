@@ -90,6 +90,9 @@ export const VideoCreateForm = ({
           uploadEndpoint={uploadJob.uploadEndpoint}
           uploadToken={uploadJob.uploadToken}
           initialFile={uploadJob.file}
+          // An upload that ingest rejects is retried with another file from
+          // right here, and the heading above should say which one.
+          onFileChange={(file) => setUploadJob((job) => job && { ...job, file })}
           autoStart
         />
       </section>

@@ -80,6 +80,40 @@ describe("describeIngestJob", () => {
     expect(describeIngestJob(queued, NOW).phase).toBe("waiting");
   });
 
+  it("does not blame the new file for the verdict on the one it replaced", () => {
+    // A video has one ingest job. Choosing another file after a failure leaves
+    // that failure in place until ingest gets to the replacement, and showing
+    // it again would fail an upload nobody has looked at yet.
+    const failed = job({
+      state: IngestStateEnum.failed,
+      errorCode: "not_compliant",
+      updatedTime: new Date(NOW - 60_000).toISOString(),
+    });
+
+    const description = describeIngestJob(failed, NOW, failed.updatedTime);
+
+    expect(description.phase).toBe("waiting");
+    expect(description.message).not.toContain("MP4");
+  });
+
+  it("says what ingest says as soon as it has reported on the new file", () => {
+    const reported = job({ state: IngestStateEnum.failed, errorCode: "not_compliant" });
+
+    const description = describeIngestJob(reported, NOW, new Date(NOW - 60_000).toISOString());
+
+    expect(description.phase).toBe("failed");
+    expect(description.message).toContain("MP4");
+  });
+
+  it("counts never having reported as a report of its own", () => {
+    // Nothing had been uploaded when the replaced file was chosen, so the job
+    // carried no timestamp; it is still the report being replaced.
+    const untouched = job({ state: IngestStateEnum.done, updatedTime: null });
+
+    expect(describeIngestJob(untouched, NOW, null).phase).toBe("waiting");
+    expect(describeIngestJob(untouched, NOW).phase).toBe("done");
+  });
+
   it("treats a finished job as finished no matter how long ago it finished", () => {
     const old = job({
       state: IngestStateEnum.done,
@@ -99,6 +133,14 @@ describe("ingestIsSettled", () => {
     expect(ingestIsSettled(describeIngestJob(job({ state: IngestStateEnum.failed }), NOW))).toBe(
       true,
     );
+  });
+
+  it("keeps polling through a verdict that belongs to a replaced file", () => {
+    // Stopping here would leave the replacement uploaded and unwatched, and
+    // the uploader on a page that never moves on.
+    const failed = job({ state: IngestStateEnum.failed, errorCode: "not_compliant" });
+
+    expect(ingestIsSettled(describeIngestJob(failed, NOW, failed.updatedTime))).toBe(false);
   });
 
   it("keeps polling while work is still happening, and while it looks stuck", () => {
