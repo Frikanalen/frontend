@@ -1,6 +1,7 @@
 "use client";
 import { useVideosList } from "@/generated/videos/videos";
 import { VideoList } from "@/app/video/VideoList";
+import { IngestStatusChip } from "@/app/organization/[organizationId]/IngestStatusChip";
 import { useVideoDeletion } from "@/app/organization/[organizationId]/useVideoDeletion";
 import { Button } from "@heroui/react";
 import Link from "next/link";
@@ -48,6 +49,7 @@ export const OutstandingVideosList = ({ organizationId }: { organizationId: numb
         videos={videos}
         showOrganization={false}
         showCategory={false}
+        status={(video) => <IngestStatusChip videoId={video.id} />}
         actions={(video) => (
           <>
             <Button as={Link} href={`/video/${video.id}/upload`} color="primary" size="sm">
