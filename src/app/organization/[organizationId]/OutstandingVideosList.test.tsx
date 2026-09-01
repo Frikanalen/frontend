@@ -22,6 +22,8 @@ vi.mock("@/generated/videos/videos", () => ({
     isPending: false,
     variables: undefined,
   }),
+  // The status chip has a test of its own; here it only has to not explode.
+  useVideosIngestRetrieve: () => ({ data: undefined, isError: false }),
 }));
 
 vi.mock("@tanstack/react-query", () => ({
@@ -33,31 +35,39 @@ vi.mock("@heroui/alert", () => ({
 }));
 
 vi.mock("@heroui/react", () => ({
+  // A `Button` given an `href` is a link in HeroUI too, and the tests below
+  // care which of the two a control is.
   Button: ({
     children,
     onPress,
     isLoading,
+    href,
     ...props
   }: {
     children: ReactNode;
     onPress?: () => void;
     isLoading?: boolean;
-  } & ButtonHTMLAttributes<HTMLButtonElement>) => (
-    <button disabled={isLoading} onClick={onPress} {...props}>
-      {children}
-    </button>
-  ),
+    href?: string;
+  } & ButtonHTMLAttributes<HTMLButtonElement>) =>
+    href ? (
+      <a href={href}>{children}</a>
+    ) : (
+      <button disabled={isLoading} onClick={onPress} {...props}>
+        {children}
+      </button>
+    ),
   Chip: ({ children }: { children: ReactNode }) => <span>{children}</span>,
-  Table: ({ children }: { children: ReactNode }) => <table>{children}</table>,
-  TableBody: ({ children }: { children: ReactNode }) => <tbody>{children}</tbody>,
-  TableCell: ({ children }: { children: ReactNode }) => <td>{children}</td>,
-  TableColumn: ({ children }: { children: ReactNode }) => <th>{children}</th>,
-  TableHeader: ({ children }: { children: ReactNode }) => <thead>{children}</thead>,
-  TableRow: ({ children }: { children: ReactNode }) => <tr>{children}</tr>,
 }));
 
 const video = (id: number, name: string): Video =>
-  ({ id, name, properImport: false, createdTime: null }) as unknown as Video;
+  ({
+    id,
+    name,
+    properImport: false,
+    createdTime: null,
+    files: {},
+    organization: { id: 9, name: "Prøveforeningen" },
+  }) as unknown as Video;
 
 beforeEach(() => {
   api.videos = [video(42, "Fastlåst opplasting")];
@@ -76,6 +86,30 @@ afterEach(() => {
 });
 
 describe("OutstandingVideosList", () => {
+  it("asks the server for exactly the unimported videos", () => {
+    render(<OutstandingVideosList organizationId={9} />);
+
+    expect(api.params).toEqual({ organization: 9, proper_import: false, ordering: "-id" });
+  });
+
+  it("shows the videos as ordinary archive rows", () => {
+    render(<OutstandingVideosList organizationId={9} />);
+
+    expect(screen.getByRole("link", { name: "Fastlåst opplasting" }).getAttribute("href")).toBe(
+      "/video/42",
+    );
+    expect(screen.getByRole("link", { name: "Last opp" }).getAttribute("href")).toBe(
+      "/video/42/upload",
+    );
+  });
+
+  it("renders nothing at all when every video is imported", () => {
+    api.videos = [];
+    const { container } = render(<OutstandingVideosList organizationId={9} />);
+
+    expect(container.innerHTML).toBe("");
+  });
+
   it("deletes a confirmed unimported video and refreshes the video lists", async () => {
     render(<OutstandingVideosList organizationId={9} />);
 
@@ -86,7 +120,6 @@ describe("OutstandingVideosList", () => {
       "Slett den uimporterte videoen «Fastlåst opplasting»?",
     );
     expect(api.invalidate).toHaveBeenCalledWith({ queryKey: ["/api/videos"] });
-    expect(api.params).toEqual({ organization: 9, proper_import: false });
   });
 
   it("keeps the video when deletion is cancelled", () => {
