@@ -27,10 +27,14 @@ const VideoRow = ({
   video,
   showOrganization,
   showCategory,
+  status,
+  actions,
 }: {
   video: Video;
   showOrganization: boolean;
   showCategory: boolean;
+  status?: ReactNode;
+  actions?: ReactNode;
 }) => {
   const duration = video.durationSec;
 
@@ -48,7 +52,11 @@ const VideoRow = ({
   if (showCategory && video.categories?.[0]) facts.push(video.categories[0]);
 
   return (
-    <li className="group relative flex gap-3 rounded-xl p-2 transition-colors hover:bg-content1 has-[a:focus-visible]:bg-content1 has-[a:focus-visible]:ring-2 has-[a:focus-visible]:ring-focus sm:gap-4 sm:p-3">
+    // `flex-wrap` for the sake of the actions, which are the one child wide
+    // enough to be worth a line of their own: on a phone they take the whole
+    // width below the row rather than squeezing the title into a column two
+    // words wide. Rows without actions have nothing that can wrap.
+    <li className="group relative flex flex-wrap gap-3 rounded-xl p-2 transition-colors hover:bg-content1 has-[a:focus-visible]:bg-content1 has-[a:focus-visible]:ring-2 has-[a:focus-visible]:ring-focus sm:gap-4 sm:p-3">
       {/*
         The still sits on a tinted well with a play glyph drawn on it, which
         shows through until the image arrives.
@@ -93,7 +101,7 @@ const VideoRow = ({
         ) : null}
       </span>
 
-      <div className="flex min-w-0 flex-col gap-0.5 py-0.5">
+      <div className="flex min-w-0 flex-1 flex-col gap-0.5 py-0.5">
         <h3 className="text-medium font-semibold leading-snug">
           <Link
             href={`/video/${video.id}`}
@@ -119,6 +127,14 @@ const VideoRow = ({
           </Link>
         )}
 
+        {/* Above the facts because it is the reason a caller asked for it:
+            where a row carries a status at all, it is what the reader came to
+            the list to find out. `relative` for the same reason as the
+            organization link - it lifts the text out from under the title's
+            stretched ::after, which would otherwise make a sentence a reader
+            may want to copy unselectable. */}
+        {status && <div className="relative w-fit py-0.5">{status}</div>}
+
         {!!facts.length && (
           <p className="flex flex-wrap items-center gap-x-2 text-small text-foreground/75">
             {facts.map((fact, index) => (
@@ -137,6 +153,16 @@ const VideoRow = ({
           </p>
         )}
       </div>
+
+      {actions && (
+        // `relative` so the buttons paint above the title's stretched ::after
+        // and get their own clicks; like the organization link, they come
+        // later in the DOM and need no z-index to win. Full width on a phone,
+        // where they have wrapped onto a line of their own.
+        <div className="relative flex w-full shrink-0 flex-wrap items-center gap-2 self-center sm:ml-auto sm:w-auto sm:justify-end">
+          {actions}
+        </div>
+      )}
     </li>
   );
 };
@@ -157,15 +183,28 @@ const VideoRow = ({
  *
  * Row titles are h3: every caller renders the list under a section heading of
  * its own, so the levels don't skip.
+ *
+ * `status` and `actions` are what an organization's own administrators see on
+ * top of the public row - how far ingest has got, and the buttons to edit,
+ * upload to or delete the video. They are render props rather than a second
+ * list component because the row itself is the same row either way: the same
+ * still, the same title, the same running time, decided in one place so the
+ * archive and the admin screens cannot drift apart.
  */
 export const VideoList = ({
   videos,
   showOrganization = true,
   showCategory = true,
+  status,
+  actions,
 }: {
   videos: Video[];
   showOrganization?: boolean;
   showCategory?: boolean;
+  /** Rendered under the title, above the facts line. */
+  status?: (_video: Video) => ReactNode;
+  /** Rendered at the end of the row, or below it on a phone. */
+  actions?: (_video: Video) => ReactNode;
 }) => (
   <ol className="-mx-2 flex flex-col sm:-mx-3">
     {videos.map((video) => (
@@ -174,6 +213,8 @@ export const VideoList = ({
         video={video}
         showOrganization={showOrganization}
         showCategory={showCategory}
+        status={status?.(video)}
+        actions={actions?.(video)}
       />
     ))}
   </ol>
