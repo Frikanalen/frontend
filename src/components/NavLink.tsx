@@ -1,33 +1,29 @@
 "use client";
 import { ReactNode } from "react";
-import { usePathname } from "next/navigation";
 import { NavbarItem } from "@heroui/react";
 import Link from "next/link";
 
+/**
+ * One section in the wide-screen bar.
+ *
+ * The narrow-screen menu draws its own rows rather than reusing this one: a
+ * bar item is a word in a horizontal strip, a menu row is a full-width target
+ * you can hit with a thumb, and the two want different padding, size and
+ * active treatment. What they must share is *which* section is current, so
+ * that is decided once by the caller and handed to both.
+ */
 export const NavLink = ({
   href,
-  activeRegexp,
-  onNavigate,
+  isActive,
   children,
 }: {
   href: string;
-  /**
-   * In case you want to match isActive-ness more flexibly than href, pass a regexp here.
-   * The button will show active state if current path matches it.
-   */
-  activeRegexp?: RegExp;
-  /** Called when the link is followed - the mobile drawer closes itself this way. */
-  onNavigate?: () => void;
+  isActive: boolean;
   children: ReactNode;
-}) => {
-  const path = usePathname();
-
-  const isActive = !activeRegexp ? href === path : activeRegexp.test(path);
-  return (
-    <NavbarItem isActive={isActive}>
-      <Link href={href} onClick={onNavigate}>
-        {children}
-      </Link>
-    </NavbarItem>
-  );
-};
+}) => (
+  <NavbarItem isActive={isActive}>
+    <Link href={href} aria-current={isActive ? "page" : undefined}>
+      {children}
+    </Link>
+  </NavbarItem>
+);
