@@ -4,10 +4,13 @@ import "@vidstack/react/player/styles/default/layouts/video.css";
 import {
   DASHSrc,
   isDASHProvider,
+  isHLSProvider,
+  isVideoProvider,
   MediaPlayer,
   MediaProvider,
   MediaProviderAdapter,
   Poster,
+  useMediaProvider,
   useMediaRemote,
   useMediaState,
   VideoSrc,
@@ -69,6 +72,35 @@ const BeforePlayback = ({ children }: { children: ReactNode }) => {
   return <>{children}</>;
 };
 
+export const UnsupportedVideoMessage = ({ mediaPending = false }: { mediaPending?: boolean }) => {
+  const error = useMediaState("error");
+  const canPlay = useMediaState("canPlay");
+  const provider = useMediaProvider();
+  const videoProvider =
+    isVideoProvider(provider) || isHLSProvider(provider) || isDASHProvider(provider)
+      ? provider
+      : null;
+  const decodedAudioOnly =
+    canPlay && videoProvider?.video.videoWidth === 0 && videoProvider.video.videoHeight === 0;
+
+  // Some browsers accept an Ogg source because they can decode its audio even
+  // when they cannot decode its Theora video track. In that case there is no
+  // media error; the zero video dimensions after `can-play` are the signal.
+  if (mediaPending || (error?.code !== 4 && !decodedAudioOnly)) return null;
+
+  return (
+    <div
+      role="alert"
+      className="pointer-events-none absolute inset-0 z-[5] flex items-center justify-center bg-black/80 px-6 pb-16 text-center text-white"
+    >
+      <p className="max-w-xl text-base leading-relaxed sm:text-lg">
+        Vi beklager, men denne videoen er ikke tilgjengelig i et format støttet av din nettleser. Vi
+        jobber med å utbedre problemet.
+      </p>
+    </div>
+  );
+};
+
 export const VideoPlayer = ({
   title,
   src,
@@ -98,6 +130,7 @@ export const VideoPlayer = ({
           <p>Det kan drøye en stund.</p>
         </div>
       )}
+      <UnsupportedVideoMessage mediaPending={mediaPending} />
       <StartOnClick />
       {overlay && <BeforePlayback>{overlay}</BeforePlayback>}
       <MediaProvider>
