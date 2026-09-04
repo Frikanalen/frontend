@@ -2,9 +2,10 @@
 import { Button, Link, Progress } from "@heroui/react";
 import { ChangeEventHandler, useCallback, useEffect, useRef, useState } from "react";
 import { useTusUpload } from "@/lib/upload/useTusUpload";
-import { useIngestProgress } from "@/lib/upload/useIngestProgress";
+import { POLL_INTERVAL_MS, useIngestProgress } from "@/lib/upload/useIngestProgress";
 import { Alert } from "@heroui/alert";
 import { useRouter } from "next/navigation";
+import { useVideosRetrieve } from "@/generated/videos/videos";
 
 /** How long the "klar" message stays up before we move the user along. */
 const REDIRECT_DELAY_MS = 2000;
@@ -72,11 +73,24 @@ export const FileUpload = ({
   );
 
   const router = useRouter();
+  const { data: videoResponse } = useVideosRetrieve(videoId, {
+    query: {
+      enabled: isSuccess,
+      refetchInterval: (query) =>
+        query.state.data?.data.files.dashPreview ? false : POLL_INTERVAL_MS,
+    },
+  });
+  const previewReady = Boolean(videoResponse?.data.files.dashPreview);
+
   useEffect(() => {
+    if (previewReady) {
+      router.push(`/video/${videoId}`);
+      return;
+    }
     if (description?.phase !== "done") return;
     const timer = setTimeout(() => router.push(`/video/${videoId}`), REDIRECT_DELAY_MS);
     return () => clearTimeout(timer);
-  }, [description?.phase, router, videoId]);
+  }, [description?.phase, previewReady, router, videoId]);
 
   const isIngesting = isSuccess && description?.phase !== "done" && description?.phase !== "failed";
 

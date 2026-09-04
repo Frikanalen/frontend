@@ -8,7 +8,7 @@ import {
 } from "@/lib/upload/describeIngestJob";
 
 /** How often to ask, while the answer can still change. */
-const POLL_INTERVAL_MS = 2000;
+export const POLL_INTERVAL_MS = 2000;
 
 /**
  * Follows a video's ingest until it settles.
