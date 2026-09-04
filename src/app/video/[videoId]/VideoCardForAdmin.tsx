@@ -8,7 +8,7 @@ import { Progress } from "@heroui/react";
 import { Alert } from "@heroui/alert";
 import { useVideosRetrieve } from "@/generated/videos/videos";
 import { POLL_INTERVAL_MS, useIngestProgress } from "@/lib/upload/useIngestProgress";
-
+import { RiErrorWarningFill } from "react-icons/ri";
 export const VideoCardForAdmin = ({
   video: initialVideo,
   startTime,
@@ -43,11 +43,16 @@ export const VideoCardForAdmin = ({
       />
 
       {previewPlaying && (
-        <div className="space-y-3">
-          <p>
-            Du ser en foreløpig visningskopi i lavere kvalitet. Videoen behandles fortsatt og byttes
-            automatisk til full kvalitet når den er klar.
-          </p>
+        <div className="space-y-3 mx-4 rounded-md p-4 bg-content1">
+          <div className="flex items-center justify-evenly gap-4 text-warning">
+            <div className="p-2">
+              <RiErrorWarningFill className="text-4xl" />
+            </div>
+            <p>
+              Du ser en foreløpig visningskopi i lavere kvalitet. Videoen behandles fortsatt og
+              byttes automatisk til full kvalitet når den er klar.
+            </p>
+          </div>
           {description?.phase === "failed" ? (
             <Alert color="danger">{description.message}</Alert>
           ) : description?.phase === "stalled" ? (
