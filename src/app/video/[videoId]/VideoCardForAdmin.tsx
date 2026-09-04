@@ -7,7 +7,13 @@ import { useTimeoutFn } from "react-use";
 import { revalidateVideoAction } from "@/components/stream/revalidateVideoAction";
 import { VideoCardMeta } from "@/app/video/[videoId]/VideoCardMeta";
 
-export const VideoCardForAdmin = ({ video: video }: { video: Video }) => {
+export const VideoCardForAdmin = ({
+  video,
+  startTime,
+}: {
+  video: Video;
+  startTime?: number;
+}) => {
   const videoFiles = djangoVideoFilesToVidstackSrcList(video.files);
   const mediaPending = !videoFiles.length;
   const router = useRouter();
@@ -28,6 +34,7 @@ export const VideoCardForAdmin = ({ video: video }: { video: Video }) => {
         src={videoFiles}
         poster={video.files.largeThumb?.url}
         mediaPending={mediaPending}
+        startTime={startTime}
       />
       <VideoCardMeta video={video} />
     </div>

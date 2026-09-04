@@ -7,6 +7,7 @@ import { VideoCardForAdmin } from "@/app/video/[videoId]/VideoCardForAdmin";
 import { ssrVideosRetrieve } from "@/generated/ssr/videos/videos";
 import { Metadata } from "next";
 import { VideoParams, parseParamsOr404 } from "@/lib/routeParams";
+import { videoStartTimeFrom } from "@/app/video/[videoId]/videoStartTime";
 
 export const revalidate = 60;
 
@@ -16,6 +17,7 @@ export interface VideoPageParams {
 
 export type VideoPageProps = {
   params: Promise<VideoPageParams>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
 export async function generateMetadata({ params }: VideoPageProps): Promise<Metadata> {
@@ -46,8 +48,9 @@ export async function generateMetadata({ params }: VideoPageProps): Promise<Meta
   };
 }
 
-export default async function VideoPage({ params }: VideoPageProps) {
+export default async function VideoPage({ params, searchParams }: VideoPageProps) {
   const { videoId } = await parseParamsOr404(VideoParams, params);
+  const startTime = videoStartTimeFrom((await searchParams).t);
   const headers = await getCookiesFromRequest();
 
   const { data: video, status } = await ssrVideosRetrieve(videoId, {
@@ -64,5 +67,9 @@ export default async function VideoPage({ params }: VideoPageProps) {
   const user = await getUserOrNull(headers);
   const mayEdit = profileIsAdminOrMember(video.organization.id, user);
 
-  return mayEdit ? <VideoCardForAdmin video={video} /> : <VideoCard video={video} />;
+  return mayEdit ? (
+    <VideoCardForAdmin video={video} startTime={startTime} />
+  ) : (
+    <VideoCard video={video} startTime={startTime} />
+  );
 }
