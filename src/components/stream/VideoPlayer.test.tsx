@@ -2,16 +2,20 @@ import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 const vidstack = vi.hoisted(() => ({
+  MediaPlayer: vi.fn(),
+  MediaProvider: vi.fn(),
+  Poster: vi.fn(),
   isDASHProvider: vi.fn(),
   isHLSProvider: vi.fn(),
   isVideoProvider: vi.fn(),
   useMediaProvider: vi.fn(),
+  useMediaRemote: vi.fn(),
   useMediaState: vi.fn(),
 }));
 
 vi.mock("@vidstack/react", () => vidstack);
 
-import { UnsupportedVideoMessage } from "./VideoPlayer";
+import { UnsupportedVideoMessage, VideoPlayer } from "./VideoPlayer";
 
 afterEach(() => {
   cleanup();
@@ -79,5 +83,13 @@ describe("UnsupportedVideoMessage", () => {
     render(<UnsupportedVideoMessage mediaPending />);
 
     expect(screen.queryByRole("alert")).toBeNull();
+  });
+});
+
+describe("VideoPlayer", () => {
+  it("passes an initial playback time to Vidstack", () => {
+    const player = VideoPlayer({ title: "A video", src: "/video.webm", startTime: 90 });
+
+    expect(player.props.currentTime).toBe(90);
   });
 });

@@ -107,12 +107,14 @@ export const VideoPlayer = ({
   poster,
   mediaPending,
   overlay,
+  startTime,
 }: {
   title: string;
   src: string | VideoSrc | DASHSrc | (VideoSrc | DASHSrc)[];
   poster?: string;
   mediaPending?: boolean;
   overlay?: ReactNode;
+  startTime?: number;
 }) => {
   return (
     <MediaPlayer
@@ -121,6 +123,7 @@ export const VideoPlayer = ({
       poster={poster}
       aspectRatio="16/9"
       load="play"
+      currentTime={startTime}
       onProviderChange={onProviderChange}
     >
       {mediaPending && (

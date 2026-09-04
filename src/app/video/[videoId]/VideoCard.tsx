@@ -34,7 +34,7 @@ export const djangoVideoFilesToVidstackSrcList = (videoFiles: VideoFiles): (Vide
     return [{ type: file.mimeType, src: file.url }];
   });
 
-export const VideoCard = ({ video }: { video: Video }) => {
+export const VideoCard = ({ video, startTime }: { video: Video; startTime?: number }) => {
   if (!video.organization.fkmember) return notFound();
   return (
     <div className="space-y-4 bg-background text-foreground rounded-xl">
@@ -42,6 +42,7 @@ export const VideoCard = ({ video }: { video: Video }) => {
         title={video.name}
         src={djangoVideoFilesToVidstackSrcList(video.files)}
         poster={video.files.largeThumb?.url}
+        startTime={startTime}
       />
       <VideoCardMeta video={video} />
     </div>
