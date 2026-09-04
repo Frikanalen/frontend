@@ -17,6 +17,7 @@ import { VideoCardMeta } from "@/app/video/[videoId]/VideoCardMeta";
 // files serve as the fallback everywhere else — WebM ahead of the ageing Theora.
 const playbackPreference = [
   "dash",
+  "dashPreview",
   "webmMed",
   "theora",
 ] as const satisfies readonly (keyof VideoFiles)[];
