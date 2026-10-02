@@ -22,6 +22,15 @@ const playbackPreference = [
   "theora",
 ] as const satisfies readonly (keyof VideoFiles)[];
 
+// A bare `video/ogg` isn't enough to choose by: browsers that play Ogg audio but not Theora video
+// (Safari, and Chrome since it dropped Theora) answer "maybe" and then play the file as sound only.
+// Naming the codecs lets vidstack's `canPlayType` check pass over the file in those browsers.
+// vidstack types `type` as a bare MIME type but hands it to `canPlayType` as is, and still
+// recognises the file as video by its `.ogv` extension.
+const codecs: Partial<Record<(typeof playbackPreference)[number], string>> = {
+  theora: "theora, vorbis",
+};
+
 const isVidstackVideoMimeType = (
   mimeType: string | null,
 ): mimeType is VideoMimeType | DASHMimeType =>
@@ -32,7 +41,12 @@ export const djangoVideoFilesToVidstackSrcList = (videoFiles: VideoFiles): (Vide
     const file = videoFiles[variant];
     if (!file || !isVidstackVideoMimeType(file.mimeType)) return [];
 
-    return [{ type: file.mimeType, src: file.url }];
+    const codec = codecs[variant];
+    const type = codec
+      ? (`${file.mimeType}; codecs="${codec}"` as typeof file.mimeType)
+      : file.mimeType;
+
+    return [{ type, src: file.url }];
   });
 
 export const VideoCard = ({ video, startTime }: { video: Video; startTime?: number }) => {

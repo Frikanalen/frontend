@@ -4,13 +4,10 @@ import "@vidstack/react/player/styles/default/layouts/video.css";
 import {
   DASHSrc,
   isDASHProvider,
-  isHLSProvider,
-  isVideoProvider,
   MediaPlayer,
   MediaProvider,
   MediaProviderAdapter,
   Poster,
-  useMediaProvider,
   useMediaRemote,
   useMediaState,
   VideoSrc,
@@ -74,19 +71,8 @@ const BeforePlayback = ({ children }: { children: ReactNode }) => {
 
 export const UnsupportedVideoMessage = ({ mediaPending = false }: { mediaPending?: boolean }) => {
   const error = useMediaState("error");
-  const canPlay = useMediaState("canPlay");
-  const provider = useMediaProvider();
-  const videoProvider =
-    isVideoProvider(provider) || isHLSProvider(provider) || isDASHProvider(provider)
-      ? provider
-      : null;
-  const decodedAudioOnly =
-    canPlay && videoProvider?.video.videoWidth === 0 && videoProvider.video.videoHeight === 0;
 
-  // Some browsers accept an Ogg source because they can decode its audio even
-  // when they cannot decode its Theora video track. In that case there is no
-  // media error; the zero video dimensions after `can-play` are the signal.
-  if (mediaPending || (error?.code !== 4 && !decodedAudioOnly)) return null;
+  if (mediaPending || error?.code !== 4) return null;
 
   return (
     <div
