@@ -1,4 +1,4 @@
-import React, { ReactNode } from "react";
+import React, { ReactNode, useEffect, useState } from "react";
 import "@vidstack/react/player/styles/default/theme.css";
 import "@vidstack/react/player/styles/default/layouts/video.css";
 import {
@@ -72,21 +72,49 @@ const BeforePlayback = ({ children }: { children: ReactNode }) => {
   return <>{children}</>;
 };
 
+// How long a source has to play with no picture before we decide its video track can't be decoded.
+// WebKit learns the video size from the first decoded frame, not from the metadata, so it can still
+// report 0×0 well after `loadedmetadata` - which is where vidstack declares iOS ready to play.
+const AUDIO_ONLY_GRACE_MS = 1000;
+
+// Some browsers accept an Ogg source because they can decode its audio even when they cannot decode
+// its Theora video track. In that case there is no media error; a video that keeps playing at 0×0 is
+// the signal.
+const useDecodesAudioOnly = () => {
+  const playing = useMediaState("playing");
+  const provider = useMediaProvider();
+  const video =
+    isVideoProvider(provider) || isHLSProvider(provider) || isDASHProvider(provider)
+      ? provider.video
+      : null;
+  const [audioOnly, setAudioOnly] = useState(false);
+
+  useEffect(() => {
+    if (!video) return;
+    const onResize = () => {
+      if (video.videoWidth !== 0 || video.videoHeight !== 0) setAudioOnly(false);
+    };
+    video.addEventListener("resize", onResize);
+    return () => video.removeEventListener("resize", onResize);
+  }, [video]);
+
+  useEffect(() => {
+    if (!video || !playing) return;
+    const timer = setTimeout(
+      () => setAudioOnly(video.videoWidth === 0 && video.videoHeight === 0),
+      AUDIO_ONLY_GRACE_MS,
+    );
+    return () => clearTimeout(timer);
+  }, [video, playing]);
+
+  return audioOnly;
+};
+
 export const UnsupportedVideoMessage = ({ mediaPending = false }: { mediaPending?: boolean }) => {
   const error = useMediaState("error");
-  const canPlay = useMediaState("canPlay");
-  const provider = useMediaProvider();
-  const videoProvider =
-    isVideoProvider(provider) || isHLSProvider(provider) || isDASHProvider(provider)
-      ? provider
-      : null;
-  const decodedAudioOnly =
-    canPlay && videoProvider?.video.videoWidth === 0 && videoProvider.video.videoHeight === 0;
+  const decodesAudioOnly = useDecodesAudioOnly();
 
-  // Some browsers accept an Ogg source because they can decode its audio even
-  // when they cannot decode its Theora video track. In that case there is no
-  // media error; the zero video dimensions after `can-play` are the signal.
-  if (mediaPending || (error?.code !== 4 && !decodedAudioOnly)) return null;
+  if (mediaPending || (error?.code !== 4 && !decodesAudioOnly)) return null;
 
   return (
     <div
