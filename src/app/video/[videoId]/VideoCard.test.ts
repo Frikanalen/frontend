@@ -19,7 +19,7 @@ describe("djangoVideoFilesToVidstackSrcList", () => {
       { src: "https://media.example/manifest.mpd", type: "application/dash+xml" },
       { src: "https://media.example/preview/manifest.mpd", type: "application/dash+xml" },
       { src: "https://media.example/video.webm", type: "video/webm" },
-      { src: "https://media.example/video.ogv", type: "video/ogg" },
+      { src: "https://media.example/video.ogv", type: 'video/ogg; codecs="theora, vorbis"' },
     ]);
   });
 
