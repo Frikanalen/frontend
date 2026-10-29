@@ -25,6 +25,7 @@ const program = (id: number, name: string, from: string) =>
     schedulereason: 3,
     displaceable: false,
     weeklySlot: null,
+    liveTransmission: null,
     video: {
       id: id * 10,
       name,
