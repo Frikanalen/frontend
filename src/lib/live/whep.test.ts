@@ -71,4 +71,14 @@ describe("startWhep", () => {
     await expect(attempt).rejects.toMatchObject({ reason });
     expect(pc.closed).toBe(true);
   });
+
+  it("reports MediaMTX's own explanation of a refusal", async () => {
+    const body = JSON.stringify({ error: "path 'contrib/preview/x' is not configured" });
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(body, { status: 400 })));
+
+    await expect(startWhep("/x/whep", "tok", fakePc().factory)).rejects.toMatchObject({
+      reason: "error",
+      message: "path 'contrib/preview/x' is not configured",
+    });
+  });
 });

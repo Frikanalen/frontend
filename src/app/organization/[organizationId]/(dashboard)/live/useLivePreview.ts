@@ -33,13 +33,26 @@ async function connect(sourceId: number) {
     ["preview", data.previewPath],
     ["contribution", data.contributionPath],
   ];
+  let previewFailure: unknown = null;
   for (const [variant, path] of variants) {
     try {
       return { session: await startWhep(whepUrl(path), data.token), variant };
     } catch (cause) {
-      if (!(cause instanceof WhepError && cause.reason === "not-found")) throw cause;
+      if (cause instanceof WhepError && cause.reason === "unauthorized") throw cause;
+      // Where no conversion worker is deployed, MediaMTX has no preview path
+      // configured at all and answers 400, not 404: any preview failure
+      // falls through to the original feed.
+      if (variant === "preview") {
+        previewFailure = cause;
+        continue;
+      }
+      // Both missing is the ordinary "encoder not started yet".
+      if (cause instanceof WhepError && cause.reason === "not-found") break;
+      throw cause;
     }
   }
+  if (previewFailure instanceof WhepError && previewFailure.reason === "error")
+    console.warn("Opus preview unavailable:", previewFailure.message);
   throw new WhepError("not-found", "Nothing is being published to this source");
 }
 
