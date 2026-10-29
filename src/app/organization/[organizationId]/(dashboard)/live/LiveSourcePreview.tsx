@@ -17,6 +17,7 @@ const PHASES: Record<
   waiting: { label: "Venter på signal", color: "warning" },
   playing: { label: "Mottar signal", color: "success" },
   unauthorized: { label: "Ingen tilgang", color: "danger" },
+  unsupported: { label: "Kan ikke spilles av", color: "danger" },
   error: { label: "Feil", color: "danger" },
 };
 
@@ -92,6 +93,12 @@ export const LiveSourcePreview = ({
           {phase === "unauthorized" && (
             <p className="text-sm text-danger">
               Du har ikke tilgang til å se denne kilden. Last inn siden på nytt og prøv igjen.
+            </p>
+          )}
+          {phase === "unsupported" && (
+            <p className="text-sm text-danger">
+              Nettleseren din kan ikke spille av videoen (H.264). Bruk Chrome, eller slå på
+              OpenH264-tillegget i Firefox under Tillegg → Programtillegg.
             </p>
           )}
           {phase === "error" && (

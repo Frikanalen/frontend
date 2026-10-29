@@ -81,4 +81,13 @@ describe("startWhep", () => {
       message: "path 'contrib/preview/x' is not configured",
     });
   });
+
+  it("tells a codec the browser cannot play apart from other refusals", async () => {
+    const body = JSON.stringify({ error: "codecs not supported by client" });
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(body, { status: 400 })));
+
+    await expect(startWhep("/x/whep", "tok", fakePc().factory)).rejects.toMatchObject({
+      reason: "unsupported-codec",
+    });
+  });
 });
