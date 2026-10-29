@@ -1,3 +1,17 @@
 node_modules
 .next
+.next-playwright
 src/generated
+
+.git
+.github
+.idea
+.agents
+.aws
+.codex
+.env*
+coverage
+playwright-report
+test-results
+.yarn
+*.tsbuildinfo

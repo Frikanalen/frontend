@@ -44,3 +44,6 @@ src/generated
 /playwright-report
 /blob-report
 /playwright/.cache
+
+# Compressed Yarn package mirror used by CI
+.yarn/offline-mirror/
