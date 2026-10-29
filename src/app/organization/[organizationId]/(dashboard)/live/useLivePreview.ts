@@ -14,51 +14,21 @@ export type PreviewPhase =
   | "unauthorized"
   | "error";
 
-/**
- * Which of the source's two streams is playing. The Opus preview has sound
- * a browser can play; the original's AAC audio is dropped by WebRTC, so it
- * is used only when no preview is running.
- */
-export type PreviewVariant = "preview" | "contribution";
-
 // A member is likely to open this page before their encoder is running, so
 // "no stream yet" is an expected state worth re-checking often.
 const WAITING_RETRY_MS = 5_000;
 const ERROR_RETRY_MS = 10_000;
 const STATS_INTERVAL_MS = 1_000;
 
+// The original feed, not the Opus preview: the page checks the picture
+// only. WebRTC drops its AAC audio, which browsers cannot decode.
 async function connect(sourceId: number) {
   const { data } = await liveSourcesPreviewTokenCreate(sourceId);
-  const variants: [PreviewVariant, string][] = [
-    ["preview", data.previewPath],
-    ["contribution", data.contributionPath],
-  ];
-  let previewFailure: unknown = null;
-  for (const [variant, path] of variants) {
-    try {
-      return { session: await startWhep(whepUrl(path), data.token), variant };
-    } catch (cause) {
-      if (cause instanceof WhepError && cause.reason === "unauthorized") throw cause;
-      // Where no conversion worker is deployed, MediaMTX has no preview path
-      // configured at all and answers 400, not 404: any preview failure
-      // falls through to the original feed.
-      if (variant === "preview") {
-        previewFailure = cause;
-        continue;
-      }
-      // Both missing is the ordinary "encoder not started yet".
-      if (cause instanceof WhepError && cause.reason === "not-found") break;
-      throw cause;
-    }
-  }
-  if (previewFailure instanceof WhepError && previewFailure.reason === "error")
-    console.warn("Opus preview unavailable:", previewFailure.message);
-  throw new WhepError("not-found", "Nothing is being published to this source");
+  return startWhep(whepUrl(data.contributionPath), data.token);
 }
 
 export function useLivePreview(sourceId: number) {
   const [phase, setPhase] = useState<PreviewPhase>("idle");
-  const [variant, setVariant] = useState<PreviewVariant | null>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [stats, setStats] = useState<StreamStats | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -89,10 +59,9 @@ export function useLivePreview(sourceId: number) {
     };
 
     connect(sourceId)
-      .then(({ session, variant }) => {
+      .then((session) => {
         if (cancelled) return session.close();
         sessionRef.current = session;
-        setVariant(variant);
         setStream(session.stream);
         setStats(null);
         setError(null);
@@ -142,5 +111,5 @@ export function useLivePreview(sourceId: number) {
     };
   }, [attempt, sourceId, start]);
 
-  return { phase, variant, stream, stats, error, start, stop, running: attempt > 0 };
+  return { phase, stream, stats, error, start, stop, running: attempt > 0 };
 }
