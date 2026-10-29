@@ -6,6 +6,7 @@ import { formatBitrate } from "@/lib/live/streamStats";
 import { formatOsloTime, inOsloTime } from "@/lib/osloTime";
 import { format } from "date-fns";
 import { type PreviewPhase, useLivePreview } from "./useLivePreview";
+import { VuMeter } from "./VuMeter";
 
 const PHASES: Record<
   PreviewPhase,
@@ -33,7 +34,7 @@ export const LiveSourcePreview = ({
   source: LiveSource;
   autoStart: boolean;
 }) => {
-  const { phase, stream, stats, error, start, stop, running } = useLivePreview(source.id);
+  const { phase, variant, stream, stats, error, start, stop, running } = useLivePreview(source.id);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -99,9 +100,17 @@ export const LiveSourcePreview = ({
             </p>
           )}
           {videoStalled && <p className="text-sm text-warning-600">Ingen video mottas.</p>}
-          <p className="text-xs text-default-500">
-            Forhåndsvisningen viser bare bildet. Lyden kommer ikke med hit.
-          </p>
+          {phase === "playing" && variant === "contribution" && (
+            <p className="text-sm text-warning-600">
+              Lydforhåndsvisningen er ikke tilgjengelig, så du ser bare bildet fra originalsignalet.
+            </p>
+          )}
+          {variant === "preview" && (
+            <p className="text-xs text-default-500">
+              Videoen starter uten lyd. Slå på lyden i spilleren for å høre den; lydmåleren virker
+              uansett.
+            </p>
+          )}
         </div>
 
         <div className="space-y-4">
@@ -121,6 +130,14 @@ export const LiveSourcePreview = ({
               <Stat label="Tapte pakker" value={video ? String(video.packetsLost) : "–"} />
             </dl>
           </section>
+          {phase === "playing" && (
+            <section>
+              <h3 className="font-semibold">Lyd</h3>
+              <div className="mt-1">
+                <VuMeter stream={stream} />
+              </div>
+            </section>
+          )}
           <section>
             <h3 className="font-semibold">Kommende sendinger</h3>
             {source.upcomingTransmissions.length === 0 ? (

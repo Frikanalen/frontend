@@ -20,15 +20,32 @@ const WAITING_RETRY_MS = 5_000;
 const ERROR_RETRY_MS = 10_000;
 const STATS_INTERVAL_MS = 1_000;
 
-// The original feed, not the Opus preview: the page checks the picture
-// only. WebRTC drops its AAC audio, which browsers cannot decode.
+/**
+ * Which of the source's two streams is playing. MediaMTX converts the
+ * preview's audio to Opus, which a browser can play and meter; WebRTC drops
+ * the original's AAC, so the original is the fallback for a picture only.
+ */
+export type PreviewVariant = "preview" | "contribution";
+
 async function connect(sourceId: number) {
   const { data } = await liveSourcesPreviewTokenCreate(sourceId);
-  return startWhep(whepUrl(data.contributionPath), data.token);
+  try {
+    const session = await startWhep(whepUrl(data.previewPath), data.token);
+    return { session, variant: "preview" as const };
+  } catch (cause) {
+    if (cause instanceof WhepError && cause.reason === "unauthorized") throw cause;
+    // Where MediaMTX runs no converter the preview path is not configured,
+    // which it answers with 400 rather than 404: any other failure falls
+    // through to the original.
+    console.warn("Opus preview unavailable, showing the original:", cause);
+  }
+  const session = await startWhep(whepUrl(data.contributionPath), data.token);
+  return { session, variant: "contribution" as const };
 }
 
 export function useLivePreview(sourceId: number) {
   const [phase, setPhase] = useState<PreviewPhase>("idle");
+  const [variant, setVariant] = useState<PreviewVariant | null>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [stats, setStats] = useState<StreamStats | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -59,9 +76,10 @@ export function useLivePreview(sourceId: number) {
     };
 
     connect(sourceId)
-      .then((session) => {
+      .then(({ session, variant }) => {
         if (cancelled) return session.close();
         sessionRef.current = session;
+        setVariant(variant);
         setStream(session.stream);
         setStats(null);
         setError(null);
@@ -111,5 +129,5 @@ export function useLivePreview(sourceId: number) {
     };
   }, [attempt, sourceId, start]);
 
-  return { phase, stream, stats, error, start, stop, running: attempt > 0 };
+  return { phase, variant, stream, stats, error, start, stop, running: attempt > 0 };
 }
