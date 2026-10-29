@@ -6,7 +6,7 @@
  * and one request keeps the bearer token's job to a single check.
  */
 
-export type WhepFailure = "not-found" | "unauthorized" | "error";
+export type WhepFailure = "not-found" | "unauthorized" | "unsupported-codec" | "error";
 
 export class WhepError extends Error {
   readonly reason: WhepFailure;
@@ -51,6 +51,10 @@ const serverError = async (response: Response) => {
   return null;
 };
 
+// MediaMTX's words when the browser's offer has none of the stream's codecs,
+// e.g. Firefox without its OpenH264 plugin and an H.264 feed.
+const UNSUPPORTED_CODEC = /codecs? not supported/i;
+
 export const whepUrl = (path: string) => `/${path}/whep`;
 
 export async function startWhep(
@@ -88,11 +92,11 @@ export async function startWhep(
     if (response.status === 404) throw new WhepError("not-found", "No stream on this path");
     if (response.status === 401 || response.status === 403)
       throw new WhepError("unauthorized", "Not allowed to read this stream");
-    if (response.status !== 201)
-      throw new WhepError(
-        "error",
-        (await serverError(response)) ?? `Unexpected WHEP response ${response.status}`,
-      );
+    if (response.status !== 201) {
+      const message =
+        (await serverError(response)) ?? `Unexpected WHEP response ${response.status}`;
+      throw new WhepError(UNSUPPORTED_CODEC.test(message) ? "unsupported-codec" : "error", message);
+    }
 
     location = response.headers.get("Location");
     await pc.setRemoteDescription({ type: "answer", sdp: await response.text() });

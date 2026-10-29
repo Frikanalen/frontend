@@ -12,6 +12,8 @@ export type PreviewPhase =
   | "waiting"
   | "playing"
   | "unauthorized"
+  /** The browser cannot decode the feed's video, so retrying won't help. */
+  | "unsupported"
   | "error";
 
 // A member is likely to open this page before their encoder is running, so
@@ -33,7 +35,13 @@ async function connect(sourceId: number) {
     const session = await startWhep(whepUrl(data.previewPath), data.token);
     return { session, variant: "preview" as const };
   } catch (cause) {
-    if (cause instanceof WhepError && cause.reason === "unauthorized") throw cause;
+    // The preview copies the original's video, so a codec the browser can't
+    // play rules out both.
+    if (
+      cause instanceof WhepError &&
+      (cause.reason === "unauthorized" || cause.reason === "unsupported-codec")
+    )
+      throw cause;
     // Where MediaMTX runs no converter the preview path is not configured,
     // which it answers with 400 rather than 404: any other failure falls
     // through to the original.
@@ -113,6 +121,8 @@ export function useLivePreview(sourceId: number) {
           (isAxiosError(cause) && [401, 403, 404].includes(cause.response?.status ?? 0))
         ) {
           setPhase("unauthorized");
+        } else if (cause instanceof WhepError && cause.reason === "unsupported-codec") {
+          setPhase("unsupported");
         } else {
           setError(cause instanceof Error ? cause.message : String(cause));
           setPhase("error");
