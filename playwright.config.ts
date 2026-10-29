@@ -10,7 +10,13 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 2 : undefined,
-  reporter: process.env.CI ? "github" : "list",
+  reporter: process.env.CI
+    ? [
+        ["github"],
+        ["html", { open: "never" }],
+        ["json", { outputFile: "test-results/results.json" }],
+      ]
+    : "list",
   use: {
     baseURL,
     trace: "on-first-retry",
@@ -28,13 +34,24 @@ export default defineConfig({
       env: { PLAYWRIGHT_BACKEND_PORT: String(BACKEND_PORT) },
     },
     {
-      command: `npx next dev --port ${PORT}`,
+      // Include compilation in the measured E2E step, but serve optimized
+      // output in CI so browser workers do not compete with dev compilation.
+      command: process.env.CI
+        ? [
+            "npx next build",
+            "cp -r public .next-playwright/standalone/",
+            "cp -r .next-playwright/static .next-playwright/standalone/.next-playwright/",
+            "node .next-playwright/standalone/server.js",
+          ].join(" && ")
+        : `npx next dev --port ${PORT}`,
       // The front page degrades to an empty schedule when the mock backend has
       // no fixture, so it remains the readiness probe as well as a tested page.
       url: `${baseURL}/`,
       reuseExistingServer: !process.env.CI,
       timeout: 120_000,
       env: {
+        PORT: String(PORT),
+        HOSTNAME: "127.0.0.1",
         DJANGO_URL: `http://127.0.0.1:${BACKEND_PORT}/`,
         PLAYWRIGHT_TEST: "1",
       },
