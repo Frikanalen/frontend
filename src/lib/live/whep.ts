@@ -40,6 +40,17 @@ const iceGatheringComplete = (pc: RTCPeerConnection) =>
     pc.addEventListener("icegatheringstatechange", onChange);
   });
 
+// MediaMTX explains a refusal as {"error": "..."}; worth showing, since it
+// names problems such as a path the server has no configuration for.
+const serverError = async (response: Response) => {
+  try {
+    const body: unknown = await response.json();
+    if (body && typeof body === "object" && "error" in body && typeof body.error === "string")
+      return body.error;
+  } catch {}
+  return null;
+};
+
 export const whepUrl = (path: string) => `/${path}/whep`;
 
 export async function startWhep(
@@ -78,7 +89,10 @@ export async function startWhep(
     if (response.status === 401 || response.status === 403)
       throw new WhepError("unauthorized", "Not allowed to read this stream");
     if (response.status !== 201)
-      throw new WhepError("error", `Unexpected WHEP response ${response.status}`);
+      throw new WhepError(
+        "error",
+        (await serverError(response)) ?? `Unexpected WHEP response ${response.status}`,
+      );
 
     location = response.headers.get("Location");
     await pc.setRemoteDescription({ type: "answer", sdp: await response.text() });
