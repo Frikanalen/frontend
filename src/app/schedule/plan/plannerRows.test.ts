@@ -12,6 +12,7 @@ const item = (id: number, starttime: string, endtime: string): ScheduleitemRead 
   duration: "01:00:00",
   displaceable: false,
   weeklySlot: null,
+  liveTransmission: null,
 });
 
 const slot = (overrides: Partial<WeeklySlotRead> = {}): WeeklySlotRead => ({

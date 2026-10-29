@@ -37,6 +37,12 @@ const nextConfig: NextConfig = {
         source: "/api/:path*",
         destination: `${process.env.DJANGO_URL ?? "http://localhost:8000/"}api/:path*`,
       },
+      // MediaMTX's WebRTC (WHEP) endpoints, which the ingress likewise
+      // routes straight to MediaMTX in deployed environments.
+      {
+        source: "/contrib/:path*",
+        destination: `${process.env.MEDIAMTX_WEBRTC_URL ?? "http://localhost:8889/"}contrib/:path*`,
+      },
     ];
   },
 };

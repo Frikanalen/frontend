@@ -38,6 +38,9 @@ export const OrgAdminPage = ({ organization }: { organization: Organization }) =
         >
           Programmer sendeplanen
         </Button>
+        <Button as={Link} href={`/organization/${organization.id}/live`} color="primary" size="md">
+          Sjekk direktesending
+        </Button>
       </div>
       {/* The unfinished ones first: they are the only videos on this page
           that are waiting for their owner to do something. */}

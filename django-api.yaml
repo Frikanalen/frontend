@@ -1992,6 +1992,114 @@ paths:
         - cookieAuth: []
       tags:
         - ingest
+  /api/live-sources/{id}/preview-token:
+    post:
+      operationId: live_sources_preview_token_create
+      summary: Issue a WebRTC preview token
+      description: A short-lived bearer token that lets the caller's browser read this source's feed over WHEP, at `/<path>/whep` on the site's own host.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '201':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PreviewToken'
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LiveSourcesPreviewTokenCreateErrorResponse400'
+        '401':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: authentication_failed
+                        detail: Incorrect authentication credentials.
+                        attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_authenticated
+                        detail: Authentication credentials were not provided.
+                        attr: null
+        '404':
+          description: No such enabled source in your organizations.
+        '405':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse405'
+              examples:
+                MethodNotAllowed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: method_not_allowed
+                        detail: Method "get" not allowed.
+                        attr: null
+        '406':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse406'
+              examples:
+                NotAcceptable:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_acceptable
+                        detail: Could not satisfy the request Accept header.
+                        attr: null
+        '415':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse415'
+              examples:
+                UnsupportedMediaType:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: unsupported_media_type
+                        detail: Unsupported media type "application/json" in request.
+                        attr: null
+        '500':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+              examples:
+                APIException:
+                  value:
+                    type: server_error
+                    errors:
+                      - code: error
+                        detail: A server error occurred.
+                        attr: null
+      security:
+        - tokenAuth: []
+        - cookieAuth: []
+      tags:
+        - live-sources
   /api/news/bulletins:
     get:
       operationId: news_bulletins_list
@@ -3661,6 +3769,131 @@ paths:
                     errors:
                       - code: permission_denied
                         detail: You do not have permission to perform this action.
+                        attr: null
+        '404':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+              examples:
+                NotFound:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_found
+                        detail: Not found.
+                        attr: null
+        '405':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse405'
+              examples:
+                MethodNotAllowed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: method_not_allowed
+                        detail: Method "get" not allowed.
+                        attr: null
+        '406':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse406'
+              examples:
+                NotAcceptable:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_acceptable
+                        detail: Could not satisfy the request Accept header.
+                        attr: null
+        '415':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse415'
+              examples:
+                UnsupportedMediaType:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: unsupported_media_type
+                        detail: Unsupported media type "application/json" in request.
+                        attr: null
+        '500':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+              examples:
+                APIException:
+                  value:
+                    type: server_error
+                    errors:
+                      - code: error
+                        detail: A server error occurred.
+                        attr: null
+      security:
+        - tokenAuth: []
+        - cookieAuth: []
+      tags:
+        - organization
+  /api/organization/{id}/live-sources:
+    get:
+      operationId: organization_live_sources_list
+      description: |-
+        An organization's live contribution inputs and their coming bookings.
+
+        Only its own members see them: a source's stream ID is half of what an
+        encoder needs to publish to it.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LiveSource'
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationLiveSourcesListErrorResponse400'
+        '401':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: authentication_failed
+                        detail: Incorrect authentication credentials.
+                        attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_authenticated
+                        detail: Authentication credentials were not provided.
                         attr: null
         '404':
           description: ''
@@ -10526,7 +10759,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedWeeklySlotRequestList'
+                $ref: '#/components/schemas/PaginatedWeeklySlotRequestEnvelopeList'
         '400':
           description: ''
           content:
@@ -13738,6 +13971,65 @@ components:
         - transcoding
         - done
         - failed
+    LiveSource:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+        enabled:
+          type: boolean
+          readOnly: true
+        streamId:
+          type: string
+          format: uuid
+          readOnly: true
+        contributionPath:
+          type: string
+          readOnly: true
+        previewPath:
+          type: string
+          readOnly: true
+        upcomingTransmissions:
+          type: array
+          items:
+            $ref: '#/components/schemas/UpcomingTransmission'
+          readOnly: true
+      required:
+        - contributionPath
+        - enabled
+        - id
+        - name
+        - previewPath
+        - streamId
+        - upcomingTransmissions
+    LiveSourcesPreviewTokenCreateErrorResponse400:
+      discriminator:
+        propertyName: type
+        mapping:
+          client_error: '#/components/schemas/ParseErrorResponse'
+      oneOf:
+        - $ref: '#/components/schemas/ParseErrorResponse'
+    LiveTransmissionRead:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        source:
+          type: integer
+          readOnly: true
+        streamId:
+          type: string
+          format: uuid
+          readOnly: true
+      required:
+        - id
+        - source
+        - streamId
     Login:
       type: object
       properties:
@@ -14665,6 +14957,13 @@ components:
           client_error: '#/components/schemas/ParseErrorResponse'
       oneOf:
         - $ref: '#/components/schemas/ParseErrorResponse'
+    OrganizationLiveSourcesListErrorResponse400:
+      discriminator:
+        propertyName: type
+        mapping:
+          client_error: '#/components/schemas/ParseErrorResponse'
+      oneOf:
+        - $ref: '#/components/schemas/ParseErrorResponse'
     OrganizationPartialUpdateDescriptionErrorComponent:
       type: object
       properties:
@@ -15302,7 +15601,7 @@ components:
       required:
         - count
         - results
-    PaginatedWeeklySlotRequestList:
+    PaginatedWeeklySlotRequestEnvelopeList:
       type: object
       properties:
         count:
@@ -15321,7 +15620,7 @@ components:
         results:
           type: array
           items:
-            $ref: '#/components/schemas/WeeklySlotRequest'
+            $ref: '#/components/schemas/WeeklySlotRequestEnvelope'
       required:
         - count
         - results
@@ -15557,13 +15856,8 @@ components:
           type: string
           maxLength: 255
           minLength: 1
-        header:
-          type: string
-          maxLength: 2048
-          nullable: true
         description:
           type: string
-          maxLength: 2048
           nullable: true
         seriesId:
           type: integer
@@ -15669,6 +15963,27 @@ components:
           type: array
           items:
             type: integer
+    PreviewToken:
+      type: object
+      properties:
+        token:
+          description: 'Send as `Authorization: Bearer <token>` with the WHEP request.'
+          type: string
+        expiresAt:
+          description: The token must be presented before this; a session it started keeps playing.
+          type: string
+          format: date-time
+        contributionPath:
+          description: The original feed. WebRTC carries its video but not AAC audio.
+          type: string
+        previewPath:
+          description: The Opus-audio preview, if a conversion worker runs for this source.
+          type: string
+      required:
+        - contributionPath
+        - expiresAt
+        - previewPath
+        - token
     ProgramImage:
       type: object
       properties:
@@ -15934,12 +16249,18 @@ components:
           type: integer
           nullable: true
           readOnly: true
+        liveTransmission:
+          allOf:
+            - $ref: '#/components/schemas/LiveTransmissionRead'
+          nullable: true
+          readOnly: true
       required:
         - defaultName
         - displaceable
         - duration
         - endtime
         - id
+        - liveTransmission
         - schedulereason
         - starttime
         - video
@@ -15953,13 +16274,8 @@ components:
         name:
           type: string
           maxLength: 255
-        header:
-          type: string
-          maxLength: 2048
-          nullable: true
         description:
           type: string
-          maxLength: 2048
           nullable: true
         organization:
           allOf:
@@ -17322,6 +17638,27 @@ components:
           client_error: '#/components/schemas/ParseErrorResponse'
       oneOf:
         - $ref: '#/components/schemas/ParseErrorResponse'
+    UpcomingTransmission:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+        starttime:
+          type: string
+          format: date-time
+        endtime:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+        - endtime
+        - id
+        - name
+        - starttime
     UploadTokenVerificationRequest:
       description: The upload capability presented by ingest for a specific video.
       type: object
@@ -18171,13 +18508,8 @@ components:
         name:
           type: string
           maxLength: 255
-        header:
-          type: string
-          maxLength: 2048
-          nullable: true
         description:
           type: string
-          maxLength: 2048
           nullable: true
         files:
           allOf:
@@ -18273,13 +18605,6 @@ components:
           type: string
           format: date-time
           nullable: true
-        ogvUrl:
-          type: string
-          nullable: true
-          readOnly: true
-        largeThumbnailUrl:
-          type: string
-          readOnly: true
       required:
         - categories
         - createdTime
@@ -18287,9 +18612,7 @@ components:
         - durationSec
         - files
         - id
-        - largeThumbnailUrl
         - name
-        - ogvUrl
         - organization
         - series
         - updatedTime
@@ -18305,13 +18628,8 @@ components:
         name:
           type: string
           maxLength: 255
-        header:
-          type: string
-          maxLength: 2048
-          nullable: true
         description:
           type: string
-          maxLength: 2048
           nullable: true
         files:
           allOf:
@@ -18405,13 +18723,6 @@ components:
           type: string
           format: date-time
           nullable: true
-        ogvUrl:
-          type: string
-          nullable: true
-          readOnly: true
-        largeThumbnailUrl:
-          type: string
-          readOnly: true
       required:
         - categories
         - createdTime
@@ -18419,9 +18730,7 @@ components:
         - durationSec
         - files
         - id
-        - largeThumbnailUrl
         - name
-        - ogvUrl
         - series
         - updatedTime
     VideoCreateRequest:
@@ -18434,13 +18743,8 @@ components:
           type: string
           maxLength: 255
           minLength: 1
-        header:
-          type: string
-          maxLength: 2048
-          nullable: true
         description:
           type: string
-          maxLength: 2048
           nullable: true
         organization:
           type: integer
@@ -18656,13 +18960,8 @@ components:
           type: string
           maxLength: 255
           minLength: 1
-        header:
-          type: string
-          maxLength: 2048
-          nullable: true
         description:
           type: string
-          maxLength: 2048
           nullable: true
         seriesId:
           type: integer
@@ -19590,13 +19889,11 @@ components:
         code:
           description: |-
             * `invalid` - invalid
-            * `max_length` - max_length
             * `null_characters_not_allowed` - null_characters_not_allowed
             * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed
           type: string
           enum:
             - invalid
-            - max_length
             - null_characters_not_allowed
             - surrogate_characters_not_allowed
         detail:
@@ -19661,7 +19958,6 @@ components:
         mapping:
           non_field_errors: '#/components/schemas/VideosCreateNonFieldErrorsErrorComponent'
           name: '#/components/schemas/VideosCreateNameErrorComponent'
-          header: '#/components/schemas/VideosCreateHeaderErrorComponent'
           description: '#/components/schemas/VideosCreateDescriptionErrorComponent'
           organization: '#/components/schemas/VideosCreateOrganizationErrorComponent'
           series_id: '#/components/schemas/VideosCreateSeriesIdErrorComponent'
@@ -19680,7 +19976,6 @@ components:
       oneOf:
         - $ref: '#/components/schemas/VideosCreateNonFieldErrorsErrorComponent'
         - $ref: '#/components/schemas/VideosCreateNameErrorComponent'
-        - $ref: '#/components/schemas/VideosCreateHeaderErrorComponent'
         - $ref: '#/components/schemas/VideosCreateDescriptionErrorComponent'
         - $ref: '#/components/schemas/VideosCreateOrganizationErrorComponent'
         - $ref: '#/components/schemas/VideosCreateSeriesIdErrorComponent'
@@ -19749,32 +20044,6 @@ components:
           enum:
             - invalid
             - 'null'
-        detail:
-          type: string
-      required:
-        - attr
-        - code
-        - detail
-    VideosCreateHeaderErrorComponent:
-      type: object
-      properties:
-        attr:
-          description: '* `header` - header'
-          type: string
-          enum:
-            - header
-        code:
-          description: |-
-            * `invalid` - invalid
-            * `max_length` - max_length
-            * `null_characters_not_allowed` - null_characters_not_allowed
-            * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed
-          type: string
-          enum:
-            - invalid
-            - max_length
-            - null_characters_not_allowed
-            - surrogate_characters_not_allowed
         detail:
           type: string
       required:
@@ -21317,13 +21586,11 @@ components:
         code:
           description: |-
             * `invalid` - invalid
-            * `max_length` - max_length
             * `null_characters_not_allowed` - null_characters_not_allowed
             * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed
           type: string
           enum:
             - invalid
-            - max_length
             - null_characters_not_allowed
             - surrogate_characters_not_allowed
         detail:
@@ -21388,7 +21655,6 @@ components:
         mapping:
           non_field_errors: '#/components/schemas/VideosPartialUpdateNonFieldErrorsErrorComponent'
           name: '#/components/schemas/VideosPartialUpdateNameErrorComponent'
-          header: '#/components/schemas/VideosPartialUpdateHeaderErrorComponent'
           description: '#/components/schemas/VideosPartialUpdateDescriptionErrorComponent'
           series_id: '#/components/schemas/VideosPartialUpdateSeriesIdErrorComponent'
           episode_number: '#/components/schemas/VideosPartialUpdateEpisodeNumberErrorComponent'
@@ -21406,7 +21672,6 @@ components:
       oneOf:
         - $ref: '#/components/schemas/VideosPartialUpdateNonFieldErrorsErrorComponent'
         - $ref: '#/components/schemas/VideosPartialUpdateNameErrorComponent'
-        - $ref: '#/components/schemas/VideosPartialUpdateHeaderErrorComponent'
         - $ref: '#/components/schemas/VideosPartialUpdateDescriptionErrorComponent'
         - $ref: '#/components/schemas/VideosPartialUpdateSeriesIdErrorComponent'
         - $ref: '#/components/schemas/VideosPartialUpdateEpisodeNumberErrorComponent'
@@ -21474,32 +21739,6 @@ components:
           enum:
             - invalid
             - 'null'
-        detail:
-          type: string
-      required:
-        - attr
-        - code
-        - detail
-    VideosPartialUpdateHeaderErrorComponent:
-      type: object
-      properties:
-        attr:
-          description: '* `header` - header'
-          type: string
-          enum:
-            - header
-        code:
-          description: |-
-            * `invalid` - invalid
-            * `max_length` - max_length
-            * `null_characters_not_allowed` - null_characters_not_allowed
-            * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed
-          type: string
-          enum:
-            - invalid
-            - max_length
-            - null_characters_not_allowed
-            - surrogate_characters_not_allowed
         detail:
           type: string
       required:
@@ -21812,13 +22051,11 @@ components:
         code:
           description: |-
             * `invalid` - invalid
-            * `max_length` - max_length
             * `null_characters_not_allowed` - null_characters_not_allowed
             * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed
           type: string
           enum:
             - invalid
-            - max_length
             - null_characters_not_allowed
             - surrogate_characters_not_allowed
         detail:
@@ -21883,7 +22120,6 @@ components:
         mapping:
           non_field_errors: '#/components/schemas/VideosUpdateNonFieldErrorsErrorComponent'
           name: '#/components/schemas/VideosUpdateNameErrorComponent'
-          header: '#/components/schemas/VideosUpdateHeaderErrorComponent'
           description: '#/components/schemas/VideosUpdateDescriptionErrorComponent'
           series_id: '#/components/schemas/VideosUpdateSeriesIdErrorComponent'
           episode_number: '#/components/schemas/VideosUpdateEpisodeNumberErrorComponent'
@@ -21901,7 +22137,6 @@ components:
       oneOf:
         - $ref: '#/components/schemas/VideosUpdateNonFieldErrorsErrorComponent'
         - $ref: '#/components/schemas/VideosUpdateNameErrorComponent'
-        - $ref: '#/components/schemas/VideosUpdateHeaderErrorComponent'
         - $ref: '#/components/schemas/VideosUpdateDescriptionErrorComponent'
         - $ref: '#/components/schemas/VideosUpdateSeriesIdErrorComponent'
         - $ref: '#/components/schemas/VideosUpdateEpisodeNumberErrorComponent'
@@ -21969,32 +22204,6 @@ components:
           enum:
             - invalid
             - 'null'
-        detail:
-          type: string
-      required:
-        - attr
-        - code
-        - detail
-    VideosUpdateHeaderErrorComponent:
-      type: object
-      properties:
-        attr:
-          description: '* `header` - header'
-          type: string
-          enum:
-            - header
-        code:
-          description: |-
-            * `invalid` - invalid
-            * `max_length` - max_length
-            * `null_characters_not_allowed` - null_characters_not_allowed
-            * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed
-          type: string
-          enum:
-            - invalid
-            - max_length
-            - null_characters_not_allowed
-            - surrogate_characters_not_allowed
         detail:
           type: string
       required:
@@ -22558,6 +22767,13 @@ components:
         - source
         - startTime
     WeeklySlotRequest:
+      type: object
+      properties:
+        source:
+          description: Which source picks the video for this slot. Blank means the slot reserves airtime that nothing is scheduled into automatically.
+          type: integer
+          nullable: true
+    WeeklySlotRequestEnvelope:
       description: Read envelope around the two deliberately separate request models.
       type: object
       properties:
