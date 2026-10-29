@@ -2,4 +2,4 @@ apiVersion: v2
 name: frontend
 description: Frikanalen frontend Next.js deployment
 type: application
-version: 3.1.0
+version: 3.2.0

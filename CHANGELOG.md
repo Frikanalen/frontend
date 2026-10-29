@@ -1,6 +1,27 @@
 2025-05-31 
 # Changelog
 
+## [3.2.0](https://github.com/Frikanalen/frontend/compare/v3.1.0...v3.2.0) (2026-10-29)
+
+
+### Features
+
+* **live:** let organizations check their incoming live feed ([#75](https://github.com/Frikanalen/frontend/issues/75)) ([2c4863a](https://github.com/Frikanalen/frontend/commit/2c4863ae622c5a2bab312cd670a87216d174ba1a))
+* **live:** Opus preview with a stereo level meter ([#79](https://github.com/Frikanalen/frontend/issues/79)) ([55a9352](https://github.com/Frikanalen/frontend/commit/55a93528c130880699dc1c4af8dc71a4e2ae1394))
+* **upload:** play video from DASH preview ([#73](https://github.com/Frikanalen/frontend/issues/73)) ([e007144](https://github.com/Frikanalen/frontend/commit/e007144eff3ecac6d14199cf0fb295ad7ad6dcef))
+* **video:** start playback from t query ([#72](https://github.com/Frikanalen/frontend/issues/72)) ([b3a0662](https://github.com/Frikanalen/frontend/commit/b3a0662ba9a7bd8f28419044fece5b7a25e68672))
+
+
+### Bug Fixes
+
+* **live:** preview the original feed's picture only ([#77](https://github.com/Frikanalen/frontend/issues/77)) ([084bc5c](https://github.com/Frikanalen/frontend/commit/084bc5cc59572aae97f563d6af32137c6706e3ff))
+* **live:** say when the browser can't play the feed's video ([#80](https://github.com/Frikanalen/frontend/issues/80)) ([4764023](https://github.com/Frikanalen/frontend/commit/4764023107d7cc56204820027a5419ea5b1fd1da))
+* **nav:** make every row of the narrow-screen menu tappable ([#69](https://github.com/Frikanalen/frontend/issues/69)) ([a8082f3](https://github.com/Frikanalen/frontend/commit/a8082f35d537b8bd5aa4ed3a85c81189159bc3de))
+* **org-admin:** report real ingest state, and rebuild the video lists on the shared row ([#70](https://github.com/Frikanalen/frontend/issues/70)) ([bc535ea](https://github.com/Frikanalen/frontend/commit/bc535eaaf4c923a0ed7bbbfc84405faaf99b45fd))
+* **upload:** follow the replacement file after ingest rejects one ([#66](https://github.com/Frikanalen/frontend/issues/66)) ([dced87c](https://github.com/Frikanalen/frontend/commit/dced87c183555efef7eee769e7ecd51e1b18a05e))
+* **video:** explain unsupported archive formats ([#71](https://github.com/Frikanalen/frontend/issues/71)) ([0969b6f](https://github.com/Frikanalen/frontend/commit/0969b6f4431b71ff43bbb16d63c5b663942db738))
+* **video:** name Theora's codecs instead of guessing from the video size ([#74](https://github.com/Frikanalen/frontend/issues/74)) ([3eb65c1](https://github.com/Frikanalen/frontend/commit/3eb65c100690e8c24793f0cdd61e11afc375174c))
+
 ## [3.1.0](https://github.com/Frikanalen/frontend/compare/v3.0.0...v3.1.0) (2026-08-30)
 
 
