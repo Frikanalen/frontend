@@ -4,8 +4,8 @@ import { VideoList } from "@/app/video/VideoList";
 import { IngestStatusChip } from "@/app/organization/[organizationId]/IngestStatusChip";
 import { useVideoDeletion } from "@/app/organization/[organizationId]/useVideoDeletion";
 import { Button } from "@heroui/react";
-import Link from "next/link";
-import { Alert } from "@heroui/alert";
+import { ButtonLink } from "@/components/ButtonLink";
+import { Notice } from "@/components/Notice";
 
 /**
  * The organization's videos that have no watchable copy yet: the ones an
@@ -32,7 +32,7 @@ export const OutstandingVideosList = ({ organizationId }: { organizationId: numb
     <section className={"space-y-4"}>
       <h2 className={"text-xl font-bold"}>Uferdige videoer</h2>
 
-      <Alert color="warning">
+      <Notice status="warning">
         <div className="space-y-2">
           <p>
             Disse videoene har ingen ferdig visningskopi ennå. Status under hver av dem sier hvor
@@ -43,7 +43,7 @@ export const OutstandingVideosList = ({ organizationId }: { organizationId: numb
             med &laquo;last opp&raquo; - eller slette videoen om den er blitt igjen ved en feil.
           </p>
         </div>
-      </Alert>
+      </Notice>
 
       <VideoList
         videos={videos}
@@ -52,14 +52,13 @@ export const OutstandingVideosList = ({ organizationId }: { organizationId: numb
         status={(video) => <IngestStatusChip videoId={video.id} />}
         actions={(video) => (
           <>
-            <Button as={Link} href={`/video/${video.id}/upload`} color="primary" size="sm">
+            <ButtonLink href={`/video/${video.id}/upload`} size="sm">
               Last opp
-            </Button>
+            </ButtonLink>
             <Button
-              color="danger"
-              variant="flat"
+              variant="danger-soft"
               size="sm"
-              isLoading={isRemoving(video.id)}
+              isPending={isRemoving(video.id)}
               onPress={() =>
                 remove(video.id, video.name, `Slett den uimporterte videoen «${video.name}»?`)
               }

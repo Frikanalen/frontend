@@ -1,20 +1,11 @@
 "use client";
-
+import { FormInput } from "@/components/FormField";
 import { FormError } from "@/components/form/FormError";
 import type { Video } from "@/generated/frikanalenDjangoAPI.schemas";
 import { useVideosList, useVideosPartialUpdate } from "@/generated/videos/videos";
 import { formatApiError } from "@/lib/formatApiError";
 import { keepPreviousData, useQueryClient } from "@tanstack/react-query";
-import {
-  Button,
-  Image,
-  Input,
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-} from "@heroui/react";
+import { Button, Modal } from "@heroui/react";
 import { useState } from "react";
 import { GoCheck, GoPlay } from "react-icons/go";
 
@@ -131,83 +122,78 @@ export const AddSeriesVideosModal = ({
 
   return (
     <>
-      <Button
-        color="primary"
-        variant="flat"
-        isDisabled={isDisabled}
-        onPress={() => setIsOpen(true)}
-      >
+      <Button variant="tertiary" isDisabled={isDisabled} onPress={() => setIsOpen(true)}>
         Legg til i serien
       </Button>
-      <Modal
-        isOpen={isOpen}
-        onOpenChange={(open) => (open ? setIsOpen(true) : close())}
-        isDismissable={!isSaving}
-        hideCloseButton={isSaving}
-        scrollBehavior="inside"
-        size="3xl"
-      >
-        <ModalContent>
-          <ModalHeader>Legg videoer til serien</ModalHeader>
-          <ModalBody className="gap-4">
-            <p className="text-sm text-foreground-500">
-              Søk blant organisasjonens videoer og velg én eller flere. Videoene legges sist i
-              serien.
-            </p>
-            <Input
-              label="Søk i organisasjonens videoer"
-              type="search"
-              value={query}
-              onValueChange={setQuery}
-              autoFocus
-            />
-            <FormError error={error} />
-            <div aria-live="polite" className="text-sm text-foreground-500">
-              {search.isFetching
-                ? "Søker …"
-                : search.isError
-                  ? "Søket kunne ikke gjennomføres."
-                  : `${search.data?.data.count ?? 0} videoer funnet`}
-            </div>
-            {!search.isFetching && search.isError ? (
-              <p role="alert" className="text-sm text-danger-700">
-                {formatApiError(search.error)}
-              </p>
-            ) : videos.length ? (
-              <ul className="grid gap-3 sm:grid-cols-2">
-                {videos.map((video) => (
-                  <VideoOption
-                    key={video.id}
-                    video={video}
-                    seriesId={seriesId}
-                    isSelected={selected.has(video.id)}
-                    onToggle={() => toggle(video)}
-                  />
-                ))}
-              </ul>
-            ) : !search.isFetching ? (
-              <p>Ingen ferdigbehandlede videoer funnet.</p>
-            ) : null}
-            {(search.data?.data.count ?? 0) > videos.length && (
-              <p className="text-sm text-foreground-500">
-                Viser de første {videos.length} treffene. Bruk søkefeltet for å snevre inn listen.
-              </p>
-            )}
-          </ModalBody>
-          <ModalFooter>
-            <Button variant="light" isDisabled={isSaving} onPress={close}>
-              Avbryt
-            </Button>
-            <Button
-              color="primary"
-              isDisabled={selected.size === 0}
-              isLoading={isSaving}
-              onPress={add}
-            >
-              {selectionLabel}
-            </Button>
-          </ModalFooter>
-        </ModalContent>
+      <Modal isOpen={isOpen} onOpenChange={(open) => (open ? setIsOpen(true) : close())}>
+        <Modal.Backdrop isDismissable={!isSaving}>
+          <Modal.Container size="lg" scroll="inside" className="max-w-3xl">
+            <Modal.Dialog>
+              <Modal.Header>
+                <Modal.Heading>Legg videoer til serien</Modal.Heading>
+              </Modal.Header>
+              <Modal.Body className="gap-4">
+                <p className="text-sm text-foreground-500">
+                  Søk blant organisasjonens videoer og velg én eller flere. Videoene legges sist i
+                  serien.
+                </p>
+                <FormInput
+                  label="Søk i organisasjonens videoer"
+                  type="search"
+                  value={query}
+                  onValueChange={setQuery}
+                  autoFocus
+                />
+                <FormError error={error} />
+                <div aria-live="polite" className="text-sm text-foreground-500">
+                  {search.isFetching
+                    ? "Søker …"
+                    : search.isError
+                      ? "Søket kunne ikke gjennomføres."
+                      : `${search.data?.data.count ?? 0} videoer funnet`}
+                </div>
+                {!search.isFetching && search.isError ? (
+                  <p role="alert" className="text-sm text-danger-700">
+                    {formatApiError(search.error)}
+                  </p>
+                ) : videos.length ? (
+                  <ul className="grid gap-3 sm:grid-cols-2">
+                    {videos.map((video) => (
+                      <VideoOption
+                        key={video.id}
+                        video={video}
+                        seriesId={seriesId}
+                        isSelected={selected.has(video.id)}
+                        onToggle={() => toggle(video)}
+                      />
+                    ))}
+                  </ul>
+                ) : !search.isFetching ? (
+                  <p>Ingen ferdigbehandlede videoer funnet.</p>
+                ) : null}
+                {(search.data?.data.count ?? 0) > videos.length && (
+                  <p className="text-sm text-foreground-500">
+                    Viser de første {videos.length} treffene. Bruk søkefeltet for å snevre inn
+                    listen.
+                  </p>
+                )}
+              </Modal.Body>
+              <Modal.Footer>
+                <Button variant="tertiary" isDisabled={isSaving} onPress={close}>
+                  Avbryt
+                </Button>
+                <Button
+                  isDisabled={selected.size === 0}
+                  isPending={isSaving}
+                  onPress={add}
+                  variant="primary"
+                >
+                  {selectionLabel}
+                </Button>
+              </Modal.Footer>
+            </Modal.Dialog>
+          </Modal.Container>
+        </Modal.Backdrop>
       </Modal>
     </>
   );
@@ -248,9 +234,9 @@ const VideoOption = ({
         <span className="relative block aspect-video w-28 shrink-0 overflow-hidden rounded-lg bg-content2">
           <GoPlay aria-hidden className="absolute inset-0 m-auto size-6 text-foreground-300" />
           {video.files.largeThumb?.url && (
-            <Image
-              removeWrapper
-              disableSkeleton
+            // HeroUI 3 removed its Image wrapper; preserve arbitrary API thumbnail URLs.
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
               alt=""
               src={video.files.largeThumb.url}
               className="absolute inset-0 size-full object-cover"

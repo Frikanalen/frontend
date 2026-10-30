@@ -1,4 +1,5 @@
-import { Alert } from "@heroui/alert";
+import { Notice } from "@/components/Notice";
+
 import Link from "next/link";
 
 export default async function Page() {
@@ -41,7 +42,7 @@ export default async function Page() {
         <li>Registrer hvem som er ansvarlig redaktør.</li>
         <li>Send inn skjemaet.</li>
       </ol>
-      <Alert className={"max-w-2xl"}>
+      <Notice className={"max-w-2xl"}>
         <div>
           De fleste medlemmer som er organisasjoner har allerede organisasjons&shy;nummer. Dersom
           dere ikke har org.nr., må dere først registrere dere i Enhets&shy;registeret via{" "}
@@ -50,7 +51,7 @@ export default async function Page() {
           </Link>{" "}
           på Altinn.
         </div>
-      </Alert>
+      </Notice>
       <h3>Trinn 2 – Signer bekreftelse</h3>
       <p>
         Etter registrering skal medlemmet fylle ut og signere en bekreftelse på redaktøransvar. Hvis

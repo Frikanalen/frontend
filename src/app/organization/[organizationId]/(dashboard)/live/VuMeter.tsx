@@ -106,7 +106,7 @@ export const VuMeter = ({ stream }: { stream: MediaStream | null }) => {
         ))}
       </div>
       {suspended && (
-        <Button size="sm" variant="flat" onPress={() => void suspended.resume()}>
+        <Button size="sm" variant="tertiary" onPress={() => void suspended.resume()}>
           Vis lydnivå
         </Button>
       )}

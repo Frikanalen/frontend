@@ -1,5 +1,6 @@
+import Link from "next/link";
 import { ScheduleitemRead } from "@/generated/frikanalenDjangoAPI.schemas";
-import { Accordion, AccordionItem, Link } from "@heroui/react";
+import { Accordion } from "@heroui/react";
 import { formatOsloTime } from "@/lib/osloTime";
 import { useScheduleCursor } from "@/app/useScheduleCursor";
 import { VideoBlurb } from "@/app/videoBlurb";
@@ -55,40 +56,42 @@ export const MetadataCurrentAndNext = ({ schedule }: { schedule: ScheduleitemRea
           Ingen registrert sending.
         </div>
       )}
-      <Accordion itemClasses={{ indicator: "text-primary-foreground" }}>
+      <Accordion>
         {rows.map(({ key, label, item: { video, defaultName } }) => {
           const name = video?.name || defaultName || "Uten programnavn";
           return (
-            <AccordionItem
-              key={key}
-              textValue={`${label} ${name}`}
-              title={
-                <div className={"flex"}>
-                  <div className={"basis-12 shrink-0"}>{label}</div>
-                  {name}
-                </div>
-              }
-              subtitle={
-                video ? (
-                  <h4 className={"text-medium pl-12 text-primary-600"}>
-                    av{" "}
-                    <Link
-                      className={"text-primary-700"}
-                      href={`/organization/${video.organization.id}`}
-                    >
-                      {video.organization.name}
-                      <GoArrowUpRight />
-                    </Link>
-                  </h4>
-                ) : null
-              }
-            >
-              {video ? (
-                <div className={"pl-12 pb-3"}>
-                  <VideoBlurb video={video} />
-                </div>
-              ) : null}
-            </AccordionItem>
+            <Accordion.Item key={key} id={key}>
+              <Accordion.Heading>
+                <Accordion.Trigger>
+                  <div className={"flex"}>
+                    <div className={"basis-12 shrink-0"}>{label}</div>
+                    {name}
+                  </div>
+                  <Accordion.Indicator className="text-primary-foreground" />
+                </Accordion.Trigger>
+              </Accordion.Heading>
+              <Accordion.Panel>
+                <Accordion.Body>
+                  {video ? (
+                    <>
+                      <h4 className={"text-medium pl-12 text-primary-600"}>
+                        av{" "}
+                        <Link
+                          className={"text-primary-700"}
+                          href={`/organization/${video.organization.id}`}
+                        >
+                          {video.organization.name}
+                          <GoArrowUpRight />
+                        </Link>
+                      </h4>
+                      <div className={"pl-12 pb-3"}>
+                        <VideoBlurb video={video} />
+                      </div>
+                    </>
+                  ) : null}
+                </Accordion.Body>
+              </Accordion.Panel>
+            </Accordion.Item>
           );
         })}
       </Accordion>

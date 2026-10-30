@@ -1,6 +1,7 @@
 "use client";
-import { Button, Form, Input } from "@heroui/react";
-import Link from "next/link";
+import { FormInput } from "@/components/FormField";
+import { Button, Form } from "@heroui/react";
+import { ButtonLink } from "@/components/ButtonLink";
 import { useRouter } from "next/navigation";
 import z from "zod";
 import { useForm } from "react-hook-form";
@@ -37,7 +38,7 @@ export default function Login() {
           <div className={"flex flex-col gap-4 w-full"}>
             <h2 className={"text-lg font-bold"}>Logg inn</h2>
             <FormError error={error} />
-            <Input
+            <FormInput
               {...register("email")}
               id="email"
               isRequired
@@ -47,7 +48,7 @@ export default function Login() {
               isInvalid={!!formState.errors.email}
               errorMessage={formState.errors.email?.message}
             />
-            <Input
+            <FormInput
               {...register("password")}
               id="password"
               isRequired
@@ -57,7 +58,7 @@ export default function Login() {
               isInvalid={!!formState.errors.password}
               errorMessage={formState.errors.password?.message}
             />
-            <Button className={"ml-auto"} type="submit" isLoading={isSubmitting}>
+            <Button className={"ml-auto"} type="submit" isPending={isSubmitting}>
               Logg inn
             </Button>
           </div>
@@ -69,9 +70,7 @@ export default function Login() {
             nødvendig for å administrere medlemskap.
           </div>
           <div className={"ml-auto"}>
-            <Button as={Link} href={"/register"}>
-              Registerer bruker
-            </Button>
+            <ButtonLink href={"/register"}>Registerer bruker</ButtonLink>
           </div>
         </div>
       </div>
