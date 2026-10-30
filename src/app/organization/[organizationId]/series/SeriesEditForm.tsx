@@ -1,11 +1,11 @@
 "use client";
-
+import { FormInput } from "@/components/FormField";
 import { FormError } from "@/components/form/FormError";
 import { Series } from "@/generated/frikanalenDjangoAPI.schemas";
 import { SeriesUpdateMutationBody, useSeriesPartialUpdate } from "@/generated/series/series";
 import { useApiFormSubmit } from "@/lib/useApiFormSubmit";
 import { MDXEditorField } from "@/app/video/[videoId]/edit/MDXEditorField";
-import { Button, Form, Input } from "@heroui/react";
+import { Button, Form } from "@heroui/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -39,7 +39,7 @@ export const SeriesEditForm = ({ series }: { series: Series }) => {
             Serieopplysningene er lagret.
           </p>
         )}
-        <Input
+        <FormInput
           {...form.register("name")}
           name="name"
           label="Navn"
@@ -60,7 +60,7 @@ export const SeriesEditForm = ({ series }: { series: Series }) => {
           }}
         />
         <div className="flex justify-end">
-          <Button type="submit" color="primary" isLoading={isSubmitting}>
+          <Button type="submit" isPending={isSubmitting} variant="primary">
             Lagre
           </Button>
         </div>

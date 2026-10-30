@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@heroui/react";
-import { Tab, Tabs } from "@heroui/tabs";
+import { Tabs } from "@heroui/react";
 import { addDays, format } from "date-fns";
 import { nb } from "date-fns/locale/nb";
 import { GoArrowLeft, GoArrowRight } from "react-icons/go";
@@ -71,9 +71,9 @@ export const ScheduleNavBar = ({
       <div className="flex flex-wrap items-center justify-center gap-4 md:flex-nowrap">
         <Button
           size={"sm"}
-          variant={"bordered"}
+          variant={"outline"}
           isIconOnly
-          className={"order-1 shrink-0"}
+          className={"order-1 shrink-0 rounded-md"}
           onPress={backward}
           aria-label={"tidligere"}
         >
@@ -86,9 +86,9 @@ export const ScheduleNavBar = ({
 
         <Button
           size={"sm"}
-          variant={"bordered"}
+          variant={"outline"}
           isIconOnly
-          className={"order-3 md:order-5 shrink-0"}
+          className={"order-3 md:order-5 shrink-0 rounded-md"}
           onPress={forward}
           aria-label={"senere"}
         >
@@ -99,20 +99,29 @@ export const ScheduleNavBar = ({
           aria-label={"døgnfase"}
           selectedKey={phase.toString()}
           onSelectionChange={(e) => setPhase(parseInt(e.toString()) as Phase)}
-          variant={"light"}
-          classNames={{
+          variant={"primary"}
+          className={
             // min-w-0 + max-w-full let the strip be narrower than its own tabs
             // on very small phones, where HeroUI's own overflow-x on the list
             // turns it into a scroller instead of letting it bleed out of the
             // card. Above ~300px the tabs fit and neither class does anything.
-            base: "order-4 basis-full min-w-0 flex justify-center md:order-2 md:basis-auto md:ml-auto",
-            tabList: "max-w-full",
-          }}
+            "order-4 basis-full min-w-0 flex justify-center md:order-2 md:basis-auto md:ml-auto"
+          }
         >
-          <Tab key={"0"} title={"Morgen"} />
-          <Tab key={"1"} title={"Dag"} />
-          <Tab key={"2"} title={"Kveld"} />
-          <Tab key={"3"} title={"Natt"} />
+          <Tabs.ListContainer className="max-w-full rounded-none bg-transparent">
+            <Tabs.List aria-label="Døgnfase" className="gap-1 p-0">
+              {["Morgen", "Dag", "Kveld", "Natt"].map((title, index) => (
+                <Tabs.Tab
+                  key={index}
+                  id={String(index)}
+                  className="h-8 rounded-md px-3 text-default-500 data-[selected=true]:text-foreground"
+                >
+                  {title}
+                  <Tabs.Indicator className="rounded-md border border-default-300 bg-background shadow-sm" />
+                </Tabs.Tab>
+              ))}
+            </Tabs.List>
+          </Tabs.ListContainer>
         </Tabs>
 
         <ScheduleDateSelector

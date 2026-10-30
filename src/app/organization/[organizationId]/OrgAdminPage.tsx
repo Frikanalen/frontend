@@ -1,51 +1,24 @@
 "use client";
-import { Organization } from "@/generated/frikanalenDjangoAPI.schemas";
-import { Button, Link } from "@heroui/react";
 
+import { Organization } from "@/generated/frikanalenDjangoAPI.schemas";
+import { ButtonLink } from "@/components/ButtonLink";
 import { OutstandingVideosList } from "@/app/organization/[organizationId]/OutstandingVideosList";
 import { OrgVideosList } from "@/app/organization/[organizationId]/OrgVideosList";
 
-export const OrgAdminPage = ({ organization }: { organization: Organization }) => {
-  return (
-    <section className="gap-4 flex flex-col p-4">
-      <h1 className={"text-2xl font-bold"}>{organization.name}</h1>
-      <h2>Redaktør {organization.editorName}</h2>
-      <div className="flex flex-wrap gap-2">
-        <Button as={Link} href={`/organization/${organization.id}`} color="primary" size="md">
-          Gå til offentlig profil
-        </Button>
-        <Button
-          as={Link}
-          href={`/organization/${organization.id}/create`}
-          color="primary"
-          size="md"
-        >
-          Ny video
-        </Button>
-        <Button
-          as={Link}
-          href={`/organization/${organization.id}/series`}
-          color="primary"
-          size="md"
-        >
-          Administrer serier
-        </Button>
-        <Button
-          as={Link}
-          href={`/organization/${organization.id}/schedule`}
-          color="primary"
-          size="md"
-        >
-          Programmer sendeplanen
-        </Button>
-        <Button as={Link} href={`/organization/${organization.id}/live`} color="primary" size="md">
-          Sjekk direktesending
-        </Button>
-      </div>
-      {/* The unfinished ones first: they are the only videos on this page
-          that are waiting for their owner to do something. */}
-      <OutstandingVideosList organizationId={organization.id} />
-      <OrgVideosList organizationId={organization.id} />
-    </section>
-  );
-};
+export const OrgAdminPage = ({ organization }: { organization: Organization }) => (
+  <section className="gap-4 flex flex-col p-4">
+    <h1 className="text-2xl font-bold">{organization.name}</h1>
+    <h2>Redaktør {organization.editorName}</h2>
+    <div className="flex flex-wrap gap-2">
+      <ButtonLink href={`/organization/${organization.id}`}>Gå til offentlig profil</ButtonLink>
+      <ButtonLink href={`/organization/${organization.id}/create`}>Ny video</ButtonLink>
+      <ButtonLink href={`/organization/${organization.id}/series`}>Administrer serier</ButtonLink>
+      <ButtonLink href={`/organization/${organization.id}/schedule`}>
+        Programmer sendeplanen
+      </ButtonLink>
+      <ButtonLink href={`/organization/${organization.id}/live`}>Sjekk direktesending</ButtonLink>
+    </div>
+    <OutstandingVideosList organizationId={organization.id} />
+    <OrgVideosList organizationId={organization.id} />
+  </section>
+);

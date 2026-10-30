@@ -56,7 +56,12 @@ vi.mock("@heroui/react", () => ({
         {children}
       </button>
     ),
-  Chip: ({ children }: { children: ReactNode }) => <span>{children}</span>,
+  Chip: Object.assign(({ children }: { children: ReactNode }) => <span>{children}</span>, {
+    Label: ({ children }: { children: ReactNode }) => <>{children}</>,
+  }),
+  Alert: Object.assign(({ children }: { children: ReactNode }) => <div>{children}</div>, {
+    Content: ({ children }: { children: ReactNode }) => <>{children}</>,
+  }),
 }));
 
 const video = (id: number, name: string): Video =>

@@ -30,25 +30,8 @@ vi.mock("@tanstack/react-query", () => ({
   useQueryClient: () => ({ invalidateQueries: api.invalidate }),
 }));
 
-vi.mock("@heroui/react", () => ({
-  Button: ({
-    children,
-    onPress,
-    isDisabled,
-    isLoading,
-    ...props
-  }: {
-    children: ReactNode;
-    onPress?: () => void;
-    isDisabled?: boolean;
-    isLoading?: boolean;
-  } & ButtonHTMLAttributes<HTMLButtonElement>) => (
-    <button disabled={isDisabled || isLoading} onClick={onPress} {...props}>
-      {children}
-    </button>
-  ),
-  Image: () => <span data-testid="thumbnail" />,
-  Input: ({
+vi.mock("@/components/FormField", () => ({
+  FormInput: ({
     label,
     onValueChange,
     ...props
@@ -65,13 +48,43 @@ vi.mock("@heroui/react", () => ({
       />
     </label>
   ),
-  Modal: ({ isOpen, children }: { isOpen: boolean; children: ReactNode }) =>
-    isOpen ? <>{children}</> : null,
-  ModalContent: ({ children }: { children: ReactNode }) => <div role="dialog">{children}</div>,
-  ModalHeader: ({ children }: { children: ReactNode }) => <h2>{children}</h2>,
-  ModalBody: ({ children }: { children: ReactNode }) => <div>{children}</div>,
-  ModalFooter: ({ children }: { children: ReactNode }) => <div>{children}</div>,
 }));
+
+vi.mock("@heroui/react", () => {
+  const Modal = Object.assign(
+    ({ isOpen, children }: { isOpen: boolean; children: ReactNode }) =>
+      isOpen ? <>{children}</> : null,
+    {
+      Backdrop: ({ children }: { children: ReactNode }) => <>{children}</>,
+      Container: ({ children }: { children: ReactNode }) => <div role="dialog">{children}</div>,
+      Dialog: ({ children }: { children: ReactNode }) => <div>{children}</div>,
+      Header: ({ children }: { children: ReactNode }) => <header>{children}</header>,
+      Heading: ({ children }: { children: ReactNode }) => <h2>{children}</h2>,
+      Body: ({ children }: { children: ReactNode }) => <div>{children}</div>,
+      Footer: ({ children }: { children: ReactNode }) => <div>{children}</div>,
+    },
+  );
+  return {
+    Button: ({
+      children,
+      onPress,
+      isDisabled,
+      isLoading,
+      ...props
+    }: {
+      children: ReactNode;
+      onPress?: () => void;
+      isDisabled?: boolean;
+      isLoading?: boolean;
+    } & ButtonHTMLAttributes<HTMLButtonElement>) => (
+      <button disabled={isDisabled || isLoading} onClick={onPress} {...props}>
+        {children}
+      </button>
+    ),
+    Image: () => <span data-testid="thumbnail" />,
+    Modal,
+  };
+});
 
 const organization = { id: 9, name: "Havneforeningen" };
 const series = (id: number, name: string) => ({ id, name, synopsis: "", imageUrl: "" });

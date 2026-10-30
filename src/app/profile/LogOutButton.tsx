@@ -34,12 +34,12 @@ export const LogOutButton = () => {
           above it: HeroUI centres button content, which left the two labels
           on different x-positions in the same little stack. */}
       <Button
-        variant="light"
+        variant="tertiary"
         className="justify-start px-4"
-        isLoading={isPending}
-        startContent={isPending ? undefined : <GoSignOut aria-hidden="true" />}
+        isPending={isPending}
         onPress={() => mutate()}
       >
+        {!isPending && <GoSignOut aria-hidden="true" />}
         Logg ut
       </Button>
       {isError && (

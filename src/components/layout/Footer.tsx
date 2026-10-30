@@ -1,7 +1,5 @@
 "use client";
-
-import { Link } from "@heroui/react";
-
+import Link from "next/link";
 // The footer carries no slab of its own: no border, no background panel. It sits
 // straight on the page's own canvas and the brand glow behind it, and reads as a
 // quiet colophon rather than a second piece of chrome under the content.

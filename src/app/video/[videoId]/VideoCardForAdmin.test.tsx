@@ -1,4 +1,5 @@
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { Video } from "@/generated/frikanalenDjangoAPI.schemas";
 
@@ -38,6 +39,25 @@ vi.mock("@/app/video/[videoId]/VideoCardMeta", () => ({
   VideoCardMeta: () => <div data-testid="metadata" />,
 }));
 
+vi.mock("@heroui/react", () => {
+  const ProgressBar = Object.assign(
+    ({ children, ...props }: { children: ReactNode } & React.HTMLAttributes<HTMLDivElement>) => (
+      <div role="progressbar" {...props}>
+        {children}
+      </div>
+    ),
+    {
+      Output: () => null,
+      Track: ({ children }: { children: ReactNode }) => <div>{children}</div>,
+      Fill: () => null,
+    },
+  );
+  const Alert = Object.assign(({ children }: { children: ReactNode }) => <div>{children}</div>, {
+    Content: ({ children }: { children: ReactNode }) => <>{children}</>,
+  });
+  return { Alert, ProgressBar };
+});
+
 import { VideoCardForAdmin } from "./VideoCardForAdmin";
 
 const videoWith = (files: Video["files"]): Video =>
@@ -68,7 +88,9 @@ describe("VideoCardForAdmin", () => {
       "https://media.example/preview/manifest.mpd",
     );
     expect(screen.getByText(/foreløpig visningskopi i lavere kvalitet/)).toBeDefined();
-    expect(screen.getByText("Lager visningskopier...")).toBeDefined();
+    expect(screen.getByRole("progressbar").getAttribute("aria-label")).toBe(
+      "Lager visningskopier...",
+    );
     expect(mocks.playerMounts).toHaveBeenCalledTimes(1);
 
     mocks.videoResponse = {

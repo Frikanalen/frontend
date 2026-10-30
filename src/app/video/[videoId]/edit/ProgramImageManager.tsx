@@ -1,6 +1,6 @@
 "use client";
-
-import { Alert, Button, Progress } from "@heroui/react";
+import { Button, ProgressBar } from "@heroui/react";
+import { Notice } from "@/components/Notice";
 import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -83,8 +83,8 @@ export const ProgramImageManager = ({
       <div className="prose dark:prose-invert">
         <h2>Bilder</h2>
         <p>
-          Last opp et promobilde — JPEG, PNG eller WebP, opptil 10 MB. Bildet blir kontrollert
-          av ingest og publisert i mediearkivet sammen med videoen.
+          Last opp et promobilde — JPEG, PNG eller WebP, opptil 10 MB. Bildet blir kontrollert av
+          ingest og publisert i mediearkivet sammen med videoen.
         </p>
       </div>
 
@@ -104,9 +104,8 @@ export const ProgramImageManager = ({
                 {image.width} × {image.height} · {image.mediaType}
               </p>
               <Button
-                color="danger"
-                variant="light"
-                isLoading={actionImageId === image.id}
+                variant="tertiary"
+                isPending={actionImageId === image.id}
                 onPress={() => unpublish(image)}
               >
                 Fjern fra publisering
@@ -116,7 +115,7 @@ export const ProgramImageManager = ({
         </div>
       )}
 
-      {actionError && <Alert color="danger">{actionError}</Alert>}
+      {actionError && <Notice status="danger">{actionError}</Notice>}
 
       <div className="space-y-3 rounded-lg bg-default-50 p-4">
         <input
@@ -127,28 +126,34 @@ export const ProgramImageManager = ({
           hidden
         />
 
-        {selectionError && <Alert color="danger">{selectionError}</Alert>}
+        {selectionError && <Notice status="danger">{selectionError}</Notice>}
         {upload.isError && (
-          <Alert color="danger">Opplastingen feilet: {upload.error?.message}</Alert>
+          <Notice status="danger">Opplastingen feilet: {upload.error?.message}</Notice>
         )}
         {upload.isSuccess && (
-          <Alert color="success">Bildet er kontrollert og lagt i mediearkivet.</Alert>
+          <Notice status="success">Bildet er kontrollert og lagt i mediearkivet.</Notice>
         )}
         {upload.isUploading && (
-          <Progress value={upload.progress} showValueLabel label="Laster opp bilde …" />
+          <ProgressBar value={upload.progress} aria-label="Laster opp bilde …">
+            <span>Laster opp bilde …</span>
+            <ProgressBar.Output />
+            <ProgressBar.Track>
+              <ProgressBar.Fill />
+            </ProgressBar.Track>
+          </ProgressBar>
         )}
 
         <div className="flex flex-wrap gap-3">
-          <Button onPress={() => fileInput.current?.click()} disabled={upload.isUploading}>
+          <Button onPress={() => fileInput.current?.click()} isDisabled={upload.isUploading}>
             Velg bilde
           </Button>
           {upload.isReady && (
-            <Button color="primary" onPress={upload.start}>
+            <Button onPress={upload.start} variant="primary">
               Last opp {upload.file?.name}
             </Button>
           )}
           {upload.isUploading && (
-            <Button variant="light" onPress={upload.abort}>
+            <Button variant="tertiary" onPress={upload.abort}>
               Avbryt
             </Button>
           )}

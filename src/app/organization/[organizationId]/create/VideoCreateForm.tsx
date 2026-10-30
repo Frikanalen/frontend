@@ -1,6 +1,7 @@
 "use client";
+import { FormInput } from "@/components/FormField";
 import { Category, Series, VideoCreateRequest } from "@/generated/frikanalenDjangoAPI.schemas";
-import { Button, Form, Input } from "@heroui/react";
+import { Button, Form } from "@heroui/react";
 import { Categories } from "@/app/organization/[organizationId]/create/Categories";
 import { useVideosCreate, videosUploadTokenRetrieve } from "@/generated/videos/videos";
 import { useForm } from "react-hook-form";
@@ -112,7 +113,7 @@ export const VideoCreateForm = ({
       <Form onSubmit={onSubmit} className="block" autoComplete={"off"}>
         <div className="flex flex-col gap-4">
           <FormError error={error} />
-          <Input
+          <FormInput
             id="video-name"
             {...register("name")}
             placeholder={"Videotittel"}
@@ -147,7 +148,7 @@ export const VideoCreateForm = ({
             isDisabled={isSubmitting}
           />
           <div className="p-2 ml-auto">
-            <Button type="submit" color="primary" isLoading={isSubmitting}>
+            <Button type="submit" isPending={isSubmitting} variant="primary">
               Opprett
             </Button>
           </div>

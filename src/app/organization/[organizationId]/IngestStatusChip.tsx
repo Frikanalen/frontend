@@ -27,9 +27,9 @@ const POLL_INTERVAL_MS = 10_000;
  */
 const NEVER_STARTED = "Ingen behandling er startet.";
 
-const CHIP_COLORS: Record<IngestPhase, "default" | "primary" | "success" | "warning" | "danger"> = {
+const CHIP_COLORS: Record<IngestPhase, "default" | "accent" | "success" | "warning" | "danger"> = {
   waiting: "default",
-  working: "primary",
+  working: "accent",
   done: "success",
   failed: "danger",
   stalled: "warning",
@@ -75,13 +75,15 @@ export const IngestStatusChip = ({ videoId }: { videoId: number }) => {
     <Chip
       size="sm"
       color={started ? CHIP_COLORS[description.phase] : "warning"}
-      variant="flat"
+      variant="soft"
       // The chip is a line of prose on a failure, not a word, so it has to be
       // allowed to wrap rather than run off the row.
-      classNames={{ base: "h-auto max-w-full", content: "whitespace-normal py-1" }}
+      className="h-auto max-w-full whitespace-normal py-1"
     >
-      {started ? description.message : NEVER_STARTED}
-      {started && description.percentage !== null && ` (${description.percentage} %)`}
+      <Chip.Label>
+        {started ? description.message : NEVER_STARTED}
+        {started && description.percentage !== null && ` (${description.percentage} %)`}
+      </Chip.Label>
     </Chip>
   );
 };

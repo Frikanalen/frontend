@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef } from "react";
-import { Button, Card, CardBody, CardHeader, Chip } from "@heroui/react";
+import { Button, Card, Chip } from "@heroui/react";
 import type { LiveSource } from "@/generated/frikanalenDjangoAPI.schemas";
 import { formatBitrate } from "@/lib/live/streamStats";
 import { formatOsloTime, inOsloTime } from "@/lib/osloTime";
@@ -54,27 +54,27 @@ export const LiveSourcePreview = ({
 
   return (
     <Card>
-      <CardHeader className="flex flex-wrap items-center justify-between gap-2">
+      <Card.Header className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <h2 className="text-xl font-semibold">{source.name}</h2>
           {!source.enabled && <p className="text-sm text-danger">Denne kilden er deaktivert.</p>}
         </div>
         <div className="flex items-center gap-2">
-          <Chip color={color} variant="flat" role="status">
-            {label}
+          <Chip color={color === "primary" ? "accent" : color} variant="soft" role="status">
+            <Chip.Label>{label}</Chip.Label>
           </Chip>
           {running ? (
-            <Button size="sm" variant="flat" onPress={stop}>
+            <Button size="sm" variant="tertiary" onPress={stop}>
               Stopp
             </Button>
           ) : (
-            <Button size="sm" color="primary" onPress={start} isDisabled={!source.enabled}>
+            <Button size="sm" onPress={start} isDisabled={!source.enabled} variant="primary">
               Start forhåndsvisning
             </Button>
           )}
         </div>
-      </CardHeader>
-      <CardBody className="grid gap-4 md:grid-cols-[2fr_1fr]">
+      </Card.Header>
+      <Card.Content className="grid gap-4 md:grid-cols-[2fr_1fr]">
         <div className="space-y-2">
           <video
             ref={videoRef}
@@ -161,7 +161,7 @@ export const LiveSourcePreview = ({
             )}
           </section>
         </div>
-      </CardBody>
+      </Card.Content>
     </Card>
   );
 };

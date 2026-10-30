@@ -173,10 +173,10 @@ export const SeriesEpisodeOrder = ({
       {episodes.length > 0 && (
         <div className="flex justify-end">
           <Button
-            color="primary"
             isDisabled={!hasChanges || isTruncated}
-            isLoading={isSaving}
+            isPending={isSaving}
             onPress={save}
+            variant="primary"
           >
             Lagre rekkefølge
           </Button>
@@ -221,7 +221,7 @@ const EpisodeRow = ({
     <div className="flex gap-2">
       <Button
         size="sm"
-        variant="flat"
+        variant="tertiary"
         isDisabled={isFirst}
         aria-label={`Flytt ${video.name} opp`}
         onPress={onMoveUp}
@@ -230,7 +230,7 @@ const EpisodeRow = ({
       </Button>
       <Button
         size="sm"
-        variant="flat"
+        variant="tertiary"
         isDisabled={isLast}
         aria-label={`Flytt ${video.name} ned`}
         onPress={onMoveDown}

@@ -1,5 +1,5 @@
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { ReactNode } from "react";
+import { InputHTMLAttributes, ReactElement, ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Series, Video } from "@/generated/frikanalenDjangoAPI.schemas";
 import { VideoEditForm } from "./VideoEditForm";
@@ -31,58 +31,81 @@ vi.mock("@/app/organization/[organizationId]/create/NewSeriesModal", () => ({
     ) : null,
 }));
 
-type SelectProps = {
-  children: (_item: { id: string; name: string }) => ReactNode;
-  items: { id: string; name: string }[];
-  label: string;
-  onBlur: () => void;
-  onSelectionChange: (_keys: Set<string>) => void;
-  selectedKeys: Set<string>;
-};
-
-vi.mock("@heroui/react", () => ({
-  Button: ({
-    children,
-    onPress,
-    isLoading,
-    ...props
-  }: {
-    children: ReactNode;
-    onPress?: () => void;
-    isLoading?: boolean;
-  } & React.ButtonHTMLAttributes<HTMLButtonElement>) => (
-    <button disabled={isLoading} onClick={onPress} {...props}>
-      {children}
-    </button>
-  ),
-  Form: ({ children, ...props }: React.FormHTMLAttributes<HTMLFormElement>) => (
-    <form {...props}>{children}</form>
-  ),
-  Input: ({ label, ...props }: { label: string } & React.InputHTMLAttributes<HTMLInputElement>) => (
+vi.mock("@/components/FormField", () => ({
+  FormInput: ({ label, ...props }: { label: string } & InputHTMLAttributes<HTMLInputElement>) => (
     <label>
       {label}
       <input aria-label={label} {...props} />
     </label>
   ),
-  Select: ({ children, items, label, onBlur, onSelectionChange, selectedKeys }: SelectProps) => (
-    <label>
-      {label}
-      <select
-        aria-label={label}
-        value={Array.from(selectedKeys)[0]}
-        onBlur={onBlur}
-        onChange={(event) => onSelectionChange(new Set([event.target.value]))}
-      >
-        {items.map((item) => (
-          <option key={item.id} value={item.id}>
-            {children(item)}
-          </option>
-        ))}
-      </select>
-    </label>
-  ),
-  SelectItem: ({ children }: { children: ReactNode }) => children,
 }));
+
+vi.mock("@heroui/react", () => {
+  const MockLabel = ({ children }: { children: ReactNode }) => <>{children}</>;
+  const MockPopover = ({ children }: { children: ReactNode }) => <>{children}</>;
+  const MockListBox = Object.assign(({ children }: { children: ReactNode }) => <>{children}</>, {
+    Item: ({ id, children }: { id: string; children: ReactNode }) => (
+      <option value={id}>{children}</option>
+    ),
+    ItemIndicator: () => null,
+  });
+  const MockSelect = Object.assign(
+    ({ children, value, onChange, onBlur }: {
+      children: ReactNode;
+      value: string;
+      onChange: (_key: string) => void;
+      onBlur: () => void;
+    }) => {
+      const childArray = (Array.isArray(children) ? children : [children]) as ReactElement<{
+        children: ReactNode;
+      }>[];
+      const label = childArray.find((child) => child.type === MockLabel);
+      const popover = childArray.find((child) => child.type === MockPopover);
+      const labelText = String(label?.props.children ?? "");
+      return (
+        <label>
+          {labelText}
+          <select
+            aria-label={labelText}
+            value={value}
+            onBlur={onBlur}
+            onChange={(event) => onChange(event.target.value)}
+          >
+            {popover?.props.children}
+          </select>
+        </label>
+      );
+    },
+    {
+      Trigger: () => null,
+      Value: () => null,
+      Indicator: () => null,
+      Popover: MockPopover,
+    },
+  );
+  return {
+    Button: ({
+      children,
+      onPress,
+      isLoading,
+      ...props
+    }: {
+      children: ReactNode;
+      onPress?: () => void;
+      isLoading?: boolean;
+    } & React.ButtonHTMLAttributes<HTMLButtonElement>) => (
+      <button disabled={isLoading} onClick={onPress} {...props}>
+        {children}
+      </button>
+    ),
+    Form: ({ children, ...props }: React.FormHTMLAttributes<HTMLFormElement>) => (
+      <form {...props}>{children}</form>
+    ),
+    Label: MockLabel,
+    ListBox: MockListBox,
+    Select: MockSelect,
+  };
+});
 
 const existingSeries = {
   id: 7,

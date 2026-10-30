@@ -1,50 +1,70 @@
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { ReactNode } from "react";
+import { ReactElement, ReactNode } from "react";
 import { useForm } from "react-hook-form";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { Series } from "@/generated/frikanalenDjangoAPI.schemas";
 import { nextEpisodeNumber, SeriesFields } from "./SeriesFields";
 import type { SeriesOption } from "./SeriesFields";
 
-type SelectProps = {
-  children: (_item: { id: string; name: string }) => ReactNode;
-  items: { id: string; name: string }[];
-  label: string;
-  description?: string;
-  onBlur: () => void;
-  onSelectionChange: (_keys: Set<string>) => void;
-  selectedKeys: Set<string>;
-};
-
 type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   onPress?: () => void;
 };
 
-vi.mock("@heroui/react", () => ({
-  Button: ({ children, onPress, ...props }: ButtonProps) => (
-    <button onClick={onPress} {...props}>
-      {children}
-    </button>
-  ),
-  Select: ({ children, items, label, onBlur, onSelectionChange, selectedKeys }: SelectProps) => (
-    <label>
-      {label}
-      <select
-        aria-label={label}
-        value={Array.from(selectedKeys)[0]}
-        onBlur={onBlur}
-        onChange={(event) => onSelectionChange(new Set([event.target.value]))}
-      >
-        {items.map((item) => (
-          <option key={item.id} value={item.id}>
-            {children(item)}
-          </option>
-        ))}
-      </select>
-    </label>
-  ),
-  SelectItem: ({ children }: { children: ReactNode }) => children,
-}));
+vi.mock("@heroui/react", () => {
+  const MockLabel = ({ children }: { children: ReactNode }) => <>{children}</>;
+  const MockPopover = ({ children }: { children: ReactNode }) => <>{children}</>;
+  const MockListBox = Object.assign(({ children }: { children: ReactNode }) => <>{children}</>, {
+    Item: ({ id, children }: { id: string; children: ReactNode }) => (
+      <option value={id}>{children}</option>
+    ),
+    ItemIndicator: () => null,
+  });
+  const MockSelect = Object.assign(
+    ({ children, value, onChange, onBlur }: {
+      children: ReactNode;
+      value: string;
+      onChange: (_key: string) => void;
+      onBlur: () => void;
+    }) => {
+      const childArray = (Array.isArray(children) ? children : [children]) as ReactElement<{
+        children: ReactNode;
+      }>[];
+      const label = childArray.find((child) => child.type === MockLabel);
+      const popover = childArray.find((child) => child.type === MockPopover);
+      const labelText = String(label?.props.children ?? "");
+      return (
+        <label>
+          {labelText}
+          <select
+            aria-label={labelText}
+            value={value}
+            onBlur={onBlur}
+            onChange={(event) => onChange(event.target.value)}
+          >
+            {popover?.props.children}
+          </select>
+        </label>
+      );
+    },
+    {
+      Trigger: () => null,
+      Value: () => null,
+      Indicator: () => null,
+      Popover: MockPopover,
+    },
+  );
+
+  return {
+    Button: ({ children, onPress, ...props }: ButtonProps) => (
+      <button onClick={onPress} {...props}>
+        {children}
+      </button>
+    ),
+    Label: MockLabel,
+    ListBox: MockListBox,
+    Select: MockSelect,
+  };
+});
 
 type Values = {
   seriesId: number | null;

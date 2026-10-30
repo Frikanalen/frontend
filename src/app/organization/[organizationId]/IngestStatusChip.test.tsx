@@ -17,7 +17,10 @@ vi.mock("@/generated/videos/videos", () => ({
 }));
 
 vi.mock("@heroui/react", () => ({
-  Chip: ({ children }: { children: ReactNode }) => <span data-testid="chip">{children}</span>,
+  Chip: Object.assign(
+    ({ children }: { children: ReactNode }) => <span data-testid="chip">{children}</span>,
+    { Label: ({ children }: { children: ReactNode }) => <>{children}</> },
+  ),
 }));
 
 const job = (overrides: Partial<IngestJob> = {}): IngestJob => ({
