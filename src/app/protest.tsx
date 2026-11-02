@@ -2,11 +2,16 @@ export default function Protest() {
   return (
     <main className="w-full max-w-5xl grow px-2">
       <article className="prose prose-lg max-w-none dark:prose-invert">
-        <h1>
-          <strong>Frikanalen går i svart i protest mot udemokratisk overtakelse av kanalen</strong>
+        <h1 className="text-5xl leading-16 font-bold">
+          Frikanalen går i svart i protest mot udemokratisk overtakelse av kanalen
         </h1>
+        <h2 className="text-xl font-bold">
+          <span className="font-normal">av</span> Tom Fredrik Blenning
+          <br />
+          <span className="font-normal">styreleder, Frikanalen</span>
+        </h2>
         <p>
-          Mandag 2. november kl. 18.00 vil Frikanalens ordinære sendinger bli erstattet av en
+          Mandag 2. november kl. 18.00 har Frikanalens ordinære sendinger blitt erstattet av en
           kunngjøring som forklarer hvorfor vi har valgt å la kanalen gå i svart.
         </p>
         <p>
@@ -217,13 +222,6 @@ export default function Protest() {
           organisasjonskonflikt, men det må ta ansvar for at dette særlige samfunnsgodet forvaltes i
           tråd med sitt formål.{" "}
           <strong>Det er på høy tid at kulturministeren kommer på banen.</strong>
-        </p>
-        <p>
-          Signert,
-          <br />
-          Tom Fredrik Blenning
-          <br />
-          Styreleder, Frikanalen
         </p>
       </article>
     </main>
