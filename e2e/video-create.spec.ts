@@ -40,10 +40,8 @@ const fillRequiredDetails = async (page: Page) => {
   await expect(listbox).toBeVisible();
   await listbox.getByRole("option", { name: "Kultur" }).click();
   // A multi-select deliberately stays open after one choice.
-  await expect(async () => {
-    if ((await categories.getAttribute("aria-expanded")) === "true") await categories.click();
-    await expect(categories).toHaveAttribute("aria-expanded", "false", { timeout: 1_000 });
-  }).toPass({ timeout: 5_000 });
+  await listbox.press("Escape");
+  await expect(categories).toHaveAttribute("aria-expanded", "false");
 };
 
 const chooseExistingSeries = async (page: Page) => {

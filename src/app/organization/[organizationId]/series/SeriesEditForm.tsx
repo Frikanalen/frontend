@@ -8,7 +8,7 @@ import { MDXEditorField } from "@/app/video/[videoId]/edit/MDXEditorField";
 import { Button, Form } from "@heroui/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 
 type SeriesMetadataFields = Pick<SeriesUpdateMutationBody, "name" | "synopsis">;
 
@@ -39,14 +39,10 @@ export const SeriesEditForm = ({ series }: { series: Series }) => {
             Serieopplysningene er lagret.
           </p>
         )}
-        <FormInput
-          {...form.register("name")}
+        <Controller
+          control={form.control}
           name="name"
-          label="Navn"
-          labelPlacement="outside-top"
-          defaultValue={series.name}
-          maxLength={255}
-          isRequired
+          render={({ field }) => <FormInput {...field} label="Navn" maxLength={255} isRequired />}
         />
         <MDXEditorField
           control={form.control}
