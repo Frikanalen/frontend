@@ -1,4 +1,4 @@
-import { expect, type Locator, type Page } from "@playwright/test";
+import { expect, type Locator, type Page, type Route } from "@playwright/test";
 
 /**
  * react-hook-form writes its defaultValues into the inputs when the form
@@ -20,16 +20,27 @@ export const fillBeforeHydration = async (
   path: string,
   values: Record<string, string>,
 ) => {
+  // `waitUntil: "commit"` alone leaves a race: on a fast browser, Next can
+  // hydrate the form before the test fills it. Hold its client bundles until
+  // the inputs are filled so this reliably exercises a pre-hydration fill.
+  const pendingScripts: Route[] = [];
+  let allowScripts = false;
+  await page.route(/\/_next\/static\/.*\.js(?:\?.*)?$/, async (route) => {
+    if (allowScripts) {
+      await route.continue();
+    } else {
+      pendingScripts.push(route);
+    }
+  });
+
   await page.goto(path, { waitUntil: "commit" });
   await page.waitForSelector("form input", { state: "attached" });
-  await page.evaluate((pairs) => {
-    for (const [name, value] of Object.entries(pairs)) {
-      const el = document.querySelector(`input[name="${name}"]`) as HTMLInputElement | null;
-      if (!el) continue;
-      el.value = value;
-      el.dispatchEvent(new Event("input", { bubbles: true }));
-    }
-  }, values);
+  for (const [name, value] of Object.entries(values)) {
+    await page.locator(`input[name="${name}"]`).fill(value);
+  }
+
+  allowScripts = true;
+  await Promise.all(pendingScripts.map((route) => route.continue()));
   await page.waitForLoadState("networkidle");
 };
 
