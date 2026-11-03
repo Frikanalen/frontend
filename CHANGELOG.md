@@ -1,6 +1,18 @@
 2025-05-31 
 # Changelog
 
+## [3.4.0](https://github.com/Frikanalen/frontend/compare/v3.3.0...v3.4.0) (2026-11-03)
+
+
+### Features
+
+* migrate to HeroUI 3 ([#81](https://github.com/Frikanalen/frontend/issues/81)) ([a56e3dc](https://github.com/Frikanalen/frontend/commit/a56e3dc1b17ac494ed89f7fb89749b27ddbffe3f))
+
+
+### Bug Fixes
+
+* preserve autofilled auth credentials during hydration ([#86](https://github.com/Frikanalen/frontend/issues/86)) ([6c3893a](https://github.com/Frikanalen/frontend/commit/6c3893ad5ea4dcc05124c88a79ce8ea7b48fa7f6))
+
 ## [3.3.0](https://github.com/Frikanalen/frontend/compare/v3.2.0...v3.3.0) (2026-11-02)
 
 
