@@ -21,8 +21,9 @@ type SharedProps = {
   onValueChange?: (_value: string) => void;
 };
 
-type InputProps = Omit<InputHTMLAttributes<HTMLInputElement>, "onChange"> &
+type InputProps = Omit<InputHTMLAttributes<HTMLInputElement>, "onChange" | "defaultValue"> &
   SharedProps & {
+    defaultValue?: string;
     onChange?: InputHTMLAttributes<HTMLInputElement>["onChange"];
   };
 
