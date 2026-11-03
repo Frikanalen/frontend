@@ -1,5 +1,5 @@
 "use client";
-import { FormInput } from "@/components/FormField";
+import { AuthField } from "@/components/form/AuthField";
 import { Button, Form } from "@heroui/react";
 import { ButtonLink } from "@/components/ButtonLink";
 import { useRouter } from "next/navigation";
@@ -38,20 +38,20 @@ export default function Login() {
           <div className={"flex flex-col gap-4 w-full"}>
             <h2 className={"text-lg font-bold"}>Logg inn</h2>
             <FormError error={error} />
-            <FormInput
+            <AuthField
               {...register("email")}
               id="email"
-              isRequired
+              required
               label="E-post"
               type="email"
               autoComplete={"username"}
               isInvalid={!!formState.errors.email}
               errorMessage={formState.errors.email?.message}
             />
-            <FormInput
+            <AuthField
               {...register("password")}
               id="password"
-              isRequired
+              required
               label="Passord"
               type="password"
               autoComplete={"current-password"}

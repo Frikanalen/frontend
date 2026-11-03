@@ -1,5 +1,5 @@
 "use client";
-import { FormInput } from "@/components/FormField";
+import { AuthField } from "@/components/form/AuthField";
 import { NewUserRequest } from "@/generated/frikanalenDjangoAPI.schemas";
 import cx from "classnames";
 import { Button, Form } from "@heroui/react";
@@ -26,39 +26,35 @@ export const UserRegisterForm = ({ className }: { className?: string }) => {
     <Form className={cx("block", className)} onSubmit={onSubmit}>
       <div className="flex flex-col gap-4">
         <FormError error={error} />
-        <FormInput
+        <AuthField
           id="email"
           {...register("email")}
           type={"email"}
           label={"Epost (brukernavn)"}
-          labelPlacement={"outside-top"}
           autoComplete={"username"}
-          isRequired
+          required
         />
-        <FormInput
+        <AuthField
           id="firstName"
           {...register("firstName")}
           autoComplete={"given-name"}
           label={"Fornavn"}
-          labelPlacement={"outside-top"}
-          isRequired
+          required
         />
-        <FormInput
+        <AuthField
           id="lastName"
           {...register("lastName")}
           autoComplete={"family-name"}
           label={"Etternavn"}
-          labelPlacement={"outside-top"}
-          isRequired
+          required
         />
-        <FormInput
+        <AuthField
           id="password"
           {...register("password")}
           label={"Passord"}
           type={"password"}
           autoComplete={"new-password"}
-          labelPlacement={"outside-top"}
-          isRequired
+          required
         />
       </div>
       <div className={"ml-auto w-fit py-4"}>

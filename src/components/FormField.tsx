@@ -21,8 +21,9 @@ type SharedProps = {
   onValueChange?: (_value: string) => void;
 };
 
-type InputProps = Omit<InputHTMLAttributes<HTMLInputElement>, "onChange"> &
+type InputProps = Omit<InputHTMLAttributes<HTMLInputElement>, "onChange" | "defaultValue"> &
   SharedProps & {
+    defaultValue?: string;
     onChange?: InputHTMLAttributes<HTMLInputElement>["onChange"];
   };
 
@@ -37,6 +38,7 @@ export const FormInput = forwardRef<HTMLInputElement, InputProps>(
       errorMessage,
       classNames,
       className,
+      defaultValue,
       onChange,
       onValueChange,
       ...inputProps
@@ -44,18 +46,26 @@ export const FormInput = forwardRef<HTMLInputElement, InputProps>(
     ref,
   ) => {
     void labelPlacement;
+
+    const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+      onChange?.(event);
+      onValueChange?.(event.currentTarget.value);
+    };
+
     return (
-      <TextField isRequired={isRequired} isInvalid={isInvalid} className={className}>
+      <TextField
+        isRequired={isRequired}
+        isInvalid={isInvalid}
+        className={className}
+        defaultValue={defaultValue}
+      >
         {label && <Label>{label}</Label>}
         {description && <Description>{description}</Description>}
         <HeroInput
           {...inputProps}
           ref={ref}
           className={classNames?.input}
-          onChange={(event) => {
-            onChange?.(event);
-            onValueChange?.(event.currentTarget.value);
-          }}
+          onChange={handleChange}
         />
         {errorMessage && <FieldError>{errorMessage}</FieldError>}
       </TextField>
