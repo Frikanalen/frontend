@@ -30,6 +30,7 @@ export const UserRegisterForm = ({ className }: { className?: string }) => {
           id="email"
           {...register("email")}
           defaultValue=""
+          standalone
           type={"email"}
           label={"Epost (brukernavn)"}
           labelPlacement={"outside-top"}
@@ -40,6 +41,7 @@ export const UserRegisterForm = ({ className }: { className?: string }) => {
           id="firstName"
           {...register("firstName")}
           defaultValue=""
+          standalone
           autoComplete={"given-name"}
           label={"Fornavn"}
           labelPlacement={"outside-top"}
@@ -49,6 +51,7 @@ export const UserRegisterForm = ({ className }: { className?: string }) => {
           id="lastName"
           {...register("lastName")}
           defaultValue=""
+          standalone
           autoComplete={"family-name"}
           label={"Etternavn"}
           labelPlacement={"outside-top"}
@@ -58,6 +61,7 @@ export const UserRegisterForm = ({ className }: { className?: string }) => {
           id="password"
           {...register("password")}
           defaultValue=""
+          standalone
           label={"Passord"}
           type={"password"}
           autoComplete={"new-password"}

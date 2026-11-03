@@ -42,6 +42,7 @@ export default function Login() {
               {...register("email")}
               id="email"
               defaultValue=""
+              standalone
               isRequired
               label="E-post"
               type="email"
@@ -53,6 +54,7 @@ export default function Login() {
               {...register("password")}
               id="password"
               defaultValue=""
+              standalone
               isRequired
               label="Passord"
               type="password"
