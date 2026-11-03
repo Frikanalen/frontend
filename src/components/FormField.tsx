@@ -18,7 +18,6 @@ type SharedProps = {
   isInvalid?: boolean;
   errorMessage?: ReactNode;
   classNames?: { input?: string };
-  standalone?: boolean;
   onValueChange?: (_value: string) => void;
 };
 
@@ -40,7 +39,6 @@ export const FormInput = forwardRef<HTMLInputElement, InputProps>(
       classNames,
       className,
       defaultValue,
-      standalone,
       onChange,
       onValueChange,
       ...inputProps
@@ -53,35 +51,6 @@ export const FormInput = forwardRef<HTMLInputElement, InputProps>(
       onChange?.(event);
       onValueChange?.(event.currentTarget.value);
     };
-
-    if (standalone) {
-      const errorId = inputProps.id ? `${inputProps.id}-error` : undefined;
-
-      return (
-        <div className={className}>
-          {label && (
-            <label className="mb-1 block text-sm font-medium" htmlFor={inputProps.id}>
-              {label}
-            </label>
-          )}
-          <HeroInput
-            {...inputProps}
-            ref={ref}
-            defaultValue={defaultValue}
-            required={isRequired}
-            aria-invalid={isInvalid || undefined}
-            aria-describedby={errorMessage ? errorId : undefined}
-            className={classNames?.input}
-            onChange={handleChange}
-          />
-          {errorMessage && (
-            <p className="mt-1 text-sm text-danger" id={errorId}>
-              {errorMessage}
-            </p>
-          )}
-        </div>
-      );
-    }
 
     return (
       <TextField
