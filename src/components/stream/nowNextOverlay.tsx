@@ -1,6 +1,7 @@
 "use client";
+import Link from "next/link";
 import { ScheduleitemRead } from "@/generated/frikanalenDjangoAPI.schemas";
-import { Link } from "@heroui/react";
+
 import { formatOsloTime } from "@/lib/osloTime";
 import { useScheduleCursor } from "@/app/useScheduleCursor";
 import { GoArrowUpRight } from "react-icons/go";

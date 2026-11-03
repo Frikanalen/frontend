@@ -1,5 +1,5 @@
 "use client";
-
+import { FormInput } from "@/components/FormField";
 import type {
   Organization,
   ScheduleitemRead,
@@ -16,7 +16,7 @@ import {
 import { useVideosList } from "@/generated/videos/videos";
 import { formatApiError } from "@/lib/formatApiError";
 import { formatOsloTime, inOsloTime } from "@/lib/osloTime";
-import { Button, Input } from "@heroui/react";
+import { Button } from "@heroui/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale/nb";
@@ -202,9 +202,9 @@ export const SchedulePlanner = ({
           <div className="ms-auto flex gap-2">
             {item.displaceable ? (
               <Button
-                color="primary"
                 size="sm"
                 onPress={() => pickSlot(bounds.start, bounds.end, item)}
+                variant="primary"
               >
                 Erstatt
               </Button>
@@ -215,7 +215,7 @@ export const SchedulePlanner = ({
               </Button>
             ) : null}
             {canManage && !item.displaceable ? (
-              <Button color="danger" size="sm" variant="light" onPress={() => remove(item)}>
+              <Button size="sm" variant="tertiary" onPress={() => remove(item)}>
                 Fjern
               </Button>
             ) : null}
@@ -334,7 +334,7 @@ export const SchedulePlanner = ({
               {draft.itemId === undefined ? "Legg inn program" : "Endre program"}
             </h2>
             {draft.itemId !== undefined ? (
-              <Button size="sm" variant="light" onPress={() => setDraft(emptyDraft())}>
+              <Button size="sm" variant="tertiary" onPress={() => setDraft(emptyDraft())}>
                 Avbryt
               </Button>
             ) : null}
@@ -343,14 +343,14 @@ export const SchedulePlanner = ({
             Video: {draft.video?.name ?? "Ingen video valgt"}
           </p>
           <div className="grid grid-cols-2 gap-3">
-            <Input
+            <FormInput
               isRequired
               label="Starttid"
               type="time"
               value={draft.time}
               onValueChange={(time) => setDraft((current) => ({ ...current, time }))}
             />
-            <Input
+            <FormInput
               isRequired
               label="Varighet"
               description="TT:MM:SS, eventuelt med desimaler"
@@ -365,10 +365,10 @@ export const SchedulePlanner = ({
             </p>
           ) : null}
           <Button
-            color="primary"
             isDisabled={!draft.video || !csrf.isSuccess}
-            isLoading={isSaving}
+            isPending={isSaving}
             type="submit"
+            variant="primary"
           >
             Lagre i sendeplanen
           </Button>
@@ -381,7 +381,7 @@ export const SchedulePlanner = ({
 
         <section className="space-y-3 rounded-xl border border-default-200 bg-content1 p-4">
           <h2 className="text-xl font-semibold">Velg video</h2>
-          <Input
+          <FormInput
             label="Søk i organisasjonens videoer"
             type="search"
             value={search}
@@ -403,7 +403,7 @@ export const SchedulePlanner = ({
                 </div>
                 <Button
                   size="sm"
-                  variant={draft.video?.id === video.id ? "solid" : "flat"}
+                  variant={draft.video?.id === video.id ? "primary" : "tertiary"}
                   onPress={() => pickVideo(video)}
                 >
                   Velg

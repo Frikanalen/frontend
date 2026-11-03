@@ -1,7 +1,8 @@
 "use client";
+import { FormInput, FormTextArea } from "@/components/FormField";
 import { useForm } from "react-hook-form";
 import { OrganizationRequest } from "@/generated/frikanalenDjangoAPI.schemas";
-import { Button, Form, Input, Textarea } from "@heroui/react";
+import { Button, Form } from "@heroui/react";
 import { useOrganizationCreate } from "@/generated/organization/organization";
 import { useRouter } from "next/navigation";
 import cx from "classnames";
@@ -22,21 +23,21 @@ export const OrgCreateForm = ({ className }: { className?: string }) => {
     <Form onSubmit={onSubmit} className={cx("block", className)} autoComplete={"off"}>
       <div className="flex flex-col gap-4">
         <FormError error={error} />
-        <Input
+        <FormInput
           label={"Organisasjonens navn"}
           labelPlacement={"outside-top"}
           isRequired
           id="org-name"
           {...register("name")}
         />
-        <Input
+        <FormInput
           label={"Organisasjonens nettside"}
           labelPlacement={"outside-top"}
           type={"url"}
           id="org-homepage"
           {...register("homepage")}
         />
-        <Textarea
+        <FormTextArea
           label={"En kort beskrivelse av organisasjonen"}
           labelPlacement={"outside-top"}
           classNames={{ input: "py-2" }} // heroui bug? margins very stingy
@@ -45,7 +46,7 @@ export const OrgCreateForm = ({ className }: { className?: string }) => {
           isRequired
         />
         <div className="flex gap-4">
-          <Textarea
+          <FormTextArea
             label={"Besøksadresse"}
             labelPlacement={"outside-top"}
             isRequired
@@ -53,7 +54,7 @@ export const OrgCreateForm = ({ className }: { className?: string }) => {
             {...register("streetAddress")}
             classNames={{ input: "py-2" }} // heroui bug? margins very stingy
           />
-          <Textarea
+          <FormTextArea
             label={"Postadresse"}
             labelPlacement={"outside-top"}
             isRequired
@@ -63,7 +64,7 @@ export const OrgCreateForm = ({ className }: { className?: string }) => {
           />
         </div>
         <div className="ml-auto">
-          <Button type={"submit"} isLoading={isSubmitting}>
+          <Button type={"submit"} isPending={isSubmitting}>
             Opprett organisasjon
           </Button>
         </div>

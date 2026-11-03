@@ -1,19 +1,10 @@
 "use client";
-
+import { FormInput } from "@/components/FormField";
 import { SeriesWriteRequest } from "@/generated/frikanalenDjangoAPI.schemas";
 import { useSeriesCreate } from "@/generated/series/series";
 import { FormError } from "@/components/form/FormError";
 import { useApiFormSubmit } from "@/lib/useApiFormSubmit";
-import {
-  Button,
-  Form,
-  Input,
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-} from "@heroui/react";
+import { Button, Form, Modal } from "@heroui/react";
 import { useForm } from "react-hook-form";
 import type { SeriesOption } from "@/app/organization/[organizationId]/create/SeriesFields";
 import { MDXEditorField } from "@/app/video/[videoId]/edit/MDXEditorField";
@@ -53,63 +44,60 @@ export const NewSeriesModal = ({
   };
 
   return (
-    <Modal
-      size="3xl"
-      scrollBehavior="inside"
-      classNames={{
-        base: "m-0 h-[100dvh] max-h-[100dvh] max-w-full rounded-none sm:m-6 sm:h-auto sm:max-h-[calc(100dvh-3rem)] sm:max-w-3xl sm:rounded-large",
-        header: "px-4 sm:px-6",
-        body: "min-w-0 px-4 sm:px-6",
-        footer: "px-4 sm:px-6",
-      }}
-      isOpen={isOpen}
-      onOpenChange={handleOpenChange}
-      isDismissable={!isSubmitting}
-      hideCloseButton={isSubmitting}
-    >
-      <ModalContent>
-        <Form onSubmit={onSubmit} className="flex h-full min-h-0 w-full flex-col">
-          <ModalHeader>Opprett ny serie</ModalHeader>
-          <ModalBody className="w-full gap-4">
-            <p className="text-sm text-foreground-500">
-              Oppgi et navn og eventuelt en kort beskrivelse av serien.
-            </p>
-            <FormError error={error} />
-            <Input
-              label="Serienavn"
-              labelPlacement="outside-top"
-              isRequired
-              {...form.register("name")}
-            />
-            <MDXEditorField
-              className="min-w-0 w-full"
-              control={form.control}
-              name="synopsis"
-              label="Beskrivelse (valgfritt)"
-              placeholder="Beskrivelse"
-              rules={{
-                maxLength: {
-                  value: 2048,
-                  message: "Beskrivelsen kan ikke være lengre enn 2048 tegn.",
-                },
-              }}
-            />
-          </ModalBody>
-          <ModalFooter className="w-full">
-            <Button
-              type="button"
-              variant="light"
-              isDisabled={isSubmitting}
-              onPress={() => handleOpenChange(false)}
-            >
-              Avbryt
-            </Button>
-            <Button type="submit" color="primary" isLoading={isSubmitting}>
-              Opprett serie
-            </Button>
-          </ModalFooter>
-        </Form>
-      </ModalContent>
+    <Modal isOpen={isOpen} onOpenChange={handleOpenChange}>
+      <Modal.Backdrop isDismissable={!isSubmitting}>
+        <Modal.Container
+            size="lg"
+          scroll="inside"
+          className="m-0 h-[100dvh] max-h-[100dvh] max-w-full rounded-none sm:m-6 sm:h-auto sm:max-h-[calc(100dvh-3rem)] sm:max-w-3xl sm:rounded-large"
+        >
+          <Modal.Dialog>
+            <Form onSubmit={onSubmit} className="flex h-full min-h-0 w-full flex-col">
+              <Modal.Header className="px-4 sm:px-6">
+                <Modal.Heading>Opprett ny serie</Modal.Heading>
+              </Modal.Header>
+              <Modal.Body className="w-full min-w-0 gap-4 px-4 sm:px-6">
+                <p className="text-sm text-foreground-500">
+                  Oppgi et navn og eventuelt en kort beskrivelse av serien.
+                </p>
+                <FormError error={error} />
+                <FormInput
+                  label="Serienavn"
+                  labelPlacement="outside-top"
+                  isRequired
+                  {...form.register("name")}
+                />
+                <MDXEditorField
+                  className="min-w-0 w-full"
+                  control={form.control}
+                  name="synopsis"
+                  label="Beskrivelse (valgfritt)"
+                  placeholder="Beskrivelse"
+                  rules={{
+                    maxLength: {
+                      value: 2048,
+                      message: "Beskrivelsen kan ikke være lengre enn 2048 tegn.",
+                    },
+                  }}
+                />
+              </Modal.Body>
+              <Modal.Footer className="w-full px-4 sm:px-6">
+                <Button
+                  type="button"
+                  variant="tertiary"
+                  isDisabled={isSubmitting}
+                  onPress={() => handleOpenChange(false)}
+                >
+                  Avbryt
+                </Button>
+                <Button type="submit" isPending={isSubmitting} variant="primary">
+                  Opprett serie
+                </Button>
+              </Modal.Footer>
+            </Form>
+          </Modal.Dialog>
+        </Modal.Container>
+      </Modal.Backdrop>
     </Modal>
   );
 };

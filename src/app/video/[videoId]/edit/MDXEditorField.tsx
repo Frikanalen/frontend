@@ -1,5 +1,4 @@
 "use client";
-
 import { useCallback, useEffect, useId, useMemo, useRef } from "react";
 import {
   useController,
@@ -10,8 +9,8 @@ import {
 } from "react-hook-form";
 import { ForwardRefEditor } from "./ForwardRefEditor";
 import type { MDXEditorMethods, MDXEditorProps, Translation } from "@mdxeditor/editor";
-import { Card, CardBody } from "@heroui/react";
-import { Alert } from "@heroui/alert";
+import { Card } from "@heroui/react";
+import { Notice } from "@/components/Notice";
 
 type EditorPassThrough = Omit<
   MDXEditorProps,
@@ -118,7 +117,7 @@ export function MDXEditorField<
         className={isInvalid ? "border border-danger-500" : undefined}
         aria-describedby={describedBy}
       >
-        <CardBody className="w-full bg-default-100 p-0">
+        <Card.Content className="w-full bg-default-100 p-0">
           <ForwardRefEditor
             ref={editorRef}
             markdown={(field.value as unknown as string) ?? ""}
@@ -131,13 +130,13 @@ export function MDXEditorField<
             {...editorProps}
             translation={translate}
           />
-        </CardBody>
+        </Card.Content>
       </Card>
 
       {isInvalid && (
-        <Alert color={"danger"} id={errId}>
+        <Notice status={"danger"} id={errId}>
           {fieldState.error?.message}
-        </Alert>
+        </Notice>
       )}
     </div>
   );

@@ -1,14 +1,14 @@
 "use client";
-
+import { FormInput } from "@/components/FormField";
 import { FormError } from "@/components/form/FormError";
 import { Series } from "@/generated/frikanalenDjangoAPI.schemas";
 import { SeriesUpdateMutationBody, useSeriesPartialUpdate } from "@/generated/series/series";
 import { useApiFormSubmit } from "@/lib/useApiFormSubmit";
 import { MDXEditorField } from "@/app/video/[videoId]/edit/MDXEditorField";
-import { Button, Form, Input } from "@heroui/react";
+import { Button, Form } from "@heroui/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 
 type SeriesMetadataFields = Pick<SeriesUpdateMutationBody, "name" | "synopsis">;
 
@@ -39,14 +39,10 @@ export const SeriesEditForm = ({ series }: { series: Series }) => {
             Serieopplysningene er lagret.
           </p>
         )}
-        <Input
-          {...form.register("name")}
+        <Controller
+          control={form.control}
           name="name"
-          label="Navn"
-          labelPlacement="outside-top"
-          defaultValue={series.name}
-          maxLength={255}
-          isRequired
+          render={({ field }) => <FormInput {...field} label="Navn" maxLength={255} isRequired />}
         />
         <MDXEditorField
           control={form.control}
@@ -60,7 +56,7 @@ export const SeriesEditForm = ({ series }: { series: Series }) => {
           }}
         />
         <div className="flex justify-end">
-          <Button type="submit" color="primary" isLoading={isSubmitting}>
+          <Button type="submit" isPending={isSubmitting} variant="primary">
             Lagre
           </Button>
         </div>

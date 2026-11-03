@@ -3,7 +3,6 @@
 import { Video } from "@/generated/frikanalenDjangoAPI.schemas";
 import { useVideosList } from "@/generated/videos/videos";
 import { keepPreviousData } from "@tanstack/react-query";
-import { Image } from "@heroui/react";
 import { useRouter } from "next/navigation";
 import { FormEvent, KeyboardEvent, useId, useState } from "react";
 import { GoSearch } from "react-icons/go";
@@ -234,9 +233,8 @@ export const ArchiveSearch = ({
                   onMouseMove={() => setActiveIndex(index)}
                   onClick={() => openVideo(video)}
                 >
-                  <Image
-                    removeWrapper
-                    disableSkeleton
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
                     alt=""
                     src={video.files.largeThumb?.url}
                     width={96}

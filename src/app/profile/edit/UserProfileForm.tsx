@@ -1,7 +1,8 @@
 "use client";
+import { FormInput } from "@/components/FormField";
 import { User, UserRequest } from "@/generated/frikanalenDjangoAPI.schemas";
 import cx from "classnames";
-import { Button, Form, Input } from "@heroui/react";
+import { Button, Form } from "@heroui/react";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { useUserUpdate } from "@/generated/user/user";
@@ -25,21 +26,21 @@ export const UserProfileForm = ({ user, className }: { user: User; className?: s
     <Form className={cx("block", className)} onSubmit={onSubmit}>
       <div className="flex flex-col gap-4">
         <FormError error={error} />
-        <Input
+        <FormInput
           id="firstName"
           {...register("firstName")}
           autoComplete={"given-name"}
           label={"Fornavn"}
           labelPlacement={"outside-top"}
         />
-        <Input
+        <FormInput
           id="lastName"
           {...register("lastName")}
           autoComplete={"family-name"}
           label={"Etternavn"}
           labelPlacement={"outside-top"}
         />
-        <Input
+        <FormInput
           id="phoneNumber"
           {...register("phoneNumber")}
           type={"tel"}
@@ -49,7 +50,7 @@ export const UserProfileForm = ({ user, className }: { user: User; className?: s
         />
       </div>
       <div className={"ml-auto w-fit py-4"}>
-        <Button type={"submit"} isLoading={isSubmitting}>
+        <Button type={"submit"} isPending={isSubmitting}>
           Lagre
         </Button>
       </div>

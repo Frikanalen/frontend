@@ -1,6 +1,7 @@
 "use client";
+import Link from "next/link";
 import { Organization } from "@/generated/frikanalenDjangoAPI.schemas";
-import { Accordion, AccordionItem, Link } from "@heroui/react";
+import { Accordion } from "@heroui/react";
 import { ReactNode } from "react";
 
 /**
@@ -18,22 +19,32 @@ const Row = ({ label, children }: { label: string; children: ReactNode }) =>
 
 export const EditorInfo = ({ organization }: { organization: Organization }) => (
   <Accordion>
-    <AccordionItem title={"Redaktørinformasjon"}>
-      <dl className={"flex gap-1 flex-col"}>
-        <Row label={"Redaktør:"}>{organization.editorName?.trim()}</Row>
-        <Row label={"Epost:"}>
-          {organization.editorEmail?.trim() && (
-            // A mailto rather than bare text: this is contact information the
-            // editor is required to publish, so it should at least be usable
-            // in one click by the people it is meant for.
-            <Link href={`mailto:${organization.editorEmail.trim()}`} size={"sm"}>
-              {organization.editorEmail.trim()}
-            </Link>
-          )}
-        </Row>
-        <Row label={"Postadresse:"}>{organization.postalAddress?.trim()}</Row>
-        <Row label={"Besøksadresse:"}>{organization.streetAddress?.trim()}</Row>
-      </dl>
-    </AccordionItem>
+    <Accordion.Item id="editor-info">
+      <Accordion.Heading>
+        <Accordion.Trigger>
+          Redaktørinformasjon
+          <Accordion.Indicator />
+        </Accordion.Trigger>
+      </Accordion.Heading>
+      <Accordion.Panel>
+        <Accordion.Body>
+          <dl className={"flex gap-1 flex-col"}>
+            <Row label={"Redaktør:"}>{organization.editorName?.trim()}</Row>
+            <Row label={"Epost:"}>
+              {organization.editorEmail?.trim() && (
+                // A mailto rather than bare text: this is contact information the
+                // editor is required to publish, so it should at least be usable
+                // in one click by the people it is meant for.
+                <Link href={`mailto:${organization.editorEmail.trim()}`}>
+                  {organization.editorEmail.trim()}
+                </Link>
+              )}
+            </Row>
+            <Row label={"Postadresse:"}>{organization.postalAddress?.trim()}</Row>
+            <Row label={"Besøksadresse:"}>{organization.streetAddress?.trim()}</Row>
+          </dl>
+        </Accordion.Body>
+      </Accordion.Panel>
+    </Accordion.Item>
   </Accordion>
 );

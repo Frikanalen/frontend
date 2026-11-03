@@ -1,5 +1,5 @@
 import { Series } from "@/generated/frikanalenDjangoAPI.schemas";
-import { Button, Select, SelectItem } from "@heroui/react";
+import { Button, Label, ListBox, Select } from "@heroui/react";
 import { Control, Controller, FieldValues, Path } from "react-hook-form";
 
 export type SeriesOption = Pick<Series, "id" | "name" | "episodeCount">;
@@ -26,23 +26,36 @@ export const SeriesFields = <T extends FieldValues>({
       name={seriesName}
       render={({ field }) => (
         <Select
-          label="Serie (valgfritt)"
-          labelPlacement="outside-top"
-          selectedKeys={new Set([field.value ? String(field.value) : "none"])}
-          onSelectionChange={(keys) => {
-            const key = Array.from(keys)[0];
+          value={field.value ? String(field.value) : "none"}
+          onChange={(key) => {
             const selected =
-              key === "none" ? null : (series.find(({ id }) => id === Number(key)) ?? null);
+              key === "none" || key == null
+                ? null
+                : (series.find(({ id }) => id === Number(key)) ?? null);
             field.onChange(selected?.id ?? null);
             onSeriesChange?.(selected);
           }}
           onBlur={field.onBlur}
-          items={[
-            { id: "none", name: "Ingen serie" },
-            ...series.map((item) => ({ id: item.id.toString(), name: item.name })),
-          ]}
         >
-          {(item) => <SelectItem key={item.id}>{item.name}</SelectItem>}
+          <Label>Serie (valgfritt)</Label>
+          <Select.Trigger>
+            <Select.Value />
+            <Select.Indicator />
+          </Select.Trigger>
+          <Select.Popover>
+            <ListBox>
+              <ListBox.Item id="none" textValue="Ingen serie">
+                Ingen serie
+                <ListBox.ItemIndicator />
+              </ListBox.Item>
+              {series.map((item) => (
+                <ListBox.Item key={item.id} id={String(item.id)} textValue={item.name}>
+                  {item.name}
+                  <ListBox.ItemIndicator />
+                </ListBox.Item>
+              ))}
+            </ListBox>
+          </Select.Popover>
         </Select>
       )}
     />
@@ -53,7 +66,12 @@ export const SeriesFields = <T extends FieldValues>({
       <div className={onCreateSeries ? "grid items-end gap-4 sm:grid-cols-[2fr_1fr]" : undefined}>
         {seriesSelect}
         {onCreateSeries && (
-          <Button type="button" variant="flat" className="w-full sm:w-fit" onPress={onCreateSeries}>
+          <Button
+            type="button"
+            variant="tertiary"
+            className="w-full sm:w-fit"
+            onPress={onCreateSeries}
+          >
             Opprett ny serie
           </Button>
         )}

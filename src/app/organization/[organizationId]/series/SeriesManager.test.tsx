@@ -44,20 +44,25 @@ type ButtonProps = {
   onPress?: () => void;
 };
 
-vi.mock("@heroui/react", () => ({
-  Button: ({ as: Component, children, href, onPress }: ButtonProps) =>
-    Component ? <a href={href}>{children}</a> : <button onClick={onPress}>{children}</button>,
-  Table: ({ children }: { children: ReactNode }) => <table>{children}</table>,
-  TableBody: ({ children }: { children: ReactNode }) => <tbody>{children}</tbody>,
-  TableCell: ({ children }: { children: ReactNode }) => <td>{children}</td>,
-  TableColumn: ({ children }: { children: ReactNode }) => <th>{children}</th>,
-  TableHeader: ({ children }: { children: ReactNode }) => (
-    <thead>
-      <tr>{children}</tr>
-    </thead>
-  ),
-  TableRow: ({ children }: { children: ReactNode }) => <tr>{children}</tr>,
-}));
+vi.mock("@heroui/react", () => {
+  const Table = Object.assign(({ children }: { children: ReactNode }) => <table>{children}</table>, {
+    Content: ({ children }: { children: ReactNode }) => <>{children}</>,
+    Header: ({ children }: { children: ReactNode }) => (
+      <thead>
+        <tr>{children}</tr>
+      </thead>
+    ),
+    Column: ({ children }: { children: ReactNode }) => <th>{children}</th>,
+    Body: ({ children }: { children: ReactNode }) => <tbody>{children}</tbody>,
+    Row: ({ children }: { children: ReactNode }) => <tr>{children}</tr>,
+    Cell: ({ children }: { children: ReactNode }) => <td>{children}</td>,
+  });
+  return {
+    Button: ({ as: Component, children, href, onPress }: ButtonProps) =>
+      Component ? <a href={href}>{children}</a> : <button onClick={onPress}>{children}</button>,
+    Table,
+  };
+});
 
 beforeEach(() => {
   api.refetch.mockReset().mockResolvedValue({});

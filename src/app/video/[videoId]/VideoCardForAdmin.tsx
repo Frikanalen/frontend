@@ -4,8 +4,9 @@ import { notFound } from "next/navigation";
 import VideoPlayer from "@/components/stream/VideoPlayer";
 import { djangoVideoFilesToVidstackSrcList } from "@/app/video/[videoId]/VideoCard";
 import { VideoCardMeta } from "@/app/video/[videoId]/VideoCardMeta";
-import { Progress } from "@heroui/react";
-import { Alert } from "@heroui/alert";
+import { ProgressBar } from "@heroui/react";
+import { Notice } from "@/components/Notice";
+
 import { useVideosRetrieve } from "@/generated/videos/videos";
 import { POLL_INTERVAL_MS, useIngestProgress } from "@/lib/upload/useIngestProgress";
 import { RiErrorWarningFill } from "react-icons/ri";
@@ -54,16 +55,19 @@ export const VideoCardForAdmin = ({
             </p>
           </div>
           {description?.phase === "failed" ? (
-            <Alert color="danger">{description.message}</Alert>
+            <Notice status="danger">{description.message}</Notice>
           ) : description?.phase === "stalled" ? (
-            <Alert color="warning">{description.message}</Alert>
+            <Notice status="warning">{description.message}</Notice>
           ) : (
-            <Progress
+            <ProgressBar
               value={description?.percentage ?? undefined}
-              isIndeterminate={description?.percentage == null}
-              showValueLabel={description?.percentage != null}
-              label={description?.message ?? "Lager video i full kvalitet..."}
-            />
+              aria-label={description?.message ?? "Lager video i full kvalitet..."}
+            >
+              <ProgressBar.Output />
+              <ProgressBar.Track>
+                <ProgressBar.Fill />
+              </ProgressBar.Track>
+            </ProgressBar>
           )}
         </div>
       )}

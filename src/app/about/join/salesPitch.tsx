@@ -1,7 +1,5 @@
 "use client";
-
-import { Link } from "@heroui/react";
-
+import Link from "next/link";
 export const SalesPitch = () => (
   <div className="w-full prose dark:prose-invert prose-lg">
     <p>Ved å melde din organisasjon inn i Frikanalen, får du:</p>

@@ -1,14 +1,15 @@
+import Link from "next/link";
 import { Video } from "@/generated/frikanalenDjangoAPI.schemas";
 import { format, parseISO } from "date-fns";
 import { nb } from "date-fns/locale/nb";
-import { Link } from "@heroui/react";
+
 import Markdown from "markdown-to-jsx";
 import { Fragment } from "react";
 
 export const VideoCardMeta = ({ video }: { video: Video }) => {
   return (
-    <div className="p-4">
-      <h1 className={"font-bold text-2xl py-2"}>{video.name}</h1>
+    <div className="px-4 pt-2 pb-4">
+      <h1 className={"font-bold text-2xl pt-0 pb-2"}>{video.name}</h1>
       <div className={"flex max-lg:flex-col gap-4"}>
         <div className={"basis-1/4 shrink-0"}>
           {!!video.createdTime && (

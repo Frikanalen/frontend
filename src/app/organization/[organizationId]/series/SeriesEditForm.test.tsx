@@ -1,11 +1,9 @@
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { FormHTMLAttributes, InputHTMLAttributes, ReactNode, TextareaHTMLAttributes } from "react";
+import { FormHTMLAttributes, InputHTMLAttributes, ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Series } from "@/generated/frikanalenDjangoAPI.schemas";
 import type { Control, RegisterOptions } from "react-hook-form";
 import { SeriesEditForm } from "./SeriesEditForm";
-
-type FieldProps = { label: string; labelPlacement?: string };
 
 const api = vi.hoisted(() => ({
   mutateAsync: vi.fn(),
@@ -40,6 +38,15 @@ vi.mock("@/app/video/[videoId]/edit/MDXEditorField", async () => {
   };
 });
 
+vi.mock("@/components/FormField", () => ({
+  FormInput: ({ label, ...props }: { label: string } & InputHTMLAttributes<HTMLInputElement>) => (
+    <label>
+      {label}
+      <input aria-label={label} {...props} />
+    </label>
+  ),
+}));
+
 vi.mock("@heroui/react", () => ({
   Button: ({
     children,
@@ -56,32 +63,6 @@ vi.mock("@heroui/react", () => ({
   Form: ({ children, ...props }: FormHTMLAttributes<HTMLFormElement>) => (
     <form {...props}>{children}</form>
   ),
-  Input: ({
-    label,
-    labelPlacement,
-    ...props
-  }: FieldProps & InputHTMLAttributes<HTMLInputElement>) => {
-    void labelPlacement;
-    return (
-      <label>
-        {label}
-        <input aria-label={label} {...props} />
-      </label>
-    );
-  },
-  Textarea: ({
-    label,
-    labelPlacement,
-    ...props
-  }: FieldProps & TextareaHTMLAttributes<HTMLTextAreaElement>) => {
-    void labelPlacement;
-    return (
-      <label>
-        {label}
-        <textarea aria-label={label} {...props} />
-      </label>
-    );
-  },
 }));
 
 const series = {

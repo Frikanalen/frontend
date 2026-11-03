@@ -1,9 +1,10 @@
 "use client";
+import { FormInput } from "@/components/FormField";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { PatchedVideoRequest, Series, Video } from "@/generated/frikanalenDjangoAPI.schemas";
 import { useRouter } from "next/navigation";
-import { Button, Form, Input } from "@heroui/react";
+import { Button, Form } from "@heroui/react";
 
 import { MDXEditorField } from "@/app/video/[videoId]/edit/MDXEditorField";
 import { editAction } from "@/app/video/[videoId]/edit/editAction";
@@ -55,7 +56,7 @@ export const VideoEditForm = ({ video, series }: { video: Video; series: Series[
     <div>
       <Form onSubmit={onSubmit}>
         <FormError error={error} />
-        <Input
+        <FormInput
           label={"Navn"}
           labelPlacement={"outside-top"}
           id="video-name"
@@ -75,7 +76,7 @@ export const VideoEditForm = ({ video, series }: { video: Video; series: Series[
           onSeriesChange={selectSeries}
         />
         <div className={"ml-auto"}>
-          <Button type={"submit"} isLoading={isSubmitting}>
+          <Button type={"submit"} isPending={isSubmitting}>
             Send inn
           </Button>
         </div>

@@ -3,7 +3,7 @@ import { useVideosList } from "@/generated/videos/videos";
 import { VideoList } from "@/app/video/VideoList";
 import { useVideoDeletion } from "@/app/organization/[organizationId]/useVideoDeletion";
 import { Button } from "@heroui/react";
-import Link from "next/link";
+import { ButtonLink } from "@/components/ButtonLink";
 
 /**
  * The organization's finished videos, as its own administrators see them:
@@ -30,14 +30,13 @@ export const OrgVideosList = ({ organizationId }: { organizationId: number }) =>
           showOrganization={false}
           actions={(video) => (
             <>
-              <Button as={Link} href={`/video/${video.id}/edit`} color="primary" size="sm">
+              <ButtonLink href={`/video/${video.id}/edit`} size="sm">
                 Rediger
-              </Button>
+              </ButtonLink>
               <Button
-                color="danger"
-                variant="flat"
+                variant="danger-soft"
                 size="sm"
-                isLoading={isRemoving(video.id)}
+                isPending={isRemoving(video.id)}
                 onPress={() =>
                   remove(
                     video.id,

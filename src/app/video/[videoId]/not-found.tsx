@@ -1,8 +1,7 @@
 "use client";
-
+import Link from "next/link";
 import { useParams } from "next/navigation";
 import { PageShell, PageShellBody } from "@/components/layout/PageShell";
-import { Link } from "@heroui/react";
 
 export default function NotFound() {
   const { videoId } = useParams<{ videoId: string }>();

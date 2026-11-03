@@ -1,9 +1,11 @@
 "use client";
-import { Button, Link, Progress } from "@heroui/react";
+import Link from "next/link";
+import { Button, ProgressBar } from "@heroui/react";
+import { Notice } from "@/components/Notice";
 import { ChangeEventHandler, useCallback, useEffect, useRef, useState } from "react";
 import { useTusUpload } from "@/lib/upload/useTusUpload";
 import { POLL_INTERVAL_MS, useIngestProgress } from "@/lib/upload/useIngestProgress";
-import { Alert } from "@heroui/alert";
+
 import { useRouter } from "next/navigation";
 import { useVideosRetrieve } from "@/generated/videos/videos";
 
@@ -100,43 +102,55 @@ export const FileUpload = ({
         <input type={"file"} ref={ref} onChange={chooseFile} hidden />
       </form>
 
-      <Progress value={progress} hidden={!isUploading} showValueLabel label={`Laster opp...`} />
+      {isUploading && (
+        <ProgressBar value={progress} aria-label="Laster opp...">
+          <span>Laster opp...</span>
+          <ProgressBar.Output />
+          <ProgressBar.Track>
+            <ProgressBar.Fill />
+          </ProgressBar.Track>
+        </ProgressBar>
+      )}
 
       {isIngesting && (
-        <Progress
+        <ProgressBar
           // Ingest reports progress within its current step, not across the
           // whole pipeline, so a step with nothing to report gets a bar that
           // says so rather than a misleading zero.
           value={description?.percentage ?? undefined}
-          isIndeterminate={description?.percentage == null}
-          showValueLabel={description?.percentage != null}
-          label={description?.message ?? "Filen er lastet opp. Vi behandler den nå."}
-        />
+          aria-label={description?.message ?? "Filen er lastet opp. Vi behandler den nå."}
+        >
+          <span>{description?.message ?? "Filen er lastet opp. Vi behandler den nå."}</span>
+          <ProgressBar.Output />
+          <ProgressBar.Track>
+            <ProgressBar.Fill />
+          </ProgressBar.Track>
+        </ProgressBar>
       )}
 
-      {description?.phase === "stalled" && <Alert color="warning">{description.message}</Alert>}
+      {description?.phase === "stalled" && <Notice status="warning">{description.message}</Notice>}
 
       {isSuccess && ingestUnreachable && (
-        <Alert color="warning" className={"prose dark:prose-invert"}>
+        <Notice status="warning" className={"prose dark:prose-invert"}>
           <p>
             Filen er lastet opp, men vi får ikke kontakt for å følge behandlingen. Se på{" "}
             <Link href={`/video/${videoId}`}>videosiden</Link> om litt.
           </p>
-        </Alert>
+        </Notice>
       )}
 
       {description?.phase === "done" && (
-        <Alert color="success" className={"prose dark:prose-invert"}>
+        <Notice status="success" className={"prose dark:prose-invert"}>
           <h3>Videoen er klar!</h3>
           <p>
             Du blir sendt til <Link href={`/video/${videoId}`}>videosiden</Link>.
           </p>
-        </Alert>
+        </Notice>
       )}
 
       {description?.phase === "failed" && (
         <div className={"space-y-4"}>
-          <Alert color="danger">{description.message}</Alert>
+          <Notice status="danger">{description.message}</Notice>
           <Button onPress={() => ref.current?.click()}>Velg en annen fil</Button>
         </div>
       )}
@@ -152,11 +166,11 @@ export const FileUpload = ({
         </div>
       )}
 
-      {isError && <Alert color="danger">Opplastingen feilet: {error?.message}</Alert>}
+      {isError && <Notice status="danger">Opplastingen feilet: {error?.message}</Notice>}
 
       {isReady && !isSuccess && !autoStart && (
         <div className={"prose dark:prose-invert"}>
-          <Button onPress={start} disabled={!isReady}>
+          <Button onPress={start} isDisabled={!isReady}>
             Last opp {file?.name}
           </Button>
         </div>
