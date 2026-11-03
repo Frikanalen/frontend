@@ -37,6 +37,7 @@ export const FormInput = forwardRef<HTMLInputElement, InputProps>(
       errorMessage,
       classNames,
       className,
+      defaultValue,
       onChange,
       onValueChange,
       ...inputProps
@@ -45,7 +46,12 @@ export const FormInput = forwardRef<HTMLInputElement, InputProps>(
   ) => {
     void labelPlacement;
     return (
-      <TextField isRequired={isRequired} isInvalid={isInvalid} className={className}>
+      <TextField
+        isRequired={isRequired}
+        isInvalid={isInvalid}
+        className={className}
+        defaultValue={defaultValue}
+      >
         {label && <Label>{label}</Label>}
         {description && <Description>{description}</Description>}
         <HeroInput
