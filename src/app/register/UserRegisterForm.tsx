@@ -29,6 +29,7 @@ export const UserRegisterForm = ({ className }: { className?: string }) => {
         <FormInput
           id="email"
           {...register("email")}
+          defaultValue=""
           type={"email"}
           label={"Epost (brukernavn)"}
           labelPlacement={"outside-top"}
@@ -38,6 +39,7 @@ export const UserRegisterForm = ({ className }: { className?: string }) => {
         <FormInput
           id="firstName"
           {...register("firstName")}
+          defaultValue=""
           autoComplete={"given-name"}
           label={"Fornavn"}
           labelPlacement={"outside-top"}
@@ -46,6 +48,7 @@ export const UserRegisterForm = ({ className }: { className?: string }) => {
         <FormInput
           id="lastName"
           {...register("lastName")}
+          defaultValue=""
           autoComplete={"family-name"}
           label={"Etternavn"}
           labelPlacement={"outside-top"}
@@ -54,6 +57,7 @@ export const UserRegisterForm = ({ className }: { className?: string }) => {
         <FormInput
           id="password"
           {...register("password")}
+          defaultValue=""
           label={"Passord"}
           type={"password"}
           autoComplete={"new-password"}

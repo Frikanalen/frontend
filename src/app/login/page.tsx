@@ -41,6 +41,7 @@ export default function Login() {
             <FormInput
               {...register("email")}
               id="email"
+              defaultValue=""
               isRequired
               label="E-post"
               type="email"
@@ -51,6 +52,7 @@ export default function Login() {
             <FormInput
               {...register("password")}
               id="password"
+              defaultValue=""
               isRequired
               label="Passord"
               type="password"
