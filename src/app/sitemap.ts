@@ -7,7 +7,7 @@ import type {
   Video,
 } from "@/generated/ssr/frikanalenDjangoAPI.schemas";
 
-const BASE_URL = "https://frikanalen.no";
+const BASE_URL = "https://frikanalen.tv";
 const PAGE_SIZE = 500;
 
 export const revalidate = 3600;

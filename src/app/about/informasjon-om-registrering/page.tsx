@@ -58,12 +58,12 @@ export default async function Page() {
         dette allerede er gjort, trengs det ikke gjøres på nytt.
       </p>
       <p>
-        Send dokumentet til <a href={"post@frikanalen.no"}>post@frikanalen.no</a>.
+        Send dokumentet til <a href={"post@frikanalen.tv"}>post@frikanalen.tv</a>.
       </p>
       <h3>Trinn 3 – Bekreft til Frikanalen</h3>
       <p>
         Når registreringen og signeringen er fullført, send en kort e-post til{" "}
-        <a href={"post@frikanalen.no"}>post@frikanalen.no</a> med emne: «Bekreftelse redaktøransvar
+        <a href={"post@frikanalen.tv"}>post@frikanalen.tv</a> med emne: «Bekreftelse redaktøransvar
         – [Medlemsnavn]».
       </p>
       <p>Legg ved signert bekreftelse.</p>

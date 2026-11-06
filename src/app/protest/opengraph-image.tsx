@@ -24,7 +24,7 @@ export default function Image() {
         Frikanalen
       </div>
       <div style={{ fontSize: 68, fontWeight: 700, lineHeight: 1.15 }}>{alt}</div>
-      <div style={{ fontSize: 30, opacity: 0.7 }}>frikanalen.no/protest</div>
+      <div style={{ fontSize: 30, opacity: 0.7 }}>frikanalen.tv/protest</div>
     </div>,
     size,
   );
