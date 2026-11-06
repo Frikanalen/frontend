@@ -6,7 +6,7 @@ export default async function Contact() {
       <h2>Kontaktinformasjon</h2>
       <p>
         Styreleder Tom Fredrik Blenning kan nås på{" "}
-        <Link href="mailto:post@frikanalen.no">post@frikanalen.no</Link>
+        <Link href="mailto:post@frikanalen.tv">post@frikanalen.tv</Link>
       </p>
       <p>
         Teknisk leder Tore Sinding Bekkedal kan nås på{" "}

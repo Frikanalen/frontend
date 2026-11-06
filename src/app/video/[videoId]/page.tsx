@@ -36,13 +36,13 @@ export async function generateMetadata({ params }: VideoPageProps): Promise<Meta
     title: `${video.name} - Frikanalen`,
     authors: {
       name: video.organization.name,
-      url: `https://frikanalen.no/organization/${video.organization.id}`,
+      url: `https://frikanalen.tv/organization/${video.organization.id}`,
     },
     openGraph: {
       type: "video.episode",
       duration: video.durationSec,
       releaseDate: video.createdTime,
-      url: `https://frikanalen.no/video/${video.id}`,
+      url: `https://frikanalen.tv/video/${video.id}`,
     },
     description: `Video av ${video.organization.name}: ${video.description || ""}`,
   };
