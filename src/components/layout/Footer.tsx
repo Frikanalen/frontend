@@ -23,7 +23,7 @@ export const Footer = () => (
       </Link>
       <Link
         className={"text-sm text-foreground-500 hover:text-foreground"}
-        href="https://frikanalen.tv/api/"
+        href="https://frikanalen.tv/api"
       >
         API
       </Link>
