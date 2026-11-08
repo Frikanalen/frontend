@@ -34,7 +34,7 @@ export async function generateMetadata({ params }: OrgPageProps): Promise<Metada
       name: organization.name,
     },
     openGraph: {
-      url: `https://frikanalen.no/organization/${organization.id}`,
+      url: `https://frikanalen.tv/organization/${organization.id}`,
     },
   };
 }

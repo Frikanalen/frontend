@@ -5,7 +5,7 @@ image:
   tag: ""
   pullPolicy: Always
 
-djangoUrl: "https://beta.frikanalen.no"
+djangoUrl: "https://beta.frikanalen.tv"
 
 service:
   type: ClusterIP
@@ -14,7 +14,7 @@ service:
 ingress:
   enabled: true
   className: traefik
-  hostname: beta.frikanalen.no
+  hostname: beta.frikanalen.tv
   certResolver: letsencrypt
 
 resources: {}

@@ -19,7 +19,7 @@ export async function generateMetadata({ params }: SeriesPageProps): Promise<Met
     description: response.data.synopsis,
     openGraph: {
       type: "website",
-      url: `https://frikanalen.no/series/${response.data.id}`,
+      url: `https://frikanalen.tv/series/${response.data.id}`,
       images: response.data.imageUrl ? [response.data.imageUrl] : undefined,
     },
   };
