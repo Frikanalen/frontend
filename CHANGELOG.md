@@ -1,6 +1,13 @@
 2025-05-31 
 # Changelog
 
+## [3.4.1](https://github.com/Frikanalen/frontend/compare/v3.4.0...v3.4.1) (2026-11-08)
+
+
+### Bug Fixes
+
+* **footer:** link the API at /api, its canonical URL ([#88](https://github.com/Frikanalen/frontend/issues/88)) ([59bf0a6](https://github.com/Frikanalen/frontend/commit/59bf0a61a982b579e1e2efb3774ae9da634183f8))
+
 ## [3.4.0](https://github.com/Frikanalen/frontend/compare/v3.3.0...v3.4.0) (2026-11-08)
 
 
