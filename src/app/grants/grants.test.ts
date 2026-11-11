@@ -4,7 +4,8 @@ import {
   deadlineText,
   itemsPayload,
   listMilliseconds,
-  moveItem,
+  placeItems,
+  timeline,
   windowMilliseconds,
   type DraftItem,
 } from "./grants";
@@ -40,10 +41,34 @@ describe("grant lists", () => {
     ]);
   });
 
-  it("moves an item and ignores moves off either end", () => {
-    expect(moveItem(["a", "b", "c"], 0, 2)).toEqual(["b", "c", "a"]);
-    expect(moveItem(["a", "b", "c"], 2, 1)).toEqual(["a", "c", "b"]);
-    expect(moveItem(["a", "b"], 0, -1)).toEqual(["a", "b"]);
+  it("places entries before or after a target, moving ones already listed", () => {
+    const keyed = (key: string) => ({ ...video(1, "00:01:00"), key });
+    const [a, b, c] = [keyed("a"), keyed("b"), keyed("c")];
+    const keys = (items: { key: string }[]) => items.map(({ key }) => key);
+
+    expect(keys(placeItems([a, b, c], [a], "c", "after"))).toEqual(["b", "c", "a"]);
+    expect(keys(placeItems([a, b, c], [c], "a", "before"))).toEqual(["c", "a", "b"]);
+    expect(keys(placeItems([a, b], [keyed("new")], "a", "after"))).toEqual(["a", "new", "b"]);
+    expect(keys(placeItems([a], [keyed("new")], null, "after"))).toEqual(["a", "new"]);
+  });
+
+  it("lays the list out back to back and leaves the rest to graphics", () => {
+    const window = { starttime: "2026-11-16T18:00:00Z", endtime: "2026-11-16T19:00:00Z" };
+    const { rows, graphics } = timeline([video(1, "00:20:00"), video(2, "00:15:00")], window);
+
+    expect(rows.map(({ start, end }) => [start.toISOString(), end.toISOString()])).toEqual([
+      ["2026-11-16T18:00:00.000Z", "2026-11-16T18:20:00.000Z"],
+      ["2026-11-16T18:20:00.000Z", "2026-11-16T18:35:00.000Z"],
+    ]);
+    expect(graphics?.start.toISOString()).toBe("2026-11-16T18:35:00.000Z");
+  });
+
+  it("flags entries that run past the window and leaves no graphics", () => {
+    const window = { starttime: "2026-11-16T18:00:00Z", endtime: "2026-11-16T18:30:00Z" };
+    const { rows, graphics } = timeline([video(1, "00:20:00"), video(2, "00:15:00")], window);
+
+    expect(rows.map(({ overruns }) => overruns)).toEqual([false, true]);
+    expect(graphics).toBeNull();
   });
 
   it("explains the deadline by state", () => {

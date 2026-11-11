@@ -1,44 +1,29 @@
-"use client";
+import { ButtonLink } from "@/components/ButtonLink";
 import type { AirtimeGrant } from "@/generated/frikanalenDjangoAPI.schemas";
-import { useGrantsAutomaticCreate, useGrantsItemsUpdate } from "@/generated/grants/grants";
-import { formatApiError } from "@/lib/formatApiError";
 import { formatOsloTime, inOsloTime } from "@/lib/osloTime";
-import { Button } from "@heroui/react";
-import { useQueryClient } from "@tanstack/react-query";
+import cx from "classnames";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale/nb";
-import { useState } from "react";
-import { durationMilliseconds, formatDuration } from "./duration";
 import { FillBar } from "./FillBar";
 import {
   deadlineText,
-  type DraftItem,
   isAutomatic,
   itemName,
-  itemsPayload,
   listMilliseconds,
-  moveItem,
   STATE_LABELS,
+  timeline,
   windowMilliseconds,
 } from "./grants";
-import { VideoPicker } from "./VideoPicker";
+import { ModeBadge, modeSurface } from "./ModeBadge";
 
 const osloDateTime = (instant: string) =>
   format(inOsloTime(instant), "EEEE d. MMMM 'kl.' HH:mm", { locale: nb });
 
-const ItemLine = ({ item }: { item: DraftItem }) => {
-  const length = durationMilliseconds(item.video.duration);
-  return (
-    <span className="min-w-0">
-      <span className="font-medium">{itemName(item)}</span>
-      <span className="text-sm text-default-500">
-        {" · "}
-        {item.liveTransmission ? "Direkte" : length ? formatDuration(length) : "Ukjent lengde"}
-        {item.video.pendingUpload ? " · venter på fil" : ""}
-      </span>
-    </span>
-  );
-};
+/** How many entries a card lists before it says "and n more". */
+const PREVIEW_ROWS = 4;
+
+export const grantHref = (grant: Pick<AirtimeGrant, "id" | "organization">) =>
+  `/organization/${grant.organization.id}/schedule/${grant.id}`;
 
 export const GrantCard = ({
   grant,
@@ -47,48 +32,16 @@ export const GrantCard = ({
   grant: AirtimeGrant;
   showOrganization?: boolean;
 }) => {
-  const [draft, setDraft] = useState<readonly DraftItem[]>();
-  const [error, setError] = useState<string>();
-  const queryClient = useQueryClient();
-  const saveItems = useGrantsItemsUpdate();
-  const automatic = useGrantsAutomaticCreate();
-  const windowLength = windowMilliseconds(grant);
-  const editing = draft !== undefined;
-  const shown = draft ?? grant.items;
-
-  const done = async () => {
-    setDraft(undefined);
-    setError(undefined);
-    await queryClient.invalidateQueries({ queryKey: ["/api/grants"] });
-  };
-
-  const save = async () => {
-    if (!draft) return;
-    setError(undefined);
-    try {
-      await saveItems.mutateAsync({ id: grant.id, data: { items: itemsPayload(draft) } });
-      await done();
-    } catch (caught) {
-      setError(formatApiError(caught));
-    }
-  };
-
-  const backToAutomatic = async () => {
-    if (!globalThis.confirm("Erstatte listen med et automatisk utvalg?")) return;
-    setError(undefined);
-    try {
-      await automatic.mutateAsync({ id: grant.id });
-      await done();
-    } catch (caught) {
-      setError(formatApiError(caught));
-    }
-  };
+  const automatic = isAutomatic(grant);
+  const cancelled = grant.state === "cancelled";
+  const { rows, graphics } = timeline(grant.items, grant);
 
   return (
     <article
-      className={`space-y-3 rounded-xl border bg-content1 p-4 ${
-        grant.state === "cancelled" ? "border-default-200 opacity-60" : "border-default-200"
-      }`}
+      className={cx(
+        "space-y-3 rounded-xl p-4",
+        cancelled ? "border-2 border-default-200 opacity-60" : modeSurface(automatic),
+      )}
     >
       <header className="flex flex-wrap items-start gap-2">
         <div className="min-w-0">
@@ -100,118 +53,57 @@ export const GrantCard = ({
             <p className="text-sm text-default-600">{grant.organization.name}</p>
           ) : null}
         </div>
-        <div className="ms-auto flex flex-wrap gap-1 text-xs">
-          <span className="rounded-full bg-default-100 px-2 py-1">{STATE_LABELS[grant.state]}</span>
-          {isAutomatic(grant) ? (
-            <span className="rounded-full bg-primary-100 px-2 py-1 text-primary-800">
-              Automatisk
-            </span>
-          ) : null}
+        <div className="ms-auto flex flex-wrap items-center gap-1 text-xs">
+          {cancelled ? null : <ModeBadge automatic={automatic} empty={rows.length === 0} />}
+          <span className="rounded-full bg-default-100 px-2 py-0.5">
+            {STATE_LABELS[grant.state]}
+          </span>
           {grant.lockExempt ? (
-            <span className="rounded-full bg-warning-100 px-2 py-1 text-warning-800">
+            <span className="rounded-full bg-warning-100 px-2 py-0.5 text-warning-800">
               Unntatt fra låsing
             </span>
           ) : null}
         </div>
       </header>
 
-      <p className="text-sm text-default-600">
-        {deadlineText(grant, osloDateTime(grant.locksAt))}
-        {isAutomatic(grant) && !editing
-          ? " Listen fylles automatisk hver natt til den låses. Endrer dere den, slutter den å fylles automatisk."
-          : ""}
-      </p>
+      <p className="text-sm text-default-600">{deadlineText(grant, osloDateTime(grant.locksAt))}</p>
 
-      <FillBar used={listMilliseconds(shown)} window={windowLength} />
+      <FillBar
+        automatic={automatic}
+        used={listMilliseconds(grant.items)}
+        window={windowMilliseconds(grant)}
+      />
 
-      {shown.length === 0 ? (
-        <p className="text-sm">Ingenting er satt opp. Tom sendetid viser grafikk.</p>
+      {rows.length === 0 ? (
+        <p className="text-sm">Ingenting er satt opp. Sendetiden viser grafikk.</p>
       ) : (
-        <ol className="space-y-1">
-          {shown.map((item, index) => (
-            <li className="flex items-center gap-2" key={`${item.video.id}-${index}`}>
-              <span className="w-6 text-end text-sm text-default-500">{index + 1}.</span>
-              <ItemLine item={item} />
-              {editing ? (
-                <span className="ms-auto flex gap-1">
-                  <Button
-                    aria-label={`Flytt «${itemName(item)}» opp`}
-                    isDisabled={index === 0}
-                    size="sm"
-                    variant="tertiary"
-                    onPress={() => setDraft(moveItem(shown, index, index - 1))}
-                  >
-                    ↑
-                  </Button>
-                  <Button
-                    aria-label={`Flytt «${itemName(item)}» ned`}
-                    isDisabled={index === shown.length - 1}
-                    size="sm"
-                    variant="tertiary"
-                    onPress={() => setDraft(moveItem(shown, index, index + 1))}
-                  >
-                    ↓
-                  </Button>
-                  <Button
-                    aria-label={`Fjern «${itemName(item)}»`}
-                    size="sm"
-                    variant="tertiary"
-                    onPress={() => setDraft(shown.filter((_, other) => other !== index))}
-                  >
-                    Fjern
-                  </Button>
-                </span>
-              ) : null}
+        <ol className="space-y-0.5 text-sm">
+          {rows.slice(0, PREVIEW_ROWS).map((row, index) => (
+            <li className="flex gap-2" key={`${row.item.video.id}-${index}`}>
+              <span className="tabular-nums text-default-500">{formatOsloTime(row.start)}</span>
+              <span className="truncate">
+                {itemName(row.item)}
+                {row.item.video.pendingUpload ? " (venter på fil)" : ""}
+              </span>
             </li>
           ))}
+          {rows.length > PREVIEW_ROWS ? (
+            <li className="text-default-500">og {rows.length - PREVIEW_ROWS} til</li>
+          ) : null}
+          {graphics ? (
+            <li className="flex gap-2 text-default-500">
+              <span className="tabular-nums">{formatOsloTime(graphics.start)}</span>
+              <span>Grafikk</span>
+            </li>
+          ) : null}
         </ol>
       )}
 
-      {error ? (
-        <p className="rounded-lg bg-danger-50 p-3 text-danger-700" role="alert">
-          {error}
-        </p>
-      ) : null}
-
-      {grant.canEdit ? (
-        editing ? (
-          <div className="space-y-4 border-t border-default-200 pt-3">
-            <VideoPicker
-              organizationId={grant.organization.id}
-              onPick={(video) => setDraft([...shown, { video, liveTransmission: null }])}
-            />
-            <div className="flex flex-wrap gap-2">
-              <Button
-                isDisabled={listMilliseconds(shown) > windowLength}
-                isPending={saveItems.isPending}
-                variant="primary"
-                onPress={save}
-              >
-                Lagre listen
-              </Button>
-              <Button variant="tertiary" onPress={() => done()}>
-                Avbryt
-              </Button>
-            </div>
-          </div>
-        ) : (
-          <div className="flex flex-wrap gap-2">
-            <Button size="sm" onPress={() => setDraft([...grant.items])}>
-              Endre listen
-            </Button>
-            {!isAutomatic(grant) && grant.originSlot !== null ? (
-              <Button
-                isPending={automatic.isPending}
-                size="sm"
-                variant="tertiary"
-                onPress={backToAutomatic}
-              >
-                Fyll automatisk igjen
-              </Button>
-            ) : null}
-          </div>
-        )
-      ) : null}
+      {cancelled ? null : (
+        <ButtonLink href={grantHref(grant)} size="sm">
+          {grant.canEdit ? "Sett opp programmet" : "Se listen"}
+        </ButtonLink>
+      )}
     </article>
   );
 };

@@ -27,12 +27,54 @@ export const itemName = (item: DraftItem) => item.liveTransmission?.name ?? item
 export const itemsPayload = (items: readonly DraftItem[]): GrantItemWriteRequest[] =>
   items.map((item) => ({ video: item.video.id }));
 
-export const moveItem = <T>(items: readonly T[], from: number, to: number) => {
-  if (to < 0 || to >= items.length) return items;
-  const next = [...items];
-  const [moved] = next.splice(from, 1);
-  next.splice(to, 0, moved);
-  return next;
+/** A list entry with a key of its own, since the same video can be listed twice. */
+export type KeyedItem = DraftItem & { key: string };
+
+/**
+ * Puts `incoming` before or after the entry `targetKey`, after taking out any
+ * entries with the same keys first: one function serves both a reorder within
+ * the list and a drop from the video library.
+ */
+export const placeItems = (
+  items: readonly KeyedItem[],
+  incoming: readonly KeyedItem[],
+  targetKey: string | null,
+  position: "before" | "after",
+) => {
+  const moving = new Set(incoming.map(({ key }) => key));
+  const rest = items.filter(({ key }) => !moving.has(key));
+  const target = targetKey === null ? -1 : rest.findIndex(({ key }) => key === targetKey);
+  if (target === -1) return [...rest, ...incoming];
+  const at = position === "before" ? target : target + 1;
+  return [...rest.slice(0, at), ...incoming, ...rest.slice(at)];
+};
+
+export type TimelineRow<T extends DraftItem> = {
+  item: T;
+  start: Date;
+  end: Date;
+  /** Runs past the end of the window, so the list can't be saved as it is. */
+  overruns: boolean;
+};
+
+/**
+ * When each entry would play: back to back from the grant's start, as the
+ * compiler lays them out, plus whatever is left over, which airs graphics.
+ */
+export const timeline = <T extends DraftItem>(
+  items: readonly T[],
+  grant: Pick<AirtimeGrant, "starttime" | "endtime">,
+) => {
+  const windowEnd = new Date(grant.endtime).getTime();
+  let cursor = new Date(grant.starttime).getTime();
+  const rows: TimelineRow<T>[] = items.map((item) => {
+    const start = cursor;
+    cursor += durationMilliseconds(item.video.duration) ?? 0;
+    return { item, start: new Date(start), end: new Date(cursor), overruns: cursor > windowEnd };
+  });
+  const graphics =
+    cursor < windowEnd ? { start: new Date(cursor), end: new Date(windowEnd) } : null;
+  return { rows, graphics };
 };
 
 export const isAutomatic = (grant: Pick<AirtimeGrant, "fillRule">) => grant.fillRule !== null;
