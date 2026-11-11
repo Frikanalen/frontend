@@ -262,3 +262,50 @@ test.describe("airtime grants", () => {
     await expect(page.getByText("Automatisk fylt").first()).toBeVisible();
   });
 });
+
+test.describe("on a phone", () => {
+  test.use({ viewport: { width: 360, height: 800 } });
+
+  const fitsTheScreen = (page: import("@playwright/test").Page) =>
+    expect
+      .poll(() =>
+        page.evaluate(
+          () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+        ),
+      )
+      .toBe(true);
+
+  const longTitle = grantVideo(
+    1,
+    "En veldig lang videotittel som ikke vil brytes pent",
+    "00:20:00",
+  );
+
+  test("the staff board doesn't spill past the right edge", async ({ page, baseURL }) => {
+    await page.context().clearCookies();
+    await page.context().addCookies([{ name: "e2e-staff", value: "1", url: baseURL! }]);
+    await page.route("**/api/grants?**", (route) =>
+      route.fulfill({
+        status: 200,
+        json: page_([
+          grant({ items: [{ position: 0, video: longTitle, liveTransmission: null }] }),
+        ]),
+      }),
+    );
+    await page.goto("/schedule/plan");
+    await waitForHydration(page);
+
+    await expect(page.getByRole("article")).toHaveCount(1);
+    await fitsTheScreen(page);
+  });
+
+  test("the editor fits, with the time above the title", async ({ page }) => {
+    await editor(
+      page,
+      grant({ items: [{ position: 0, video: longTitle, liveTransmission: null }] }),
+    );
+
+    await expect(listRows(page)).toHaveCount(1);
+    await fitsTheScreen(page);
+  });
+});

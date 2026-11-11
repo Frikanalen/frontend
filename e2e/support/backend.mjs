@@ -105,6 +105,18 @@ createServer((request, response) => {
     request.headers.cookie?.includes("e2e-member=1")
   )
     return json(response, 200, member);
+  if (
+    url.pathname === "/api/user" &&
+    request.headers.cookie?.includes("e2e-staff=1")
+  )
+    return json(response, 200, { ...member, isStaff: true });
+  if (url.pathname === "/api/organization")
+    return json(response, 200, {
+      count: 1,
+      next: null,
+      previous: null,
+      results: [organization],
+    });
   if (url.pathname === `/api/organization/${organization.id}`)
     return json(response, 200, organization);
   if (url.pathname === `/api/series/${series.id}`)
