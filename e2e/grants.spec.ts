@@ -126,24 +126,32 @@ test.describe("airtime grants", () => {
     });
     await editor(page, grant({ endtime: "2030-01-14T18:30:00Z" }));
 
+    // Driven from the keyboard, which react-aria's drag and drop supports the
+    // same way as the pointer, and which every browser engine can replay
+    // (WebKit can't replay a native pointer drag in Playwright).
+    const focused = page.locator(":focus");
+
     // Fjordglimt between the two: 20 + 30 + 15 minutes fits the 90-minute window.
-    await page
-      .getByRole("grid", { name: "Videoer du kan legge til" })
-      .getByRole("row", { name: /Fjordglimt/ })
-      .dragTo(listRows(page).nth(1), { targetPosition: { x: 40, y: 2 } });
+    await page.getByRole("button", { name: "Dra «Fjordglimt»" }).focus();
+    await page.keyboard.press("Enter");
+    // Wait for the drag to start before steering it.
+    await expect(focused).toHaveAttribute("aria-roledescription", "drop indicator");
+    await page.keyboard.press("ArrowDown");
+    await page.keyboard.press("ArrowDown");
+    await expect(focused).toHaveAttribute("aria-label", "Insert between Kaia i dag and Båtliv");
+    await page.keyboard.press("Enter");
     await expect(listRows(page)).toHaveCount(3);
     await expect(listRows(page).nth(1)).toContainText("Fjordglimt");
     // A changed automatic list is a manual one from here on.
     await expect(page.getByText("Satt opp manuelt")).toBeVisible();
 
-    // Within one list, drag in small steps so the browser sees the pointer
-    // travel over the rows rather than jump straight to the target.
-    const from = (await page.getByRole("row", { name: "Båtliv" }).boundingBox())!;
-    const to = (await listRows(page).nth(0).boundingBox())!;
-    await page.mouse.move(from.x + 40, from.y + from.height / 2);
-    await page.mouse.down();
-    await page.mouse.move(to.x + 40, to.y + 3, { steps: 20 });
-    await page.mouse.up();
+    await page.getByRole("button", { name: "Flytt «Båtliv»" }).focus();
+    await page.keyboard.press("Enter");
+    await expect(focused).toHaveAttribute("aria-label", "Insert between Fjordglimt and Båtliv");
+    await page.keyboard.press("ArrowUp");
+    await page.keyboard.press("ArrowUp");
+    await expect(focused).toHaveAttribute("aria-label", "Insert before Kaia i dag");
+    await page.keyboard.press("Enter");
     await expect(listRows(page).nth(0)).toContainText("Båtliv");
 
     await page.getByRole("button", { name: "Lagre listen" }).click();
