@@ -9,7 +9,7 @@ import { useState } from "react";
 import { Button, GridList, GridListItem, useDragAndDrop } from "react-aria-components";
 import { GoBroadcast, GoGrabber } from "react-icons/go";
 import { durationMilliseconds, formatDuration } from "./duration";
-import { NewLiveProgramme } from "./NewLiveProgramme";
+import { NewProgrammeModal, type ProgrammeKind } from "./NewProgrammeModal";
 
 type Scope = "own" | "placeholder" | "live" | "all";
 
@@ -58,6 +58,7 @@ export const VideoPicker = ({
   const [scope, setScope] = useState<Scope>("own");
   const [search, setSearch] = useState("");
   const [onlyFitting, setOnlyFitting] = useState(false);
+  const [creating, setCreating] = useState<ProgrammeKind>();
   const sourcesQuery = useOrganizationLiveSourcesList(organizationId);
   const sources = sourcesQuery.data?.data ?? [];
   const waiting = scope === "placeholder" || scope === "live";
@@ -92,7 +93,24 @@ export const VideoPicker = ({
 
   return (
     <section className="space-y-3">
-      <h2 className="text-lg font-semibold">Videoer</h2>
+      <div className="flex flex-wrap items-center gap-2">
+        <h2 className="me-auto text-lg font-semibold">Videoer</h2>
+        <HeroButton size="sm" variant="secondary" onPress={() => setCreating("placeholder")}>
+          Ny plassholder
+        </HeroButton>
+        <HeroButton size="sm" variant="secondary" onPress={() => setCreating("live")}>
+          <GoBroadcast aria-hidden />
+          Ny direktesending
+        </HeroButton>
+      </div>
+      <NewProgrammeModal
+        kind={creating}
+        organizationId={organizationId}
+        remaining={remaining}
+        sources={sources.filter(({ enabled }) => enabled)}
+        onClose={() => setCreating(undefined)}
+        onCreated={(video) => onPick(toGrantVideo(video, sources))}
+      />
       <div className="flex flex-wrap gap-2" role="group" aria-label="Hvilke videoer">
         {(
           [
@@ -128,18 +146,10 @@ export const VideoPicker = ({
         </p>
       ) : null}
       {scope === "live" ? (
-        <>
-          <p className="text-sm text-default-600">
-            En direktesending sendes direkte fra en av organisasjonens direktekilder, helt til det
-            lastes opp et opptak til den.
-          </p>
-          <NewLiveProgramme
-            organizationId={organizationId}
-            remaining={remaining}
-            sources={sources.filter(({ enabled }) => enabled)}
-            onCreated={(video) => onPick(toGrantVideo(video, sources))}
-          />
-        </>
+        <p className="text-sm text-default-600">
+          En direktesending sendes direkte fra en av organisasjonens direktekilder, helt til det
+          lastes opp et opptak til den.
+        </p>
       ) : null}
       {videos.isLoading ? <p>Laster videoer…</p> : null}
       {videos.isError ? <p role="alert">{formatApiError(videos.error)}</p> : null}

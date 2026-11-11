@@ -260,7 +260,7 @@ test.describe("airtime grants", () => {
     await expect(library.nth(0)).toContainText("Kommer senere");
     await expect(library.nth(0)).toContainText("venter på fil");
 
-    await page.getByRole("button", { name: "Direktesending" }).click();
+    await page.getByRole("button", { name: "Direktesending", exact: true }).click();
     await expect(library).toHaveCount(1);
     await expect(library.nth(0)).toContainText("Valgvake");
     await expect(library.nth(0)).toContainText("direkte fra Studio");
@@ -290,7 +290,7 @@ test.describe("airtime grants", () => {
     await page.route("**/api/videos/50", (route) => route.fulfill({ status: 200, json: valgvake }));
     await editor(page, grant());
 
-    await page.getByRole("button", { name: "Direktesending" }).click();
+    await page.getByRole("button", { name: "Ny direktesending" }).click();
     const form = page.getByRole("form", { name: "Ny direktesending" });
     await form.getByLabel("Tittel").fill("Valgvake");
     // The length starts out as the 25 minutes left.
@@ -308,9 +308,43 @@ test.describe("airtime grants", () => {
           liveSource: studio.id,
         },
       ]);
+    await expect(form).toHaveCount(0);
     await expect(listRows(page)).toHaveCount(3);
     await expect(listRows(page).nth(2)).toContainText("Valgvake");
     await expect(listRows(page).nth(2)).toContainText("direkte fra Studio");
+  });
+
+  test("creates a placeholder and lists it", async ({ page }) => {
+    const created: unknown[] = [];
+    const later = {
+      ...libraryVideo,
+      id: 51,
+      name: "Kommer senere",
+      duration: "00:10:00",
+      properImport: false,
+      liveSource: null,
+    };
+    await page.route("**/api/organization/3/live-sources", (route) =>
+      route.fulfill({ status: 200, json: [] }),
+    );
+    await page.route("**/api/videos", (route) => {
+      created.push(route.request().postDataJSON());
+      return route.fulfill({ status: 201, json: { ...later, organization: 3 } });
+    });
+    await page.route("**/api/videos/51", (route) => route.fulfill({ status: 200, json: later }));
+    await editor(page, grant());
+
+    await page.getByRole("button", { name: "Ny plassholder" }).click();
+    const form = page.getByRole("form", { name: "Ny plassholder" });
+    await form.getByLabel("Tittel").fill("Kommer senere");
+    await form.getByLabel("Lengde (min)").fill("10");
+    await form.getByRole("button", { name: "Opprett og legg til" }).click();
+
+    await expect
+      .poll(() => created)
+      .toEqual([{ name: "Kommer senere", duration: "00:10:00", organization: 3, categories: [] }]);
+    await expect(listRows(page).nth(2)).toContainText("Kommer senere");
+    await expect(listRows(page).nth(2)).toContainText("venter på fil");
   });
 
   test("shows the server's reason when a save is refused", async ({ page }) => {
