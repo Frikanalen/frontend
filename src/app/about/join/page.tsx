@@ -99,12 +99,17 @@ const Join = () => (
     </div>
 
     <section className="flex flex-wrap items-center gap-x-8 gap-y-4 border-t border-foreground pt-8">
-      <h2 className="min-w-0 grow basis-80 text-2xl font-bold">Klar til å melde dere inn?</h2>
+      <div className="min-w-0 grow basis-80">
+        <h2 className="text-2xl font-bold">Klar til å melde dere inn?</h2>
+        <p className="mt-1 text-default-700">
+          Sju steg fra registrering til første sending. Vi viser dere veien.
+        </p>
+      </div>
       <Link
         className="inline-flex h-11 items-center rounded-md bg-accent px-5 font-semibold text-accent-foreground hover:opacity-90"
         href="/organization/register"
       >
-        Registrer organisasjonen
+        Kom i gang
       </Link>
       <Link className="font-semibold text-link hover:underline" href="/about/contact">
         Spør oss først

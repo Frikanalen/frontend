@@ -4,10 +4,20 @@ import cx from "classnames";
 import { usePathname } from "next/navigation";
 
 /** The member tools for one organisation, as a bar under the channel bar. */
-export const StudioNav = ({ organizationId }: { organizationId: number }) => {
+export const StudioNav = ({
+  organizationId,
+  showStart = false,
+}: {
+  organizationId: number;
+  /** While the organization is still on its way in, "Kom i gang" leads the bar. */
+  showStart?: boolean;
+}) => {
   const path = usePathname();
   const base = `/organization/${organizationId}`;
   const sections = [
+    ...(showStart
+      ? [{ href: `${base}/start`, label: "Kom i gang", active: path.startsWith(`${base}/start`) }]
+      : []),
     { href: `${base}/admin`, label: "Videoer", active: path.startsWith(`${base}/admin`) },
     { href: `${base}/schedule`, label: "Sendetid", active: path.startsWith(`${base}/schedule`) },
     { href: `${base}/series`, label: "Serier", active: path.startsWith(`${base}/series`) },

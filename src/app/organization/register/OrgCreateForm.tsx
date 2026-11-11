@@ -16,7 +16,9 @@ export const OrgCreateForm = ({ className }: { className?: string }) => {
 
   const { onSubmit, error, isSubmitting } = useApiFormSubmit(form, async (data) => {
     const { data: org } = await mutateAsync({ data });
-    router.push(`/organization/${org.id}`);
+    // On to the rest of the road, not to a public page that is not public yet.
+    router.push(`/organization/${org.id}/start`);
+    router.refresh();
   });
 
   return (

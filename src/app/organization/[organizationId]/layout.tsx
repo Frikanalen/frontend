@@ -2,6 +2,7 @@ import { ReactNode } from "react";
 import { getCookiesFromRequest } from "@/lib/getCookiesFromRequest";
 import { getUserOrNull } from "@/app/getUserOrNull";
 import { profileIsAdminOrMember } from "@/app/organization/[organizationId]/admin/profileIsAdminOrMember";
+import { ssrOrganizationRetrieve } from "@/generated/ssr/organization/organization";
 import { StudioNav } from "@/app/organization/[organizationId]/StudioNav";
 
 /**
@@ -18,15 +19,29 @@ export default async function Layout({
   params: Promise<{ organizationId: string }>;
 }) {
   const organizationId = Number((await params).organizationId);
-  const user = await getUserOrNull(await getCookiesFromRequest());
+  const headers = await getCookiesFromRequest();
+  const user = await getUserOrNull(headers);
   const inStudio =
     Number.isInteger(organizationId) &&
     !!user &&
     (user.isStaff || profileIsAdminOrMember(organizationId, user));
 
+  // Shown until Frikanalen has approved both the organization and the user:
+  // after that the road in is behind them and the bar is for daily work.
+  let showStart = false;
+  if (inStudio) {
+    const organization = await ssrOrganizationRetrieve(organizationId, {
+      headers,
+      cache: "no-store",
+    }).catch(() => null);
+    showStart =
+      organization?.status === 200 &&
+      (!organization.data.fkmember || !(user.identityConfirmed || user.isStaff));
+  }
+
   return (
     <>
-      {inStudio ? <StudioNav organizationId={organizationId} /> : null}
+      {inStudio ? <StudioNav organizationId={organizationId} showStart={showStart} /> : null}
       {children}
     </>
   );
