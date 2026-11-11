@@ -223,9 +223,27 @@ test.describe("airtime grants", () => {
 
     await expect(page.getByText("Klar for sending", { exact: false })).toBeVisible();
     await expect(page.getByText(/Listen ble låst/)).toBeVisible();
+    await expect(page.getByRole("note")).toContainText("Fristen er passert");
     await expect(page.getByRole("button", { name: /Flytt/ })).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Lagre listen" })).toHaveCount(0);
     await expect(page.getByRole("grid", { name: "Videoer du kan legge til" })).toHaveCount(0);
+  });
+
+  test("says a grant that has aired can't be changed any more", async ({ page }) => {
+    await editor(
+      page,
+      grant({
+        state: "compiled",
+        lockExempt: true,
+        canEdit: false,
+        starttime: "2020-01-14T17:00:00Z",
+        endtime: "2020-01-14T18:00:00Z",
+      }),
+    );
+
+    await expect(page.getByText("Sendetiden er over.")).toBeVisible();
+    await expect(page.getByRole("note")).toContainText("kan ikke endres lenger");
+    await expect(page.getByText(/Unntatt fra låsing/)).toHaveCount(0);
   });
 
   test("switches an edited slot grant back to automatic", async ({ page }) => {
@@ -242,5 +260,52 @@ test.describe("airtime grants", () => {
 
     await expect.poll(() => posted).toBe(1);
     await expect(page.getByText("Automatisk fylt").first()).toBeVisible();
+  });
+});
+
+test.describe("on a phone", () => {
+  test.use({ viewport: { width: 360, height: 800 } });
+
+  const fitsTheScreen = (page: import("@playwright/test").Page) =>
+    expect
+      .poll(() =>
+        page.evaluate(
+          () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+        ),
+      )
+      .toBe(true);
+
+  const longTitle = grantVideo(
+    1,
+    "En veldig lang videotittel som ikke vil brytes pent",
+    "00:20:00",
+  );
+
+  test("the staff board doesn't spill past the right edge", async ({ page, baseURL }) => {
+    await page.context().clearCookies();
+    await page.context().addCookies([{ name: "e2e-staff", value: "1", url: baseURL! }]);
+    await page.route("**/api/grants?**", (route) =>
+      route.fulfill({
+        status: 200,
+        json: page_([
+          grant({ items: [{ position: 0, video: longTitle, liveTransmission: null }] }),
+        ]),
+      }),
+    );
+    await page.goto("/schedule/plan");
+    await waitForHydration(page);
+
+    await expect(page.getByRole("article")).toHaveCount(1);
+    await fitsTheScreen(page);
+  });
+
+  test("the editor fits, with the time above the title", async ({ page }) => {
+    await editor(
+      page,
+      grant({ items: [{ position: 0, video: longTitle, liveTransmission: null }] }),
+    );
+
+    await expect(listRows(page)).toHaveCount(1);
+    await fitsTheScreen(page);
   });
 });

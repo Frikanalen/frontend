@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { GrantItemVideo } from "@/generated/frikanalenDjangoAPI.schemas";
 import {
   deadlineText,
+  readOnlyReason,
   itemsPayload,
   listMilliseconds,
   placeItems,
@@ -82,11 +83,42 @@ describe("grant lists", () => {
     expect(graphics).toBeNull();
   });
 
+  const future = { starttime: "2030-01-14T17:00:00Z", endtime: "2030-01-14T18:00:00Z" };
+  const now = Date.parse("2030-01-14T12:00:00Z");
+
   it("explains the deadline by state", () => {
-    expect(deadlineText({ state: "open", lockExempt: false }, "mandag 9. november kl. 00:00")).toBe(
-      "Listen kan endres til mandag 9. november kl. 00:00.",
+    expect(
+      deadlineText(
+        { ...future, state: "open", lockExempt: false },
+        "mandag 9. november kl. 00:00",
+        now,
+      ),
+    ).toBe("Listen kan endres til mandag 9. november kl. 00:00.");
+    expect(deadlineText({ ...future, state: "locked", lockExempt: true }, "x", now)).toMatch(
+      /Unntatt/,
     );
-    expect(deadlineText({ state: "locked", lockExempt: true }, "x")).toMatch(/Unntatt/);
-    expect(deadlineText({ state: "compiled", lockExempt: false }, "x")).toBe("Listen ble låst x.");
+    expect(deadlineText({ ...future, state: "compiled", lockExempt: false }, "x", now)).toBe(
+      "Listen ble låst x.",
+    );
+  });
+
+  it("doesn't promise edits on a grant that has aired", () => {
+    const later = Date.parse("2030-01-14T19:00:00Z");
+    expect(deadlineText({ ...future, state: "compiled", lockExempt: true }, "x", later)).toBe(
+      "Sendetiden er over.",
+    );
+  });
+
+  it("says why a grant is read-only", () => {
+    const grant = {
+      ...future,
+      state: "open" as const,
+      lockExempt: false,
+      locksAt: "2030-01-10T00:00:00Z",
+    };
+    expect(readOnlyReason(grant, Date.parse("2030-01-14T19:00:00Z"))).toMatch(/er over/);
+    expect(readOnlyReason(grant, Date.parse("2030-01-14T17:30:00Z"))).toMatch(/på lufta/);
+    expect(readOnlyReason(grant, now)).toMatch(/låst/);
+    expect(readOnlyReason({ ...grant, lockExempt: true }, now)).toMatch(/ikke tilgang/);
   });
 });

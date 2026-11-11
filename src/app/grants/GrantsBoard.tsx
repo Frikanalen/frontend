@@ -64,7 +64,7 @@ export const GrantsBoard = ({
           Ingen sendetid er tildelt ennå.
         </p>
       ) : null}
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {results.map((grant) => (
           <GrantCard grant={grant} key={grant.id} showOrganization={selected === undefined} />
         ))}

@@ -29,6 +29,7 @@ import { durationMilliseconds, formatDuration } from "./duration";
 import { FillBar } from "./FillBar";
 import {
   deadlineText,
+  readOnlyReason,
   isAutomatic,
   itemName,
   itemsPayload,
@@ -197,6 +198,15 @@ const Editor = ({ grant, backHref }: { grant: AirtimeGrant; backHref: string }) 
 
       <p className="text-default-700">{deadlineText(grant, osloDateTime(grant.locksAt))}</p>
 
+      {editable ? null : (
+        <p
+          className="rounded-lg border border-warning-300 bg-warning-50 p-3 text-sm dark:bg-warning-950"
+          role="note"
+        >
+          {readOnlyReason(grant)}
+        </p>
+      )}
+
       {showsAutomatic ? (
         <p className="rounded-lg border border-dashed border-secondary-300 bg-secondary-50 p-3 text-sm dark:bg-secondary-950">
           Listen fylles automatisk hver natt frem til fristen. Endrer du den, blir den manuell og
@@ -204,13 +214,13 @@ const Editor = ({ grant, backHref }: { grant: AirtimeGrant; backHref: string }) 
         </p>
       ) : null}
 
-      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(18rem,2fr)]">
+      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(18rem,2fr)]">
         <section className={cx("space-y-3 rounded-xl p-4", modeSurface(showsAutomatic))}>
           <h2 className="text-lg font-semibold">Sendeliste</h2>
           <FillBar automatic={showsAutomatic} used={used} window={windowLength} />
           {editable ? (
             <p className="text-sm text-default-600">
-              Dra videoer hit fra listen til høyre, og dra i håndtaket for å endre rekkefølgen.
+              Dra videoer hit fra videolisten, og dra i håndtaket for å endre rekkefølgen.
             </p>
           ) : null}
           <GridList
@@ -247,10 +257,14 @@ const Editor = ({ grant, backHref }: { grant: AirtimeGrant; backHref: string }) 
                     <GoGrabber aria-hidden />
                   </Button>
                 ) : null}
-                <span className="w-28 shrink-0 whitespace-nowrap text-sm tabular-nums">
+                {/* On a phone the time goes above the title, so the title keeps the width. */}
+                <span className="hidden w-28 shrink-0 whitespace-nowrap text-sm tabular-nums sm:block">
                   {formatOsloTime(row.start)}–{formatOsloTime(row.end)}
                 </span>
                 <span className="min-w-0 grow">
+                  <span className="block text-sm tabular-nums sm:hidden">
+                    {formatOsloTime(row.start)}–{formatOsloTime(row.end)}
+                  </span>
                   <span className="block truncate font-medium">{itemName(row.item)}</span>
                   <span className="text-sm text-default-500">
                     {formatDuration(durationMilliseconds(row.item.video.duration) ?? 0)}
@@ -282,7 +296,7 @@ const Editor = ({ grant, backHref }: { grant: AirtimeGrant; backHref: string }) 
               <span
                 className={cx(
                   "shrink-0 whitespace-nowrap text-sm tabular-nums",
-                  editable ? "w-[9.25rem] ps-9" : "w-28",
+                  editable ? "sm:w-[9.25rem] sm:ps-9" : "sm:w-28",
                 )}
               >
                 {formatOsloTime(graphics.start)}–{formatOsloTime(graphics.end)}
