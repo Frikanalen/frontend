@@ -3,7 +3,7 @@ import { GoAlert } from "react-icons/go";
 
 /**
  * Frikanalen confirms who a user is before letting them put anything on air.
- * Until it has, "Programmer sendeplan" leads to a wall — the scheduling page
+ * Until it has, "Sendetid" leads to a wall — the scheduling page
  * checks `identityConfirmed` and refuses — so the warning belongs here, on the
  * page those buttons are on, rather than one click after the user has
  * committed to the task. The profile page already had the flag in hand and

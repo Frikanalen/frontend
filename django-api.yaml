@@ -1857,6 +1857,76 @@ paths:
         - {}
       tags:
         - csrf
+  /api/grants:
+    get:
+      operationId: grants_list
+      parameters:
+        - name: organization
+          in: query
+          schema: {type: integer}
+        - name: starts_after
+          in: query
+          schema: {type: string, format: date-time}
+        - name: starts_before
+          in: query
+          schema: {type: string, format: date-time}
+        - name: state
+          in: query
+          schema: {$ref: '#/components/schemas/GrantStateEnum'}
+        - name: limit
+          in: query
+          schema: {type: integer}
+        - name: offset
+          in: query
+          schema: {type: integer}
+      tags: [grants]
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/PaginatedAirtimeGrantList'}
+  /api/grants/{id}:
+    get:
+      operationId: grants_retrieve
+      parameters:
+        - {name: id, in: path, required: true, schema: {type: integer}}
+      tags: [grants]
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/AirtimeGrant'}
+  /api/grants/{id}/items:
+    put:
+      operationId: grants_items_update
+      parameters:
+        - {name: id, in: path, required: true, schema: {type: integer}}
+      tags: [grants]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/GrantItemsWrite'}
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/AirtimeGrant'}
+  /api/grants/{id}/automatic:
+    post:
+      operationId: grants_automatic_create
+      parameters:
+        - {name: id, in: path, required: true, schema: {type: integer}}
+      tags: [grants]
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/AirtimeGrant'}
   /api/ingest/claim:
     post:
       operationId: ingest_claim
@@ -12123,6 +12193,81 @@ components:
         type: string
       description: CSRF token echoed from csrftoken cookie when using SessionAuthentication.
   schemas:
+    GrantStateEnum:
+      enum: [open, locked, compiled, cancelled]
+      type: string
+    GrantOrganization:
+      type: object
+      properties:
+        id: {type: integer, readOnly: true}
+        name: {type: string, readOnly: true}
+      required: [id, name]
+    GrantItemVideo:
+      type: object
+      properties:
+        id: {type: integer, readOnly: true}
+        name: {type: string, readOnly: true}
+        duration: {type: string, nullable: true, readOnly: true}
+        organization: {$ref: '#/components/schemas/GrantOrganization'}
+        pendingUpload: {type: boolean, readOnly: true}
+      required: [id, name, duration, organization, pendingUpload]
+    GrantItemLiveTransmission:
+      type: object
+      properties:
+        id: {type: integer, readOnly: true}
+        name: {type: string, readOnly: true}
+      required: [id, name]
+    GrantItem:
+      type: object
+      properties:
+        position: {type: integer, readOnly: true}
+        video:
+          allOf: [{$ref: '#/components/schemas/GrantItemVideo'}]
+          nullable: true
+        liveTransmission:
+          allOf: [{$ref: '#/components/schemas/GrantItemLiveTransmission'}]
+          nullable: true
+      required: [position, video, liveTransmission]
+    AirtimeGrant:
+      type: object
+      properties:
+        id: {type: integer, readOnly: true}
+        organization: {$ref: '#/components/schemas/GrantOrganization'}
+        starttime: {type: string, format: date-time}
+        endtime: {type: string, format: date-time}
+        state: {$ref: '#/components/schemas/GrantStateEnum'}
+        locksAt: {type: string, format: date-time}
+        lockExempt: {type: boolean}
+        fillRule: {type: integer, nullable: true}
+        originSlot: {type: integer, nullable: true}
+        items:
+          type: array
+          items: {$ref: '#/components/schemas/GrantItem'}
+        itemsDuration: {type: string, readOnly: true}
+        canEdit: {type: boolean, readOnly: true}
+      required: [id, organization, starttime, endtime, state, locksAt, lockExempt, fillRule, originSlot, items, itemsDuration, canEdit]
+    PaginatedAirtimeGrantList:
+      type: object
+      required: [count, results]
+      properties:
+        count: {type: integer}
+        next: {type: string, nullable: true, format: uri}
+        previous: {type: string, nullable: true, format: uri}
+        results:
+          type: array
+          items: {$ref: '#/components/schemas/AirtimeGrant'}
+    GrantItemWrite:
+      type: object
+      properties:
+        video: {type: integer, nullable: true}
+        liveTransmission: {type: integer, nullable: true}
+    GrantItemsWrite:
+      type: object
+      properties:
+        items:
+          type: array
+          items: {$ref: '#/components/schemas/GrantItemWrite'}
+      required: [items]
     AsRun:
       description: |-
         One entry in the playout log: a video or a named programme, and

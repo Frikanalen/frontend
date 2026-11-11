@@ -45,7 +45,7 @@ export const OrganizationCard = ({ organization }: { organization: Membership })
           Ny video
         </ActionLink>
         <ActionLink href={`/organization/${id}/schedule`} icon={<GoCalendar />}>
-          Programmer sendeplan
+          Sendetid
         </ActionLink>
         <ActionLink href={`/organization/${id}/admin`} icon={<GoGear />}>
           Administrasjon
