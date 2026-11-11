@@ -4,7 +4,7 @@ import Link from "next/link";
 
 export default async function Page() {
   return (
-    <div className={"prose dark:prose-invert max-w-3xl"}>
+    <div className={"prose max-w-3xl bg-background p-6 sm:p-10 dark:prose-invert"}>
       <h2>Guide: Registrering av redaktøransvar hos Medietilsynet</h2>
       <p className={"italic"}>
         Oppdatert 22. august 2025 kl. 22:00. Dette dokumentet vil bli oppdatert så snart vi har mer
