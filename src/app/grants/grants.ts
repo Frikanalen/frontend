@@ -88,13 +88,38 @@ export const STATE_LABELS: Record<AirtimeGrant["state"], string> = {
 
 /** What a member sees about the grant's deadline. */
 export const deadlineText = (
-  grant: Pick<AirtimeGrant, "state" | "lockExempt">,
+  grant: Pick<AirtimeGrant, "state" | "lockExempt" | "starttime" | "endtime">,
   formattedLocksAt: string,
+  now: number = Date.now(),
 ) => {
   if (grant.state === "cancelled") return "Sendetiden er trukket tilbake.";
+  if (Date.parse(grant.endtime) <= now) return "Sendetiden er over.";
+  if (Date.parse(grant.starttime) <= now) return "Sendes nå.";
   if (grant.lockExempt) return "Unntatt fra låsing: listen kan endres helt frem til sending.";
   if (grant.state === "open") return `Listen kan endres til ${formattedLocksAt}.`;
   return `Listen ble låst ${formattedLocksAt}.`;
+};
+
+/**
+ * Why a grant the server says the user can't edit is read-only, so the
+ * editor never just leaves the tools out. Mirrors the server's rule:
+ * members until the deadline, staff until compiled, lock-exempt grants
+ * until air, and only for someone who may act for the organization.
+ */
+export const readOnlyReason = (
+  grant: Pick<AirtimeGrant, "state" | "lockExempt" | "starttime" | "endtime" | "locksAt">,
+  now: number = Date.now(),
+) => {
+  if (grant.state === "cancelled")
+    return "Sendetiden er trukket tilbake, så listen kan ikke endres.";
+  if (Date.parse(grant.endtime) <= now)
+    return "Denne sendetiden er over, så listen kan ikke endres lenger. Gå tilbake for å sette opp en sendetid som kommer.";
+  if (Date.parse(grant.starttime) <= now)
+    return "Denne sendetiden er på lufta nå, så listen kan ikke endres.";
+  const stillOpen = grant.lockExempt || (grant.state === "open" && Date.parse(grant.locksAt) > now);
+  if (stillOpen)
+    return "Du har ikke tilgang til å sette opp program for denne organisasjonen. Det krever at du er medlem eller redaktør i en godkjent medlemsorganisasjon, og at identiteten din er bekreftet.";
+  return "Fristen er passert og listen er låst. Ta kontakt med Frikanalen hvis den må endres.";
 };
 
 /** Whether two lists play the same videos in the same order. */

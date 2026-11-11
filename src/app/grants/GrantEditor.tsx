@@ -29,6 +29,7 @@ import { durationMilliseconds, formatDuration } from "./duration";
 import { FillBar } from "./FillBar";
 import {
   deadlineText,
+  readOnlyReason,
   isAutomatic,
   itemName,
   itemsPayload,
@@ -196,6 +197,15 @@ const Editor = ({ grant, backHref }: { grant: AirtimeGrant; backHref: string }) 
       </header>
 
       <p className="text-default-700">{deadlineText(grant, osloDateTime(grant.locksAt))}</p>
+
+      {editable ? null : (
+        <p
+          className="rounded-lg border border-warning-300 bg-warning-50 p-3 text-sm dark:bg-warning-950"
+          role="note"
+        >
+          {readOnlyReason(grant)}
+        </p>
+      )}
 
       {showsAutomatic ? (
         <p className="rounded-lg border border-dashed border-secondary-300 bg-secondary-50 p-3 text-sm dark:bg-secondary-950">

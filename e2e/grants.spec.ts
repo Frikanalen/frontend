@@ -223,9 +223,27 @@ test.describe("airtime grants", () => {
 
     await expect(page.getByText("Klar for sending", { exact: false })).toBeVisible();
     await expect(page.getByText(/Listen ble låst/)).toBeVisible();
+    await expect(page.getByRole("note")).toContainText("Fristen er passert");
     await expect(page.getByRole("button", { name: /Flytt/ })).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Lagre listen" })).toHaveCount(0);
     await expect(page.getByRole("grid", { name: "Videoer du kan legge til" })).toHaveCount(0);
+  });
+
+  test("says a grant that has aired can't be changed any more", async ({ page }) => {
+    await editor(
+      page,
+      grant({
+        state: "compiled",
+        lockExempt: true,
+        canEdit: false,
+        starttime: "2020-01-14T17:00:00Z",
+        endtime: "2020-01-14T18:00:00Z",
+      }),
+    );
+
+    await expect(page.getByText("Sendetiden er over.")).toBeVisible();
+    await expect(page.getByRole("note")).toContainText("kan ikke endres lenger");
+    await expect(page.getByText(/Unntatt fra låsing/)).toHaveCount(0);
   });
 
   test("switches an edited slot grant back to automatic", async ({ page }) => {
