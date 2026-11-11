@@ -14,15 +14,13 @@ export default async function Page() {
     identityConfirmed: !!user?.identityConfirmed,
     isStaff: !!user?.isStaff,
     isMember: false,
-    videoCount: 0,
-    grantCount: 0,
   });
 
   return (
     <div className="w-full max-w-7xl px-4 pt-10 sm:px-6">
       <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">Meld inn organisasjonen</h1>
       <p className="mt-4 max-w-3xl text-xl text-default-700">
-        Sju steg fra første registrering til første sending. De to første tar noen minutter.
+        Fem steg til aktivt medlemskap. De to første tar noen minutter.
       </p>
       <div className="mt-10 grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
         <aside aria-label="Stegene" className="lg:sticky lg:top-6">

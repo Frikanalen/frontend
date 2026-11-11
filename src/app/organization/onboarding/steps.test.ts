@@ -7,8 +7,6 @@ const facts = (over: Partial<OnboardingFacts> = {}): OnboardingFacts => ({
   identityConfirmed: false,
   isStaff: false,
   isMember: false,
-  videoCount: 0,
-  grantCount: 0,
   ...over,
 });
 
@@ -17,49 +15,43 @@ const states = (over?: Partial<OnboardingFacts>) =>
 
 describe("onboardingSteps", () => {
   it("asks a visitor for an account first and holds the rest back", () => {
+    const steps = onboardingSteps(facts({ loggedIn: false, organizationId: null }));
+    expect(nextStep(steps)?.id).toBe("account");
     expect(states({ loggedIn: false, organizationId: null })).toEqual({
       account: "todo",
       organization: "blocked",
-      video: "blocked",
       affidavit: "blocked",
       identity: "blocked",
       authority: "blocked",
-      airtime: "blocked",
     });
   });
 
-  it("sends a new organization straight to its first upload", () => {
+  it("asks someone with an account to register the organization", () => {
+    expect(nextStep(onboardingSteps(facts({ organizationId: null })))?.id).toBe("organization");
+  });
+
+  it("leaves a new organization waiting on Frikanalen, not on itself", () => {
     const steps = onboardingSteps(facts());
-    expect(nextStep(steps)?.id).toBe("video");
-    expect(states()).toMatchObject({
+    expect(nextStep(steps)).toBeUndefined();
+    expect(states()).toEqual({
+      account: "done",
       organization: "done",
       affidavit: "waiting",
       identity: "waiting",
       authority: "self",
-      airtime: "blocked",
     });
-  });
-
-  it("keeps airtime closed until both membership and identity are in place", () => {
-    expect(states({ isMember: true }).airtime).toBe("blocked");
-    expect(states({ identityConfirmed: true }).airtime).toBe("blocked");
-    expect(states({ isMember: true, identityConfirmed: true }).airtime).toBe("waiting");
+    expect(isOnboarded(steps)).toBe(false);
   });
 
   it("counts staff as identified", () => {
     expect(states({ isStaff: true }).identity).toBe("done");
   });
 
-  it("points at the schedule once airtime has been granted", () => {
-    const steps = onboardingSteps(
-      facts({ isMember: true, identityConfirmed: true, videoCount: 2, grantCount: 1 }),
+  it("is over once membership and identity are both approved", () => {
+    expect(isOnboarded(onboardingSteps(facts({ isMember: true })))).toBe(false);
+    expect(isOnboarded(onboardingSteps(facts({ identityConfirmed: true })))).toBe(false);
+    expect(isOnboarded(onboardingSteps(facts({ isMember: true, identityConfirmed: true })))).toBe(
+      true,
     );
-    expect(nextStep(steps)?.id).toBe("airtime");
-    expect(steps.at(-1)?.actions[0].href).toBe("/organization/3/schedule");
-    expect(isOnboarded(steps)).toBe(true);
-  });
-
-  it("is not over while Frikanalen still has to approve something", () => {
-    expect(isOnboarded(onboardingSteps(facts({ videoCount: 1 })))).toBe(false);
   });
 });

@@ -1,9 +1,10 @@
 /**
- * The road from "we would like to be on Frikanalen" to a first broadcast, as
- * the steps an organization actually has to take and whose move each one is.
+ * The road from "we would like to be on Frikanalen" to an active membership,
+ * as the steps an organization has to take and whose move each one is. What a
+ * member then does with it, uploading and broadcasting, is not part of it.
  *
  * Nothing here is stored: every state is read off what the API already says
- * about the user, the organization, its videos and its airtime.
+ * about the user and the organization.
  */
 export type StepState =
   /** Finished. */
@@ -20,7 +21,7 @@ export type StepState =
 export type StepAction = { href: string; label: string };
 
 export type OnboardingStep = {
-  id: "account" | "organization" | "video" | "affidavit" | "identity" | "authority" | "airtime";
+  id: "account" | "organization" | "affidavit" | "identity" | "authority";
   title: string;
   text: string;
   state: StepState;
@@ -36,16 +37,12 @@ export type OnboardingFacts = {
   isStaff: boolean;
   /** Frikanalen has received the editor's declaration and approved membership. */
   isMember: boolean;
-  videoCount: number;
-  grantCount: number;
 };
 
 export const onboardingSteps = (facts: OnboardingFacts): OnboardingStep[] => {
-  const { organizationId: id, loggedIn, isMember, videoCount, grantCount } = facts;
+  const { organizationId: id, loggedIn, isMember } = facts;
   const registered = id !== null;
   const identityOk = facts.identityConfirmed || facts.isStaff;
-  const mayBroadcast = isMember && identityOk;
-  const base = `/organization/${id}`;
 
   return [
     {
@@ -69,17 +66,6 @@ export const onboardingSteps = (facts: OnboardingFacts): OnboardingStep[] => {
         registered || !loggedIn
           ? []
           : [{ href: "/organization/register", label: "Registrer organisasjonen" }],
-    },
-    {
-      id: "video",
-      title: "Last opp den første videoen",
-      text: "Dere kan laste opp med en gang. Videoene blir synlige for alle når medlemskapet er godkjent.",
-      state: videoCount > 0 ? "done" : registered ? "todo" : "blocked",
-      actions: !registered
-        ? []
-        : videoCount > 0
-          ? [{ href: `${base}/admin`, label: "Se videoene" }]
-          : [{ href: `${base}/create`, label: "Ny video" }],
     },
     {
       id: "affidavit",
@@ -111,24 +97,6 @@ export const onboardingSteps = (facts: OnboardingFacts): OnboardingStep[] => {
       state: registered ? "self" : "blocked",
       actions: [{ href: "/about/informasjon-om-registrering", label: "Slik gjør dere det" }],
     },
-    {
-      id: "airtime",
-      title: "Sett opp den første sendingen",
-      text: !mayBroadcast
-        ? "Når medlemskapet er godkjent og identiteten din er bekreftet, kan dere få sendetid og sette opp hva som skal sendes."
-        : grantCount > 0
-          ? "Dere har fått sendetid. Sett opp hva som skal sendes før fristen."
-          : "Frikanalen tildeler sendetid. Ta kontakt for å få en fast sendeflate eller en enkelt sending.",
-      state: !mayBroadcast ? "blocked" : grantCount > 0 ? "todo" : "waiting",
-      actions: !mayBroadcast
-        ? [{ href: "/schedule/plan/rules", label: "Slik virker sendetid" }]
-        : grantCount > 0
-          ? [{ href: `${base}/schedule`, label: "Gå til sendetid" }]
-          : [
-              { href: "/about/contact", label: "Be om sendetid" },
-              { href: "/schedule/plan/rules", label: "Slik virker sendetid" },
-            ],
-    },
   ];
 };
 
@@ -138,5 +106,4 @@ export const nextStep = (steps: readonly OnboardingStep[]) =>
 
 /** Onboarding is over when nothing is left for either side to do. */
 export const isOnboarded = (steps: readonly OnboardingStep[]) =>
-  steps.every(({ state, id }) => state === "done" || state === "self" || id === "airtime") &&
-  steps.find(({ id }) => id === "airtime")?.state !== "blocked";
+  steps.every(({ state }) => state === "done" || state === "self");
