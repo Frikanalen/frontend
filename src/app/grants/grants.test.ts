@@ -5,6 +5,7 @@ import {
   itemsPayload,
   listMilliseconds,
   placeItems,
+  sameList,
   timeline,
   windowMilliseconds,
   type DraftItem,
@@ -39,6 +40,16 @@ describe("grant lists", () => {
       { video: 5 },
       { video: 2 },
     ]);
+  });
+
+  it("compares lists by the videos they play, in order", () => {
+    expect(
+      sameList([video(1, "00:01:00"), video(2, "00:01:00")], [video(1, "x"), video(2, "y")]),
+    ).toBe(true);
+    expect(
+      sameList([video(1, "00:01:00"), video(2, "00:01:00")], [video(2, "x"), video(1, "y")]),
+    ).toBe(false);
+    expect(sameList([video(1, "00:01:00")], [])).toBe(false);
   });
 
   it("places entries before or after a target, moving ones already listed", () => {
