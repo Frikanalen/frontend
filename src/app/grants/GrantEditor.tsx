@@ -207,7 +207,7 @@ const Editor = ({ grant, backHref }: { grant: AirtimeGrant; backHref: string }) 
         </p>
       )}
 
-      {showsAutomatic ? (
+      {showsAutomatic && editable ? (
         <p className="rounded-lg border border-dashed border-secondary-300 bg-secondary-50 p-3 text-sm dark:bg-secondary-950">
           Listen fylles automatisk hver natt frem til fristen. Endrer du den, blir den manuell og
           blir stående slik du lagrer den.

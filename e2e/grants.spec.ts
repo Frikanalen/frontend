@@ -224,6 +224,8 @@ test.describe("airtime grants", () => {
     await expect(page.getByText("Klar for sending", { exact: false })).toBeVisible();
     await expect(page.getByText(/Listen ble låst/)).toBeVisible();
     await expect(page.getByRole("note")).toContainText("Fristen er passert");
+    // Nothing here can be changed, so don't explain how changing it works.
+    await expect(page.getByText(/Endrer du den, blir den manuell/)).toHaveCount(0);
     await expect(page.getByRole("button", { name: /Flytt/ })).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Lagre listen" })).toHaveCount(0);
     await expect(page.getByRole("grid", { name: "Videoer du kan legge til" })).toHaveCount(0);
