@@ -1,7 +1,7 @@
 import type {
   AirtimeGrant,
   GrantItem,
-  GrantItemWrite,
+  GrantItemWriteRequest,
 } from "@/generated/frikanalenDjangoAPI.schemas";
 import { durationMilliseconds } from "./duration";
 
@@ -15,26 +15,19 @@ export const windowMilliseconds = (grant: Pick<AirtimeGrant, "starttime" | "endt
  * How long a list plays, back to back. A video with no usable length counts as
  * zero here; the server refuses to save it, and the editor flags it.
  */
-export const listMilliseconds = (items: DraftItem[]) =>
-  items.reduce(
-    (total, item) =>
-      total + (item.video?.duration ? (durationMilliseconds(item.video.duration) ?? 0) : 0),
-    0,
-  );
+export const listMilliseconds = (items: readonly DraftItem[]) =>
+  items.reduce((total, item) => total + (durationMilliseconds(item.video.duration) ?? 0), 0);
 
-export const itemName = (item: DraftItem) =>
-  item.video?.name ?? item.liveTransmission?.name ?? "Uten navn";
+export const itemName = (item: DraftItem) => item.liveTransmission?.name ?? item.video.name;
 
-export const itemKey = (item: DraftItem) =>
-  item.video ? `video-${item.video.id}` : `live-${item.liveTransmission?.id}`;
+/**
+ * The body PUT /grants/{id}/items takes: the whole list, in order, no
+ * positions. Live transmissions can't be listed through the API yet.
+ */
+export const itemsPayload = (items: readonly DraftItem[]): GrantItemWriteRequest[] =>
+  items.map((item) => ({ video: item.video.id }));
 
-/** The body PUT /grants/{id}/items takes: the whole list, in order, no positions. */
-export const itemsPayload = (items: DraftItem[]): GrantItemWrite[] =>
-  items.map((item) =>
-    item.video ? { video: item.video.id } : { liveTransmission: item.liveTransmission?.id },
-  );
-
-export const moveItem = <T>(items: T[], from: number, to: number) => {
+export const moveItem = <T>(items: readonly T[], from: number, to: number) => {
   if (to < 0 || to >= items.length) return items;
   const next = [...items];
   const [moved] = next.splice(from, 1);

@@ -23,6 +23,7 @@ const program = (id: number, name: string, from: string) =>
     endtime: `2026-08-21T${from}:00+02:00`,
     duration: "01:00:00",
     schedulereason: 3,
+    grant: null,
     displaceable: false,
     weeklySlot: null,
     liveTransmission: null,

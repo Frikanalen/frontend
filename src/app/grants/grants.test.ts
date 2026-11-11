@@ -9,7 +9,7 @@ import {
   type DraftItem,
 } from "./grants";
 
-const video = (id: number, duration: string | null): DraftItem => ({
+const video = (id: number, duration: string): DraftItem => ({
   video: {
     id,
     name: `Video ${id}`,
@@ -29,18 +29,15 @@ describe("grant lists", () => {
 
   it("adds up the list back to back, counting unknown lengths as zero", () => {
     expect(
-      listMilliseconds([video(1, "00:10:00.500000"), video(2, null), video(3, "00:20:00")]),
+      listMilliseconds([video(1, "00:10:00.500000"), video(2, ""), video(3, "00:20:00")]),
     ).toBe(1_800_500);
   });
 
   it("sends the whole list in order without positions", () => {
-    expect(
-      itemsPayload([
-        video(5, "00:01:00"),
-        { video: null, liveTransmission: { id: 9, name: "Live" } },
-        video(2, "00:01:00"),
-      ]),
-    ).toEqual([{ video: 5 }, { liveTransmission: 9 }, { video: 2 }]);
+    expect(itemsPayload([video(5, "00:01:00"), video(2, "00:01:00")])).toEqual([
+      { video: 5 },
+      { video: 2 },
+    ]);
   });
 
   it("moves an item and ignores moves off either end", () => {

@@ -12,7 +12,7 @@ type Scope = "own" | "pending" | "all";
 const toGrantVideo = (video: Video): GrantItemVideo => ({
   id: video.id,
   name: video.name,
-  duration: video.duration ?? null,
+  duration: video.duration ?? "",
   organization: { id: video.organization.id, name: video.organization.name },
   pendingUpload: !video.properImport,
 });
@@ -88,7 +88,12 @@ export const VideoPicker = ({
                 {scope === "all" ? ` · ${video.organization.name}` : ""}
               </div>
             </div>
-            <Button size="sm" variant="tertiary" onPress={() => onPick(toGrantVideo(video))}>
+            <Button
+              isDisabled={!video.duration}
+              size="sm"
+              variant="tertiary"
+              onPress={() => onPick(toGrantVideo(video))}
+            >
               Legg til
             </Button>
           </li>

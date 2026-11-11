@@ -14,7 +14,6 @@ import {
   deadlineText,
   type DraftItem,
   isAutomatic,
-  itemKey,
   itemName,
   itemsPayload,
   listMilliseconds,
@@ -28,14 +27,14 @@ const osloDateTime = (instant: string) =>
   format(inOsloTime(instant), "EEEE d. MMMM 'kl.' HH:mm", { locale: nb });
 
 const ItemLine = ({ item }: { item: DraftItem }) => {
-  const length = item.video?.duration ? durationMilliseconds(item.video.duration) : undefined;
+  const length = durationMilliseconds(item.video.duration);
   return (
     <span className="min-w-0">
       <span className="font-medium">{itemName(item)}</span>
       <span className="text-sm text-default-500">
         {" · "}
         {item.liveTransmission ? "Direkte" : length ? formatDuration(length) : "Ukjent lengde"}
-        {item.video?.pendingUpload ? " · venter på fil" : ""}
+        {item.video.pendingUpload ? " · venter på fil" : ""}
       </span>
     </span>
   );
@@ -48,7 +47,7 @@ export const GrantCard = ({
   grant: AirtimeGrant;
   showOrganization?: boolean;
 }) => {
-  const [draft, setDraft] = useState<DraftItem[]>();
+  const [draft, setDraft] = useState<readonly DraftItem[]>();
   const [error, setError] = useState<string>();
   const queryClient = useQueryClient();
   const saveItems = useGrantsItemsUpdate();
@@ -130,7 +129,7 @@ export const GrantCard = ({
       ) : (
         <ol className="space-y-1">
           {shown.map((item, index) => (
-            <li className="flex items-center gap-2" key={`${itemKey(item)}-${index}`}>
+            <li className="flex items-center gap-2" key={`${item.video.id}-${index}`}>
               <span className="w-6 text-end text-sm text-default-500">{index + 1}.</span>
               <ItemLine item={item} />
               {editing ? (
