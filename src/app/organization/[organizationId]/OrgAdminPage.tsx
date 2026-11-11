@@ -14,7 +14,7 @@ export const OrgAdminPage = ({ organization }: { organization: Organization }) =
       <ButtonLink href={`/organization/${organization.id}/create`}>Ny video</ButtonLink>
       <ButtonLink href={`/organization/${organization.id}/series`}>Administrer serier</ButtonLink>
       <ButtonLink href={`/organization/${organization.id}/schedule`}>
-        Programmer sendeplanen
+        Sendetid
       </ButtonLink>
       <ButtonLink href={`/organization/${organization.id}/live`}>Sjekk direktesending</ButtonLink>
     </div>
