@@ -14034,16 +14034,10 @@ components:
           allOf:
             - $ref: '#/components/schemas/GrantItemVideo'
           readOnly: true
-        liveTransmission:
-          allOf:
-            - $ref: '#/components/schemas/GrantItemLiveTransmission'
-          nullable: true
-          readOnly: true
       required:
-        - liveTransmission
         - position
         - video
-    GrantItemLiveTransmission:
+    GrantItemLiveSource:
       type: object
       properties:
         id:
@@ -14075,9 +14069,16 @@ components:
           description: An entry made ahead of its file; its duration was set by hand.
           type: boolean
           readOnly: true
+        liveSource:
+          description: 'Set for a live programme: it airs from this source until it has a file.'
+          allOf:
+            - $ref: '#/components/schemas/GrantItemLiveSource'
+          nullable: true
+          readOnly: true
       required:
         - duration
         - id
+        - liveSource
         - name
         - organization
         - pendingUpload
@@ -15126,23 +15127,6 @@ components:
           client_error: '#/components/schemas/ParseErrorResponse'
       oneOf:
         - $ref: '#/components/schemas/ParseErrorResponse'
-    LiveTransmissionRead:
-      type: object
-      properties:
-        id:
-          type: integer
-          readOnly: true
-        source:
-          type: integer
-          readOnly: true
-        streamId:
-          type: string
-          format: uuid
-          readOnly: true
-      required:
-        - id
-        - source
-        - streamId
     Login:
       type: object
       properties:
@@ -17088,6 +17072,10 @@ components:
           oneOf:
             - $ref: '#/components/schemas/MinimumAgeEnum'
             - $ref: '#/components/schemas/NullEnum'
+        liveSource:
+          description: "Makes the video a live programme: it airs from this live source, one of the organization's own, until it has a file. Null for none."
+          type: integer
+          nullable: true
         uploadedTime:
           description: Time the original video for the program was uploaded
           type: string
@@ -17798,6 +17786,19 @@ components:
           client_error: '#/components/schemas/ParseErrorResponse'
       oneOf:
         - $ref: '#/components/schemas/ParseErrorResponse'
+    ScheduleitemLiveSource:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        streamId:
+          type: string
+          format: uuid
+          readOnly: true
+      required:
+        - id
+        - streamId
     ScheduleitemModify:
       description: |-
         Staff corrections to the compiled schedule.
@@ -17898,32 +17899,28 @@ components:
           type: integer
           nullable: true
           readOnly: true
-        displaceable:
-          description: 'Deprecated: always false. Nothing is displaceable.'
+        isLive:
+          description: Whether this item goes out live rather than from a file.
           type: boolean
           readOnly: true
-        weeklySlot:
-          description: 'Deprecated: always null. See grant.'
-          type: integer
-          nullable: true
-          readOnly: true
-        liveTransmission:
+          title: Live broadcast
+        liveSource:
+          description: "Set when this airing goes out live: the video's live source."
           allOf:
-            - $ref: '#/components/schemas/LiveTransmissionRead'
+            - $ref: '#/components/schemas/ScheduleitemLiveSource'
           nullable: true
           readOnly: true
       required:
         - defaultName
-        - displaceable
         - duration
         - endtime
         - grant
         - id
-        - liveTransmission
+        - isLive
+        - liveSource
         - schedulereason
         - starttime
         - video
-        - weeklySlot
     ScheduleitemVideo:
       type: object
       properties:
@@ -20122,6 +20119,10 @@ components:
           oneOf:
             - $ref: '#/components/schemas/MinimumAgeEnum'
             - $ref: '#/components/schemas/NullEnum'
+        liveSource:
+          description: "Makes the video a live programme: it airs from this live source, one of the organization's own, until it has a file. Null for none."
+          type: integer
+          nullable: true
         createdTime:
           description: Time the program record was created
           type: string
@@ -20240,6 +20241,10 @@ components:
           oneOf:
             - $ref: '#/components/schemas/MinimumAgeEnum'
             - $ref: '#/components/schemas/NullEnum'
+        liveSource:
+          description: "Makes the video a live programme: it airs from this live source, one of the organization's own, until it has a file. Null for none."
+          type: integer
+          nullable: true
         createdTime:
           description: Time the program record was created
           type: string
@@ -20341,6 +20346,10 @@ components:
           oneOf:
             - $ref: '#/components/schemas/MinimumAgeEnum'
             - $ref: '#/components/schemas/NullEnum'
+        liveSource:
+          description: "Makes the video a live programme: it airs from this live source, one of the organization's own, until it has a file. Null for none."
+          type: integer
+          nullable: true
         uploadedTime:
           description: Time the original video for the program was uploaded
           type: string
@@ -20556,6 +20565,10 @@ components:
           oneOf:
             - $ref: '#/components/schemas/MinimumAgeEnum'
             - $ref: '#/components/schemas/NullEnum'
+        liveSource:
+          description: "Makes the video a live programme: it airs from this live source, one of the organization's own, until it has a file. Null for none."
+          type: integer
+          nullable: true
         uploadedTime:
           description: Time the original video for the program was uploaded
           type: string
@@ -21504,6 +21517,7 @@ components:
           ref_url: '#/components/schemas/VideosCreateRefUrlErrorComponent'
           spoken_language: '#/components/schemas/VideosCreateSpokenLanguageErrorComponent'
           minimum_age: '#/components/schemas/VideosCreateMinimumAgeErrorComponent'
+          live_source: '#/components/schemas/VideosCreateLiveSourceErrorComponent'
           uploaded_time: '#/components/schemas/VideosCreateUploadedTimeErrorComponent'
       oneOf:
         - $ref: '#/components/schemas/VideosCreateNonFieldErrorsErrorComponent'
@@ -21522,6 +21536,7 @@ components:
         - $ref: '#/components/schemas/VideosCreateRefUrlErrorComponent'
         - $ref: '#/components/schemas/VideosCreateSpokenLanguageErrorComponent'
         - $ref: '#/components/schemas/VideosCreateMinimumAgeErrorComponent'
+        - $ref: '#/components/schemas/VideosCreateLiveSourceErrorComponent'
         - $ref: '#/components/schemas/VideosCreateUploadedTimeErrorComponent'
     VideosCreateErrorResponse400:
       discriminator:
@@ -21598,6 +21613,28 @@ components:
           enum:
             - invalid
             - 'null'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    VideosCreateLiveSourceErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `live_source` - live_source'
+          type: string
+          enum:
+            - live_source
+        code:
+          description: |-
+            * `does_not_exist` - does_not_exist
+            * `incorrect_type` - incorrect_type
+          type: string
+          enum:
+            - does_not_exist
+            - incorrect_type
         detail:
           type: string
       required:
@@ -23200,6 +23237,7 @@ components:
           ref_url: '#/components/schemas/VideosPartialUpdateRefUrlErrorComponent'
           spoken_language: '#/components/schemas/VideosPartialUpdateSpokenLanguageErrorComponent'
           minimum_age: '#/components/schemas/VideosPartialUpdateMinimumAgeErrorComponent'
+          live_source: '#/components/schemas/VideosPartialUpdateLiveSourceErrorComponent'
           uploaded_time: '#/components/schemas/VideosPartialUpdateUploadedTimeErrorComponent'
       oneOf:
         - $ref: '#/components/schemas/VideosPartialUpdateNonFieldErrorsErrorComponent'
@@ -23217,6 +23255,7 @@ components:
         - $ref: '#/components/schemas/VideosPartialUpdateRefUrlErrorComponent'
         - $ref: '#/components/schemas/VideosPartialUpdateSpokenLanguageErrorComponent'
         - $ref: '#/components/schemas/VideosPartialUpdateMinimumAgeErrorComponent'
+        - $ref: '#/components/schemas/VideosPartialUpdateLiveSourceErrorComponent'
         - $ref: '#/components/schemas/VideosPartialUpdateUploadedTimeErrorComponent'
     VideosPartialUpdateErrorResponse400:
       discriminator:
@@ -23293,6 +23332,28 @@ components:
           enum:
             - invalid
             - 'null'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    VideosPartialUpdateLiveSourceErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `live_source` - live_source'
+          type: string
+          enum:
+            - live_source
+        code:
+          description: |-
+            * `does_not_exist` - does_not_exist
+            * `incorrect_type` - incorrect_type
+          type: string
+          enum:
+            - does_not_exist
+            - incorrect_type
         detail:
           type: string
       required:
@@ -23665,6 +23726,7 @@ components:
           ref_url: '#/components/schemas/VideosUpdateRefUrlErrorComponent'
           spoken_language: '#/components/schemas/VideosUpdateSpokenLanguageErrorComponent'
           minimum_age: '#/components/schemas/VideosUpdateMinimumAgeErrorComponent'
+          live_source: '#/components/schemas/VideosUpdateLiveSourceErrorComponent'
           uploaded_time: '#/components/schemas/VideosUpdateUploadedTimeErrorComponent'
       oneOf:
         - $ref: '#/components/schemas/VideosUpdateNonFieldErrorsErrorComponent'
@@ -23682,6 +23744,7 @@ components:
         - $ref: '#/components/schemas/VideosUpdateRefUrlErrorComponent'
         - $ref: '#/components/schemas/VideosUpdateSpokenLanguageErrorComponent'
         - $ref: '#/components/schemas/VideosUpdateMinimumAgeErrorComponent'
+        - $ref: '#/components/schemas/VideosUpdateLiveSourceErrorComponent'
         - $ref: '#/components/schemas/VideosUpdateUploadedTimeErrorComponent'
     VideosUpdateErrorResponse400:
       discriminator:
@@ -23758,6 +23821,28 @@ components:
           enum:
             - invalid
             - 'null'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    VideosUpdateLiveSourceErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `live_source` - live_source'
+          type: string
+          enum:
+            - live_source
+        code:
+          description: |-
+            * `does_not_exist` - does_not_exist
+            * `incorrect_type` - incorrect_type
+          type: string
+          enum:
+            - does_not_exist
+            - incorrect_type
         detail:
           type: string
       required:

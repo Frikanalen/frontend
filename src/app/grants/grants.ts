@@ -1,12 +1,13 @@
 import type {
   AirtimeGrant,
   GrantItem,
+  GrantItemVideo,
   GrantItemWriteRequest,
 } from "@/generated/frikanalenDjangoAPI.schemas";
 import { durationMilliseconds } from "./duration";
 
 /** An item in a list being edited: what a GrantItem is before the server numbers it. */
-export type DraftItem = Pick<GrantItem, "video" | "liveTransmission">;
+export type DraftItem = Pick<GrantItem, "video">;
 
 export const windowMilliseconds = (grant: Pick<AirtimeGrant, "starttime" | "endtime">) =>
   new Date(grant.endtime).getTime() - new Date(grant.starttime).getTime();
@@ -18,11 +19,11 @@ export const windowMilliseconds = (grant: Pick<AirtimeGrant, "starttime" | "endt
 export const listMilliseconds = (items: readonly DraftItem[]) =>
   items.reduce((total, item) => total + (durationMilliseconds(item.video.duration) ?? 0), 0);
 
-export const itemName = (item: DraftItem) => item.liveTransmission?.name ?? item.video.name;
+export const itemName = (item: DraftItem) => item.video.name;
 
 /**
  * The body PUT /grants/{id}/items takes: the whole list, in order, no
- * positions. Live transmissions can't be listed through the API yet.
+ * positions.
  */
 export const itemsPayload = (items: readonly DraftItem[]): GrantItemWriteRequest[] =>
   items.map((item) => ({ video: item.video.id }));
@@ -138,3 +139,14 @@ export const readOnlyReason = (
 /** Whether two lists play the same videos in the same order. */
 export const sameList = (a: readonly DraftItem[], b: readonly DraftItem[]) =>
   a.length === b.length && a.every((item, index) => item.video.id === b[index].video.id);
+
+/** The source a listed video airs from live, while it has no file. */
+export const liveSourceName = (video: GrantItemVideo) =>
+  video.liveSource != null && video.pendingUpload ? video.liveSource.name : undefined;
+
+/** What a listed video is still waiting for, or where it airs from. */
+export const itemStatus = (video: GrantItemVideo) => {
+  const source = liveSourceName(video);
+  if (source) return `direkte fra ${source}`;
+  return video.pendingUpload ? "venter på fil" : undefined;
+};

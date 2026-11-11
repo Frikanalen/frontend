@@ -1,26 +1,36 @@
 "use client";
 import { FormInput } from "@/components/FormField";
-import type { GrantItemVideo, Video } from "@/generated/frikanalenDjangoAPI.schemas";
+import type { GrantItemVideo, LiveSource, Video } from "@/generated/frikanalenDjangoAPI.schemas";
+import { useOrganizationLiveSourcesList } from "@/generated/organization/organization";
 import { useVideosList } from "@/generated/videos/videos";
 import { formatApiError } from "@/lib/formatApiError";
 import { Button as HeroButton } from "@heroui/react";
 import { useState } from "react";
 import { Button, GridList, GridListItem, useDragAndDrop } from "react-aria-components";
-import { GoGrabber } from "react-icons/go";
+import { GoBroadcast, GoGrabber } from "react-icons/go";
 import { durationMilliseconds, formatDuration } from "./duration";
+import { NewLiveProgramme } from "./NewLiveProgramme";
 
-type Scope = "own" | "pending" | "all";
+type Scope = "own" | "placeholder" | "live" | "all";
 
 /** The drag type a library video travels under, as JSON of a GrantItemVideo. */
 export const VIDEO_DRAG_TYPE = "application/x-frikanalen-video";
 
-const toGrantVideo = (video: Video): GrantItemVideo => ({
-  id: video.id,
-  name: video.name,
-  duration: video.duration ?? "",
-  organization: { id: video.organization.id, name: video.organization.name },
-  pendingUpload: !video.properImport,
-});
+export const toGrantVideo = (video: Video, sources: readonly LiveSource[]): GrantItemVideo => {
+  const source = sources.find(({ id }) => id === video.liveSource);
+  return {
+    id: video.id,
+    name: video.name,
+    duration: video.duration ?? "",
+    organization: { id: video.organization.id, name: video.organization.name },
+    pendingUpload: !video.properImport,
+    liveSource:
+      video.liveSource == null ? null : { id: video.liveSource, name: source?.name ?? "Direkte" },
+  };
+};
+
+/** Airs live: a live programme whose recording hasn't come as a file. */
+const airsLive = (video: Video) => video.liveSource != null && !video.properImport;
 
 const lengthText = (duration: string | undefined) => {
   const milliseconds = duration ? durationMilliseconds(duration) : undefined;
@@ -30,9 +40,10 @@ const lengthText = (duration: string | undefined) => {
 /**
  * The videos a list can draw from. Drag one onto the list to put it where it
  * should play, or press "Legg til" to put it last. A grant may list any
- * organization's video; the organization's own come first, and its entries
- * still waiting for a file are a separate view, since the public catalogue
- * leaves them out.
+ * organization's video; the organization's own come first. Its entries still
+ * waiting for a file are separate views, since the public catalogue leaves
+ * them out: placeholders, and live programmes, which air from a live source
+ * until their recording arrives.
  */
 export const VideoPicker = ({
   organizationId,
@@ -47,16 +58,23 @@ export const VideoPicker = ({
   const [scope, setScope] = useState<Scope>("own");
   const [search, setSearch] = useState("");
   const [onlyFitting, setOnlyFitting] = useState(false);
+  const sourcesQuery = useOrganizationLiveSourcesList(organizationId);
+  const sources = sourcesQuery.data?.data ?? [];
+  const waiting = scope === "placeholder" || scope === "live";
   const videos = useVideosList({
     organization: scope === "all" ? undefined : organizationId,
-    proper_import: scope === "pending" ? false : undefined,
+    proper_import: waiting ? false : undefined,
     q: search || undefined,
     ordering: "-created_time",
     limit: 30,
   });
   const fits = (video: Video) => (durationMilliseconds(video.duration ?? "") ?? 0) <= remaining;
   // Videos that still fit come first, newest first within each group.
-  const withLength = (videos.data?.data.results ?? []).filter((video) => video.duration);
+  const inScope = (video: Video) =>
+    scope === "placeholder" ? video.liveSource == null : scope === "live" ? airsLive(video) : true;
+  const withLength = (videos.data?.data.results ?? []).filter(
+    (video) => video.duration && inScope(video),
+  );
   const results = [
     ...withLength.filter(fits),
     ...(onlyFitting ? [] : withLength.filter((video) => !fits(video))),
@@ -67,7 +85,7 @@ export const VideoPicker = ({
       items
         .filter((video) => keys.has(video.id))
         .map((video) => ({
-          [VIDEO_DRAG_TYPE]: JSON.stringify(toGrantVideo(video)),
+          [VIDEO_DRAG_TYPE]: JSON.stringify(toGrantVideo(video, sources)),
           "text/plain": video.name,
         })),
   });
@@ -79,7 +97,8 @@ export const VideoPicker = ({
         {(
           [
             ["own", "Våre videoer"],
-            ["pending", "Venter på fil"],
+            ["placeholder", "Plassholdere"],
+            ["live", "Direktesending"],
             ["all", "Alle organisasjoner"],
           ] as const
         ).map(([value, label]) => (
@@ -102,17 +121,33 @@ export const VideoPicker = ({
         />
         Bare videoer som får plass ({formatDuration(Math.max(0, remaining))} igjen)
       </label>
-      {scope === "pending" ? (
+      {scope === "placeholder" ? (
         <p className="text-sm text-default-600">
-          En video uten fil kan settes opp når lengden er fylt inn for hånd. Filen kan komme etter
-          at listen er låst.
+          En plassholder er en video som venter på fil. Den kan settes opp når lengden er fylt inn,
+          og filen kan komme etter at listen er låst.
         </p>
+      ) : null}
+      {scope === "live" ? (
+        <>
+          <p className="text-sm text-default-600">
+            En direktesending sendes direkte fra en av organisasjonens direktekilder, helt til det
+            lastes opp et opptak til den.
+          </p>
+          <NewLiveProgramme
+            organizationId={organizationId}
+            remaining={remaining}
+            sources={sources.filter(({ enabled }) => enabled)}
+            onCreated={(video) => onPick(toGrantVideo(video, sources))}
+          />
+        </>
       ) : null}
       {videos.isLoading ? <p>Laster videoer…</p> : null}
       {videos.isError ? <p role="alert">{formatApiError(videos.error)}</p> : null}
       <GridList
         aria-label="Videoer du kan legge til"
         className="max-h-[28rem] space-y-1 overflow-y-auto"
+        // Rows say whether they fit and where they air from, which isn't in the items.
+        dependencies={[remaining, scope, sources]}
         dragAndDropHooks={dragAndDropHooks}
         items={results}
         renderEmptyState={() =>
@@ -139,6 +174,9 @@ export const VideoPicker = ({
             >
               <GoGrabber aria-hidden />
             </Button>
+            {airsLive(video) ? (
+              <GoBroadcast aria-label="Direktesending" className="shrink-0 text-danger-600" />
+            ) : null}
             <div className="min-w-0 grow">
               <div className="truncate font-medium">{video.name}</div>
               <div className="text-sm text-default-500">
@@ -146,11 +184,19 @@ export const VideoPicker = ({
                 {!fits(video) ? (
                   <span className="text-danger-700"> · for lang for resten</span>
                 ) : null}
-                {video.properImport ? "" : " · venter på fil"}
+                {airsLive(video)
+                  ? ` · direkte fra ${toGrantVideo(video, sources).liveSource?.name}`
+                  : video.properImport
+                    ? ""
+                    : " · venter på fil"}
                 {scope === "all" ? ` · ${video.organization.name}` : ""}
               </div>
             </div>
-            <HeroButton size="sm" variant="tertiary" onPress={() => onPick(toGrantVideo(video))}>
+            <HeroButton
+              size="sm"
+              variant="tertiary"
+              onPress={() => onPick(toGrantVideo(video, sources))}
+            >
               Legg til
             </HeroButton>
           </GridListItem>

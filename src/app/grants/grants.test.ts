@@ -19,8 +19,8 @@ const video = (id: number, duration: string): DraftItem => ({
     duration,
     organization: { id: 1, name: "Org" },
     pendingUpload: false,
+    liveSource: null,
   } satisfies GrantItemVideo,
-  liveTransmission: null,
 });
 
 describe("grant lists", () => {

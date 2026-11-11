@@ -9,6 +9,7 @@ import {
   deadlineText,
   isAutomatic,
   itemName,
+  itemStatus,
   listMilliseconds,
   STATE_LABELS,
   timeline,
@@ -84,7 +85,7 @@ export const GrantCard = ({
               <span className="tabular-nums text-default-500">{formatOsloTime(row.start)}</span>
               <span className="truncate">
                 {itemName(row.item)}
-                {row.item.video.pendingUpload ? " (venter på fil)" : ""}
+                {itemStatus(row.item.video) ? ` (${itemStatus(row.item.video)})` : ""}
               </span>
             </li>
           ))}

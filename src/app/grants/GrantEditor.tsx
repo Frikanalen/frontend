@@ -24,7 +24,7 @@ import {
   useDragAndDrop,
   type DropItem,
 } from "react-aria-components";
-import { GoGrabber, GoX } from "react-icons/go";
+import { GoBroadcast, GoGrabber, GoX } from "react-icons/go";
 import { durationMilliseconds, formatDuration } from "./duration";
 import { FillBar } from "./FillBar";
 import {
@@ -32,6 +32,8 @@ import {
   readOnlyReason,
   isAutomatic,
   itemName,
+  itemStatus,
+  liveSourceName,
   itemsPayload,
   type KeyedItem,
   listMilliseconds,
@@ -52,7 +54,6 @@ let nextKey = 0;
 const keyed = (video: GrantItemVideo): KeyedItem => ({
   key: `item-${nextKey++}`,
   video,
-  liveTransmission: null,
 });
 const keyedItems = (grant: AirtimeGrant) => grant.items.map((item) => keyed(item.video));
 
@@ -266,10 +267,18 @@ const Editor = ({ grant, backHref }: { grant: AirtimeGrant; backHref: string }) 
                   <span className="block text-sm tabular-nums sm:hidden">
                     {formatOsloTime(row.start)}–{formatOsloTime(row.end)}
                   </span>
-                  <span className="block truncate font-medium">{itemName(row.item)}</span>
+                  <span className="flex items-center gap-1 font-medium">
+                    {liveSourceName(row.item.video) ? (
+                      <GoBroadcast
+                        aria-label="Direktesending"
+                        className="shrink-0 text-danger-600"
+                      />
+                    ) : null}
+                    <span className="truncate">{itemName(row.item)}</span>
+                  </span>
                   <span className="text-sm text-default-500">
                     {formatDuration(durationMilliseconds(row.item.video.duration) ?? 0)}
-                    {row.item.video.pendingUpload ? " · venter på fil" : ""}
+                    {itemStatus(row.item.video) ? ` · ${itemStatus(row.item.video)}` : ""}
                     {row.item.video.organization.id !== grant.organization.id
                       ? ` · ${row.item.video.organization.name}`
                       : ""}
