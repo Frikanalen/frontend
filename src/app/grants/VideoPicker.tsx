@@ -5,6 +5,7 @@ import { useOrganizationLiveSourcesList } from "@/generated/organization/organiz
 import { useVideosList } from "@/generated/videos/videos";
 import { formatApiError } from "@/lib/formatApiError";
 import { Button as HeroButton } from "@heroui/react";
+import cx from "classnames";
 import { useState } from "react";
 import { Button, GridList, GridListItem, useDragAndDrop } from "react-aria-components";
 import { GoBroadcast, GoGrabber } from "react-icons/go";
@@ -94,7 +95,7 @@ export const VideoPicker = ({
   return (
     <section className="space-y-3">
       <div className="flex flex-wrap items-center gap-2">
-        <h2 className="me-auto text-lg font-semibold">Videoer</h2>
+        <h2 className="me-auto text-xl font-bold">Videoer</h2>
         <HeroButton size="sm" variant="secondary" onPress={() => setCreating("placeholder")}>
           Ny plassholder
         </HeroButton>
@@ -111,7 +112,11 @@ export const VideoPicker = ({
         onClose={() => setCreating(undefined)}
         onCreated={(video) => onPick(toGrantVideo(video, sources))}
       />
-      <div className="flex flex-wrap gap-2" role="group" aria-label="Hvilke videoer">
+      <div
+        className="flex flex-wrap gap-x-4 border-b border-default-200"
+        role="group"
+        aria-label="Hvilke videoer"
+      >
         {(
           [
             ["own", "Våre videoer"],
@@ -120,14 +125,19 @@ export const VideoPicker = ({
             ["all", "Alle organisasjoner"],
           ] as const
         ).map(([value, label]) => (
-          <HeroButton
+          <Button
+            aria-pressed={scope === value}
+            className={cx(
+              "-mb-px border-b-2 py-2 text-sm font-semibold outline-none data-[focus-visible]:ring-2 data-[focus-visible]:ring-focus",
+              scope === value
+                ? "border-accent text-foreground"
+                : "border-transparent text-default-600 hover:text-foreground",
+            )}
             key={value}
-            size="sm"
-            variant={scope === value ? "primary" : "tertiary"}
             onPress={() => setScope(value)}
           >
             {label}
-          </HeroButton>
+          </Button>
         ))}
       </div>
       <FormInput label="Søk" type="search" value={search} onValueChange={setSearch} />
@@ -155,7 +165,7 @@ export const VideoPicker = ({
       {videos.isError ? <p role="alert">{formatApiError(videos.error)}</p> : null}
       <GridList
         aria-label="Videoer du kan legge til"
-        className="max-h-[28rem] space-y-1 overflow-y-auto"
+        className="max-h-[28rem] overflow-y-auto border-t border-default-200"
         // Rows say whether they fit and where they air from, which isn't in the items.
         dependencies={[remaining, scope, sources]}
         dragAndDropHooks={dragAndDropHooks}
@@ -173,7 +183,7 @@ export const VideoPicker = ({
       >
         {(video) => (
           <GridListItem
-            className="flex cursor-grab items-center gap-2 rounded-lg border border-default-200 bg-background p-2 outline-none data-[dragging]:opacity-50 data-[focus-visible]:ring-2 data-[focus-visible]:ring-focus"
+            className="flex cursor-grab items-center gap-2 border-b border-default-200 bg-background px-1 py-2.5 outline-none data-[dragging]:opacity-50 data-[focus-visible]:ring-2 data-[focus-visible]:ring-focus"
             id={video.id}
             textValue={video.name}
           >
@@ -188,12 +198,10 @@ export const VideoPicker = ({
               <GoBroadcast aria-label="Direktesending" className="shrink-0 text-danger-600" />
             ) : null}
             <div className="min-w-0 grow">
-              <div className="truncate font-medium">{video.name}</div>
-              <div className="text-sm text-default-500">
+              <div className="truncate font-semibold">{video.name}</div>
+              <div className="text-sm text-default-600">
                 {lengthText(video.duration)}
-                {!fits(video) ? (
-                  <span className="text-danger-700"> · for lang for resten</span>
-                ) : null}
+                {!fits(video) ? " · for lang for resten" : null}
                 {airsLive(video)
                   ? ` · direkte fra ${toGrantVideo(video, sources).liveSource?.name}`
                   : video.properImport

@@ -6,7 +6,7 @@ export default async function Page() {
   const headers = await getCookiesFromRequest();
   const user = await getUserOrNull(headers);
   return (
-    <div className="bg-background text-foreground rounded-xl shadow-lg p-4">
+    <div className="mx-4 mt-10 max-w-5xl bg-background p-6 text-foreground sm:p-8">
       <div className={"flex flex-col lg:flex-row gap-8"}>
         <div className={"prose dark:prose-invert lg:basis-1/3 shrink-0"}>
           <h2>Ny organisasjon</h2>
@@ -18,7 +18,7 @@ export default async function Page() {
           </p>
         </div>
         <div className={"max-lg:max-w-xl w-full"}>
-          <OrgCreateForm className={"p-4 border-4 border-primary-100 rounded-xl"} />
+          <OrgCreateForm className={""} />
         </div>
       </div>
     </div>

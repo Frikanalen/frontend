@@ -11,10 +11,10 @@ export const metadata: Metadata = {
 export default function About() {
   return (
     <div className="space-y-10">
-      <h1 className={"text-4xl font-black text-black dark:text-green-200"}>
+      <h1 className={"max-w-4xl text-4xl font-bold tracking-tight sm:text-6xl"}>
         Frikanalen er sivilsamfunnets videoplatform.
       </h1>
-      <div className="prose dark:prose-invert prose-lg max-w-none">
+      <div className="prose dark:prose-invert prose-lg max-w-3xl">
         <div>
           <p>
             «Målet med Frikanalen er å styrke ytringsfrihet og deltakerdemokratiet ved å gi flere

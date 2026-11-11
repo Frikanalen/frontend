@@ -1,9 +1,8 @@
 import { ReactNode } from "react";
 
+// The working pages - the grants board and the grant editor - sit straight on
+// the canvas at the full page width, lined up with the channel bar above.
+// Their white blocks are the things being worked on.
 export default function Layout({ children }: { children: ReactNode }) {
-  return (
-    <div className="relative left-1/2 w-[calc(100vw-1rem)] max-w-7xl -translate-x-1/2 rounded-xl bg-background p-4 text-foreground shadow-lg">
-      {children}
-    </div>
-  );
+  return <div className="w-full max-w-7xl px-4 pt-8 text-foreground sm:px-6">{children}</div>;
 }

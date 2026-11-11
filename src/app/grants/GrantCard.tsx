@@ -16,7 +16,7 @@ import {
   windowMilliseconds,
 } from "./grants";
 import { LockBadge } from "./LockBadge";
-import { ModeBadge, modeSurface } from "./ModeBadge";
+import { ModeBadge } from "./ModeBadge";
 
 /** How many entries a card lists before it says "and n more". */
 const PREVIEW_ROWS = 4;
@@ -39,15 +39,10 @@ export const GrantCard = ({
   const { rows, graphics } = timeline(grant.items, grant);
 
   return (
-    <article
-      className={cx(
-        "space-y-3 rounded-xl p-4",
-        cancelled ? "border-2 border-default-200 opacity-60" : modeSurface(automatic),
-      )}
-    >
+    <article className={cx("space-y-3 bg-background p-5", cancelled && "opacity-60")}>
       <header className="flex flex-wrap items-start gap-2">
         <div className="min-w-0">
-          <h3 className="text-lg font-semibold first-letter:uppercase">
+          <h3 className="text-lg font-bold first-letter:uppercase">
             {format(inOsloTime(grant.starttime), "EEEE d. MMMM", { locale: nb })}{" "}
             {formatOsloTime(grant.starttime)}–{formatOsloTime(grant.endtime)}
           </h3>
@@ -58,9 +53,7 @@ export const GrantCard = ({
         <div className="ms-auto flex flex-wrap items-center gap-1 text-xs">
           {cancelled ? null : <ModeBadge automatic={automatic} empty={rows.length === 0} />}
           {cancelled ? (
-            <span className="rounded-full bg-default-100 px-2 py-0.5">
-              {STATE_LABELS.cancelled}
-            </span>
+            <span className="rounded-md bg-default-100 px-2 py-0.5">{STATE_LABELS.cancelled}</span>
           ) : (
             <LockBadge grant={grant} now={now} />
           )}
@@ -82,7 +75,7 @@ export const GrantCard = ({
         <ol className="space-y-0.5 text-sm">
           {rows.slice(0, PREVIEW_ROWS).map((row, index) => (
             <li className="flex gap-2" key={`${row.item.video.id}-${index}`}>
-              <span className="tabular-nums text-default-500">{formatOsloTime(row.start)}</span>
+              <span className="font-semibold">{formatOsloTime(row.start)}</span>
               <span className="truncate">
                 {itemName(row.item)}
                 {itemStatus(row.item.video) ? ` (${itemStatus(row.item.video)})` : ""}
@@ -90,11 +83,11 @@ export const GrantCard = ({
             </li>
           ))}
           {rows.length > PREVIEW_ROWS ? (
-            <li className="text-default-500">og {rows.length - PREVIEW_ROWS} til</li>
+            <li className="text-default-600">og {rows.length - PREVIEW_ROWS} til</li>
           ) : null}
           {graphics ? (
-            <li className="flex gap-2 text-default-500">
-              <span className="tabular-nums">{formatOsloTime(graphics.start)}</span>
+            <li className="flex gap-2 text-default-600">
+              <span>{formatOsloTime(graphics.start)}</span>
               <span>Grafikk</span>
             </li>
           ) : null}

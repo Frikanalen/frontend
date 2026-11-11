@@ -31,10 +31,10 @@ export default async function Page({ params }: { params: Promise<{ organizationI
   const maySetUp = user.isStaff || (user.identityConfirmed && organization.fkmember);
 
   return (
-    <section className="flex flex-col gap-4 p-4">
+    <section className="flex flex-col gap-4">
       <header>
-        <h1 className="text-2xl font-bold">Direktesending</h1>
-        <p className="mt-2 text-default-600">
+        <h1 className="text-3xl font-bold tracking-tight">Direktesending</h1>
+        <p className="mt-2 max-w-3xl text-default-600">
           Sett opp kildene {organization.name} sender direkte fra, gi koderne nøkler, og se at
           signalet kommer fram til Frikanalen før sendingen starter. En direktesending settes opp i
           sendetiden som en video med en direktekilde.

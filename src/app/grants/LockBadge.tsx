@@ -24,10 +24,10 @@ export const LockBadge = ({
   className?: string;
 }) => {
   if (grant.state === "cancelled") return null;
-  const base = "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium";
+  const base = "inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-medium";
   if (grant.lockExempt)
     return (
-      <span className={cx(base, "bg-warning-100 text-warning-800", className)}>
+      <span className={cx(base, "bg-secondary-50 text-secondary-700", className)}>
         <GoUnlock aria-hidden /> Unntatt fra låsing
       </span>
     );
@@ -38,7 +38,7 @@ export const LockBadge = ({
       </span>
     );
   return (
-    <span className={cx(base, "border border-default-300 text-default-700", className)}>
+    <span className={cx(base, "bg-warning-50 text-warning-800", className)}>
       <GoUnlock aria-hidden /> Åpen til {shortDateTime(grant.locksAt)}
     </span>
   );

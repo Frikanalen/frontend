@@ -1,11 +1,7 @@
 import React from "react";
 
 const Layout = ({ children }: { children: React.ReactNode }) => (
-  <main
-    className={
-      "bg-background p-6 rounded-xl shadow-xl max-w-3xl border-primary-100 border-1 w-full"
-    }
-  >
+  <main className={"mx-4 mt-10 w-[calc(100%-2rem)] max-w-3xl bg-background p-6 sm:p-8"}>
     {children}
   </main>
 );

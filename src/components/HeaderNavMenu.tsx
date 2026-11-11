@@ -11,9 +11,9 @@ import { GoPersonFill } from "react-icons/go";
 
 const SECTIONS = [
   { href: "/", label: "Direkte" },
-  { href: "/video", label: "Arkiv", activeRegexp: /\/video.*/ },
-  { href: "/schedule", label: "Sendeplan", activeRegexp: /\/schedule.*/ },
-  { href: "/about", label: "Om oss", activeRegexp: /\/about.*/ },
+  { href: "/video", label: "Arkiv", activeRegexp: /^\/video.*/ },
+  { href: "/schedule", label: "Sendeplan", activeRegexp: /^\/schedule.*/ },
+  { href: "/about", label: "Om oss", activeRegexp: /^\/about.*/ },
   { href: "/about/join", label: "Bli med" },
 ];
 
@@ -29,9 +29,9 @@ export const HeaderNavMenu = ({ className, user }: { className?: string; user: U
   }));
 
   return (
-    <nav aria-label="Hovedmeny" className={cx("mb-3", className)}>
+    <nav aria-label="Hovedmeny" className={className}>
       <div className="flex h-12 items-center justify-between">
-        <ul className="hidden items-center gap-5 sm:flex">
+        <ul className="hidden items-center gap-7 font-medium sm:flex">
           {sections.map(({ href, label, isActive }) => (
             <li key={href}>
               <NavLink href={href} isActive={isActive}>
@@ -42,7 +42,10 @@ export const HeaderNavMenu = ({ className, user }: { className?: string; user: U
         </ul>
 
         <div className="ml-auto flex items-center gap-2">
-          <Link href={user ? "/profile" : "/login"} className="text-foreground hover:text-accent">
+          <Link
+            href={user ? "/profile" : "/login"}
+            className="font-medium text-stage-muted hover:text-stage-foreground"
+          >
             {user ? (
               user.firstName
             ) : (
@@ -54,8 +57,8 @@ export const HeaderNavMenu = ({ className, user }: { className?: string; user: U
             )}
           </Link>
           <Button
-            className="sm:hidden"
-            variant="secondary"
+            className="text-stage-foreground sm:hidden"
+            variant="ghost"
             isIconOnly
             aria-expanded={isMenuOpen}
             aria-controls="mobile-navigation"
@@ -70,7 +73,7 @@ export const HeaderNavMenu = ({ className, user }: { className?: string; user: U
       {isMenuOpen && (
         <ul
           id="mobile-navigation"
-          className="border-default-200 bg-content1/60 mb-3 flex flex-col gap-1 rounded-2xl border p-2 sm:hidden"
+          className="mb-3 flex flex-col border-t border-stage-line sm:hidden"
         >
           {sections.map(({ href, label, isActive }) => (
             <li key={href}>
@@ -79,10 +82,10 @@ export const HeaderNavMenu = ({ className, user }: { className?: string; user: U
                 onClick={() => setIsMenuOpen(false)}
                 aria-current={isActive ? "page" : undefined}
                 className={cx(
-                  "flex h-11 items-center rounded-xl px-3 transition-colors outline-focus focus-visible:outline-2 focus-visible:outline-offset-2",
+                  "flex h-12 items-center border-b border-stage-line px-1 text-lg outline-focus transition-colors focus-visible:outline-2 focus-visible:outline-offset-2",
                   isActive
-                    ? "bg-primary-100 text-primary-800 font-semibold"
-                    : "text-foreground/80 hover:bg-default-100 hover:text-foreground",
+                    ? "font-semibold text-stage-foreground"
+                    : "text-stage-muted hover:text-stage-foreground",
                 )}
               >
                 {label}

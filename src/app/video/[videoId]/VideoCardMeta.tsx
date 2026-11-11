@@ -8,8 +8,8 @@ import { Fragment } from "react";
 
 export const VideoCardMeta = ({ video }: { video: Video }) => {
   return (
-    <div className="px-4 pt-2 pb-4">
-      <h1 className={"font-bold text-2xl pt-0 pb-2"}>{video.name}</h1>
+    <div>
+      <h1 className={"pb-4 text-3xl font-bold tracking-tight sm:text-4xl"}>{video.name}</h1>
       <div className={"flex max-lg:flex-col gap-4"}>
         <div className={"basis-1/4 shrink-0"}>
           {!!video.createdTime && (
@@ -17,7 +17,10 @@ export const VideoCardMeta = ({ video }: { video: Video }) => {
           )}
           <h2 className={"text-lg"}>
             av{" "}
-            <Link href={`/organization/${video.organization.id}`} className={"font-bold"}>
+            <Link
+              href={`/organization/${video.organization.id}`}
+              className={"font-bold hover:underline"}
+            >
               {video.organization.name}
             </Link>
           </h2>
@@ -33,7 +36,7 @@ export const VideoCardMeta = ({ video }: { video: Video }) => {
 
           <div className={"prose dark:prose-invert text-foreground"}>
             {!!video.organization.description?.length && (
-              <div className="leading-6 text-primary-700">
+              <div className="text-sm leading-6 text-default-600">
                 <Markdown>{video.organization.description}</Markdown>
               </div>
             )}

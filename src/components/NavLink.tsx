@@ -15,7 +15,11 @@ export const NavLink = ({
     href={href}
     aria-current={isActive ? "page" : undefined}
     className={
-      isActive ? "text-foreground font-semibold" : "text-foreground/75 hover:text-foreground"
+      // The bar is the dark stage in both themes, so these are the stage's own
+      // colours rather than the page's.
+      isActive
+        ? "border-b-2 border-brand-leaf py-2.5 font-semibold text-stage-foreground"
+        : "border-b-2 border-transparent py-2.5 text-stage-muted hover:text-stage-foreground"
     }
   >
     {children}

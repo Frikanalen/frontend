@@ -56,7 +56,7 @@ export default async function Page({ params }: OrgPageProps) {
   // one main landmark, and nesting a second inside it leaves the document
   // with two.
   return (
-    <div className="grow rounded-lg p-4 space-y-6">
+    <div className="grow space-y-6">
       <OrgBlurb organization={organization} />
       {isAdmin && <AdminAlert organizationId={organizationId} />}
       <OrganizationSeries organizationId={organization.id} />

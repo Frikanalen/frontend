@@ -1,5 +1,7 @@
 import { ReactNode } from "react";
 
+// The organisation pages bring their own width: the studio bar above them runs
+// edge to edge, so this only provides the page's one main landmark.
 export default function Layout({ children }: { children: ReactNode }) {
-  return <main className="w-full max-w-5xl h-fit px-2">{children}</main>;
+  return <main className="flex w-full grow flex-col items-center">{children}</main>;
 }

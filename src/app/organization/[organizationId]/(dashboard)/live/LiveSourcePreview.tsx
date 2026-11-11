@@ -57,7 +57,7 @@ export const LiveSourcePreview = ({
 
   return (
     <Card>
-      <Card.Header className="flex flex-wrap items-center justify-between gap-2">
+      <Card.Header className="flex flex-row flex-wrap items-center justify-between gap-2">
         <div>
           <h2 className="text-xl font-semibold">{source.name}</h2>
           {!source.enabled && <p className="text-sm text-danger">Denne kilden er deaktivert.</p>}

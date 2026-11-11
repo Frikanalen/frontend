@@ -10,6 +10,7 @@ import {
   type VideoMimeType,
   type VideoSrc,
 } from "@vidstack/react";
+import { VideoStage } from "@/app/video/[videoId]/VideoStage";
 import { VideoCardMeta } from "@/app/video/[videoId]/VideoCardMeta";
 
 // Ordered by preference: vidstack plays the first source it finds a provider for,
@@ -52,14 +53,17 @@ export const djangoVideoFilesToVidstackSrcList = (videoFiles: VideoFiles): (Vide
 export const VideoCard = ({ video, startTime }: { video: Video; startTime?: number }) => {
   if (!video.organization.fkmember) return notFound();
   return (
-    <div className="space-y-4 bg-background text-foreground rounded-xl">
-      <VideoPlayer
-        title={video.name}
-        src={djangoVideoFilesToVidstackSrcList(video.files)}
-        poster={video.files.largeThumb?.url}
-        startTime={startTime}
-      />
+    <VideoStage
+      player={
+        <VideoPlayer
+          title={video.name}
+          src={djangoVideoFilesToVidstackSrcList(video.files)}
+          poster={video.files.largeThumb?.url}
+          startTime={startTime}
+        />
+      }
+    >
       <VideoCardMeta video={video} />
-    </div>
+    </VideoStage>
   );
 };

@@ -45,7 +45,7 @@ export const OrgCreateForm = ({ className }: { className?: string }) => {
           {...register("description")}
           isRequired
         />
-        <div className="flex gap-4">
+        <div className="flex flex-col gap-4 sm:flex-row">
           <FormTextArea
             label={"Besøksadresse"}
             labelPlacement={"outside-top"}

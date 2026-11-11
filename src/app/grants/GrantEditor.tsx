@@ -26,7 +26,7 @@ import {
 } from "react-aria-components";
 import { GoBroadcast, GoGrabber, GoX } from "react-icons/go";
 import { durationMilliseconds, formatDuration } from "./duration";
-import { FillBar } from "./FillBar";
+import { HourBar } from "./HourBar";
 import {
   deadlineText,
   readOnlyReason,
@@ -44,7 +44,7 @@ import {
   windowMilliseconds,
 } from "./grants";
 import { LockBadge } from "./LockBadge";
-import { ModeBadge, modeSurface } from "./ModeBadge";
+import { ModeBadge } from "./ModeBadge";
 import { VIDEO_DRAG_TYPE, VideoPicker } from "./VideoPicker";
 
 /** The drag type an entry already in the list travels under, carrying its key. */
@@ -178,13 +178,13 @@ const Editor = ({ grant, backHref }: { grant: AirtimeGrant; backHref: string }) 
   };
 
   return (
-    <div className="space-y-4">
-      <Link className="text-primary-700 underline" href={backHref}>
+    <div className="space-y-5">
+      <Link className="text-sm font-semibold text-link hover:underline" href={backHref}>
         ← All sendetid
       </Link>
       <header className="flex flex-wrap items-start gap-3">
         <div>
-          <h1 className="text-3xl font-bold first-letter:uppercase">
+          <h1 className="text-3xl font-bold tracking-tight first-letter:uppercase sm:text-4xl">
             {format(inOsloTime(grant.starttime), "EEEE d. MMMM", { locale: nb })}{" "}
             {formatOsloTime(grant.starttime)}–{formatOsloTime(grant.endtime)}
           </h1>
@@ -201,25 +201,28 @@ const Editor = ({ grant, backHref }: { grant: AirtimeGrant; backHref: string }) 
       <p className="text-default-700">{deadlineText(grant, osloDateTime(grant.locksAt))}</p>
 
       {editable ? null : (
-        <p
-          className="rounded-lg border border-warning-300 bg-warning-50 p-3 text-sm dark:bg-warning-950"
-          role="note"
-        >
+        <p className="border-l-4 border-warning bg-background p-3 text-sm" role="note">
           {readOnlyReason(grant)}
         </p>
       )}
 
       {showsAutomatic && editable ? (
-        <p className="rounded-lg border border-dashed border-secondary-300 bg-secondary-50 p-3 text-sm dark:bg-secondary-950">
+        <p className="border-l-4 border-brand-plum bg-background p-3 text-sm">
           Listen fylles automatisk hver natt frem til fristen. Endrer du den, blir den manuell og
           blir stående slik du lagrer den.
         </p>
       ) : null}
 
       <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(18rem,2fr)]">
-        <section className={cx("space-y-3 rounded-xl p-4", modeSurface(showsAutomatic))}>
-          <h2 className="text-lg font-semibold">Sendeliste</h2>
-          <FillBar automatic={showsAutomatic} used={used} window={windowLength} />
+        <section className="space-y-4 bg-background p-4 sm:p-6">
+          <h2 className="text-xl font-bold">Sendeliste</h2>
+          <HourBar
+            automatic={showsAutomatic}
+            end={grant.endtime}
+            rows={rows}
+            start={grant.starttime}
+            used={used}
+          />
           {editable ? (
             <p className="text-sm text-default-600">
               Dra videoer hit fra videolisten, og dra i håndtaket for å endre rekkefølgen.
@@ -227,11 +230,11 @@ const Editor = ({ grant, backHref }: { grant: AirtimeGrant; backHref: string }) 
           ) : null}
           <GridList
             aria-label="Sendeliste"
-            className="min-h-24 space-y-1 rounded-lg p-1 data-[drop-target]:bg-accent/10 data-[drop-target]:outline-2 data-[drop-target]:outline-dashed data-[drop-target]:outline-accent"
+            className="min-h-24 border-t border-foreground data-[drop-target]:bg-accent/10 data-[drop-target]:outline-2 data-[drop-target]:outline-dashed data-[drop-target]:outline-accent"
             dragAndDropHooks={dragAndDropHooks}
             items={rows.map((row) => ({ ...row, id: row.item.key }))}
             renderEmptyState={() => (
-              <p className="flex min-h-24 items-center justify-center rounded-lg border-2 border-dashed border-default-300 p-4 text-center text-default-500">
+              <p className="flex min-h-24 items-center justify-center border-b border-dashed border-default-300 p-4 text-center text-default-600">
                 {editable
                   ? "Dra en video hit."
                   : "Ingenting er satt opp. Sendetiden viser grafikk."}
@@ -242,7 +245,7 @@ const Editor = ({ grant, backHref }: { grant: AirtimeGrant; backHref: string }) 
             {(row) => (
               <GridListItem
                 className={cx(
-                  "flex items-center gap-2 rounded-lg border bg-background p-2 outline-none data-[dragging]:opacity-50 data-[focus-visible]:ring-2 data-[focus-visible]:ring-focus",
+                  "flex items-center gap-2 border-b bg-background px-1 py-3 outline-none data-[dragging]:opacity-50 data-[focus-visible]:ring-2 data-[focus-visible]:ring-focus",
                   row.overruns
                     ? "border-danger-400 bg-danger-50 dark:bg-danger-950"
                     : "border-default-200",
@@ -260,14 +263,14 @@ const Editor = ({ grant, backHref }: { grant: AirtimeGrant; backHref: string }) 
                   </Button>
                 ) : null}
                 {/* On a phone the time goes above the title, so the title keeps the width. */}
-                <span className="hidden w-28 shrink-0 whitespace-nowrap text-sm tabular-nums sm:block">
+                <span className="hidden w-28 shrink-0 whitespace-nowrap font-bold sm:block">
                   {formatOsloTime(row.start)}–{formatOsloTime(row.end)}
                 </span>
                 <span className="min-w-0 grow">
-                  <span className="block text-sm tabular-nums sm:hidden">
+                  <span className="block text-sm font-bold sm:hidden">
                     {formatOsloTime(row.start)}–{formatOsloTime(row.end)}
                   </span>
-                  <span className="flex items-center gap-1 font-medium">
+                  <span className="flex items-center gap-1 font-semibold">
                     {liveSourceName(row.item.video) ? (
                       <GoBroadcast
                         aria-label="Direktesending"
@@ -276,7 +279,7 @@ const Editor = ({ grant, backHref }: { grant: AirtimeGrant; backHref: string }) 
                     ) : null}
                     <span className="truncate">{itemName(row.item)}</span>
                   </span>
-                  <span className="text-sm text-default-500">
+                  <span className="text-sm text-default-600">
                     {formatDuration(durationMilliseconds(row.item.video.duration) ?? 0)}
                     {itemStatus(row.item.video) ? ` · ${itemStatus(row.item.video)}` : ""}
                     {row.item.video.organization.id !== grant.organization.id
@@ -302,10 +305,10 @@ const Editor = ({ grant, backHref }: { grant: AirtimeGrant; backHref: string }) 
             )}
           </GridList>
           {graphics ? (
-            <div className="flex items-center gap-2 rounded-lg border border-dashed border-default-300 bg-[repeating-linear-gradient(45deg,transparent_0_8px,rgb(127_127_127/0.08)_8px_16px)] p-2 text-default-500">
+            <div className="flex items-center gap-2 px-1 text-default-600">
               <span
                 className={cx(
-                  "shrink-0 whitespace-nowrap text-sm tabular-nums",
+                  "shrink-0 whitespace-nowrap",
                   editable ? "sm:w-[9.25rem] sm:ps-9" : "sm:w-28",
                 )}
               >
@@ -316,7 +319,7 @@ const Editor = ({ grant, backHref }: { grant: AirtimeGrant; backHref: string }) 
           ) : null}
 
           {error ? (
-            <p className="rounded-lg bg-danger-50 p-3 text-danger-700" role="alert">
+            <p className="border-l-4 border-danger bg-danger-50 p-3 text-danger-700" role="alert">
               {error}
             </p>
           ) : null}
@@ -362,7 +365,7 @@ const Editor = ({ grant, backHref }: { grant: AirtimeGrant; backHref: string }) 
         </section>
 
         {editable ? (
-          <aside className="rounded-xl border border-default-200 bg-content1 p-4">
+          <aside className="bg-background p-4 sm:p-6">
             <VideoPicker
               organizationId={grant.organization.id}
               remaining={windowLength - used}

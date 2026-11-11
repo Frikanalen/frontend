@@ -32,11 +32,11 @@ export default function Login() {
   });
 
   return (
-    <section className={"w-full max-w-3xl bg-background p-4 rounded-lg shadow-lg mt-10"}>
-      <div className={"grid-cols-2 grid gap-8"}>
+    <section className={"mx-4 mt-10 w-[calc(100%-2rem)] max-w-3xl bg-background p-6 sm:p-8"}>
+      <div className={"grid grid-cols-1 gap-8 sm:grid-cols-2"}>
         <Form onSubmit={onSubmit}>
           <div className={"flex flex-col gap-4 w-full"}>
-            <h2 className={"text-lg font-bold"}>Logg inn</h2>
+            <h1 className={"text-2xl font-bold"}>Logg inn</h1>
             <FormError error={error} />
             <AuthField
               {...register("email")}
@@ -64,13 +64,13 @@ export default function Login() {
           </div>
         </Form>
         <div className={"space-y-4 flex flex-col justify-between"}>
-          <div className={"text-lg"}>...eller registrer deg</div>
+          <h2 className={"text-2xl font-bold"}>Ny her?</h2>
           <div className={""}>
             En profil kan brukes til å personalisere din brukeropplevelse. En bruker er også
             nødvendig for å administrere medlemskap.
           </div>
           <div className={"ml-auto"}>
-            <ButtonLink href={"/register"}>Registerer bruker</ButtonLink>
+            <ButtonLink href={"/register"}>Registrer bruker</ButtonLink>
           </div>
         </div>
       </div>

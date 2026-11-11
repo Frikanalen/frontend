@@ -31,6 +31,7 @@ export const AuthField = forwardRef<HTMLInputElement, AuthFieldProps>(
           {...inputProps}
           id={id}
           ref={ref}
+          className="w-full"
           defaultValue=""
           aria-invalid={isInvalid || undefined}
           aria-describedby={describedBy || undefined}

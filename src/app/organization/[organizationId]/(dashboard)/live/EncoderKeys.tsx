@@ -50,7 +50,7 @@ const IssuedKey = ({ issued, onDone }: { issued: IssuedEncoderKey; onDone: () =>
   return (
     <div
       aria-label={`Ny nøkkel «${issued.label}»`}
-      className="space-y-3 rounded-lg border-2 border-warning-300 p-3"
+      className="space-y-3 border-l-4 border-warning bg-background p-3"
       role="region"
     >
       <p className="text-sm font-medium">
@@ -127,10 +127,7 @@ export const EncoderKeys = ({ source, maySetUp }: { source: LiveSource; maySetUp
       ) : null}
       <ul className="space-y-1">
         {(keys.data?.data ?? []).map((key) => (
-          <li
-            className="flex items-center gap-2 rounded-lg border border-default-200 p-2"
-            key={key.id}
-          >
+          <li className="flex items-center gap-2 border-b border-default-200 py-2" key={key.id}>
             <span className="min-w-0 grow">
               <span className="block truncate font-medium">{key.label}</span>
               <span className="text-xs text-default-500">
@@ -143,7 +140,7 @@ export const EncoderKeys = ({ source, maySetUp }: { source: LiveSource; maySetUp
                 aria-label={`Trekk tilbake «${key.label}»`}
                 isDisabled={revoke.isPending}
                 size="sm"
-                variant="danger"
+                variant="danger-soft"
                 onPress={() =>
                   revoke
                     .mutateAsync({ id: source.id, keyPk: key.id })

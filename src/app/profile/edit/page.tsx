@@ -8,14 +8,11 @@ export default async function Page() {
   const user = await getUserOrNull(headers);
   if (!user) redirect("/login");
   return (
-    <div className="space-y-4 lg:p-10 flex flex-col lg:flex-row">
+    <div className="flex flex-col gap-4 bg-background p-6 sm:p-8 lg:flex-row">
       <div className={"prose dark:prose-invert lg:max-w-sm basis-1/2 shrink-0"}>
         <h2 className={"mb-1!"}>Din profil</h2>
       </div>
-      <UserProfileForm
-        user={user}
-        className={"max-lg:max-w-xl w-full border-4 border-primary-100 ml-4 p-4 rounded-lg"}
-      />
+      <UserProfileForm user={user} className={"w-full max-lg:max-w-xl"} />
     </div>
   );
 }
