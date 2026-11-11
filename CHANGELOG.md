@@ -1,6 +1,22 @@
 2025-05-31 
 # Changelog
 
+## [3.5.0](https://github.com/Frikanalen/frontend/compare/v3.4.1...v3.5.0) (2026-11-11)
+
+
+### Features
+
+* **chart:** run two replicas spread across nodes, behind a PDB ([#90](https://github.com/Frikanalen/frontend/issues/90)) ([11530e6](https://github.com/Frikanalen/frontend/commit/11530e6ad4dd5492ca160e3d8d84e25b6a38932f))
+* **grants:** lead with what can be set up, show lock state, fold history ([#96](https://github.com/Frikanalen/frontend/issues/96)) ([97783b1](https://github.com/Frikanalen/frontend/commit/97783b101b17306a305709532ac96b439f9e0795))
+* **schedule:** drag-and-drop grant editor, automatic vs manual at a glance ([#93](https://github.com/Frikanalen/frontend/issues/93)) ([03192b5](https://github.com/Frikanalen/frontend/commit/03192b5643411361e85ddb6de6129d4e8db54d23))
+* **schedule:** replace the member planner with airtime grants ([#92](https://github.com/Frikanalen/frontend/issues/92)) ([3110b11](https://github.com/Frikanalen/frontend/commit/3110b1139b618134033b7a8cecff3ac7d50a570b))
+
+
+### Bug Fixes
+
+* **grants:** editor polish from the staging run ([#94](https://github.com/Frikanalen/frontend/issues/94)) ([41d6afd](https://github.com/Frikanalen/frontend/commit/41d6afd9f2a05704cf56887d5f724d467836b5ae))
+* **grants:** explain read-only grants, fit the grant pages on a phone ([#95](https://github.com/Frikanalen/frontend/issues/95)) ([94da699](https://github.com/Frikanalen/frontend/commit/94da699f22d8e565eaf51e59e4b0b02767dee594))
+
 ## [3.4.1](https://github.com/Frikanalen/frontend/compare/v3.4.0...v3.4.1) (2026-11-08)
 
 
