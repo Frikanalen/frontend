@@ -96,3 +96,7 @@ export const deadlineText = (
   if (grant.state === "open") return `Listen kan endres til ${formattedLocksAt}.`;
   return `Listen ble låst ${formattedLocksAt}.`;
 };
+
+/** Whether two lists play the same videos in the same order. */
+export const sameList = (a: readonly DraftItem[], b: readonly DraftItem[]) =>
+  a.length === b.length && a.every((item, index) => item.video.id === b[index].video.id);

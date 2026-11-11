@@ -61,10 +61,14 @@ test.beforeEach(async ({ page, baseURL }) => {
   await stubApi(page);
 });
 
-const editor = async (page: import("@playwright/test").Page, grantBody: object) => {
+const editor = async (
+  page: import("@playwright/test").Page,
+  grantBody: object,
+  library: object[] = [libraryVideo],
+) => {
   await page.route("**/api/grants/700", (route) => route.fulfill({ status: 200, json: grantBody }));
   await page.route("**/api/videos?**", (route) =>
-    route.fulfill({ status: 200, json: page_([libraryVideo]) }),
+    route.fulfill({ status: 200, json: page_(library) }),
   );
   await page.goto("/organization/3/schedule/700");
   await waitForHydration(page);
@@ -135,10 +139,10 @@ test.describe("airtime grants", () => {
     await page.getByRole("button", { name: "Dra «Fjordglimt»" }).focus();
     await page.keyboard.press("Enter");
     // Wait for the drag to start before steering it.
-    await expect(focused).toHaveAttribute("aria-roledescription", "drop indicator");
+    await expect(focused).toHaveAttribute("aria-roledescription", "slippeindikator");
     await page.keyboard.press("ArrowDown");
     await page.keyboard.press("ArrowDown");
-    await expect(focused).toHaveAttribute("aria-label", "Insert between Kaia i dag and Båtliv");
+    await expect(focused).toHaveAttribute("aria-label", "Sett inn mellom Kaia i dag og Båtliv");
     await page.keyboard.press("Enter");
     await expect(listRows(page)).toHaveCount(3);
     await expect(listRows(page).nth(1)).toContainText("Fjordglimt");
@@ -147,10 +151,10 @@ test.describe("airtime grants", () => {
 
     await page.getByRole("button", { name: "Flytt «Båtliv»" }).focus();
     await page.keyboard.press("Enter");
-    await expect(focused).toHaveAttribute("aria-label", "Insert between Fjordglimt and Båtliv");
+    await expect(focused).toHaveAttribute("aria-label", "Sett inn mellom Fjordglimt og Båtliv");
     await page.keyboard.press("ArrowUp");
     await page.keyboard.press("ArrowUp");
-    await expect(focused).toHaveAttribute("aria-label", "Insert before Kaia i dag");
+    await expect(focused).toHaveAttribute("aria-label", "Sett inn før Kaia i dag");
     await page.keyboard.press("Enter");
     await expect(listRows(page).nth(0)).toContainText("Båtliv");
 
@@ -169,6 +173,30 @@ test.describe("airtime grants", () => {
 
     await page.getByRole("button", { name: "Fjern «Kaia i dag»" }).click();
     await expect(page.getByRole("button", { name: "Lagre listen" })).toBeEnabled();
+  });
+
+  test("an edit undone by hand is no change to save", async ({ page }) => {
+    await editor(page, grant());
+    await page.getByRole("button", { name: "Legg til" }).click();
+    await expect(page.getByText("Satt opp manuelt")).toBeVisible();
+    await page.getByRole("button", { name: "Fjern «Fjordglimt»" }).click();
+
+    await expect(page.getByRole("button", { name: "Lagre listen" })).toBeDisabled();
+    await expect(page.getByText("Automatisk fylt")).toBeVisible();
+  });
+
+  test("can show only the videos that still fit", async ({ page }) => {
+    await editor(page, grant(), [
+      libraryVideo,
+      { ...libraryVideo, id: 4, name: "Kortfilm", duration: "00:05:00" },
+    ]);
+    const library = page.getByRole("grid", { name: "Videoer du kan legge til" }).getByRole("row");
+
+    // 25 minutes are left: the short film fits and comes first, Fjordglimt doesn't.
+    await expect(library.nth(0)).toContainText("Kortfilm");
+    await expect(library.nth(1)).toContainText("for lang for resten");
+    await page.getByLabel(/Bare videoer som får plass/).check();
+    await expect(library).toHaveCount(1);
   });
 
   test("shows the server's reason when a save is refused", async ({ page }) => {

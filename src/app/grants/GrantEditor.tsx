@@ -35,6 +35,7 @@ import {
   type KeyedItem,
   listMilliseconds,
   placeItems,
+  sameList,
   STATE_LABELS,
   timeline,
   windowMilliseconds,
@@ -75,7 +76,6 @@ export const GrantEditor = ({ grantId, backHref }: { grantId: number; backHref: 
 
 const Editor = ({ grant, backHref }: { grant: AirtimeGrant; backHref: string }) => {
   const [items, setItems] = useState<KeyedItem[]>(() => keyedItems(grant));
-  const [dirty, setDirty] = useState(false);
   const [error, setError] = useState<string>();
   const [saved, setSaved] = useState(false);
   const queryClient = useQueryClient();
@@ -86,11 +86,13 @@ const Editor = ({ grant, backHref }: { grant: AirtimeGrant; backHref: string }) 
   const { rows, graphics } = timeline(items, grant);
   const editable = grant.canEdit;
   // Until a member changes it, an automatic list is still automatic.
+  // Against what the server holds, so moving something and moving it back,
+  // or adding and removing a video, isn't a change worth saving.
+  const dirty = !sameList(items, grant.items);
   const showsAutomatic = isAutomatic(grant) && !dirty;
 
   const change = (next: KeyedItem[]) => {
     setItems(next);
-    setDirty(true);
     setSaved(false);
     setError(undefined);
   };
@@ -139,7 +141,6 @@ const Editor = ({ grant, backHref }: { grant: AirtimeGrant; backHref: string }) 
   // Starts the editor afresh from what the server now holds.
   const refresh = async (data: AirtimeGrant) => {
     setItems(keyedItems(data));
-    setDirty(false);
     queryClient.setQueryData(getGrantsRetrieveQueryKey(grant.id), (old: object | undefined) => ({
       ...(old ?? {}),
       data,
@@ -203,7 +204,7 @@ const Editor = ({ grant, backHref }: { grant: AirtimeGrant; backHref: string }) 
         </p>
       ) : null}
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(18rem,2fr)]">
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(18rem,2fr)]">
         <section className={cx("space-y-3 rounded-xl p-4", modeSurface(showsAutomatic))}>
           <h2 className="text-lg font-semibold">Sendeliste</h2>
           <FillBar automatic={showsAutomatic} used={used} window={windowLength} />
@@ -310,7 +311,6 @@ const Editor = ({ grant, backHref }: { grant: AirtimeGrant; backHref: string }) 
                 variant="tertiary"
                 onPress={() => {
                   setItems(keyedItems(grant));
-                  setDirty(false);
                   setError(undefined);
                 }}
               >

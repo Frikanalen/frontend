@@ -46,6 +46,7 @@ export const VideoPicker = ({
 }) => {
   const [scope, setScope] = useState<Scope>("own");
   const [search, setSearch] = useState("");
+  const [onlyFitting, setOnlyFitting] = useState(false);
   const videos = useVideosList({
     organization: scope === "all" ? undefined : organizationId,
     proper_import: scope === "pending" ? false : undefined,
@@ -53,7 +54,13 @@ export const VideoPicker = ({
     ordering: "-created_time",
     limit: 30,
   });
-  const results = (videos.data?.data.results ?? []).filter((video) => video.duration);
+  const fits = (video: Video) => (durationMilliseconds(video.duration ?? "") ?? 0) <= remaining;
+  // Videos that still fit come first, newest first within each group.
+  const withLength = (videos.data?.data.results ?? []).filter((video) => video.duration);
+  const results = [
+    ...withLength.filter(fits),
+    ...(onlyFitting ? [] : withLength.filter((video) => !fits(video))),
+  ];
 
   const { dragAndDropHooks } = useDragAndDrop<Video>({
     getItems: (keys, items) =>
@@ -87,6 +94,14 @@ export const VideoPicker = ({
         ))}
       </div>
       <FormInput label="Søk" type="search" value={search} onValueChange={setSearch} />
+      <label className="flex items-center gap-2 text-sm">
+        <input
+          checked={onlyFitting}
+          type="checkbox"
+          onChange={(event) => setOnlyFitting(event.target.checked)}
+        />
+        Bare videoer som får plass ({formatDuration(Math.max(0, remaining))} igjen)
+      </label>
       {scope === "pending" ? (
         <p className="text-sm text-default-600">
           En video uten fil kan settes opp når lengden er fylt inn for hånd. Filen kan komme etter
@@ -101,7 +116,13 @@ export const VideoPicker = ({
         dragAndDropHooks={dragAndDropHooks}
         items={results}
         renderEmptyState={() =>
-          videos.isLoading ? null : <p className="p-2">Ingen videoer funnet.</p>
+          videos.isLoading ? null : (
+            <p className="p-2">
+              {onlyFitting && withLength.length > 0
+                ? "Ingen av disse videoene får plass i tiden som er igjen."
+                : "Ingen videoer funnet."}
+            </p>
+          )
         }
         selectionMode="none"
       >
@@ -111,14 +132,18 @@ export const VideoPicker = ({
             id={video.id}
             textValue={video.name}
           >
-            <Button aria-label={`Dra «${video.name}»`} className="text-default-400" slot="drag">
+            <Button
+              aria-label={`Dra «${video.name}»`}
+              className="cursor-grab rounded p-1 text-lg text-foreground/70 hover:bg-default-100"
+              slot="drag"
+            >
               <GoGrabber aria-hidden />
             </Button>
             <div className="min-w-0 grow">
               <div className="truncate font-medium">{video.name}</div>
               <div className="text-sm text-default-500">
                 {lengthText(video.duration)}
-                {(durationMilliseconds(video.duration ?? "") ?? 0) > remaining ? (
+                {!fits(video) ? (
                   <span className="text-danger-700"> · for lang for resten</span>
                 ) : null}
                 {video.properImport ? "" : " · venter på fil"}
