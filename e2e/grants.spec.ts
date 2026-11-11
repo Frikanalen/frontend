@@ -198,6 +198,59 @@ test.describe("airtime grants", () => {
     await expect(page.getByRole("status")).toHaveText("Listen er lagret.");
   });
 
+  test("lists a live transmission with its own length and title", async ({ page }) => {
+    const puts: unknown[] = [];
+    await page.route("**/api/grants/700/items", (route) => {
+      puts.push(route.request().postDataJSON());
+      return route.fulfill({ status: 200, json: grant({ fillRule: null }) });
+    });
+    await page.route("**/api/organization/3/live-sources", (route) =>
+      route.fulfill({
+        status: 200,
+        json: [
+          {
+            id: 8,
+            name: "Studio",
+            enabled: true,
+            streamId: "00000000-0000-0000-0000-000000000008",
+            contributionPath: "contrib/live/x",
+            previewPath: "contrib/preview/x",
+            upcomingTransmissions: [],
+          },
+        ],
+      }),
+    );
+    await editor(page, grant());
+
+    await page.getByRole("button", { name: "Direktesending" }).click();
+    // The length starts as what's left of the window.
+    await expect(page.getByLabel("Lengde (min)")).toHaveValue("25");
+    await page.getByLabel("Lengde (min)").fill("20");
+    await page.getByLabel("Tittel (valgfri)").fill("Debatt");
+    await page
+      .getByRole("grid", { name: "Direktekilder du kan legge til" })
+      .getByRole("button", { name: "Legg til" })
+      .click();
+
+    await expect(listRows(page)).toHaveCount(3);
+    await expect(listRows(page).nth(2)).toContainText("Debatt");
+    await expect(listRows(page).nth(2)).toContainText("direkte fra Studio");
+    await expect(listRows(page).nth(2)).toContainText("18:35–18:55");
+
+    await page.getByRole("button", { name: "Lagre listen" }).click();
+    await expect
+      .poll(() => puts)
+      .toEqual([
+        {
+          items: [
+            { video: 1 },
+            { video: 2 },
+            { liveSource: 8, duration: "00:20:00", title: "Debatt" },
+          ],
+        },
+      ]);
+  });
+
   test("blocks a list that overruns the window", async ({ page }) => {
     await editor(page, grant());
     await page.getByRole("button", { name: "Legg til" }).click();

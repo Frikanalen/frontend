@@ -14033,6 +14033,7 @@ components:
         video:
           allOf:
             - $ref: '#/components/schemas/GrantItemVideo'
+          nullable: true
           readOnly: true
         liveTransmission:
           allOf:
@@ -14043,7 +14044,7 @@ components:
         - liveTransmission
         - position
         - video
-    GrantItemLiveTransmission:
+    GrantItemLiveSource:
       type: object
       properties:
         id:
@@ -14055,6 +14056,29 @@ components:
       required:
         - id
         - name
+    GrantItemLiveTransmission:
+      type: object
+      properties:
+        source:
+          allOf:
+            - $ref: '#/components/schemas/GrantItemLiveSource'
+          readOnly: true
+        name:
+          description: The title given, or else the source's name.
+          type: string
+          readOnly: true
+        title:
+          description: The title given; may be empty.
+          type: string
+          readOnly: true
+        duration:
+          type: string
+          readOnly: true
+      required:
+        - duration
+        - name
+        - source
+        - title
     GrantItemVideo:
       type: object
       properties:
@@ -14082,12 +14106,23 @@ components:
         - organization
         - pendingUpload
     GrantItemWriteRequest:
+      description: 'A video, or a live transmission: a live source with a duration.'
       type: object
       properties:
         video:
           type: integer
-      required:
-        - video
+          nullable: true
+        liveSource:
+          type: integer
+          nullable: true
+        duration:
+          description: Required for a live transmission.
+          type: string
+          nullable: true
+        title:
+          description: For a live transmission.
+          type: string
+          maxLength: 255
     GrantItemsWriteRequest:
       description: The whole list, in playing order. It replaces the current one.
       type: object
@@ -14345,11 +14380,17 @@ components:
           items.non_field_errors: '#/components/schemas/GrantsItemsUpdateItemsNonFieldErrorsErrorComponent'
           items.INDEX.non_field_errors: '#/components/schemas/GrantsItemsUpdateItemsINDEXNonFieldErrorsErrorComponent'
           items.INDEX.video: '#/components/schemas/GrantsItemsUpdateItemsINDEXVideoErrorComponent'
+          items.INDEX.live_source: '#/components/schemas/GrantsItemsUpdateItemsINDEXLiveSourceErrorComponent'
+          items.INDEX.duration: '#/components/schemas/GrantsItemsUpdateItemsINDEXDurationErrorComponent'
+          items.INDEX.title: '#/components/schemas/GrantsItemsUpdateItemsINDEXTitleErrorComponent'
       oneOf:
         - $ref: '#/components/schemas/GrantsItemsUpdateNonFieldErrorsErrorComponent'
         - $ref: '#/components/schemas/GrantsItemsUpdateItemsNonFieldErrorsErrorComponent'
         - $ref: '#/components/schemas/GrantsItemsUpdateItemsINDEXNonFieldErrorsErrorComponent'
         - $ref: '#/components/schemas/GrantsItemsUpdateItemsINDEXVideoErrorComponent'
+        - $ref: '#/components/schemas/GrantsItemsUpdateItemsINDEXLiveSourceErrorComponent'
+        - $ref: '#/components/schemas/GrantsItemsUpdateItemsINDEXDurationErrorComponent'
+        - $ref: '#/components/schemas/GrantsItemsUpdateItemsINDEXTitleErrorComponent'
     GrantsItemsUpdateErrorResponse400:
       discriminator:
         propertyName: type
@@ -14359,6 +14400,47 @@ components:
       oneOf:
         - $ref: '#/components/schemas/GrantsItemsUpdateValidationError'
         - $ref: '#/components/schemas/ParseErrorResponse'
+    GrantsItemsUpdateItemsINDEXDurationErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `items.INDEX.duration` - items.INDEX.duration'
+          type: string
+          enum:
+            - items.INDEX.duration
+        code:
+          description: '* `invalid` - invalid'
+          type: string
+          enum:
+            - invalid
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    GrantsItemsUpdateItemsINDEXLiveSourceErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `items.INDEX.live_source` - items.INDEX.live_source'
+          type: string
+          enum:
+            - items.INDEX.live_source
+        code:
+          description: |-
+            * `does_not_exist` - does_not_exist
+            * `incorrect_type` - incorrect_type
+          type: string
+          enum:
+            - does_not_exist
+            - incorrect_type
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
     GrantsItemsUpdateItemsINDEXNonFieldErrorsErrorComponent:
       type: object
       properties:
@@ -14383,6 +14465,34 @@ components:
         - attr
         - code
         - detail
+    GrantsItemsUpdateItemsINDEXTitleErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `items.INDEX.title` - items.INDEX.title'
+          type: string
+          enum:
+            - items.INDEX.title
+        code:
+          description: |-
+            * `invalid` - invalid
+            * `max_length` - max_length
+            * `null` - null
+            * `null_characters_not_allowed` - null_characters_not_allowed
+            * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed
+          type: string
+          enum:
+            - invalid
+            - max_length
+            - 'null'
+            - null_characters_not_allowed
+            - surrogate_characters_not_allowed
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
     GrantsItemsUpdateItemsINDEXVideoErrorComponent:
       type: object
       properties:
@@ -14395,14 +14505,10 @@ components:
           description: |-
             * `does_not_exist` - does_not_exist
             * `incorrect_type` - incorrect_type
-            * `null` - null
-            * `required` - required
           type: string
           enum:
             - does_not_exist
             - incorrect_type
-            - 'null'
-            - required
         detail:
           type: string
       required:

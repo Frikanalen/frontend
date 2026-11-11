@@ -5,6 +5,9 @@ import type {
 } from "@/generated/frikanalenDjangoAPI.schemas";
 import { durationMilliseconds } from "./duration";
 
+/** The drag type a library entry travels under, as JSON of a DraftItem. */
+export const ENTRY_DRAG_TYPE = "application/x-frikanalen-entry";
+
 /** An item in a list being edited: what a GrantItem is before the server numbers it. */
 export type DraftItem = Pick<GrantItem, "video" | "liveTransmission">;
 
@@ -16,16 +19,34 @@ export const windowMilliseconds = (grant: Pick<AirtimeGrant, "starttime" | "endt
  * zero here; the server refuses to save it, and the editor flags it.
  */
 export const listMilliseconds = (items: readonly DraftItem[]) =>
-  items.reduce((total, item) => total + (durationMilliseconds(item.video.duration) ?? 0), 0);
+  items.reduce((total, item) => total + itemMilliseconds(item), 0);
 
-export const itemName = (item: DraftItem) => item.liveTransmission?.name ?? item.video.name;
+/** An entry is a video, or a live transmission with a length of its own. */
+export const itemDuration = (item: DraftItem) =>
+  item.liveTransmission?.duration ?? item.video?.duration ?? "";
 
-/**
- * The body PUT /grants/{id}/items takes: the whole list, in order, no
- * positions. Live transmissions can't be listed through the API yet.
- */
+export const itemMilliseconds = (item: DraftItem) => durationMilliseconds(itemDuration(item)) ?? 0;
+
+export const itemName = (item: DraftItem) =>
+  item.liveTransmission?.name ?? item.video?.name ?? "Ukjent";
+
+/** The body PUT /grants/{id}/items takes: the whole list, in order, no positions. */
 export const itemsPayload = (items: readonly DraftItem[]): GrantItemWriteRequest[] =>
-  items.map((item) => ({ video: item.video.id }));
+  items.map((item) =>
+    item.liveTransmission
+      ? {
+          liveSource: item.liveTransmission.source.id,
+          duration: item.liveTransmission.duration,
+          title: item.liveTransmission.title,
+        }
+      : { video: item.video!.id },
+  );
+
+/** What makes two entries the same thing to air. */
+const identity = (item: DraftItem) =>
+  item.liveTransmission
+    ? `live:${item.liveTransmission.source.id}:${item.liveTransmission.duration}:${item.liveTransmission.title}`
+    : `video:${item.video?.id}`;
 
 /** A list entry with a key of its own, since the same video can be listed twice. */
 export type KeyedItem = DraftItem & { key: string };
@@ -69,7 +90,7 @@ export const timeline = <T extends DraftItem>(
   let cursor = new Date(grant.starttime).getTime();
   const rows: TimelineRow<T>[] = items.map((item) => {
     const start = cursor;
-    cursor += durationMilliseconds(item.video.duration) ?? 0;
+    cursor += itemMilliseconds(item);
     return { item, start: new Date(start), end: new Date(cursor), overruns: cursor > windowEnd };
   });
   const graphics =
@@ -135,6 +156,6 @@ export const readOnlyReason = (
   return "Fristen er passert og listen er låst. Ta kontakt med Frikanalen hvis den må endres.";
 };
 
-/** Whether two lists play the same videos in the same order. */
+/** Whether two lists play the same entries in the same order. */
 export const sameList = (a: readonly DraftItem[], b: readonly DraftItem[]) =>
-  a.length === b.length && a.every((item, index) => item.video.id === b[index].video.id);
+  a.length === b.length && a.every((item, index) => identity(item) === identity(b[index]));
