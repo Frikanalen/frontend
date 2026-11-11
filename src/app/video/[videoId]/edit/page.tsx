@@ -4,6 +4,7 @@ import {
   ssrVideosRetrieve,
   ssrVideosUploadTokenRetrieve,
 } from "@/generated/ssr/videos/videos";
+import { ssrOrganizationLiveSourcesList } from "@/generated/ssr/organization/organization";
 import { forbidden, notFound } from "next/navigation";
 import { getUserOrNull } from "@/app/getUserOrNull";
 import { VideoPageProps } from "@/app/video/[videoId]/page";
@@ -30,14 +31,16 @@ export default async function Page({ params }: VideoPageProps) {
     );
   if (!user?.editorOf.some(({ id }) => id == video.organization.id)) return forbidden();
 
-  const [seriesResponse, imagesResponse, uploadTokenResponse] = await Promise.all([
-    ssrSeriesList(
-      { organization: video.organization.id, limit: 100 },
-      { headers, cache: "no-store" },
-    ),
-    ssrVideosImagesList(videoId, { limit: 100 }, { headers, cache: "no-store" }),
-    ssrVideosUploadTokenRetrieve(videoId, { headers, cache: "no-store" }),
-  ]);
+  const [seriesResponse, imagesResponse, uploadTokenResponse, liveSourcesResponse] =
+    await Promise.all([
+      ssrSeriesList(
+        { organization: video.organization.id, limit: 100 },
+        { headers, cache: "no-store" },
+      ),
+      ssrVideosImagesList(videoId, { limit: 100 }, { headers, cache: "no-store" }),
+      ssrVideosUploadTokenRetrieve(videoId, { headers, cache: "no-store" }),
+      ssrOrganizationLiveSourcesList(video.organization.id, { headers, cache: "no-store" }),
+    ]);
   if (seriesResponse.status !== 200)
     throw new Error(`Unexpected status ${seriesResponse.status} when fetching series`);
   if (imagesResponse.status !== 200)
@@ -52,7 +55,11 @@ export default async function Page({ params }: VideoPageProps) {
       <div className={"prose dark:prose-invert"}>
         <h2>Rediger video</h2>
       </div>
-      <VideoEditForm video={video} series={seriesResponse.data.results} />
+      <VideoEditForm
+        liveSources={liveSourcesResponse.status === 200 ? liveSourcesResponse.data : []}
+        series={seriesResponse.data.results}
+        video={video}
+      />
       <ProgramImageManager
         videoId={videoId}
         uploadEndpoint={uploadTokenResponse.data.uploadUrl}

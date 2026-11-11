@@ -2984,6 +2984,625 @@ paths:
         - cookieAuth: []
       tags:
         - ingest
+  /api/live-sources/{id}:
+    get:
+      operationId: live_sources_retrieve
+      description: |-
+        Rename a source, or switch it off: a disabled source refuses every
+        encoder and reader, and can't be given to a video.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LiveSource'
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LiveSourcesRetrieveErrorResponse400'
+        '401':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: authentication_failed
+                        detail: Incorrect authentication credentials.
+                        attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_authenticated
+                        detail: Authentication credentials were not provided.
+                        attr: null
+        '404':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+              examples:
+                NotFound:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_found
+                        detail: Not found.
+                        attr: null
+        '405':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse405'
+              examples:
+                MethodNotAllowed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: method_not_allowed
+                        detail: Method "get" not allowed.
+                        attr: null
+        '406':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse406'
+              examples:
+                NotAcceptable:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_acceptable
+                        detail: Could not satisfy the request Accept header.
+                        attr: null
+        '415':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse415'
+              examples:
+                UnsupportedMediaType:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: unsupported_media_type
+                        detail: Unsupported media type "application/json" in request.
+                        attr: null
+        '500':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+              examples:
+                APIException:
+                  value:
+                    type: server_error
+                    errors:
+                      - code: error
+                        detail: A server error occurred.
+                        attr: null
+      security:
+        - tokenAuth: []
+        - cookieAuth: []
+      tags:
+        - live-sources
+    patch:
+      operationId: live_sources_partial_update
+      description: |-
+        Rename a source, or switch it off: a disabled source refuses every
+        encoder and reader, and can't be given to a video.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedLiveSourceRequest'
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LiveSource'
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LiveSourcesPartialUpdateErrorResponse400'
+        '401':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: authentication_failed
+                        detail: Incorrect authentication credentials.
+                        attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_authenticated
+                        detail: Authentication credentials were not provided.
+                        attr: null
+        '404':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+              examples:
+                NotFound:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_found
+                        detail: Not found.
+                        attr: null
+        '405':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse405'
+              examples:
+                MethodNotAllowed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: method_not_allowed
+                        detail: Method "get" not allowed.
+                        attr: null
+        '406':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse406'
+              examples:
+                NotAcceptable:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_acceptable
+                        detail: Could not satisfy the request Accept header.
+                        attr: null
+        '415':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse415'
+              examples:
+                UnsupportedMediaType:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: unsupported_media_type
+                        detail: Unsupported media type "application/json" in request.
+                        attr: null
+        '500':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+              examples:
+                APIException:
+                  value:
+                    type: server_error
+                    errors:
+                      - code: error
+                        detail: A server error occurred.
+                        attr: null
+      security:
+        - tokenAuth: []
+        - cookieAuth: []
+      tags:
+        - live-sources
+  /api/live-sources/{id}/encoder-keys:
+    get:
+      operationId: live_sources_encoder_keys_list
+      description: |-
+        A source's encoder keys. Issuing one answers with its password and
+        the encoder settings built from it, once; the list never shows them.
+
+        Only publish keys: readers, preview workers and playout stay with staff.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EncoderKey'
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LiveSourcesEncoderKeysListErrorResponse400'
+        '401':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: authentication_failed
+                        detail: Incorrect authentication credentials.
+                        attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_authenticated
+                        detail: Authentication credentials were not provided.
+                        attr: null
+        '404':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+              examples:
+                NotFound:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_found
+                        detail: Not found.
+                        attr: null
+        '405':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse405'
+              examples:
+                MethodNotAllowed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: method_not_allowed
+                        detail: Method "get" not allowed.
+                        attr: null
+        '406':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse406'
+              examples:
+                NotAcceptable:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_acceptable
+                        detail: Could not satisfy the request Accept header.
+                        attr: null
+        '415':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse415'
+              examples:
+                UnsupportedMediaType:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: unsupported_media_type
+                        detail: Unsupported media type "application/json" in request.
+                        attr: null
+        '500':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+              examples:
+                APIException:
+                  value:
+                    type: server_error
+                    errors:
+                      - code: error
+                        detail: A server error occurred.
+                        attr: null
+      security:
+        - tokenAuth: []
+        - cookieAuth: []
+      tags:
+        - live-sources
+    post:
+      operationId: live_sources_encoder_keys_create
+      description: |-
+        A source's encoder keys. Issuing one answers with its password and
+        the encoder settings built from it, once; the list never shows them.
+
+        Only publish keys: readers, preview workers and playout stay with staff.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EncoderKeyRequest'
+      responses:
+        '201':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IssuedEncoderKey'
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LiveSourcesEncoderKeysCreateErrorResponse400'
+        '401':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: authentication_failed
+                        detail: Incorrect authentication credentials.
+                        attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_authenticated
+                        detail: Authentication credentials were not provided.
+                        attr: null
+        '404':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+              examples:
+                NotFound:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_found
+                        detail: Not found.
+                        attr: null
+        '405':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse405'
+              examples:
+                MethodNotAllowed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: method_not_allowed
+                        detail: Method "get" not allowed.
+                        attr: null
+        '406':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse406'
+              examples:
+                NotAcceptable:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_acceptable
+                        detail: Could not satisfy the request Accept header.
+                        attr: null
+        '415':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse415'
+              examples:
+                UnsupportedMediaType:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: unsupported_media_type
+                        detail: Unsupported media type "application/json" in request.
+                        attr: null
+        '500':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+              examples:
+                APIException:
+                  value:
+                    type: server_error
+                    errors:
+                      - code: error
+                        detail: A server error occurred.
+                        attr: null
+      security:
+        - tokenAuth: []
+        - cookieAuth: []
+      tags:
+        - live-sources
+  /api/live-sources/{id}/encoder-keys/{key_pk}:
+    delete:
+      operationId: live_sources_encoder_keys_destroy
+      description: 'Revoke an encoder key: an encoder using it is refused from then on.'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: key_pk
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: No response body
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LiveSourcesEncoderKeysDestroyErrorResponse400'
+        '401':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: authentication_failed
+                        detail: Incorrect authentication credentials.
+                        attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_authenticated
+                        detail: Authentication credentials were not provided.
+                        attr: null
+        '404':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+              examples:
+                NotFound:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_found
+                        detail: Not found.
+                        attr: null
+        '405':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse405'
+              examples:
+                MethodNotAllowed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: method_not_allowed
+                        detail: Method "get" not allowed.
+                        attr: null
+        '406':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse406'
+              examples:
+                NotAcceptable:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_acceptable
+                        detail: Could not satisfy the request Accept header.
+                        attr: null
+        '415':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse415'
+              examples:
+                UnsupportedMediaType:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: unsupported_media_type
+                        detail: Unsupported media type "application/json" in request.
+                        attr: null
+        '500':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+              examples:
+                APIException:
+                  value:
+                    type: server_error
+                    errors:
+                      - code: error
+                        detail: A server error occurred.
+                        attr: null
+      security:
+        - tokenAuth: []
+        - cookieAuth: []
+      tags:
+        - live-sources
   /api/live-sources/{id}/preview-token:
     post:
       operationId: live_sources_preview_token_create
@@ -4844,7 +5463,8 @@ paths:
         An organization's live contribution inputs and their coming bookings.
 
         Only its own members see them: a source's stream ID is half of what an
-        encoder needs to publish to it.
+        encoder needs to publish to it. Creating one is for those who may
+        program the organization's airtime.
       parameters:
         - name: id
           in: path
@@ -4866,6 +5486,135 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/OrganizationLiveSourcesListErrorResponse400'
+        '401':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: authentication_failed
+                        detail: Incorrect authentication credentials.
+                        attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_authenticated
+                        detail: Authentication credentials were not provided.
+                        attr: null
+        '404':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+              examples:
+                NotFound:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_found
+                        detail: Not found.
+                        attr: null
+        '405':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse405'
+              examples:
+                MethodNotAllowed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: method_not_allowed
+                        detail: Method "get" not allowed.
+                        attr: null
+        '406':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse406'
+              examples:
+                NotAcceptable:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_acceptable
+                        detail: Could not satisfy the request Accept header.
+                        attr: null
+        '415':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse415'
+              examples:
+                UnsupportedMediaType:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: unsupported_media_type
+                        detail: Unsupported media type "application/json" in request.
+                        attr: null
+        '500':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+              examples:
+                APIException:
+                  value:
+                    type: server_error
+                    errors:
+                      - code: error
+                        detail: A server error occurred.
+                        attr: null
+      security:
+        - tokenAuth: []
+        - cookieAuth: []
+      tags:
+        - organization
+    post:
+      operationId: organization_live_sources_create
+      description: |-
+        An organization's live contribution inputs and their coming bookings.
+
+        Only its own members see them: a source's stream ID is half of what an
+        encoder needs to publish to it. Creating one is for those who may
+        program the organization's airtime.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LiveSourceRequest'
+      responses:
+        '201':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LiveSource'
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationLiveSourcesCreateErrorResponse400'
         '401':
           description: ''
           content:
@@ -13704,6 +14453,20 @@ components:
       type: string
       enum:
         - client_error
+    ConnectionExample:
+      type: object
+      properties:
+        label:
+          type: string
+        url:
+          type: string
+        token:
+          type: string
+        note:
+          type: string
+      required:
+        - label
+        - url
     Csrf:
       type: object
       properties:
@@ -13736,6 +14499,45 @@ components:
         - 4
         - 5
         - 6
+    EncoderKey:
+      description: "An encoder's publish credential, as listed: never its password."
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        label:
+          type: string
+          maxLength: 100
+        keyId:
+          type: string
+          format: uuid
+          readOnly: true
+        createdAt:
+          type: string
+          format: date-time
+          readOnly: true
+        revokedAt:
+          type: string
+          format: date-time
+          nullable: true
+          readOnly: true
+      required:
+        - createdAt
+        - id
+        - keyId
+        - label
+        - revokedAt
+    EncoderKeyRequest:
+      description: "An encoder's publish credential, as listed: never its password."
+      type: object
+      properties:
+        label:
+          type: string
+          maxLength: 100
+          minLength: 1
+      required:
+        - label
     Error401:
       type: object
       properties:
@@ -15085,6 +15887,53 @@ components:
         - transcoding
         - done
         - failed
+    IssuedEncoderKey:
+      description: |-
+        The one response that carries the password, with the encoder settings
+        built from it. Nothing here is stored: lose it and issue a new key.
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        label:
+          type: string
+          maxLength: 100
+        keyId:
+          type: string
+          format: uuid
+          readOnly: true
+        createdAt:
+          type: string
+          format: date-time
+          readOnly: true
+        revokedAt:
+          type: string
+          format: date-time
+          nullable: true
+          readOnly: true
+        password:
+          type: string
+          readOnly: true
+        connections:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConnectionExample'
+          readOnly: true
+        blackmagicConfig:
+          description: An XML file Blackmagic Web Presenter and ATEM Mini can import.
+          type: string
+          nullable: true
+          readOnly: true
+      required:
+        - blackmagicConfig
+        - connections
+        - createdAt
+        - id
+        - keyId
+        - label
+        - password
+        - revokedAt
     LiveSource:
       type: object
       properties:
@@ -15093,10 +15942,9 @@ components:
           readOnly: true
         name:
           type: string
-          readOnly: true
+          maxLength: 100
         enabled:
           type: boolean
-          readOnly: true
         streamId:
           type: string
           format: uuid
@@ -15114,13 +15962,236 @@ components:
           readOnly: true
       required:
         - contributionPath
-        - enabled
         - id
         - name
         - previewPath
         - streamId
         - upcomingTransmissions
+    LiveSourceRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 100
+          minLength: 1
+        enabled:
+          type: boolean
+      required:
+        - name
+    LiveSourcesEncoderKeysCreateError:
+      discriminator:
+        propertyName: attr
+        mapping:
+          non_field_errors: '#/components/schemas/LiveSourcesEncoderKeysCreateNonFieldErrorsErrorComponent'
+          label: '#/components/schemas/LiveSourcesEncoderKeysCreateLabelErrorComponent'
+      oneOf:
+        - $ref: '#/components/schemas/LiveSourcesEncoderKeysCreateNonFieldErrorsErrorComponent'
+        - $ref: '#/components/schemas/LiveSourcesEncoderKeysCreateLabelErrorComponent'
+    LiveSourcesEncoderKeysCreateErrorResponse400:
+      discriminator:
+        propertyName: type
+        mapping:
+          validation_error: '#/components/schemas/LiveSourcesEncoderKeysCreateValidationError'
+          client_error: '#/components/schemas/ParseErrorResponse'
+      oneOf:
+        - $ref: '#/components/schemas/LiveSourcesEncoderKeysCreateValidationError'
+        - $ref: '#/components/schemas/ParseErrorResponse'
+    LiveSourcesEncoderKeysCreateLabelErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `label` - label'
+          type: string
+          enum:
+            - label
+        code:
+          description: |-
+            * `blank` - blank
+            * `invalid` - invalid
+            * `max_length` - max_length
+            * `null` - null
+            * `null_characters_not_allowed` - null_characters_not_allowed
+            * `required` - required
+            * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed
+          type: string
+          enum:
+            - blank
+            - invalid
+            - max_length
+            - 'null'
+            - null_characters_not_allowed
+            - required
+            - surrogate_characters_not_allowed
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    LiveSourcesEncoderKeysCreateNonFieldErrorsErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `non_field_errors` - non_field_errors'
+          type: string
+          enum:
+            - non_field_errors
+        code:
+          description: |-
+            * `invalid` - invalid
+            * `null` - null
+          type: string
+          enum:
+            - invalid
+            - 'null'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    LiveSourcesEncoderKeysCreateValidationError:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/ValidationErrorEnum'
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/LiveSourcesEncoderKeysCreateError'
+      required:
+        - errors
+        - type
+    LiveSourcesEncoderKeysDestroyErrorResponse400:
+      discriminator:
+        propertyName: type
+        mapping:
+          client_error: '#/components/schemas/ParseErrorResponse'
+      oneOf:
+        - $ref: '#/components/schemas/ParseErrorResponse'
+    LiveSourcesEncoderKeysListErrorResponse400:
+      discriminator:
+        propertyName: type
+        mapping:
+          client_error: '#/components/schemas/ParseErrorResponse'
+      oneOf:
+        - $ref: '#/components/schemas/ParseErrorResponse'
+    LiveSourcesPartialUpdateEnabledErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `enabled` - enabled'
+          type: string
+          enum:
+            - enabled
+        code:
+          description: |-
+            * `invalid` - invalid
+            * `null` - null
+          type: string
+          enum:
+            - invalid
+            - 'null'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    LiveSourcesPartialUpdateError:
+      discriminator:
+        propertyName: attr
+        mapping:
+          non_field_errors: '#/components/schemas/LiveSourcesPartialUpdateNonFieldErrorsErrorComponent'
+          name: '#/components/schemas/LiveSourcesPartialUpdateNameErrorComponent'
+          enabled: '#/components/schemas/LiveSourcesPartialUpdateEnabledErrorComponent'
+      oneOf:
+        - $ref: '#/components/schemas/LiveSourcesPartialUpdateNonFieldErrorsErrorComponent'
+        - $ref: '#/components/schemas/LiveSourcesPartialUpdateNameErrorComponent'
+        - $ref: '#/components/schemas/LiveSourcesPartialUpdateEnabledErrorComponent'
+    LiveSourcesPartialUpdateErrorResponse400:
+      discriminator:
+        propertyName: type
+        mapping:
+          validation_error: '#/components/schemas/LiveSourcesPartialUpdateValidationError'
+          client_error: '#/components/schemas/ParseErrorResponse'
+      oneOf:
+        - $ref: '#/components/schemas/LiveSourcesPartialUpdateValidationError'
+        - $ref: '#/components/schemas/ParseErrorResponse'
+    LiveSourcesPartialUpdateNameErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `name` - name'
+          type: string
+          enum:
+            - name
+        code:
+          description: |-
+            * `blank` - blank
+            * `invalid` - invalid
+            * `max_length` - max_length
+            * `null` - null
+            * `null_characters_not_allowed` - null_characters_not_allowed
+            * `required` - required
+            * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed
+          type: string
+          enum:
+            - blank
+            - invalid
+            - max_length
+            - 'null'
+            - null_characters_not_allowed
+            - required
+            - surrogate_characters_not_allowed
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    LiveSourcesPartialUpdateNonFieldErrorsErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `non_field_errors` - non_field_errors'
+          type: string
+          enum:
+            - non_field_errors
+        code:
+          description: |-
+            * `invalid` - invalid
+            * `null` - null
+          type: string
+          enum:
+            - invalid
+            - 'null'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    LiveSourcesPartialUpdateValidationError:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/ValidationErrorEnum'
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/LiveSourcesPartialUpdateError'
+      required:
+        - errors
+        - type
     LiveSourcesPreviewTokenCreateErrorResponse400:
+      discriminator:
+        propertyName: type
+        mapping:
+          client_error: '#/components/schemas/ParseErrorResponse'
+      oneOf:
+        - $ref: '#/components/schemas/ParseErrorResponse'
+    LiveSourcesRetrieveErrorResponse400:
       discriminator:
         propertyName: type
         mapping:
@@ -16074,6 +17145,114 @@ components:
           client_error: '#/components/schemas/ParseErrorResponse'
       oneOf:
         - $ref: '#/components/schemas/ParseErrorResponse'
+    OrganizationLiveSourcesCreateEnabledErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `enabled` - enabled'
+          type: string
+          enum:
+            - enabled
+        code:
+          description: |-
+            * `invalid` - invalid
+            * `null` - null
+          type: string
+          enum:
+            - invalid
+            - 'null'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    OrganizationLiveSourcesCreateError:
+      discriminator:
+        propertyName: attr
+        mapping:
+          non_field_errors: '#/components/schemas/OrganizationLiveSourcesCreateNonFieldErrorsErrorComponent'
+          name: '#/components/schemas/OrganizationLiveSourcesCreateNameErrorComponent'
+          enabled: '#/components/schemas/OrganizationLiveSourcesCreateEnabledErrorComponent'
+      oneOf:
+        - $ref: '#/components/schemas/OrganizationLiveSourcesCreateNonFieldErrorsErrorComponent'
+        - $ref: '#/components/schemas/OrganizationLiveSourcesCreateNameErrorComponent'
+        - $ref: '#/components/schemas/OrganizationLiveSourcesCreateEnabledErrorComponent'
+    OrganizationLiveSourcesCreateErrorResponse400:
+      discriminator:
+        propertyName: type
+        mapping:
+          validation_error: '#/components/schemas/OrganizationLiveSourcesCreateValidationError'
+          client_error: '#/components/schemas/ParseErrorResponse'
+      oneOf:
+        - $ref: '#/components/schemas/OrganizationLiveSourcesCreateValidationError'
+        - $ref: '#/components/schemas/ParseErrorResponse'
+    OrganizationLiveSourcesCreateNameErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `name` - name'
+          type: string
+          enum:
+            - name
+        code:
+          description: |-
+            * `blank` - blank
+            * `invalid` - invalid
+            * `max_length` - max_length
+            * `null` - null
+            * `null_characters_not_allowed` - null_characters_not_allowed
+            * `required` - required
+            * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed
+          type: string
+          enum:
+            - blank
+            - invalid
+            - max_length
+            - 'null'
+            - null_characters_not_allowed
+            - required
+            - surrogate_characters_not_allowed
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    OrganizationLiveSourcesCreateNonFieldErrorsErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `non_field_errors` - non_field_errors'
+          type: string
+          enum:
+            - non_field_errors
+        code:
+          description: |-
+            * `invalid` - invalid
+            * `null` - null
+          type: string
+          enum:
+            - invalid
+            - 'null'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    OrganizationLiveSourcesCreateValidationError:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/ValidationErrorEnum'
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrganizationLiveSourcesCreateError'
+      required:
+        - errors
+        - type
     OrganizationLiveSourcesListErrorResponse400:
       discriminator:
         propertyName: type
@@ -16893,6 +18072,15 @@ components:
         desc:
           type: string
           maxLength: 255
+    PatchedLiveSourceRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 100
+          minLength: 1
+        enabled:
+          type: boolean
     PatchedOrganizationRequest:
       type: object
       properties:

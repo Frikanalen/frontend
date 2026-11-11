@@ -2,7 +2,12 @@
 import { FormInput } from "@/components/FormField";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { PatchedVideoRequest, Series, Video } from "@/generated/frikanalenDjangoAPI.schemas";
+import {
+  LiveSource,
+  PatchedVideoRequest,
+  Series,
+  Video,
+} from "@/generated/frikanalenDjangoAPI.schemas";
 import { useRouter } from "next/navigation";
 import { Button, Form } from "@heroui/react";
 
@@ -15,12 +20,22 @@ import { SeriesFields } from "@/app/organization/[organizationId]/create/SeriesF
 import type { SeriesOption } from "@/app/organization/[organizationId]/create/SeriesFields";
 import { NewSeriesModal } from "@/app/organization/[organizationId]/create/NewSeriesModal";
 
-export const VideoEditForm = ({ video, series }: { video: Video; series: Series[] }) => {
+export const VideoEditForm = ({
+  video,
+  series,
+  liveSources = [],
+}: {
+  video: Video;
+  series: Series[];
+  /** The organization's live sources; the enabled ones can be chosen. */
+  liveSources?: LiveSource[];
+}) => {
   const form = useForm<PatchedVideoRequest>({
     defaultValues: {
       name: video.name,
       description: video.description,
       seriesId: video.series?.id ?? null,
+      liveSource: video.liveSource ?? null,
     },
   });
   const { register, control } = form;
@@ -44,7 +59,11 @@ export const VideoEditForm = ({ video, series }: { video: Video; series: Series[
     form.setValue("episodeNumber", 1, { shouldDirty: true });
   };
 
-  const { onSubmit, error, isSubmitting } = useApiFormSubmit(form, async (payload) => {
+  const { onSubmit, error, isSubmitting } = useApiFormSubmit(form, async (data) => {
+    // Sent only when changed: the API checks a source it's given, and a
+    // source switched off since would otherwise block every other edit.
+    const payload = { ...data };
+    if (!form.formState.dirtyFields.liveSource) delete payload.liveSource;
     const update = await videosPartialUpdate(video.id, payload);
     if (update.status !== 200)
       throw new Error(`Failed to update video ${video.id} with status ${update.status}`);
@@ -75,6 +94,29 @@ export const VideoEditForm = ({ video, series }: { video: Video; series: Series[
           onCreateSeries={() => setSeriesModalOpen(true)}
           onSeriesChange={selectSeries}
         />
+        {liveSources.length > 0 || video.liveSource != null ? (
+          <label className="flex w-full flex-col gap-1 text-sm font-medium">
+            Direktesending
+            <select
+              className="rounded-lg border border-default-300 bg-background px-3 py-2"
+              {...register("liveSource", {
+                setValueAs: (value) => (value === "" || value == null ? null : Number(value)),
+              })}
+            >
+              <option value="">Ingen: sendes fra fil</option>
+              {liveSources
+                .filter(({ enabled, id }) => enabled || id === video.liveSource)
+                .map(({ id, name }) => (
+                  <option key={id} value={id}>
+                    Direkte fra {name}
+                  </option>
+                ))}
+            </select>
+            <span className="text-xs font-normal text-default-500">
+              En direktesending sendes direkte fra kilden helt til videoen har fått en fil.
+            </span>
+          </label>
+        ) : null}
         <div className={"ml-auto"}>
           <Button type={"submit"} isPending={isSubmitting}>
             Send inn

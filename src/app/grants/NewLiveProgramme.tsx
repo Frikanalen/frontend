@@ -5,6 +5,7 @@ import { useVideosCreate, videosRetrieve } from "@/generated/videos/videos";
 import { formatApiError } from "@/lib/formatApiError";
 import { Button as HeroButton } from "@heroui/react";
 import { useQueryClient } from "@tanstack/react-query";
+import Link from "next/link";
 import { useState } from "react";
 import { formatDuration } from "./duration";
 
@@ -44,8 +45,11 @@ export const NewLiveProgramme = ({
   if (sources.length === 0) {
     return (
       <p className="text-sm text-default-600">
-        Organisasjonen har ingen direktekilder. De settes opp under Direktesending på
-        organisasjonens side.
+        Organisasjonen har ingen direktekilder ennå.{" "}
+        <Link className="underline" href={`/organization/${organizationId}/live`}>
+          Sett opp en under Direktesending
+        </Link>
+        .
       </p>
     );
   }

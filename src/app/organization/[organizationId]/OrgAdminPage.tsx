@@ -13,10 +13,8 @@ export const OrgAdminPage = ({ organization }: { organization: Organization }) =
       <ButtonLink href={`/organization/${organization.id}`}>Gå til offentlig profil</ButtonLink>
       <ButtonLink href={`/organization/${organization.id}/create`}>Ny video</ButtonLink>
       <ButtonLink href={`/organization/${organization.id}/series`}>Administrer serier</ButtonLink>
-      <ButtonLink href={`/organization/${organization.id}/schedule`}>
-        Sendetid
-      </ButtonLink>
-      <ButtonLink href={`/organization/${organization.id}/live`}>Sjekk direktesending</ButtonLink>
+      <ButtonLink href={`/organization/${organization.id}/schedule`}>Sendetid</ButtonLink>
+      <ButtonLink href={`/organization/${organization.id}/live`}>Direktesending</ButtonLink>
     </div>
     <OutstandingVideosList organizationId={organization.id} />
     <OrgVideosList organizationId={organization.id} />

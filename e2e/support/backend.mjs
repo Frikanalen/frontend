@@ -119,6 +119,18 @@ createServer((request, response) => {
     });
   if (url.pathname === `/api/organization/${organization.id}`)
     return json(response, 200, organization);
+  if (url.pathname === `/api/organization/${organization.id}/live-sources`)
+    return json(response, 200, [
+      {
+        id: 9,
+        name: "Studio",
+        enabled: true,
+        streamId: "cc1367cd-020e-456d-9d4c-b395eab6aa9c",
+        contributionPath: "contrib/live/cc1367cd-020e-456d-9d4c-b395eab6aa9c",
+        previewPath: "contrib/preview/cc1367cd-020e-456d-9d4c-b395eab6aa9c",
+        upcomingTransmissions: [],
+      },
+    ]);
   if (url.pathname === `/api/series/${series.id}`)
     return json(response, 200, series);
 
