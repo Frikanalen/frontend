@@ -1,13 +1,12 @@
 "use client";
 
-import { Avatar, Button } from "@heroui/react";
+import { Button } from "@heroui/react";
 import { NavLink } from "@/components/NavLink";
 import Link from "next/link";
 import cx from "classnames";
 import { usePathname } from "next/navigation";
 import { User } from "@/generated/frikanalenDjangoAPI.schemas";
 import { useState } from "react";
-import { GoPersonFill } from "react-icons/go";
 
 const SECTIONS = [
   { href: "/", label: "Direkte" },
@@ -42,20 +41,31 @@ export const HeaderNavMenu = ({ className, user }: { className?: string; user: U
         </ul>
 
         <div className="ml-auto flex items-center gap-2">
-          <Link
-            href={user ? "/profile" : "/login"}
-            className="font-medium text-stage-muted hover:text-stage-foreground"
-          >
-            {user ? (
-              user.firstName
-            ) : (
-              <Avatar size="sm" aria-label="Logg inn">
-                <Avatar.Fallback>
-                  <GoPersonFill className="size-5" aria-hidden="true" />
-                </Avatar.Fallback>
-              </Avatar>
-            )}
-          </Link>
+          {user ? (
+            <Link
+              href="/profile"
+              className="font-medium text-stage-muted hover:text-stage-foreground"
+            >
+              {user.firstName}
+            </Link>
+          ) : (
+            // Said in words: an icon alone left a visitor guessing whether it
+            // meant an account, a profile or a menu.
+            <>
+              <Link
+                href="/login"
+                className="font-medium whitespace-nowrap text-stage-muted hover:text-stage-foreground"
+              >
+                Logg inn
+              </Link>
+              <Link
+                href="/register"
+                className="ml-3 hidden rounded-md border border-stage-foreground/40 px-3 py-1.5 font-semibold whitespace-nowrap text-stage-foreground hover:border-stage-foreground sm:block"
+              >
+                Registrer deg
+              </Link>
+            </>
+          )}
           <Button
             className="text-stage-foreground sm:hidden"
             variant="ghost"
