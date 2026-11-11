@@ -14,10 +14,8 @@ import {
   timeline,
   windowMilliseconds,
 } from "./grants";
+import { LockBadge } from "./LockBadge";
 import { ModeBadge, modeSurface } from "./ModeBadge";
-
-const osloDateTime = (instant: string) =>
-  format(inOsloTime(instant), "EEEE d. MMMM 'kl.' HH:mm", { locale: nb });
 
 /** How many entries a card lists before it says "and n more". */
 const PREVIEW_ROWS = 4;
@@ -28,9 +26,12 @@ export const grantHref = (grant: Pick<AirtimeGrant, "id" | "organization">) =>
 export const GrantCard = ({
   grant,
   showOrganization = false,
+  now,
 }: {
   grant: AirtimeGrant;
   showOrganization?: boolean;
+  /** The board's clock, so every card agrees on what has locked. */
+  now: number;
 }) => {
   const automatic = isAutomatic(grant);
   const cancelled = grant.state === "cancelled";
@@ -55,18 +56,18 @@ export const GrantCard = ({
         </div>
         <div className="ms-auto flex flex-wrap items-center gap-1 text-xs">
           {cancelled ? null : <ModeBadge automatic={automatic} empty={rows.length === 0} />}
-          <span className="rounded-full bg-default-100 px-2 py-0.5">
-            {STATE_LABELS[grant.state]}
-          </span>
-          {grant.lockExempt ? (
-            <span className="rounded-full bg-warning-100 px-2 py-0.5 text-warning-800">
-              Unntatt fra låsing
+          {cancelled ? (
+            <span className="rounded-full bg-default-100 px-2 py-0.5">
+              {STATE_LABELS.cancelled}
             </span>
-          ) : null}
+          ) : (
+            <LockBadge grant={grant} now={now} />
+          )}
         </div>
       </header>
 
-      <p className="text-sm text-default-600">{deadlineText(grant, osloDateTime(grant.locksAt))}</p>
+      {/* The lock badge says when the list closes; only cancelled needs words. */}
+      {cancelled ? <p className="text-sm text-default-600">{deadlineText(grant, "")}</p> : null}
 
       <FillBar
         automatic={automatic}

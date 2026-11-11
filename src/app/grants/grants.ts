@@ -86,6 +86,19 @@ export const STATE_LABELS: Record<AirtimeGrant["state"], string> = {
   cancelled: "Avlyst",
 };
 
+/**
+ * Whether the list is closed to members: locked or compiled, or past its
+ * deadline before the night job has caught up. A lock-exempt grant never is.
+ */
+export const isLocked = (
+  grant: Pick<AirtimeGrant, "state" | "lockExempt" | "locksAt">,
+  now: number = Date.now(),
+) =>
+  !grant.lockExempt &&
+  (grant.state === "locked" ||
+    grant.state === "compiled" ||
+    (grant.state === "open" && Date.parse(grant.locksAt) <= now));
+
 /** What a member sees about the grant's deadline. */
 export const deadlineText = (
   grant: Pick<AirtimeGrant, "state" | "lockExempt" | "starttime" | "endtime">,

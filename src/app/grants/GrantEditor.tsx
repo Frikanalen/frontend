@@ -41,6 +41,7 @@ import {
   timeline,
   windowMilliseconds,
 } from "./grants";
+import { LockBadge } from "./LockBadge";
 import { ModeBadge, modeSurface } from "./ModeBadge";
 import { VIDEO_DRAG_TYPE, VideoPicker } from "./VideoPicker";
 
@@ -86,6 +87,7 @@ const Editor = ({ grant, backHref }: { grant: AirtimeGrant; backHref: string }) 
   const used = listMilliseconds(items);
   const { rows, graphics } = timeline(items, grant);
   const editable = grant.canEdit;
+  const [now] = useState(Date.now);
   // Until a member changes it, an automatic list is still automatic.
   // Against what the server holds, so moving something and moving it back,
   // or adding and removing a video, isn't a change worth saving.
@@ -189,11 +191,10 @@ const Editor = ({ grant, backHref }: { grant: AirtimeGrant; backHref: string }) 
             {grant.organization.name} · {STATE_LABELS[grant.state]}
           </p>
         </div>
-        <ModeBadge
-          automatic={showsAutomatic}
-          className="ms-auto text-sm"
-          empty={items.length === 0}
-        />
+        <div className="ms-auto flex flex-wrap items-center gap-1">
+          <ModeBadge automatic={showsAutomatic} className="text-sm" empty={items.length === 0} />
+          <LockBadge className="text-sm" grant={grant} now={now} />
+        </div>
       </header>
 
       <p className="text-default-700">{deadlineText(grant, osloDateTime(grant.locksAt))}</p>

@@ -102,13 +102,48 @@ test.describe("airtime grants", () => {
     await expect(cards).toHaveCount(2);
     await expect(cards.nth(0).getByText("Automatisk fylt")).toBeVisible();
     await expect(cards.nth(1).getByText("Satt opp manuelt")).toBeVisible();
-    await expect(
-      cards.nth(0).getByText(/Listen kan endres til mandag 7\. januar kl\. 00:00/),
-    ).toBeVisible();
+    await expect(cards.nth(0).getByText(/Åpen til man 7\. jan\. kl\. 00:00/)).toBeVisible();
     await expect(cards.nth(0).getByText("35:00 av 1:00:00 brukt, 25:00 grafikk")).toBeVisible();
     await expect(cards.nth(0).getByRole("link", { name: "Sett opp programmet" })).toHaveAttribute(
       "href",
       "/organization/3/schedule/700",
+    );
+  });
+
+  test("leads with what can be set up, and folds away the rest", async ({ page }) => {
+    await page.route("**/api/grants?**", (route) =>
+      route.fulfill({
+        status: 200,
+        json: page_([
+          grant({
+            id: 690,
+            state: "compiled",
+            canEdit: false,
+            starttime: "2020-01-14T08:00:00Z",
+            endtime: "2020-01-14T09:00:00Z",
+          }),
+          grant({ id: 701, state: "compiled", canEdit: false, locksAt: "2029-12-30T23:00:00Z" }),
+          grant(),
+        ]),
+      }),
+    );
+
+    await page.goto("/organization/3/schedule");
+    await waitForHydration(page);
+
+    await expect(page.getByRole("heading", { name: "Kan settes opp (1)" })).toBeVisible();
+    const cards = page.getByRole("article");
+    await expect(cards).toHaveCount(1);
+    await expect(cards.getByText(/Åpen til man 7\. jan\. kl\. 00:00/)).toBeVisible();
+
+    const locked = page.getByText("Låst, venter på sending (1)");
+    await locked.click();
+    await expect(page.getByText(/Låst man 31\. des\. kl\. 00:00/)).toBeVisible();
+
+    await page.getByText("Allerede sendt i dag (1)").click();
+    await expect(page.getByRole("link", { name: /14\. januar 09:00–10:00/ })).toHaveAttribute(
+      "href",
+      "/organization/3/schedule/690",
     );
   });
 
@@ -245,7 +280,7 @@ test.describe("airtime grants", () => {
 
     await expect(page.getByText("Sendetiden er over.")).toBeVisible();
     await expect(page.getByRole("note")).toContainText("kan ikke endres lenger");
-    await expect(page.getByText(/Unntatt fra låsing/)).toHaveCount(0);
+    await expect(page.getByText(/kan endres helt frem til sending/)).toHaveCount(0);
   });
 
   test("switches an edited slot grant back to automatic", async ({ page }) => {
