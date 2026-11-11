@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef } from "react";
+import { type ReactNode, useEffect, useRef } from "react";
 import { Button, Card, Chip } from "@heroui/react";
 import type { LiveSource } from "@/generated/frikanalenDjangoAPI.schemas";
 import { formatBitrate } from "@/lib/live/streamStats";
@@ -31,9 +31,12 @@ const Stat = ({ label, value }: { label: string; value: string }) => (
 export const LiveSourcePreview = ({
   source,
   autoStart,
+  children,
 }: {
   source: LiveSource;
   autoStart: boolean;
+  /** Setup for the source -- its encoder keys -- under the preview. */
+  children?: ReactNode;
 }) => {
   const { phase, variant, stream, stats, error, start, stop, running } = useLivePreview(source.id);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -161,6 +164,7 @@ export const LiveSourcePreview = ({
             )}
           </section>
         </div>
+        {children}
       </Card.Content>
     </Card>
   );

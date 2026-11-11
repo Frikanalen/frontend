@@ -7,7 +7,9 @@ import {
 import { getCookiesFromRequest } from "@/lib/getCookiesFromRequest";
 import { OrganizationParams, parseParamsOr404 } from "@/lib/routeParams";
 import { forbidden, notFound, redirect } from "next/navigation";
+import { EncoderKeys } from "./EncoderKeys";
 import { LiveSourcePreview } from "./LiveSourcePreview";
+import { NewLiveSource } from "./NewLiveSource";
 
 export const dynamic = "force-dynamic";
 
@@ -24,24 +26,38 @@ export default async function Page({ params }: { params: Promise<{ organizationI
   const organization = organizationResponse.data;
   const sources = (await organizationLiveSourcesList(organizationId, { headers })).data;
 
+  // The API's rule for setting up live transmission, the same as for
+  // programming airtime: a confirmed identity in a member organization.
+  const maySetUp = user.isStaff || (user.identityConfirmed && organization.fkmember);
+
   return (
     <section className="flex flex-col gap-4 p-4">
       <header>
-        <h1 className="text-2xl font-bold">Sjekk direktesending</h1>
+        <h1 className="text-2xl font-bold">Direktesending</h1>
         <p className="mt-2 text-default-600">
-          Se at signalet fra koderen til {organization.name} kommer fram til Frikanalen før
-          sendingen starter.
+          Sett opp kildene {organization.name} sender direkte fra, gi koderne nøkler, og se at
+          signalet kommer fram til Frikanalen før sendingen starter. En direktesending settes opp i
+          sendetiden som en video med en direktekilde.
         </p>
       </header>
-      {sources.length === 0 ? (
-        <p>
-          Organisasjonen har ingen direktekilder. Ta kontakt med Frikanalen for å få satt opp en.
+      {maySetUp ? (
+        <NewLiveSource organizationId={organizationId} />
+      ) : (
+        <p className="text-default-600">
+          {organization.fkmember
+            ? "Du må bekrefte identiteten din for å sette opp direktesending."
+            : "Bare medlemsorganisasjoner kan sette opp direktesending selv. Ta kontakt med Frikanalen."}
         </p>
+      )}
+      {sources.length === 0 ? (
+        <p>Organisasjonen har ingen direktekilder ennå.</p>
       ) : (
         // One source starts by itself; with several, each waits to be asked
         // so the page does not open a connection per source at once.
         sources.map((source) => (
-          <LiveSourcePreview key={source.id} source={source} autoStart={sources.length === 1} />
+          <LiveSourcePreview key={source.id} source={source} autoStart={sources.length === 1}>
+            <EncoderKeys maySetUp={maySetUp} source={source} />
+          </LiveSourcePreview>
         ))
       )}
     </section>
