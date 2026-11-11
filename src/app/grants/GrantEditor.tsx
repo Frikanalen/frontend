@@ -1,5 +1,5 @@
 "use client";
-import type { AirtimeGrant } from "@/generated/frikanalenDjangoAPI.schemas";
+import type { AirtimeGrant, GrantItemVideo } from "@/generated/frikanalenDjangoAPI.schemas";
 import {
   getGrantsRetrieveQueryKey,
   useGrantsAutomaticCreate,
@@ -25,16 +25,15 @@ import {
   type DropItem,
 } from "react-aria-components";
 import { GoBroadcast, GoGrabber, GoX } from "react-icons/go";
-import { formatDuration } from "./duration";
+import { durationMilliseconds, formatDuration } from "./duration";
 import { FillBar } from "./FillBar";
 import {
-  type DraftItem,
   deadlineText,
-  ENTRY_DRAG_TYPE,
-  itemMilliseconds,
   readOnlyReason,
   isAutomatic,
   itemName,
+  itemStatus,
+  liveSourceName,
   itemsPayload,
   type KeyedItem,
   listMilliseconds,
@@ -46,25 +45,24 @@ import {
 } from "./grants";
 import { LockBadge } from "./LockBadge";
 import { ModeBadge, modeSurface } from "./ModeBadge";
-import { VideoPicker } from "./VideoPicker";
+import { VIDEO_DRAG_TYPE, VideoPicker } from "./VideoPicker";
 
 /** The drag type an entry already in the list travels under, carrying its key. */
 const ITEM_DRAG_TYPE = "application/x-frikanalen-grant-item";
 
 let nextKey = 0;
-const keyed = ({ video, liveTransmission }: DraftItem): KeyedItem => ({
+const keyed = (video: GrantItemVideo): KeyedItem => ({
   key: `item-${nextKey++}`,
   video,
-  liveTransmission,
 });
-const keyedItems = (grant: AirtimeGrant) => grant.items.map(keyed);
+const keyedItems = (grant: AirtimeGrant) => grant.items.map((item) => keyed(item.video));
 
 const droppedVideos = async (items: DropItem[]) =>
   Promise.all(
     items
       .filter(isTextDropItem)
-      .filter((item) => item.types.has(ENTRY_DRAG_TYPE))
-      .map(async (item) => keyed(JSON.parse(await item.getText(ENTRY_DRAG_TYPE)))),
+      .filter((item) => item.types.has(VIDEO_DRAG_TYPE))
+      .map(async (item) => keyed(JSON.parse(await item.getText(VIDEO_DRAG_TYPE)))),
   );
 
 const osloDateTime = (instant: string) =>
@@ -107,7 +105,7 @@ const Editor = ({ grant, backHref }: { grant: AirtimeGrant; backHref: string }) 
     isDisabled: !editable,
     // A drag starts from the list itself (a reorder) or from the library (an
     // insert); anything else dragged over the list is refused.
-    acceptedDragTypes: [ITEM_DRAG_TYPE, ENTRY_DRAG_TYPE],
+    acceptedDragTypes: [ITEM_DRAG_TYPE, VIDEO_DRAG_TYPE],
     getItems: (keys) =>
       items
         .filter(({ key }) => keys.has(key))
@@ -269,19 +267,19 @@ const Editor = ({ grant, backHref }: { grant: AirtimeGrant; backHref: string }) 
                   <span className="block text-sm tabular-nums sm:hidden">
                     {formatOsloTime(row.start)}–{formatOsloTime(row.end)}
                   </span>
-                  <span className="flex items-center gap-1 truncate font-medium">
-                    {row.item.liveTransmission ? (
-                      <GoBroadcast aria-hidden className="shrink-0 text-danger-600" />
+                  <span className="flex items-center gap-1 font-medium">
+                    {liveSourceName(row.item.video) ? (
+                      <GoBroadcast
+                        aria-label="Direktesending"
+                        className="shrink-0 text-danger-600"
+                      />
                     ) : null}
                     <span className="truncate">{itemName(row.item)}</span>
                   </span>
                   <span className="text-sm text-default-500">
-                    {formatDuration(itemMilliseconds(row.item))}
-                    {row.item.liveTransmission
-                      ? ` · direkte fra ${row.item.liveTransmission.source.name}`
-                      : ""}
-                    {row.item.video?.pendingUpload ? " · plassholder" : ""}
-                    {row.item.video && row.item.video.organization.id !== grant.organization.id
+                    {formatDuration(durationMilliseconds(row.item.video.duration) ?? 0)}
+                    {itemStatus(row.item.video) ? ` · ${itemStatus(row.item.video)}` : ""}
+                    {row.item.video.organization.id !== grant.organization.id
                       ? ` · ${row.item.video.organization.name}`
                       : ""}
                     {row.overruns ? (
@@ -368,7 +366,7 @@ const Editor = ({ grant, backHref }: { grant: AirtimeGrant; backHref: string }) 
             <VideoPicker
               organizationId={grant.organization.id}
               remaining={windowLength - used}
-              onPick={(entry) => change([...items, keyed(entry)])}
+              onPick={(video) => change([...items, keyed(video)])}
             />
           </aside>
         ) : null}

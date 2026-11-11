@@ -10,6 +10,7 @@ const grantVideo = (id: number, name: string, duration: string) => ({
   duration,
   organization,
   pendingUpload: false,
+  liveSource: null,
 });
 
 const grant = (overrides: Record<string, unknown> = {}) => ({
@@ -23,8 +24,8 @@ const grant = (overrides: Record<string, unknown> = {}) => ({
   fillRule: 12,
   originSlot: 5,
   items: [
-    { position: 0, video: grantVideo(1, "Kaia i dag", "00:20:00"), liveTransmission: null },
-    { position: 1, video: grantVideo(2, "Båtliv", "00:15:00"), liveTransmission: null },
+    { position: 0, video: grantVideo(1, "Kaia i dag", "00:20:00") },
+    { position: 1, video: grantVideo(2, "Båtliv", "00:15:00") },
   ],
   itemsDuration: "00:35:00",
   canEdit: true,
@@ -47,6 +48,16 @@ const libraryVideo = {
   createdTime: "2026-08-21T10:00:00Z",
   updatedTime: "2026-08-21T10:00:00Z",
   uploadedTime: null,
+};
+
+const studio = {
+  id: 9,
+  name: "Studio",
+  enabled: true,
+  streamId: "cc1367cd-020e-456d-9d4c-b395eab6aa9c",
+  contributionPath: "contrib/live/cc1367cd-020e-456d-9d4c-b395eab6aa9c",
+  previewPath: "contrib/preview/cc1367cd-020e-456d-9d4c-b395eab6aa9c",
+  upcomingTransmissions: [],
 };
 
 const page_ = (results: unknown[]) => ({
@@ -198,59 +209,6 @@ test.describe("airtime grants", () => {
     await expect(page.getByRole("status")).toHaveText("Listen er lagret.");
   });
 
-  test("lists a live transmission with its own length and title", async ({ page }) => {
-    const puts: unknown[] = [];
-    await page.route("**/api/grants/700/items", (route) => {
-      puts.push(route.request().postDataJSON());
-      return route.fulfill({ status: 200, json: grant({ fillRule: null }) });
-    });
-    await page.route("**/api/organization/3/live-sources", (route) =>
-      route.fulfill({
-        status: 200,
-        json: [
-          {
-            id: 8,
-            name: "Studio",
-            enabled: true,
-            streamId: "00000000-0000-0000-0000-000000000008",
-            contributionPath: "contrib/live/x",
-            previewPath: "contrib/preview/x",
-            upcomingTransmissions: [],
-          },
-        ],
-      }),
-    );
-    await editor(page, grant());
-
-    await page.getByRole("button", { name: "Direktesending" }).click();
-    // The length starts as what's left of the window.
-    await expect(page.getByLabel("Lengde (min)")).toHaveValue("25");
-    await page.getByLabel("Lengde (min)").fill("20");
-    await page.getByLabel("Tittel (valgfri)").fill("Debatt");
-    await page
-      .getByRole("grid", { name: "Direktekilder du kan legge til" })
-      .getByRole("button", { name: "Legg til" })
-      .click();
-
-    await expect(listRows(page)).toHaveCount(3);
-    await expect(listRows(page).nth(2)).toContainText("Debatt");
-    await expect(listRows(page).nth(2)).toContainText("direkte fra Studio");
-    await expect(listRows(page).nth(2)).toContainText("18:35–18:55");
-
-    await page.getByRole("button", { name: "Lagre listen" }).click();
-    await expect
-      .poll(() => puts)
-      .toEqual([
-        {
-          items: [
-            { video: 1 },
-            { video: 2 },
-            { liveSource: 8, duration: "00:20:00", title: "Debatt" },
-          ],
-        },
-      ]);
-  });
-
   test("blocks a list that overruns the window", async ({ page }) => {
     await editor(page, grant());
     await page.getByRole("button", { name: "Legg til" }).click();
@@ -285,6 +243,74 @@ test.describe("airtime grants", () => {
     await expect(library.nth(1)).toContainText("for lang for resten");
     await page.getByLabel(/Bare videoer som får plass/).check();
     await expect(library).toHaveCount(1);
+  });
+
+  test("keeps placeholders and live programmes apart", async ({ page }) => {
+    await page.route("**/api/organization/3/live-sources", (route) =>
+      route.fulfill({ status: 200, json: [studio] }),
+    );
+    await editor(page, grant({ endtime: "2030-01-14T18:30:00Z" }), [
+      { ...libraryVideo, id: 5, name: "Kommer senere", properImport: false, liveSource: null },
+      { ...libraryVideo, id: 6, name: "Valgvake", properImport: false, liveSource: studio.id },
+    ]);
+    const library = page.getByRole("grid", { name: "Videoer du kan legge til" }).getByRole("row");
+
+    await page.getByRole("button", { name: "Plassholdere" }).click();
+    await expect(library).toHaveCount(1);
+    await expect(library.nth(0)).toContainText("Kommer senere");
+    await expect(library.nth(0)).toContainText("venter på fil");
+
+    await page.getByRole("button", { name: "Direktesending" }).click();
+    await expect(library).toHaveCount(1);
+    await expect(library.nth(0)).toContainText("Valgvake");
+    await expect(library.nth(0)).toContainText("direkte fra Studio");
+
+    await library.nth(0).getByRole("button", { name: "Legg til" }).click();
+    await expect(listRows(page).nth(2)).toContainText("direkte fra Studio");
+    await expect(listRows(page).nth(2).getByLabel("Direktesending")).toBeVisible();
+  });
+
+  test("creates a live programme and lists it", async ({ page }) => {
+    const created: unknown[] = [];
+    const valgvake = {
+      ...libraryVideo,
+      id: 50,
+      name: "Valgvake",
+      duration: "00:25:00",
+      properImport: false,
+      liveSource: studio.id,
+    };
+    await page.route("**/api/organization/3/live-sources", (route) =>
+      route.fulfill({ status: 200, json: [studio] }),
+    );
+    await page.route("**/api/videos", (route) => {
+      created.push(route.request().postDataJSON());
+      return route.fulfill({ status: 201, json: { ...valgvake, organization: 3 } });
+    });
+    await page.route("**/api/videos/50", (route) => route.fulfill({ status: 200, json: valgvake }));
+    await editor(page, grant());
+
+    await page.getByRole("button", { name: "Direktesending" }).click();
+    const form = page.getByRole("form", { name: "Ny direktesending" });
+    await form.getByLabel("Tittel").fill("Valgvake");
+    // The length starts out as the 25 minutes left.
+    await expect(form.getByLabel("Lengde (min)")).toHaveValue("25");
+    await form.getByRole("button", { name: "Opprett og legg til" }).click();
+
+    await expect
+      .poll(() => created)
+      .toEqual([
+        {
+          name: "Valgvake",
+          duration: "00:25:00",
+          organization: 3,
+          categories: [],
+          liveSource: studio.id,
+        },
+      ]);
+    await expect(listRows(page)).toHaveCount(3);
+    await expect(listRows(page).nth(2)).toContainText("Valgvake");
+    await expect(listRows(page).nth(2)).toContainText("direkte fra Studio");
   });
 
   test("shows the server's reason when a save is refused", async ({ page }) => {
@@ -377,9 +403,7 @@ test.describe("on a phone", () => {
     await page.route("**/api/grants?**", (route) =>
       route.fulfill({
         status: 200,
-        json: page_([
-          grant({ items: [{ position: 0, video: longTitle, liveTransmission: null }] }),
-        ]),
+        json: page_([grant({ items: [{ position: 0, video: longTitle }] })]),
       }),
     );
     await page.goto("/schedule/plan");
@@ -390,10 +414,7 @@ test.describe("on a phone", () => {
   });
 
   test("the editor fits, with the time above the title", async ({ page }) => {
-    await editor(
-      page,
-      grant({ items: [{ position: 0, video: longTitle, liveTransmission: null }] }),
-    );
+    await editor(page, grant({ items: [{ position: 0, video: longTitle }] }));
 
     await expect(listRows(page)).toHaveCount(1);
     await fitsTheScreen(page);

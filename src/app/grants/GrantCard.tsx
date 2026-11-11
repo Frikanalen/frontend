@@ -9,6 +9,7 @@ import {
   deadlineText,
   isAutomatic,
   itemName,
+  itemStatus,
   listMilliseconds,
   STATE_LABELS,
   timeline,
@@ -80,12 +81,11 @@ export const GrantCard = ({
       ) : (
         <ol className="space-y-0.5 text-sm">
           {rows.slice(0, PREVIEW_ROWS).map((row, index) => (
-            <li className="flex gap-2" key={index}>
+            <li className="flex gap-2" key={`${row.item.video.id}-${index}`}>
               <span className="tabular-nums text-default-500">{formatOsloTime(row.start)}</span>
               <span className="truncate">
                 {itemName(row.item)}
-                {row.item.liveTransmission ? " (direkte)" : ""}
-                {row.item.video?.pendingUpload ? " (plassholder)" : ""}
+                {itemStatus(row.item.video) ? ` (${itemStatus(row.item.video)})` : ""}
               </span>
             </li>
           ))}

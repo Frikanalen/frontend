@@ -1,29 +1,36 @@
 "use client";
 import { FormInput } from "@/components/FormField";
-import type { Video } from "@/generated/frikanalenDjangoAPI.schemas";
+import type { GrantItemVideo, LiveSource, Video } from "@/generated/frikanalenDjangoAPI.schemas";
+import { useOrganizationLiveSourcesList } from "@/generated/organization/organization";
 import { useVideosList } from "@/generated/videos/videos";
 import { formatApiError } from "@/lib/formatApiError";
 import { Button as HeroButton } from "@heroui/react";
 import { useState } from "react";
 import { Button, GridList, GridListItem, useDragAndDrop } from "react-aria-components";
-import { GoGrabber } from "react-icons/go";
+import { GoBroadcast, GoGrabber } from "react-icons/go";
 import { durationMilliseconds, formatDuration } from "./duration";
-import type { DraftItem } from "./grants";
-import { ENTRY_DRAG_TYPE } from "./grants";
-import { LivePicker } from "./LivePicker";
+import { NewLiveProgramme } from "./NewLiveProgramme";
 
 type Scope = "own" | "placeholder" | "live" | "all";
 
-const toEntry = (video: Video): DraftItem => ({
-  video: {
+/** The drag type a library video travels under, as JSON of a GrantItemVideo. */
+export const VIDEO_DRAG_TYPE = "application/x-frikanalen-video";
+
+export const toGrantVideo = (video: Video, sources: readonly LiveSource[]): GrantItemVideo => {
+  const source = sources.find(({ id }) => id === video.liveSource);
+  return {
     id: video.id,
     name: video.name,
     duration: video.duration ?? "",
     organization: { id: video.organization.id, name: video.organization.name },
     pendingUpload: !video.properImport,
-  },
-  liveTransmission: null,
-});
+    liveSource:
+      video.liveSource == null ? null : { id: video.liveSource, name: source?.name ?? "Direkte" },
+  };
+};
+
+/** Airs live: a live programme whose recording hasn't come as a file. */
+const airsLive = (video: Video) => video.liveSource != null && !video.properImport;
 
 const lengthText = (duration: string | undefined) => {
   const milliseconds = duration ? durationMilliseconds(duration) : undefined;
@@ -31,12 +38,12 @@ const lengthText = (duration: string | undefined) => {
 };
 
 /**
- * What a list can draw from. Drag an entry onto the list to put it where it
+ * The videos a list can draw from. Drag one onto the list to put it where it
  * should play, or press "Legg til" to put it last. A grant may list any
- * organization's video; the organization's own come first. Placeholders
- * (entries whose file hasn't come yet) are a separate view, since the
- * public catalogue leaves them out, and so are the organization's live
- * sources, which take a length and a title instead of a video.
+ * organization's video; the organization's own come first. Its entries still
+ * waiting for a file are separate views, since the public catalogue leaves
+ * them out: placeholders, and live programmes, which air from a live source
+ * until their recording arrives.
  */
 export const VideoPicker = ({
   organizationId,
@@ -46,24 +53,28 @@ export const VideoPicker = ({
   organizationId: number;
   /** Time left in the window, so each video can say whether it still fits. */
   remaining: number;
-  onPick: (_entry: DraftItem) => void;
+  onPick: (_video: GrantItemVideo) => void;
 }) => {
   const [scope, setScope] = useState<Scope>("own");
   const [search, setSearch] = useState("");
   const [onlyFitting, setOnlyFitting] = useState(false);
-  const videos = useVideosList(
-    {
-      organization: scope === "all" ? undefined : organizationId,
-      proper_import: scope === "placeholder" ? false : undefined,
-      q: search || undefined,
-      ordering: "-created_time",
-      limit: 30,
-    },
-    { query: { enabled: scope !== "live" } },
-  );
+  const sourcesQuery = useOrganizationLiveSourcesList(organizationId);
+  const sources = sourcesQuery.data?.data ?? [];
+  const waiting = scope === "placeholder" || scope === "live";
+  const videos = useVideosList({
+    organization: scope === "all" ? undefined : organizationId,
+    proper_import: waiting ? false : undefined,
+    q: search || undefined,
+    ordering: "-created_time",
+    limit: 30,
+  });
   const fits = (video: Video) => (durationMilliseconds(video.duration ?? "") ?? 0) <= remaining;
   // Videos that still fit come first, newest first within each group.
-  const withLength = (videos.data?.data.results ?? []).filter((video) => video.duration);
+  const inScope = (video: Video) =>
+    scope === "placeholder" ? video.liveSource == null : scope === "live" ? airsLive(video) : true;
+  const withLength = (videos.data?.data.results ?? []).filter(
+    (video) => video.duration && inScope(video),
+  );
   const results = [
     ...withLength.filter(fits),
     ...(onlyFitting ? [] : withLength.filter((video) => !fits(video))),
@@ -74,14 +85,14 @@ export const VideoPicker = ({
       items
         .filter((video) => keys.has(video.id))
         .map((video) => ({
-          [ENTRY_DRAG_TYPE]: JSON.stringify(toEntry(video)),
+          [VIDEO_DRAG_TYPE]: JSON.stringify(toGrantVideo(video, sources)),
           "text/plain": video.name,
         })),
   });
 
   return (
     <section className="space-y-3">
-      <h2 className="text-lg font-semibold">Legg til</h2>
+      <h2 className="text-lg font-semibold">Videoer</h2>
       <div className="flex flex-wrap gap-2" role="group" aria-label="Hvilke videoer">
         {(
           [
@@ -101,77 +112,96 @@ export const VideoPicker = ({
           </HeroButton>
         ))}
       </div>
+      <FormInput label="Søk" type="search" value={search} onValueChange={setSearch} />
+      <label className="flex items-center gap-2 text-sm">
+        <input
+          checked={onlyFitting}
+          type="checkbox"
+          onChange={(event) => setOnlyFitting(event.target.checked)}
+        />
+        Bare videoer som får plass ({formatDuration(Math.max(0, remaining))} igjen)
+      </label>
+      {scope === "placeholder" ? (
+        <p className="text-sm text-default-600">
+          En plassholder er en video som venter på fil. Den kan settes opp når lengden er fylt inn,
+          og filen kan komme etter at listen er låst.
+        </p>
+      ) : null}
       {scope === "live" ? (
-        <LivePicker organizationId={organizationId} remaining={remaining} onPick={onPick} />
-      ) : (
         <>
-          <FormInput label="Søk" type="search" value={search} onValueChange={setSearch} />
-          <label className="flex items-center gap-2 text-sm">
-            <input
-              checked={onlyFitting}
-              type="checkbox"
-              onChange={(event) => setOnlyFitting(event.target.checked)}
-            />
-            Bare videoer som får plass ({formatDuration(Math.max(0, remaining))} igjen)
-          </label>
-          {scope === "placeholder" ? (
-            <p className="text-sm text-default-600">
-              En plassholder er en video som ennå ikke har fil. Den kan settes opp når lengden er
-              fylt inn for hånd, og filen kan komme etter at listen er låst.
-            </p>
-          ) : null}
-          {videos.isLoading ? <p>Laster videoer…</p> : null}
-          {videos.isError ? <p role="alert">{formatApiError(videos.error)}</p> : null}
-          <GridList
-            aria-label="Videoer du kan legge til"
-            className="max-h-[28rem] space-y-1 overflow-y-auto"
-            // Whether a video still fits changes as the list does.
-            dependencies={[remaining, scope]}
-            dragAndDropHooks={dragAndDropHooks}
-            items={results}
-            renderEmptyState={() =>
-              videos.isLoading ? null : (
-                <p className="p-2">
-                  {onlyFitting && withLength.length > 0
-                    ? "Ingen av disse videoene får plass i tiden som er igjen."
-                    : "Ingen videoer funnet."}
-                </p>
-              )
-            }
-            selectionMode="none"
-          >
-            {(video) => (
-              <GridListItem
-                className="flex cursor-grab items-center gap-2 rounded-lg border border-default-200 bg-background p-2 outline-none data-[dragging]:opacity-50 data-[focus-visible]:ring-2 data-[focus-visible]:ring-focus"
-                id={video.id}
-                textValue={video.name}
-              >
-                <Button
-                  aria-label={`Dra «${video.name}»`}
-                  className="cursor-grab rounded p-1 text-lg text-foreground/70 hover:bg-default-100"
-                  slot="drag"
-                >
-                  <GoGrabber aria-hidden />
-                </Button>
-                <div className="min-w-0 grow">
-                  <div className="truncate font-medium">{video.name}</div>
-                  <div className="text-sm text-default-500">
-                    {lengthText(video.duration)}
-                    {!fits(video) ? (
-                      <span className="text-danger-700"> · for lang for resten</span>
-                    ) : null}
-                    {video.properImport ? "" : " · venter på fil"}
-                    {scope === "all" ? ` · ${video.organization.name}` : ""}
-                  </div>
-                </div>
-                <HeroButton size="sm" variant="tertiary" onPress={() => onPick(toEntry(video))}>
-                  Legg til
-                </HeroButton>
-              </GridListItem>
-            )}
-          </GridList>
+          <p className="text-sm text-default-600">
+            En direktesending sendes direkte fra en av organisasjonens direktekilder, helt til det
+            lastes opp et opptak til den.
+          </p>
+          <NewLiveProgramme
+            organizationId={organizationId}
+            remaining={remaining}
+            sources={sources.filter(({ enabled }) => enabled)}
+            onCreated={(video) => onPick(toGrantVideo(video, sources))}
+          />
         </>
-      )}
+      ) : null}
+      {videos.isLoading ? <p>Laster videoer…</p> : null}
+      {videos.isError ? <p role="alert">{formatApiError(videos.error)}</p> : null}
+      <GridList
+        aria-label="Videoer du kan legge til"
+        className="max-h-[28rem] space-y-1 overflow-y-auto"
+        // Rows say whether they fit and where they air from, which isn't in the items.
+        dependencies={[remaining, scope, sources]}
+        dragAndDropHooks={dragAndDropHooks}
+        items={results}
+        renderEmptyState={() =>
+          videos.isLoading ? null : (
+            <p className="p-2">
+              {onlyFitting && withLength.length > 0
+                ? "Ingen av disse videoene får plass i tiden som er igjen."
+                : "Ingen videoer funnet."}
+            </p>
+          )
+        }
+        selectionMode="none"
+      >
+        {(video) => (
+          <GridListItem
+            className="flex cursor-grab items-center gap-2 rounded-lg border border-default-200 bg-background p-2 outline-none data-[dragging]:opacity-50 data-[focus-visible]:ring-2 data-[focus-visible]:ring-focus"
+            id={video.id}
+            textValue={video.name}
+          >
+            <Button
+              aria-label={`Dra «${video.name}»`}
+              className="cursor-grab rounded p-1 text-lg text-foreground/70 hover:bg-default-100"
+              slot="drag"
+            >
+              <GoGrabber aria-hidden />
+            </Button>
+            {airsLive(video) ? (
+              <GoBroadcast aria-label="Direktesending" className="shrink-0 text-danger-600" />
+            ) : null}
+            <div className="min-w-0 grow">
+              <div className="truncate font-medium">{video.name}</div>
+              <div className="text-sm text-default-500">
+                {lengthText(video.duration)}
+                {!fits(video) ? (
+                  <span className="text-danger-700"> · for lang for resten</span>
+                ) : null}
+                {airsLive(video)
+                  ? ` · direkte fra ${toGrantVideo(video, sources).liveSource?.name}`
+                  : video.properImport
+                    ? ""
+                    : " · venter på fil"}
+                {scope === "all" ? ` · ${video.organization.name}` : ""}
+              </div>
+            </div>
+            <HeroButton
+              size="sm"
+              variant="tertiary"
+              onPress={() => onPick(toGrantVideo(video, sources))}
+            >
+              Legg til
+            </HeroButton>
+          </GridListItem>
+        )}
+      </GridList>
     </section>
   );
 };
