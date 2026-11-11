@@ -13,6 +13,7 @@ export const OrganizationParams = z.object({ organizationId: pk });
 export const SeriesParams = z.object({ seriesId: pk });
 export const VideoParams = z.object({ videoId: pk });
 export const OrganizationSeriesParams = OrganizationParams.extend({ seriesId: pk });
+export const OrganizationGrantParams = OrganizationParams.extend({ grantId: pk });
 
 /**
  * A schedule day, as the three padded segments the URL carries.

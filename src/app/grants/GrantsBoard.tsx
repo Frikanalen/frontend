@@ -6,6 +6,7 @@ import { inOsloTime } from "@/lib/osloTime";
 import { startOfDay } from "date-fns";
 import { useMemo, useState } from "react";
 import { GrantCard } from "./GrantCard";
+import { ModeBadge } from "./ModeBadge";
 
 /**
  * Airtime from the start of today on, in order. Members see their own
@@ -50,6 +51,11 @@ export const GrantsBoard = ({
           </select>
         </label>
       ) : null}
+
+      <p className="flex flex-wrap items-center gap-2 text-sm text-default-600">
+        <ModeBadge automatic /> fylles hver natt frem til fristen.
+        <ModeBadge automatic={false} /> blir stående slik den ble lagret.
+      </p>
 
       {grants.isLoading ? <p>Laster sendetid…</p> : null}
       {grants.isError ? <p role="alert">{formatApiError(grants.error)}</p> : null}
