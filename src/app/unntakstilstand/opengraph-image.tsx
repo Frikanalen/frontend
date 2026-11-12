@@ -1,11 +1,10 @@
 import { ImageResponse } from "next/og";
 
-export const alt = "Frikanalen går i svart i protest mot udemokratisk overtakelse av kanalen";
+export const alt = "Frikanalen i unntakstilstand";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-// Link-preview card for /protest: the headline in white on black, matching the
-// statement shown on air.
+// Link-preview card for /unntakstilstand: the headline in white on black.
 export default function Image() {
   return new ImageResponse(
     <div
@@ -24,7 +23,7 @@ export default function Image() {
         Frikanalen
       </div>
       <div style={{ fontSize: 68, fontWeight: 700, lineHeight: 1.15 }}>{alt}</div>
-      <div style={{ fontSize: 30, opacity: 0.7 }}>frikanalen.tv/protest</div>
+      <div style={{ fontSize: 30, opacity: 0.7 }}>frikanalen.tv/unntakstilstand</div>
     </div>,
     size,
   );

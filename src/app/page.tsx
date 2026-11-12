@@ -36,17 +36,18 @@ export default async function Home() {
           above it. Everything below is about the channel, on paper. */}
       <div className="bg-stage text-stage-foreground">
         <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 pt-2 pb-12 sm:px-6">
-          <aside aria-label="Frikanalen i protest">
+          <aside aria-label="Frikanalen i unntakstilstand">
             <Link
-              href="/protest"
-              className="flex flex-wrap items-baseline gap-x-4 gap-y-1 border border-stage-line px-4 py-3 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-stage-foreground"
+              href="/unntakstilstand"
+              className="block border border-stage-line px-4 py-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-stage-foreground sm:px-5"
             >
-              <span className="font-bold">
-                Frikanalen går i svart i protest mot udemokratisk overtakelse av kanalen
-              </span>
-              <span className="text-stage-muted underline underline-offset-4">
-                Les redegjørelsen →
-              </span>
+              <p className="text-lg font-bold">Frikanalen i unntakstilstand</p>
+              <p className="mt-1 max-w-4xl text-stage-muted">
+                Inntil klagen vår til Enhetsregisteret er behandlet og en ekstraordinær
+                generalforsamling kan avklare situasjonen, formidler vi ikke innhold fra medlemmene
+                som sto bak forsøket på å overta styringen av kanalen.
+              </p>
+              <p className="mt-2 underline underline-offset-4">Les redegjørelsen →</p>
             </Link>
           </aside>
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(18rem,1fr)]">
