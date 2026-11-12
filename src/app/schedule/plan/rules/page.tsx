@@ -31,6 +31,13 @@ export default function Page() {
           </li>
         </ul>
 
+        <h2>Be om sendetid</h2>
+        <p>
+          Under <em>Sendetid</em> velger dere <em>Be om mer sendetid</em>. Der ser dere uken med de
+          faste sendeflatene som allerede er tatt, og kan be om en fast sendeflate hver uke eller
+          sendetid én gang. Frikanalen svarer på samme side.
+        </p>
+
         <h2>Hvem kan sette opp en liste?</h2>
         <ul>
           <li>Du må være innlogget, og identiteten din må være bekreftet av Frikanalen.</li>
@@ -49,8 +56,9 @@ export default function Page() {
           den. Slik vet seere og programoversikter hva som sendes, en uke i forveien.
         </p>
         <p>
-          Trenger dere å endre noe etter fristen, for eksempel rundt en direktesending, kan
-          Frikanalen unnta sendetiden fra låsing. Da kan listen endres helt frem til sending.
+          Trenger dere å endre noe etter fristen, for eksempel rundt en direktesending, kan dere be
+          om det fra den låste sendetiden. Godkjenner Frikanalen det, kan listen endres helt frem
+          til sending.
         </p>
 
         <h2>Automatisk fylling</h2>
