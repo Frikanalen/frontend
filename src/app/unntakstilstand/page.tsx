@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     locale: "nb_NO",
     title,
     description,
-    authors: ["Tom Fredrik Blenning"],
+    authors: ["Tom Fredrik Blenning", "Tore Sinding Bekkedal"],
   },
   twitter: {
     card: "summary_large_image",
@@ -38,6 +38,10 @@ export default function Unntakstilstand() {
           <span className="font-normal">av</span> Tom Fredrik Blenning
           <br />
           <span className="font-normal">styreleder, Frikanalen</span>
+          <br />
+          <span className="font-normal">og</span> Tore Sinding Bekkedal
+          <br />
+          <span className="font-normal">teknisk leder, Frikanalen</span>
         </h2>
         <p className="lead">
           Frikanalen sender igjen. Men inntil klagen vår til Enhetsregisteret er behandlet og en
