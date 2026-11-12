@@ -50,6 +50,13 @@ export default function Unntakstilstand() {
           får ikke innholdet sitt formidlet.
         </p>
 
+        <h2>Nettadresse og kontakt</h2>
+        <p>
+          PROION har tatt kontroll over domenet frikanalen.no og Frikanalens primære e-postadresse.
+          Inntil videre er Frikanalen på nett på <a href="https://frikanalen.tv">frikanalen.tv</a>,
+          og ledelsen nås på <a href="mailto:post@frikanalen.tv">post@frikanalen.tv</a>.
+        </p>
+
         <h2>Hvorfor sendingene er tilbake</h2>
         <p>
           Mandag 2. november kl. 18.00 lot vi kanalen gå i svart for å gjøre offentligheten
