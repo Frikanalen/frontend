@@ -1857,6 +1857,139 @@ paths:
         - {}
       tags:
         - csrf
+  /api/fill-rules:
+    get:
+      operationId: fill_rules_list
+      description: |-
+        Fill rules, for choosing a slot's default. Staff see every rule,
+        members their own organizations'.
+      parameters:
+        - name: limit
+          in: query
+          description: Number of results to return per page.
+          required: false
+          schema:
+            type: integer
+        - name: offset
+          in: query
+          description: The initial index from which to return the results.
+          required: false
+          schema:
+            type: integer
+        - name: organization
+          in: query
+          description: Only this organization's
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedFillRuleSummaryList'
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FillRulesListErrorResponse400'
+        '401':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: authentication_failed
+                        detail: Incorrect authentication credentials.
+                        attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_authenticated
+                        detail: Authentication credentials were not provided.
+                        attr: null
+        '404':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+              examples:
+                NotFound:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_found
+                        detail: Not found.
+                        attr: null
+        '405':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse405'
+              examples:
+                MethodNotAllowed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: method_not_allowed
+                        detail: Method "get" not allowed.
+                        attr: null
+        '406':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse406'
+              examples:
+                NotAcceptable:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_acceptable
+                        detail: Could not satisfy the request Accept header.
+                        attr: null
+        '415':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse415'
+              examples:
+                UnsupportedMediaType:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: unsupported_media_type
+                        detail: Unsupported media type "application/json" in request.
+                        attr: null
+        '500':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+              examples:
+                APIException:
+                  value:
+                    type: server_error
+                    errors:
+                      - code: error
+                        detail: A server error occurred.
+                        attr: null
+      security:
+        - tokenAuth: []
+        - cookieAuth: []
+      tags:
+        - fill-rules
   /api/grants:
     get:
       operationId: grants_list
@@ -6098,7 +6231,9 @@ paths:
   /api/recurring-slots:
     get:
       operationId: recurring_slots_list
-      description: Every recurring slot. Public, like the schedule it produces.
+      description: |-
+        Every recurring slot. Public, like the schedule it produces;
+        staff create them.
       parameters:
         - name: limit
           in: query
@@ -6152,6 +6287,20 @@ paths:
                       - code: not_authenticated
                         detail: Authentication credentials were not provided.
                         attr: null
+        '403':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse403'
+              examples:
+                PermissionDenied:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: permission_denied
+                        detail: You do not have permission to perform this action.
+                        attr: null
         '404':
           description: ''
           content:
@@ -6225,12 +6374,148 @@ paths:
       security:
         - tokenAuth: []
         - cookieAuth: []
-        - {}
+      tags:
+        - recurring-slots
+    post:
+      operationId: recurring_slots_create
+      description: |-
+        Every recurring slot. Public, like the schedule it produces;
+        staff create them.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecurringSlotRequest'
+      responses:
+        '201':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecurringSlot'
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecurringSlotsCreateErrorResponse400'
+        '401':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: authentication_failed
+                        detail: Incorrect authentication credentials.
+                        attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_authenticated
+                        detail: Authentication credentials were not provided.
+                        attr: null
+        '403':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse403'
+              examples:
+                PermissionDenied:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: permission_denied
+                        detail: You do not have permission to perform this action.
+                        attr: null
+        '404':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+              examples:
+                NotFound:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_found
+                        detail: Not found.
+                        attr: null
+        '405':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse405'
+              examples:
+                MethodNotAllowed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: method_not_allowed
+                        detail: Method "get" not allowed.
+                        attr: null
+        '406':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse406'
+              examples:
+                NotAcceptable:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_acceptable
+                        detail: Could not satisfy the request Accept header.
+                        attr: null
+        '415':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse415'
+              examples:
+                UnsupportedMediaType:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: unsupported_media_type
+                        detail: Unsupported media type "application/json" in request.
+                        attr: null
+        '500':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+              examples:
+                APIException:
+                  value:
+                    type: server_error
+                    errors:
+                      - code: error
+                        detail: A server error occurred.
+                        attr: null
+      security:
+        - tokenAuth: []
+        - cookieAuth: []
       tags:
         - recurring-slots
   /api/recurring-slots/{id}:
     get:
       operationId: recurring_slots_retrieve
+      description: |-
+        Staff change or delete a slot. Grants it already issued stay as
+        they are, without their origin once the slot is deleted.
       parameters:
         - name: id
           in: path
@@ -6271,6 +6556,20 @@ paths:
                       - code: not_authenticated
                         detail: Authentication credentials were not provided.
                         attr: null
+        '403':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse403'
+              examples:
+                PermissionDenied:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: permission_denied
+                        detail: You do not have permission to perform this action.
+                        attr: null
         '404':
           description: ''
           content:
@@ -6344,7 +6643,415 @@ paths:
       security:
         - tokenAuth: []
         - cookieAuth: []
-        - {}
+      tags:
+        - recurring-slots
+    put:
+      operationId: recurring_slots_update
+      description: |-
+        Staff change or delete a slot. Grants it already issued stay as
+        they are, without their origin once the slot is deleted.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecurringSlotRequest'
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecurringSlot'
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecurringSlotsUpdateErrorResponse400'
+        '401':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: authentication_failed
+                        detail: Incorrect authentication credentials.
+                        attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_authenticated
+                        detail: Authentication credentials were not provided.
+                        attr: null
+        '403':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse403'
+              examples:
+                PermissionDenied:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: permission_denied
+                        detail: You do not have permission to perform this action.
+                        attr: null
+        '404':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+              examples:
+                NotFound:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_found
+                        detail: Not found.
+                        attr: null
+        '405':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse405'
+              examples:
+                MethodNotAllowed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: method_not_allowed
+                        detail: Method "get" not allowed.
+                        attr: null
+        '406':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse406'
+              examples:
+                NotAcceptable:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_acceptable
+                        detail: Could not satisfy the request Accept header.
+                        attr: null
+        '415':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse415'
+              examples:
+                UnsupportedMediaType:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: unsupported_media_type
+                        detail: Unsupported media type "application/json" in request.
+                        attr: null
+        '500':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+              examples:
+                APIException:
+                  value:
+                    type: server_error
+                    errors:
+                      - code: error
+                        detail: A server error occurred.
+                        attr: null
+      security:
+        - tokenAuth: []
+        - cookieAuth: []
+      tags:
+        - recurring-slots
+    patch:
+      operationId: recurring_slots_partial_update
+      description: |-
+        Staff change or delete a slot. Grants it already issued stay as
+        they are, without their origin once the slot is deleted.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedRecurringSlotRequest'
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecurringSlot'
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecurringSlotsPartialUpdateErrorResponse400'
+        '401':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: authentication_failed
+                        detail: Incorrect authentication credentials.
+                        attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_authenticated
+                        detail: Authentication credentials were not provided.
+                        attr: null
+        '403':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse403'
+              examples:
+                PermissionDenied:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: permission_denied
+                        detail: You do not have permission to perform this action.
+                        attr: null
+        '404':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+              examples:
+                NotFound:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_found
+                        detail: Not found.
+                        attr: null
+        '405':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse405'
+              examples:
+                MethodNotAllowed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: method_not_allowed
+                        detail: Method "get" not allowed.
+                        attr: null
+        '406':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse406'
+              examples:
+                NotAcceptable:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_acceptable
+                        detail: Could not satisfy the request Accept header.
+                        attr: null
+        '415':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse415'
+              examples:
+                UnsupportedMediaType:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: unsupported_media_type
+                        detail: Unsupported media type "application/json" in request.
+                        attr: null
+        '500':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+              examples:
+                APIException:
+                  value:
+                    type: server_error
+                    errors:
+                      - code: error
+                        detail: A server error occurred.
+                        attr: null
+      security:
+        - tokenAuth: []
+        - cookieAuth: []
+      tags:
+        - recurring-slots
+    delete:
+      operationId: recurring_slots_destroy
+      description: |-
+        Staff change or delete a slot. Grants it already issued stay as
+        they are, without their origin once the slot is deleted.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: No response body
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecurringSlotsDestroyErrorResponse400'
+        '401':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: authentication_failed
+                        detail: Incorrect authentication credentials.
+                        attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_authenticated
+                        detail: Authentication credentials were not provided.
+                        attr: null
+        '403':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse403'
+              examples:
+                PermissionDenied:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: permission_denied
+                        detail: You do not have permission to perform this action.
+                        attr: null
+        '404':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+              examples:
+                NotFound:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_found
+                        detail: Not found.
+                        attr: null
+        '405':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse405'
+              examples:
+                MethodNotAllowed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: method_not_allowed
+                        detail: Method "get" not allowed.
+                        attr: null
+        '406':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse406'
+              examples:
+                NotAcceptable:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_acceptable
+                        detail: Could not satisfy the request Accept header.
+                        attr: null
+        '415':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse415'
+              examples:
+                UnsupportedMediaType:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: unsupported_media_type
+                        detail: Unsupported media type "application/json" in request.
+                        attr: null
+        '500':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+              examples:
+                APIException:
+                  value:
+                    type: server_error
+                    errors:
+                      - code: error
+                        detail: A server error occurred.
+                        attr: null
+      security:
+        - tokenAuth: []
+        - cookieAuth: []
       tags:
         - recurring-slots
   /api/scheduleitems:
@@ -14832,6 +15539,13 @@ components:
         - name
         - ordering
         - pool
+    FillRulesListErrorResponse400:
+      discriminator:
+        propertyName: type
+        mapping:
+          client_error: '#/components/schemas/ParseErrorResponse'
+      oneOf:
+        - $ref: '#/components/schemas/ParseErrorResponse'
     FrequencyEnum:
       description: |-
         * `daily` - Daily
@@ -17876,6 +18590,29 @@ components:
       required:
         - count
         - results
+    PaginatedFillRuleSummaryList:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          format: uri
+          example: http://api.example.org/accounts/?offset=400&limit=100
+          nullable: true
+        previous:
+          type: string
+          format: uri
+          example: http://api.example.org/accounts/?offset=200&limit=100
+          nullable: true
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/FillRuleSummary'
+      required:
+        - count
+        - results
     PaginatedOrganizationList:
       type: object
       properties:
@@ -18210,6 +18947,57 @@ components:
       properties:
         role:
           $ref: '#/components/schemas/RoleEnum'
+    PatchedRecurringSlotRequest:
+      description: |-
+        Recurring airtime. Each occurrence becomes an airtime grant two
+        Mondays before it airs; the grant copies the slot's time.
+
+        Staff create, change and delete slots. A change only affects grants
+        issued after it: grants already issued keep their time and owner.
+      type: object
+      properties:
+        organization:
+          description: Who gets the airtime. Unowned slots issue grants to the station.
+          type: integer
+          nullable: true
+        frequency:
+          $ref: '#/components/schemas/FrequencyEnum'
+        interval:
+          type: integer
+          maximum: 32767
+          minimum: 1
+        weekdays:
+          description: 0 is Monday. Required for weekly and monthly slots; for daily slots, empty means every day.
+          type: array
+          items:
+            type: integer
+            maximum: 6
+            minimum: 0
+        monthWeeks:
+          description: 'Monthly slots: which occurrence of the weekday in the month, 1-5, or -1 for the last.'
+          type: array
+          items:
+            type: integer
+            maximum: 5
+            minimum: -1
+        startTime:
+          description: Wall-clock time in Europe/Oslo.
+          type: string
+          format: time
+        duration:
+          type: string
+        startsOn:
+          type: string
+          format: date
+        endsOn:
+          type: string
+          format: date
+          nullable: true
+        defaultFillRuleId:
+          description: Leave out to use the owner's 'newest uploads, fill the window' rule, created if needed. Null means grants don't fill themselves.
+          type: integer
+          nullable: true
+          writeOnly: true
     PatchedScheduleitemModifyRequest:
       description: |-
         Staff corrections to the compiled schedule.
@@ -18519,6 +19307,9 @@ components:
       description: |-
         Recurring airtime. Each occurrence becomes an airtime grant two
         Mondays before it airs; the grant copies the slot's time.
+
+        Staff create, change and delete slots. A change only affects grants
+        issued after it: grants already issued keep their time and owner.
       type: object
       properties:
         id:
@@ -18528,14 +19319,16 @@ components:
           description: Who gets the airtime. Unowned slots issue grants to the station.
           type: integer
           nullable: true
+        organizationName:
+          type: string
+          nullable: true
           readOnly: true
         frequency:
-          allOf:
-            - $ref: '#/components/schemas/FrequencyEnum'
-          readOnly: true
+          $ref: '#/components/schemas/FrequencyEnum'
         interval:
           type: integer
-          readOnly: true
+          maximum: 32767
+          minimum: 1
         weekdays:
           description: 0 is Monday. Required for weekly and monthly slots; for daily slots, empty means every day.
           type: array
@@ -18543,7 +19336,6 @@ components:
             type: integer
             maximum: 6
             minimum: 0
-          readOnly: true
         monthWeeks:
           description: 'Monthly slots: which occurrence of the weekday in the month, 1-5, or -1 for the last.'
           type: array
@@ -18551,24 +19343,19 @@ components:
             type: integer
             maximum: 5
             minimum: -1
-          readOnly: true
         startTime:
           description: Wall-clock time in Europe/Oslo.
           type: string
           format: time
-          readOnly: true
         duration:
           type: string
-          readOnly: true
         startsOn:
           type: string
           format: date
-          readOnly: true
         endsOn:
           type: string
           format: date
           nullable: true
-          readOnly: true
         defaultFillRule:
           allOf:
             - $ref: '#/components/schemas/FillRuleSummary'
@@ -18581,15 +19368,11 @@ components:
         - defaultFillRule
         - description
         - duration
-        - endsOn
-        - frequency
         - id
-        - interval
-        - monthWeeks
         - organization
+        - organizationName
         - startTime
         - startsOn
-        - weekdays
     RecurringSlotCreationRequest:
       type: object
       properties:
@@ -18728,6 +19511,62 @@ components:
       required:
         - organization
         - slot
+    RecurringSlotRequest:
+      description: |-
+        Recurring airtime. Each occurrence becomes an airtime grant two
+        Mondays before it airs; the grant copies the slot's time.
+
+        Staff create, change and delete slots. A change only affects grants
+        issued after it: grants already issued keep their time and owner.
+      type: object
+      properties:
+        organization:
+          description: Who gets the airtime. Unowned slots issue grants to the station.
+          type: integer
+          nullable: true
+        frequency:
+          $ref: '#/components/schemas/FrequencyEnum'
+        interval:
+          type: integer
+          maximum: 32767
+          minimum: 1
+        weekdays:
+          description: 0 is Monday. Required for weekly and monthly slots; for daily slots, empty means every day.
+          type: array
+          items:
+            type: integer
+            maximum: 6
+            minimum: 0
+        monthWeeks:
+          description: 'Monthly slots: which occurrence of the weekday in the month, 1-5, or -1 for the last.'
+          type: array
+          items:
+            type: integer
+            maximum: 5
+            minimum: -1
+        startTime:
+          description: Wall-clock time in Europe/Oslo.
+          type: string
+          format: time
+        duration:
+          type: string
+        startsOn:
+          type: string
+          format: date
+        endsOn:
+          type: string
+          format: date
+          nullable: true
+        defaultFillRuleId:
+          description: Leave out to use the owner's 'newest uploads, fill the window' rule, created if needed. Null means grants don't fill themselves.
+          type: integer
+          nullable: true
+          writeOnly: true
+      required:
+        - duration
+        - organization
+        - startTime
+        - startsOn
     RecurringSlotRequestEnvelope:
       description: Read envelope around the two deliberately separate request models.
       type: object
@@ -19020,6 +19859,385 @@ components:
       required:
         - errors
         - type
+    RecurringSlotsCreateDefaultFillRuleIdErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `default_fill_rule_id` - default_fill_rule_id'
+          type: string
+          enum:
+            - default_fill_rule_id
+        code:
+          description: |-
+            * `does_not_exist` - does_not_exist
+            * `incorrect_type` - incorrect_type
+          type: string
+          enum:
+            - does_not_exist
+            - incorrect_type
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    RecurringSlotsCreateDurationErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `duration` - duration'
+          type: string
+          enum:
+            - duration
+        code:
+          description: |-
+            * `invalid` - invalid
+            * `min_value` - min_value
+            * `null` - null
+            * `required` - required
+          type: string
+          enum:
+            - invalid
+            - min_value
+            - 'null'
+            - required
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    RecurringSlotsCreateEndsOnErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `ends_on` - ends_on'
+          type: string
+          enum:
+            - ends_on
+        code:
+          description: |-
+            * `datetime` - datetime
+            * `invalid` - invalid
+          type: string
+          enum:
+            - datetime
+            - invalid
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    RecurringSlotsCreateError:
+      discriminator:
+        propertyName: attr
+        mapping:
+          non_field_errors: '#/components/schemas/RecurringSlotsCreateNonFieldErrorsErrorComponent'
+          organization: '#/components/schemas/RecurringSlotsCreateOrganizationErrorComponent'
+          frequency: '#/components/schemas/RecurringSlotsCreateFrequencyErrorComponent'
+          interval: '#/components/schemas/RecurringSlotsCreateIntervalErrorComponent'
+          weekdays: '#/components/schemas/RecurringSlotsCreateWeekdaysErrorComponent'
+          weekdays.INDEX: '#/components/schemas/RecurringSlotsCreateWeekdaysINDEXErrorComponent'
+          month_weeks: '#/components/schemas/RecurringSlotsCreateMonthWeeksErrorComponent'
+          month_weeks.INDEX: '#/components/schemas/RecurringSlotsCreateMonthWeeksINDEXErrorComponent'
+          start_time: '#/components/schemas/RecurringSlotsCreateStartTimeErrorComponent'
+          duration: '#/components/schemas/RecurringSlotsCreateDurationErrorComponent'
+          starts_on: '#/components/schemas/RecurringSlotsCreateStartsOnErrorComponent'
+          ends_on: '#/components/schemas/RecurringSlotsCreateEndsOnErrorComponent'
+          default_fill_rule_id: '#/components/schemas/RecurringSlotsCreateDefaultFillRuleIdErrorComponent'
+      oneOf:
+        - $ref: '#/components/schemas/RecurringSlotsCreateNonFieldErrorsErrorComponent'
+        - $ref: '#/components/schemas/RecurringSlotsCreateOrganizationErrorComponent'
+        - $ref: '#/components/schemas/RecurringSlotsCreateFrequencyErrorComponent'
+        - $ref: '#/components/schemas/RecurringSlotsCreateIntervalErrorComponent'
+        - $ref: '#/components/schemas/RecurringSlotsCreateWeekdaysErrorComponent'
+        - $ref: '#/components/schemas/RecurringSlotsCreateWeekdaysINDEXErrorComponent'
+        - $ref: '#/components/schemas/RecurringSlotsCreateMonthWeeksErrorComponent'
+        - $ref: '#/components/schemas/RecurringSlotsCreateMonthWeeksINDEXErrorComponent'
+        - $ref: '#/components/schemas/RecurringSlotsCreateStartTimeErrorComponent'
+        - $ref: '#/components/schemas/RecurringSlotsCreateDurationErrorComponent'
+        - $ref: '#/components/schemas/RecurringSlotsCreateStartsOnErrorComponent'
+        - $ref: '#/components/schemas/RecurringSlotsCreateEndsOnErrorComponent'
+        - $ref: '#/components/schemas/RecurringSlotsCreateDefaultFillRuleIdErrorComponent'
+    RecurringSlotsCreateErrorResponse400:
+      discriminator:
+        propertyName: type
+        mapping:
+          validation_error: '#/components/schemas/RecurringSlotsCreateValidationError'
+          client_error: '#/components/schemas/ParseErrorResponse'
+      oneOf:
+        - $ref: '#/components/schemas/RecurringSlotsCreateValidationError'
+        - $ref: '#/components/schemas/ParseErrorResponse'
+    RecurringSlotsCreateFrequencyErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `frequency` - frequency'
+          type: string
+          enum:
+            - frequency
+        code:
+          description: |-
+            * `invalid_choice` - invalid_choice
+            * `null` - null
+          type: string
+          enum:
+            - invalid_choice
+            - 'null'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    RecurringSlotsCreateIntervalErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `interval` - interval'
+          type: string
+          enum:
+            - interval
+        code:
+          description: |-
+            * `invalid` - invalid
+            * `max_string_length` - max_string_length
+            * `max_value` - max_value
+            * `min_value` - min_value
+            * `null` - null
+          type: string
+          enum:
+            - invalid
+            - max_string_length
+            - max_value
+            - min_value
+            - 'null'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    RecurringSlotsCreateMonthWeeksErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `month_weeks` - month_weeks'
+          type: string
+          enum:
+            - month_weeks
+        code:
+          description: |-
+            * `not_a_list` - not_a_list
+            * `null` - null
+          type: string
+          enum:
+            - not_a_list
+            - 'null'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    RecurringSlotsCreateMonthWeeksINDEXErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `month_weeks.INDEX` - month_weeks.INDEX'
+          type: string
+          enum:
+            - month_weeks.INDEX
+        code:
+          description: |-
+            * `invalid` - invalid
+            * `max_string_length` - max_string_length
+            * `max_value` - max_value
+            * `min_value` - min_value
+            * `null` - null
+            * `required` - required
+          type: string
+          enum:
+            - invalid
+            - max_string_length
+            - max_value
+            - min_value
+            - 'null'
+            - required
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    RecurringSlotsCreateNonFieldErrorsErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `non_field_errors` - non_field_errors'
+          type: string
+          enum:
+            - non_field_errors
+        code:
+          description: |-
+            * `invalid` - invalid
+            * `null` - null
+          type: string
+          enum:
+            - invalid
+            - 'null'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    RecurringSlotsCreateOrganizationErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `organization` - organization'
+          type: string
+          enum:
+            - organization
+        code:
+          description: |-
+            * `does_not_exist` - does_not_exist
+            * `incorrect_type` - incorrect_type
+            * `required` - required
+          type: string
+          enum:
+            - does_not_exist
+            - incorrect_type
+            - required
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    RecurringSlotsCreateStartTimeErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `start_time` - start_time'
+          type: string
+          enum:
+            - start_time
+        code:
+          description: |-
+            * `invalid` - invalid
+            * `null` - null
+            * `required` - required
+          type: string
+          enum:
+            - invalid
+            - 'null'
+            - required
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    RecurringSlotsCreateStartsOnErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `starts_on` - starts_on'
+          type: string
+          enum:
+            - starts_on
+        code:
+          description: |-
+            * `datetime` - datetime
+            * `invalid` - invalid
+            * `null` - null
+            * `required` - required
+          type: string
+          enum:
+            - datetime
+            - invalid
+            - 'null'
+            - required
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    RecurringSlotsCreateValidationError:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/ValidationErrorEnum'
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/RecurringSlotsCreateError'
+      required:
+        - errors
+        - type
+    RecurringSlotsCreateWeekdaysErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `weekdays` - weekdays'
+          type: string
+          enum:
+            - weekdays
+        code:
+          description: |-
+            * `not_a_list` - not_a_list
+            * `null` - null
+          type: string
+          enum:
+            - not_a_list
+            - 'null'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    RecurringSlotsCreateWeekdaysINDEXErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `weekdays.INDEX` - weekdays.INDEX'
+          type: string
+          enum:
+            - weekdays.INDEX
+        code:
+          description: |-
+            * `invalid` - invalid
+            * `max_string_length` - max_string_length
+            * `max_value` - max_value
+            * `min_value` - min_value
+            * `null` - null
+            * `required` - required
+          type: string
+          enum:
+            - invalid
+            - max_string_length
+            - max_value
+            - min_value
+            - 'null'
+            - required
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    RecurringSlotsDestroyErrorResponse400:
+      discriminator:
+        propertyName: type
+        mapping:
+          client_error: '#/components/schemas/ParseErrorResponse'
+      oneOf:
+        - $ref: '#/components/schemas/ParseErrorResponse'
     RecurringSlotsListErrorResponse400:
       discriminator:
         propertyName: type
@@ -19027,6 +20245,378 @@ components:
           client_error: '#/components/schemas/ParseErrorResponse'
       oneOf:
         - $ref: '#/components/schemas/ParseErrorResponse'
+    RecurringSlotsPartialUpdateDefaultFillRuleIdErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `default_fill_rule_id` - default_fill_rule_id'
+          type: string
+          enum:
+            - default_fill_rule_id
+        code:
+          description: |-
+            * `does_not_exist` - does_not_exist
+            * `incorrect_type` - incorrect_type
+          type: string
+          enum:
+            - does_not_exist
+            - incorrect_type
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    RecurringSlotsPartialUpdateDurationErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `duration` - duration'
+          type: string
+          enum:
+            - duration
+        code:
+          description: |-
+            * `invalid` - invalid
+            * `min_value` - min_value
+            * `null` - null
+            * `required` - required
+          type: string
+          enum:
+            - invalid
+            - min_value
+            - 'null'
+            - required
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    RecurringSlotsPartialUpdateEndsOnErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `ends_on` - ends_on'
+          type: string
+          enum:
+            - ends_on
+        code:
+          description: |-
+            * `datetime` - datetime
+            * `invalid` - invalid
+          type: string
+          enum:
+            - datetime
+            - invalid
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    RecurringSlotsPartialUpdateError:
+      discriminator:
+        propertyName: attr
+        mapping:
+          non_field_errors: '#/components/schemas/RecurringSlotsPartialUpdateNonFieldErrorsErrorComponent'
+          organization: '#/components/schemas/RecurringSlotsPartialUpdateOrganizationErrorComponent'
+          frequency: '#/components/schemas/RecurringSlotsPartialUpdateFrequencyErrorComponent'
+          interval: '#/components/schemas/RecurringSlotsPartialUpdateIntervalErrorComponent'
+          weekdays: '#/components/schemas/RecurringSlotsPartialUpdateWeekdaysErrorComponent'
+          weekdays.INDEX: '#/components/schemas/RecurringSlotsPartialUpdateWeekdaysINDEXErrorComponent'
+          month_weeks: '#/components/schemas/RecurringSlotsPartialUpdateMonthWeeksErrorComponent'
+          month_weeks.INDEX: '#/components/schemas/RecurringSlotsPartialUpdateMonthWeeksINDEXErrorComponent'
+          start_time: '#/components/schemas/RecurringSlotsPartialUpdateStartTimeErrorComponent'
+          duration: '#/components/schemas/RecurringSlotsPartialUpdateDurationErrorComponent'
+          starts_on: '#/components/schemas/RecurringSlotsPartialUpdateStartsOnErrorComponent'
+          ends_on: '#/components/schemas/RecurringSlotsPartialUpdateEndsOnErrorComponent'
+          default_fill_rule_id: '#/components/schemas/RecurringSlotsPartialUpdateDefaultFillRuleIdErrorComponent'
+      oneOf:
+        - $ref: '#/components/schemas/RecurringSlotsPartialUpdateNonFieldErrorsErrorComponent'
+        - $ref: '#/components/schemas/RecurringSlotsPartialUpdateOrganizationErrorComponent'
+        - $ref: '#/components/schemas/RecurringSlotsPartialUpdateFrequencyErrorComponent'
+        - $ref: '#/components/schemas/RecurringSlotsPartialUpdateIntervalErrorComponent'
+        - $ref: '#/components/schemas/RecurringSlotsPartialUpdateWeekdaysErrorComponent'
+        - $ref: '#/components/schemas/RecurringSlotsPartialUpdateWeekdaysINDEXErrorComponent'
+        - $ref: '#/components/schemas/RecurringSlotsPartialUpdateMonthWeeksErrorComponent'
+        - $ref: '#/components/schemas/RecurringSlotsPartialUpdateMonthWeeksINDEXErrorComponent'
+        - $ref: '#/components/schemas/RecurringSlotsPartialUpdateStartTimeErrorComponent'
+        - $ref: '#/components/schemas/RecurringSlotsPartialUpdateDurationErrorComponent'
+        - $ref: '#/components/schemas/RecurringSlotsPartialUpdateStartsOnErrorComponent'
+        - $ref: '#/components/schemas/RecurringSlotsPartialUpdateEndsOnErrorComponent'
+        - $ref: '#/components/schemas/RecurringSlotsPartialUpdateDefaultFillRuleIdErrorComponent'
+    RecurringSlotsPartialUpdateErrorResponse400:
+      discriminator:
+        propertyName: type
+        mapping:
+          validation_error: '#/components/schemas/RecurringSlotsPartialUpdateValidationError'
+          client_error: '#/components/schemas/ParseErrorResponse'
+      oneOf:
+        - $ref: '#/components/schemas/RecurringSlotsPartialUpdateValidationError'
+        - $ref: '#/components/schemas/ParseErrorResponse'
+    RecurringSlotsPartialUpdateFrequencyErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `frequency` - frequency'
+          type: string
+          enum:
+            - frequency
+        code:
+          description: |-
+            * `invalid_choice` - invalid_choice
+            * `null` - null
+          type: string
+          enum:
+            - invalid_choice
+            - 'null'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    RecurringSlotsPartialUpdateIntervalErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `interval` - interval'
+          type: string
+          enum:
+            - interval
+        code:
+          description: |-
+            * `invalid` - invalid
+            * `max_string_length` - max_string_length
+            * `max_value` - max_value
+            * `min_value` - min_value
+            * `null` - null
+          type: string
+          enum:
+            - invalid
+            - max_string_length
+            - max_value
+            - min_value
+            - 'null'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    RecurringSlotsPartialUpdateMonthWeeksErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `month_weeks` - month_weeks'
+          type: string
+          enum:
+            - month_weeks
+        code:
+          description: |-
+            * `not_a_list` - not_a_list
+            * `null` - null
+          type: string
+          enum:
+            - not_a_list
+            - 'null'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    RecurringSlotsPartialUpdateMonthWeeksINDEXErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `month_weeks.INDEX` - month_weeks.INDEX'
+          type: string
+          enum:
+            - month_weeks.INDEX
+        code:
+          description: |-
+            * `invalid` - invalid
+            * `max_string_length` - max_string_length
+            * `max_value` - max_value
+            * `min_value` - min_value
+            * `null` - null
+            * `required` - required
+          type: string
+          enum:
+            - invalid
+            - max_string_length
+            - max_value
+            - min_value
+            - 'null'
+            - required
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    RecurringSlotsPartialUpdateNonFieldErrorsErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `non_field_errors` - non_field_errors'
+          type: string
+          enum:
+            - non_field_errors
+        code:
+          description: |-
+            * `invalid` - invalid
+            * `null` - null
+          type: string
+          enum:
+            - invalid
+            - 'null'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    RecurringSlotsPartialUpdateOrganizationErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `organization` - organization'
+          type: string
+          enum:
+            - organization
+        code:
+          description: |-
+            * `does_not_exist` - does_not_exist
+            * `incorrect_type` - incorrect_type
+            * `required` - required
+          type: string
+          enum:
+            - does_not_exist
+            - incorrect_type
+            - required
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    RecurringSlotsPartialUpdateStartTimeErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `start_time` - start_time'
+          type: string
+          enum:
+            - start_time
+        code:
+          description: |-
+            * `invalid` - invalid
+            * `null` - null
+            * `required` - required
+          type: string
+          enum:
+            - invalid
+            - 'null'
+            - required
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    RecurringSlotsPartialUpdateStartsOnErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `starts_on` - starts_on'
+          type: string
+          enum:
+            - starts_on
+        code:
+          description: |-
+            * `datetime` - datetime
+            * `invalid` - invalid
+            * `null` - null
+            * `required` - required
+          type: string
+          enum:
+            - datetime
+            - invalid
+            - 'null'
+            - required
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    RecurringSlotsPartialUpdateValidationError:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/ValidationErrorEnum'
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/RecurringSlotsPartialUpdateError'
+      required:
+        - errors
+        - type
+    RecurringSlotsPartialUpdateWeekdaysErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `weekdays` - weekdays'
+          type: string
+          enum:
+            - weekdays
+        code:
+          description: |-
+            * `not_a_list` - not_a_list
+            * `null` - null
+          type: string
+          enum:
+            - not_a_list
+            - 'null'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    RecurringSlotsPartialUpdateWeekdaysINDEXErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `weekdays.INDEX` - weekdays.INDEX'
+          type: string
+          enum:
+            - weekdays.INDEX
+        code:
+          description: |-
+            * `invalid` - invalid
+            * `max_string_length` - max_string_length
+            * `max_value` - max_value
+            * `min_value` - min_value
+            * `null` - null
+            * `required` - required
+          type: string
+          enum:
+            - invalid
+            - max_string_length
+            - max_value
+            - min_value
+            - 'null'
+            - required
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
     RecurringSlotsRetrieveErrorResponse400:
       discriminator:
         propertyName: type
@@ -19034,6 +20624,378 @@ components:
           client_error: '#/components/schemas/ParseErrorResponse'
       oneOf:
         - $ref: '#/components/schemas/ParseErrorResponse'
+    RecurringSlotsUpdateDefaultFillRuleIdErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `default_fill_rule_id` - default_fill_rule_id'
+          type: string
+          enum:
+            - default_fill_rule_id
+        code:
+          description: |-
+            * `does_not_exist` - does_not_exist
+            * `incorrect_type` - incorrect_type
+          type: string
+          enum:
+            - does_not_exist
+            - incorrect_type
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    RecurringSlotsUpdateDurationErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `duration` - duration'
+          type: string
+          enum:
+            - duration
+        code:
+          description: |-
+            * `invalid` - invalid
+            * `min_value` - min_value
+            * `null` - null
+            * `required` - required
+          type: string
+          enum:
+            - invalid
+            - min_value
+            - 'null'
+            - required
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    RecurringSlotsUpdateEndsOnErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `ends_on` - ends_on'
+          type: string
+          enum:
+            - ends_on
+        code:
+          description: |-
+            * `datetime` - datetime
+            * `invalid` - invalid
+          type: string
+          enum:
+            - datetime
+            - invalid
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    RecurringSlotsUpdateError:
+      discriminator:
+        propertyName: attr
+        mapping:
+          non_field_errors: '#/components/schemas/RecurringSlotsUpdateNonFieldErrorsErrorComponent'
+          organization: '#/components/schemas/RecurringSlotsUpdateOrganizationErrorComponent'
+          frequency: '#/components/schemas/RecurringSlotsUpdateFrequencyErrorComponent'
+          interval: '#/components/schemas/RecurringSlotsUpdateIntervalErrorComponent'
+          weekdays: '#/components/schemas/RecurringSlotsUpdateWeekdaysErrorComponent'
+          weekdays.INDEX: '#/components/schemas/RecurringSlotsUpdateWeekdaysINDEXErrorComponent'
+          month_weeks: '#/components/schemas/RecurringSlotsUpdateMonthWeeksErrorComponent'
+          month_weeks.INDEX: '#/components/schemas/RecurringSlotsUpdateMonthWeeksINDEXErrorComponent'
+          start_time: '#/components/schemas/RecurringSlotsUpdateStartTimeErrorComponent'
+          duration: '#/components/schemas/RecurringSlotsUpdateDurationErrorComponent'
+          starts_on: '#/components/schemas/RecurringSlotsUpdateStartsOnErrorComponent'
+          ends_on: '#/components/schemas/RecurringSlotsUpdateEndsOnErrorComponent'
+          default_fill_rule_id: '#/components/schemas/RecurringSlotsUpdateDefaultFillRuleIdErrorComponent'
+      oneOf:
+        - $ref: '#/components/schemas/RecurringSlotsUpdateNonFieldErrorsErrorComponent'
+        - $ref: '#/components/schemas/RecurringSlotsUpdateOrganizationErrorComponent'
+        - $ref: '#/components/schemas/RecurringSlotsUpdateFrequencyErrorComponent'
+        - $ref: '#/components/schemas/RecurringSlotsUpdateIntervalErrorComponent'
+        - $ref: '#/components/schemas/RecurringSlotsUpdateWeekdaysErrorComponent'
+        - $ref: '#/components/schemas/RecurringSlotsUpdateWeekdaysINDEXErrorComponent'
+        - $ref: '#/components/schemas/RecurringSlotsUpdateMonthWeeksErrorComponent'
+        - $ref: '#/components/schemas/RecurringSlotsUpdateMonthWeeksINDEXErrorComponent'
+        - $ref: '#/components/schemas/RecurringSlotsUpdateStartTimeErrorComponent'
+        - $ref: '#/components/schemas/RecurringSlotsUpdateDurationErrorComponent'
+        - $ref: '#/components/schemas/RecurringSlotsUpdateStartsOnErrorComponent'
+        - $ref: '#/components/schemas/RecurringSlotsUpdateEndsOnErrorComponent'
+        - $ref: '#/components/schemas/RecurringSlotsUpdateDefaultFillRuleIdErrorComponent'
+    RecurringSlotsUpdateErrorResponse400:
+      discriminator:
+        propertyName: type
+        mapping:
+          validation_error: '#/components/schemas/RecurringSlotsUpdateValidationError'
+          client_error: '#/components/schemas/ParseErrorResponse'
+      oneOf:
+        - $ref: '#/components/schemas/RecurringSlotsUpdateValidationError'
+        - $ref: '#/components/schemas/ParseErrorResponse'
+    RecurringSlotsUpdateFrequencyErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `frequency` - frequency'
+          type: string
+          enum:
+            - frequency
+        code:
+          description: |-
+            * `invalid_choice` - invalid_choice
+            * `null` - null
+          type: string
+          enum:
+            - invalid_choice
+            - 'null'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    RecurringSlotsUpdateIntervalErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `interval` - interval'
+          type: string
+          enum:
+            - interval
+        code:
+          description: |-
+            * `invalid` - invalid
+            * `max_string_length` - max_string_length
+            * `max_value` - max_value
+            * `min_value` - min_value
+            * `null` - null
+          type: string
+          enum:
+            - invalid
+            - max_string_length
+            - max_value
+            - min_value
+            - 'null'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    RecurringSlotsUpdateMonthWeeksErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `month_weeks` - month_weeks'
+          type: string
+          enum:
+            - month_weeks
+        code:
+          description: |-
+            * `not_a_list` - not_a_list
+            * `null` - null
+          type: string
+          enum:
+            - not_a_list
+            - 'null'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    RecurringSlotsUpdateMonthWeeksINDEXErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `month_weeks.INDEX` - month_weeks.INDEX'
+          type: string
+          enum:
+            - month_weeks.INDEX
+        code:
+          description: |-
+            * `invalid` - invalid
+            * `max_string_length` - max_string_length
+            * `max_value` - max_value
+            * `min_value` - min_value
+            * `null` - null
+            * `required` - required
+          type: string
+          enum:
+            - invalid
+            - max_string_length
+            - max_value
+            - min_value
+            - 'null'
+            - required
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    RecurringSlotsUpdateNonFieldErrorsErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `non_field_errors` - non_field_errors'
+          type: string
+          enum:
+            - non_field_errors
+        code:
+          description: |-
+            * `invalid` - invalid
+            * `null` - null
+          type: string
+          enum:
+            - invalid
+            - 'null'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    RecurringSlotsUpdateOrganizationErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `organization` - organization'
+          type: string
+          enum:
+            - organization
+        code:
+          description: |-
+            * `does_not_exist` - does_not_exist
+            * `incorrect_type` - incorrect_type
+            * `required` - required
+          type: string
+          enum:
+            - does_not_exist
+            - incorrect_type
+            - required
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    RecurringSlotsUpdateStartTimeErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `start_time` - start_time'
+          type: string
+          enum:
+            - start_time
+        code:
+          description: |-
+            * `invalid` - invalid
+            * `null` - null
+            * `required` - required
+          type: string
+          enum:
+            - invalid
+            - 'null'
+            - required
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    RecurringSlotsUpdateStartsOnErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `starts_on` - starts_on'
+          type: string
+          enum:
+            - starts_on
+        code:
+          description: |-
+            * `datetime` - datetime
+            * `invalid` - invalid
+            * `null` - null
+            * `required` - required
+          type: string
+          enum:
+            - datetime
+            - invalid
+            - 'null'
+            - required
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    RecurringSlotsUpdateValidationError:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/ValidationErrorEnum'
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/RecurringSlotsUpdateError'
+      required:
+        - errors
+        - type
+    RecurringSlotsUpdateWeekdaysErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `weekdays` - weekdays'
+          type: string
+          enum:
+            - weekdays
+        code:
+          description: |-
+            * `not_a_list` - not_a_list
+            * `null` - null
+          type: string
+          enum:
+            - not_a_list
+            - 'null'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    RecurringSlotsUpdateWeekdaysINDEXErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `weekdays.INDEX` - weekdays.INDEX'
+          type: string
+          enum:
+            - weekdays.INDEX
+        code:
+          description: |-
+            * `invalid` - invalid
+            * `max_string_length` - max_string_length
+            * `max_value` - max_value
+            * `min_value` - min_value
+            * `null` - null
+            * `required` - required
+          type: string
+          enum:
+            - invalid
+            - max_string_length
+            - max_value
+            - min_value
+            - 'null'
+            - required
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
     RoleEnum:
       description: |-
         * `network_logo` - Network logo

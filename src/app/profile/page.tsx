@@ -26,9 +26,12 @@ const StaffTools = () => (
     <p className="text-foreground/75 mt-1">
       Du kan programmere sendeplanen på tvers av alle organisasjoner.
     </p>
-    <div className="mt-3">
+    <div className="mt-3 flex flex-wrap gap-2">
       <ActionLink href="/schedule/plan" variant="solid" icon={<GoCalendar />}>
         Programmer hele sendeplanen
+      </ActionLink>
+      <ActionLink href="/schedule/plan/slots" icon={<GoCalendar />}>
+        Faste sendeflater
       </ActionLink>
     </div>
   </section>
