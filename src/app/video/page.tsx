@@ -87,7 +87,7 @@ export default async function ArchivePage({ searchParams }: ArchivePageProps) {
   ].join(":");
 
   return (
-    <main className="w-full max-w-5xl grow px-2 pb-12">
+    <main className="w-full max-w-7xl grow px-4 pt-10 sm:px-6">
       <header className="space-y-4">
         {/* An organization's name heads its own view of the archive, but the
             unnarrowed page had nothing to say beyond the word already in the

@@ -12,7 +12,7 @@ type ButtonLinkProps = LinkProps &
 export const ButtonLink = ({ className, size = "md", ...props }: ButtonLinkProps) => (
   <Link
     className={cx(
-      "inline-flex w-fit items-center justify-center rounded-lg bg-accent px-4 font-medium text-accent-foreground transition-colors hover:bg-accent/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus",
+      "inline-flex w-fit items-center justify-center rounded-md bg-accent px-4 font-semibold text-accent-foreground transition-colors hover:bg-accent/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus",
       size === "sm" ? "min-h-8 text-sm" : size === "lg" ? "min-h-12 text-lg" : "min-h-10",
       className,
     )}

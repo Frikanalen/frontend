@@ -19,7 +19,7 @@ export const ModeBadge = ({
   !automatic && empty ? (
     <span
       className={cx(
-        "inline-flex items-center gap-1 rounded-full bg-default-100 px-2 py-0.5 text-xs font-medium text-default-700",
+        "inline-flex items-center gap-1 rounded-md bg-default-100 px-2 py-0.5 text-xs font-medium text-default-700",
         className,
       )}
     >
@@ -28,7 +28,7 @@ export const ModeBadge = ({
   ) : automatic ? (
     <span
       className={cx(
-        "inline-flex items-center gap-1 rounded-full border border-dashed border-secondary-400 bg-secondary-50 px-2 py-0.5 text-xs font-medium text-secondary-800 dark:bg-secondary-950 dark:text-secondary-200",
+        "inline-flex items-center gap-1 rounded-md bg-secondary-50 px-2 py-0.5 text-xs font-medium text-secondary-800",
         className,
       )}
     >
@@ -37,7 +37,7 @@ export const ModeBadge = ({
   ) : (
     <span
       className={cx(
-        "inline-flex items-center gap-1 rounded-full bg-success-100 px-2 py-0.5 text-xs font-medium text-success-800 dark:bg-success-900 dark:text-success-100",
+        "inline-flex items-center gap-1 rounded-md bg-default-100 px-2 py-0.5 text-xs font-medium text-default-800",
         className,
       )}
     >
@@ -47,6 +47,4 @@ export const ModeBadge = ({
 
 /** Card and row styling that carries the same distinction as the badge. */
 export const modeSurface = (automatic: boolean) =>
-  automatic
-    ? "border-2 border-dashed border-secondary-300 bg-secondary-50/40 dark:bg-secondary-950/40"
-    : "border-2 border-solid border-success-400 bg-content1";
+  automatic ? "border border-default-200 bg-content1" : "border border-default-200 bg-content1";

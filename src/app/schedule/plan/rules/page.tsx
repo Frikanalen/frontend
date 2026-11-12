@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 export default function Page() {
   return (
     <main className="w-full max-w-3xl grow px-4 pb-10">
-      <article className="prose max-w-none rounded-xl bg-background p-6 shadow-lg dark:prose-invert">
+      <article className="prose mt-10 max-w-none bg-background p-6 sm:p-8 dark:prose-invert">
         <h1>Slik virker sendetid</h1>
 
         <p>

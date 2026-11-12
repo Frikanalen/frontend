@@ -15,10 +15,10 @@ export const ScheduleDateSelector = ({
   className?: string;
 }) => (
   <Popover>
-    <Button size={"sm"} variant={"outline"} className={`rounded-md ${className ?? ""}`}>
+    <Button size={"sm"} variant={"outline"} className={className}>
       Velg dato
     </Button>
-    <Popover.Content placement={"left"}>
+    <Popover.Content placement={"bottom end"}>
       <Popover.Dialog>
         <DayPicker
           animate

@@ -68,16 +68,14 @@ export const GrantsBoard = ({
       {grants.isLoading ? <p>Laster sendetid…</p> : null}
       {grants.isError ? <p role="alert">{formatApiError(grants.error)}</p> : null}
       {grants.isSuccess && results.length === 0 ? (
-        <p className="rounded-xl border border-default-200 bg-content1 p-4">
-          Ingen sendetid er tildelt ennå.
-        </p>
+        <p className="bg-background p-5">Ingen sendetid er tildelt ennå.</p>
       ) : null}
 
       {grants.isSuccess && results.length > 0 ? (
         <section className="space-y-3">
-          <h2 className="text-xl font-semibold">Kan settes opp ({editable.length})</h2>
+          <h2 className="text-xl font-bold">Kan settes opp ({editable.length})</h2>
           {editable.length === 0 ? (
-            <p className="rounded-xl border border-default-200 bg-content1 p-4">
+            <p className="bg-background p-5">
               Ingen sendetid kan endres nå. Listene under er låst eller allerede sendt.
             </p>
           ) : (
@@ -130,8 +128,8 @@ const CompactGrants = ({
   title: string;
 }) =>
   grants.length === 0 ? null : (
-    <details className="rounded-xl border border-default-200 p-3 text-sm text-default-600">
-      <summary className="cursor-pointer font-medium">
+    <details className="bg-background p-4 text-sm text-default-600">
+      <summary className="cursor-pointer font-semibold">
         {title} ({grants.length})
       </summary>
       <ul className="mt-2 divide-y divide-default-100">

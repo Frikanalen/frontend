@@ -43,52 +43,42 @@ export const ScheduleNavBar = ({
     phase === 0 ? router.replace(PREV_URL) : setPhase((phase - 1) as Exclude<Phase, 3>);
 
   return (
-    <div className="p-4 rounded-lg h-max">
+    <div className="flex flex-wrap items-end justify-between gap-x-10 gap-y-5">
+      <div>
+        <h1 className="text-5xl leading-none font-extrabold tracking-tighter sm:text-6xl">
+          Sendeplan
+        </h1>
+        <p className="mt-3 text-lg text-default-600 first-letter:uppercase">
+          {format(parsedDate, "PPPP", { locale: nb })}
+        </p>
+      </div>
       {/*
-        Five controls in one flat wrapping row rather than arrows around a
-        middle group, because the group could not shrink to fit a phone.
+        The controls wrap as flat items rather than as arrows around a middle
+        group, because a nested group could not shrink to fit a phone: the tab
+        strip alone is ~265px of unbreakable text. Below md the tabs take a
+        line of their own (`basis-full`), with the arrows and the date picker
+        on the line above.
 
-        The tab strip is ~265px of unbreakable text. On a 375px screen this bar
-        has 295px to work with, and two arrows plus their gaps eat 80 of it, so
-        the strip never fits on the same line as both arrows - it used to push
-        the forward arrow off the right edge and scroll the whole document
-        sideways. Flat items can wrap where a nested group cannot, so below md
-        this becomes three lines: the arrows flanking the date they move, the
-        phase tabs across the full width, then the date picker. `basis-full` on
-        the tabs states that split rather than leaving it to the incidental
-        width of a Norwegian long-form date.
-
-        From md up `flex-nowrap` puts it back on one line, and the auto margins
-        around the middle three keep them together in the centre with an arrow
-        pinned to each end - what `justify-between` did for the old grouping.
-
-        The arrows are `isIconOnly`: a plain HeroUI button reserves min-w-16 for
-        a text label, which is more than two arrows can afford here, and its
-        centred padding was what left the icon hanging outside the crushed
-        button. (The `min-w-none` that used to be here was not a real utility
-        and never applied.)
+        The arrows are `isIconOnly`: a plain HeroUI button reserves min-w-16
+        for a text label, which is more than two arrows can afford here.
       */}
-      <div className="flex flex-wrap items-center justify-center gap-4 md:flex-nowrap">
+      <div className="flex min-w-0 flex-wrap items-center gap-2">
         <Button
           size={"sm"}
           variant={"outline"}
           isIconOnly
-          className={"order-1 shrink-0 rounded-md"}
+          className={"order-2 shrink-0"}
           onPress={backward}
           aria-label={"tidligere"}
         >
           <GoArrowLeft title={"tidligere"} />
         </Button>
 
-        <div className={"order-2 md:order-3 text-sm text-center"}>
-          {format(parsedDate, "PPPP", { locale: nb })}
-        </div>
-
         <Button
           size={"sm"}
           variant={"outline"}
           isIconOnly
-          className={"order-3 md:order-5 shrink-0 rounded-md"}
+          className={"order-4 shrink-0"}
           onPress={forward}
           aria-label={"senere"}
         >
@@ -105,19 +95,19 @@ export const ScheduleNavBar = ({
             // on very small phones, where HeroUI's own overflow-x on the list
             // turns it into a scroller instead of letting it bleed out of the
             // card. Above ~300px the tabs fit and neither class does anything.
-            "order-4 basis-full min-w-0 flex justify-center md:order-2 md:basis-auto md:ml-auto"
+            "order-5 flex min-w-0 basis-full md:order-1 md:mr-4 md:basis-auto"
           }
         >
-          <Tabs.ListContainer className="max-w-full rounded-none bg-transparent">
-            <Tabs.List aria-label="Døgnfase" className="gap-1 p-0">
+          <Tabs.ListContainer className="max-w-full">
+            <Tabs.List aria-label="Døgnfase">
               {["Morgen", "Dag", "Kveld", "Natt"].map((title, index) => (
                 <Tabs.Tab
                   key={index}
                   id={String(index)}
-                  className="h-8 rounded-md px-3 text-default-500 data-[selected=true]:text-foreground"
+                  className="px-3 text-default-600 data-[selected=true]:text-foreground"
                 >
                   {title}
-                  <Tabs.Indicator className="rounded-md border border-default-300 bg-background shadow-sm" />
+                  <Tabs.Indicator />
                 </Tabs.Tab>
               ))}
             </Tabs.List>
@@ -125,7 +115,7 @@ export const ScheduleNavBar = ({
         </Tabs>
 
         <ScheduleDateSelector
-          className={"order-5 shrink-0 md:order-4 md:mr-auto"}
+          className={"order-3 shrink-0"}
           selected={parsedDate}
           onSelect={(selected) => {
             if (!selected) return;
@@ -133,7 +123,6 @@ export const ScheduleNavBar = ({
           }}
         />
       </div>
-      {/*eller*/}
     </div>
   );
 };

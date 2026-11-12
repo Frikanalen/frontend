@@ -69,9 +69,10 @@ export default async function VideoPage({ params, searchParams }: VideoPageProps
     const suspended = suspendedOrganizationFrom(video);
     if (suspended)
       return (
-        <main className="w-full max-w-5xl grow px-2 py-8">
+        // No <main> of its own: the video layout already provides it.
+        <div className="mx-auto w-full max-w-5xl px-4 pt-10 sm:px-6">
           <SuspendedNotice organization={suspended} context="video" />
-        </main>
+        </div>
       );
   }
   if (status !== 200)

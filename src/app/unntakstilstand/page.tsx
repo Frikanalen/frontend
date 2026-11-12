@@ -31,9 +31,9 @@ export const metadata: Metadata = {
 
 export default function Unntakstilstand() {
   return (
-    <main className="w-full max-w-5xl grow px-2">
-      <article className="prose prose-lg max-w-none dark:prose-invert">
-        <h1 className="text-5xl leading-16 font-bold">{title}</h1>
+    <main className="w-full max-w-7xl grow px-4 pt-10 sm:px-6">
+      <article className="prose prose-lg max-w-3xl dark:prose-invert">
+        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl sm:leading-tight">{title}</h1>
         <h2 className="text-xl font-bold">
           <span className="font-normal">av</span> Tom Fredrik Blenning
           <br />

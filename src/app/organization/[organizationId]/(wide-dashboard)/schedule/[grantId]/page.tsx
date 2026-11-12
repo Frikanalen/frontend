@@ -20,7 +20,7 @@ export default async function Page({
   if (!user.isStaff && !profileIsAdminOrMember(organizationId, user)) forbidden();
 
   return (
-    <div className="grow rounded-lg p-4">
+    <div className="grow">
       <GrantEditor
         backHref={user.isStaff ? "/schedule/plan" : `/organization/${organizationId}/schedule`}
         grantId={grantId}

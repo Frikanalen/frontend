@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import VideoPlayer from "@/components/stream/VideoPlayer";
 import { djangoVideoFilesToVidstackSrcList } from "@/app/video/[videoId]/VideoCard";
 import { VideoCardMeta } from "@/app/video/[videoId]/VideoCardMeta";
+import { VideoStage } from "@/app/video/[videoId]/VideoStage";
 import { ProgressBar } from "@heroui/react";
 import { Notice } from "@/components/Notice";
 
@@ -33,21 +34,23 @@ export const VideoCardForAdmin = ({
 
   if (!video.organization.fkmember) return notFound();
   return (
-    <div className="space-y-4 bg-background text-foreground rounded-xl">
-      <VideoPlayer
-        key={videoFiles[0] ? String(videoFiles[0].src) : "pending"}
-        title={video.name}
-        src={videoFiles}
-        poster={video.files.largeThumb?.url}
-        mediaPending={mediaPending}
-        startTime={startTime}
-      />
-
+    <VideoStage
+      player={
+        <VideoPlayer
+          key={videoFiles[0] ? String(videoFiles[0].src) : "pending"}
+          title={video.name}
+          src={videoFiles}
+          poster={video.files.largeThumb?.url}
+          mediaPending={mediaPending}
+          startTime={startTime}
+        />
+      }
+    >
       {previewPlaying && (
-        <div className="space-y-3 mx-4 rounded-md p-4 bg-content1">
-          <div className="flex items-center justify-evenly gap-4 text-warning">
+        <div className="space-y-3 border-l-4 border-warning bg-background p-4">
+          <div className="flex items-center gap-4">
             <div className="p-2">
-              <RiErrorWarningFill className="text-4xl" />
+              <RiErrorWarningFill className="text-4xl text-warning" />
             </div>
             <p>
               Du ser en foreløpig visningskopi i lavere kvalitet. Videoen behandles fortsatt og
@@ -73,6 +76,6 @@ export const VideoCardForAdmin = ({
       )}
 
       <VideoCardMeta video={video} />
-    </div>
+    </VideoStage>
   );
 };

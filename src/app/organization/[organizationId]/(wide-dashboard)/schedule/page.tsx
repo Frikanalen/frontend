@@ -22,21 +22,24 @@ export default async function Page({ params }: { params: Promise<{ organizationI
   const organization = organizationResponse.data;
 
   return (
-    <div className="grow space-y-5 rounded-lg p-4">
+    <div className="grow space-y-5">
       <header>
-        <h1 className="text-3xl font-bold">Sendetid</h1>
+        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">Sendetid</h1>
         <p className="mt-2 text-default-600">for {organization.name}</p>
         <p className="mt-2 max-w-3xl">
           Her er sendetiden Frikanalen har gitt dere. Sett opp hva som skal sendes i hver av dem før
           fristen.
         </p>
-        <Link className="mt-2 inline-block text-primary-700 underline" href="/schedule/plan/rules">
+        <Link
+          className="mt-2 inline-block font-semibold text-link hover:underline"
+          href="/schedule/plan/rules"
+        >
           Les hvordan sendetid virker
         </Link>
       </header>
 
       {!user.identityConfirmed && !user.isStaff ? (
-        <section className="rounded-xl border border-warning-300 bg-warning-50 p-5 dark:bg-warning-950">
+        <section className="border-l-4 border-warning bg-background p-5">
           <h2 className="text-xl font-semibold">Identiteten din er ikke bekreftet</h2>
           <p className="mt-2">
             Frikanalen må bekrefte identiteten din før du kan sette opp sendinger.
