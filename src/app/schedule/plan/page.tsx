@@ -38,12 +38,14 @@ export default async function Page({
           Tildelt sendetid for alle organisasjoner. Ny sendetid, avlysning og unntak fra låsing
           gjøres foreløpig i administrasjonen.
         </p>
-        <Link
-          className="mt-2 inline-block font-semibold text-link hover:underline"
-          href="/schedule/plan/rules"
-        >
-          Les hvordan sendetid virker
-        </Link>
+        <div className="mt-2 flex flex-wrap gap-x-5 gap-y-1">
+          <Link className="font-semibold text-link hover:underline" href="/schedule/plan/slots">
+            Faste sendeflater
+          </Link>
+          <Link className="font-semibold text-link hover:underline" href="/schedule/plan/rules">
+            Les hvordan sendetid virker
+          </Link>
+        </div>
       </header>
       <GrantsBoard
         organizations={organizations}
