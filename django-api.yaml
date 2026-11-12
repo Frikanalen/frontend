@@ -2988,8 +2988,10 @@ paths:
     get:
       operationId: live_sources_retrieve
       description: |-
-        Rename a source, or switch it off: a disabled source refuses every
-        encoder and reader, and can't be given to a video.
+        Rename a source, switch it off, or change where it is pulled from.
+
+        A disabled source refuses every encoder and reader, and can't be given
+        to a video. Setting a pull address revokes the source's encoder keys.
       parameters:
         - name: id
           in: path
@@ -3108,8 +3110,10 @@ paths:
     patch:
       operationId: live_sources_partial_update
       description: |-
-        Rename a source, or switch it off: a disabled source refuses every
-        encoder and reader, and can't be given to a video.
+        Rename a source, switch it off, or change where it is pulled from.
+
+        A disabled source refuses every encoder and reader, and can't be given
+        to a video. Setting a pull address revokes the source's encoder keys.
       parameters:
         - name: id
           in: path
@@ -4923,7 +4927,10 @@ paths:
   /api/organization/{id}:
     get:
       operationId: organization_retrieve
-      description: Video file details
+      description: |-
+        Organization details. A suspended organization (`is_rogue`) can still
+        be fetched, so its page can show the suspension notice, but only its
+        id, name and flag are returned to anyone but staff.
       parameters:
         - name: id
           in: path
@@ -5055,7 +5062,10 @@ paths:
         - organization
     put:
       operationId: organization_update
-      description: Video file details
+      description: |-
+        Organization details. A suspended organization (`is_rogue`) can still
+        be fetched, so its page can show the suspension notice, but only its
+        id, name and flag are returned to anyone but staff.
       parameters:
         - name: id
           in: path
@@ -5193,7 +5203,10 @@ paths:
         - organization
     patch:
       operationId: organization_partial_update
-      description: Video file details
+      description: |-
+        Organization details. A suspended organization (`is_rogue`) can still
+        be fetched, so its page can show the suspension notice, but only its
+        id, name and flag are returned to anyone but staff.
       parameters:
         - name: id
           in: path
@@ -5330,7 +5343,10 @@ paths:
         - organization
     delete:
       operationId: organization_destroy
-      description: Video file details
+      description: |-
+        Organization details. A suspended organization (`is_rogue`) can still
+        be fetched, so its page can show the suspension notice, but only its
+        id, name and flag are returned to anyone but staff.
       parameters:
         - name: id
           in: path
@@ -15949,9 +15965,9 @@ components:
           type: boolean
           readOnly: true
         pullTarget:
+          description: Scheme, host and port of the pull address.
           type: string
           readOnly: true
-          description: Scheme, host and port of the pull address.
         streamId:
           type: string
           format: uuid
@@ -15981,17 +15997,15 @@ components:
       properties:
         name:
           type: string
-          minLength: 1
           maxLength: 100
+          minLength: 1
         enabled:
           type: boolean
         pullUrl:
+          description: An address Frikanalen pulls this source from (srt://, rtmp(s)://, rtsp(s)://, or https:// for HLS), instead of an encoder pushing to it. Empty makes it a pushed source again. Never returned; see pull_target.
           type: string
-          writeOnly: true
-          description: An address Frikanalen pulls this source from (srt://, rtmp(s)://,
-            rtsp(s)://, or https:// for HLS), instead of an encoder pushing to it.
-            Empty makes it a pushed source again. Never returned; see pull_target.
           maxLength: 2048
+          writeOnly: true
       required:
         - name
     LiveSourcesEncoderKeysCreateError:
@@ -16121,10 +16135,12 @@ components:
           non_field_errors: '#/components/schemas/LiveSourcesPartialUpdateNonFieldErrorsErrorComponent'
           name: '#/components/schemas/LiveSourcesPartialUpdateNameErrorComponent'
           enabled: '#/components/schemas/LiveSourcesPartialUpdateEnabledErrorComponent'
+          pull_url: '#/components/schemas/LiveSourcesPartialUpdatePullUrlErrorComponent'
       oneOf:
         - $ref: '#/components/schemas/LiveSourcesPartialUpdateNonFieldErrorsErrorComponent'
         - $ref: '#/components/schemas/LiveSourcesPartialUpdateNameErrorComponent'
         - $ref: '#/components/schemas/LiveSourcesPartialUpdateEnabledErrorComponent'
+        - $ref: '#/components/schemas/LiveSourcesPartialUpdatePullUrlErrorComponent'
     LiveSourcesPartialUpdateErrorResponse400:
       discriminator:
         propertyName: type
@@ -16182,6 +16198,34 @@ components:
           enum:
             - invalid
             - 'null'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    LiveSourcesPartialUpdatePullUrlErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `pull_url` - pull_url'
+          type: string
+          enum:
+            - pull_url
+        code:
+          description: |-
+            * `invalid` - invalid
+            * `max_length` - max_length
+            * `null` - null
+            * `null_characters_not_allowed` - null_characters_not_allowed
+            * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed
+          type: string
+          enum:
+            - invalid
+            - max_length
+            - 'null'
+            - null_characters_not_allowed
+            - surrogate_characters_not_allowed
         detail:
           type: string
       required:
@@ -16941,6 +16985,9 @@ components:
         fkmember:
           type: boolean
           readOnly: true
+        isRogue:
+          type: boolean
+          readOnly: true
       required:
         - editorEmail
         - editorId
@@ -16948,6 +16995,7 @@ components:
         - editorName
         - fkmember
         - id
+        - isRogue
         - name
     OrganizationCreateDescriptionErrorComponent:
       type: object
@@ -17190,10 +17238,12 @@ components:
           non_field_errors: '#/components/schemas/OrganizationLiveSourcesCreateNonFieldErrorsErrorComponent'
           name: '#/components/schemas/OrganizationLiveSourcesCreateNameErrorComponent'
           enabled: '#/components/schemas/OrganizationLiveSourcesCreateEnabledErrorComponent'
+          pull_url: '#/components/schemas/OrganizationLiveSourcesCreatePullUrlErrorComponent'
       oneOf:
         - $ref: '#/components/schemas/OrganizationLiveSourcesCreateNonFieldErrorsErrorComponent'
         - $ref: '#/components/schemas/OrganizationLiveSourcesCreateNameErrorComponent'
         - $ref: '#/components/schemas/OrganizationLiveSourcesCreateEnabledErrorComponent'
+        - $ref: '#/components/schemas/OrganizationLiveSourcesCreatePullUrlErrorComponent'
     OrganizationLiveSourcesCreateErrorResponse400:
       discriminator:
         propertyName: type
@@ -17251,6 +17301,34 @@ components:
           enum:
             - invalid
             - 'null'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    OrganizationLiveSourcesCreatePullUrlErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `pull_url` - pull_url'
+          type: string
+          enum:
+            - pull_url
+        code:
+          description: |-
+            * `invalid` - invalid
+            * `max_length` - max_length
+            * `null` - null
+            * `null_characters_not_allowed` - null_characters_not_allowed
+            * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed
+          type: string
+          enum:
+            - invalid
+            - max_length
+            - 'null'
+            - null_characters_not_allowed
+            - surrogate_characters_not_allowed
         detail:
           type: string
       required:
@@ -18093,17 +18171,15 @@ components:
       properties:
         name:
           type: string
-          minLength: 1
           maxLength: 100
+          minLength: 1
         enabled:
           type: boolean
         pullUrl:
+          description: An address Frikanalen pulls this source from (srt://, rtmp(s)://, rtsp(s)://, or https:// for HLS), instead of an encoder pushing to it. Empty makes it a pushed source again. Never returned; see pull_target.
           type: string
-          writeOnly: true
-          description: An address Frikanalen pulls this source from (srt://, rtmp(s)://,
-            rtsp(s)://, or https:// for HLS), instead of an encoder pushing to it.
-            Empty makes it a pushed source again. Never returned; see pull_target.
           maxLength: 2048
+          writeOnly: true
     PatchedOrganizationRequest:
       type: object
       properties:

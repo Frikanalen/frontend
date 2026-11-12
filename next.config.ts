@@ -31,6 +31,11 @@ const nextConfig: NextConfig = {
   // app, and `next build` freezes this destination into a static manifest
   // (Next.js doesn't re-evaluate rewrites() at runtime), so it can't be
   // pointed at a per-environment backend the way serverFetch.ts is.
+  // The /protest statement from the blackout was replaced by
+  // /unntakstilstand. Not permanent: the state of exception is temporary.
+  async redirects() {
+    return [{ source: "/protest", destination: "/unntakstilstand", permanent: false }];
+  },
   async rewrites() {
     return [
       {
