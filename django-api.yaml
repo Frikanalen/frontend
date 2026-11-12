@@ -15945,6 +15945,13 @@ components:
           maxLength: 100
         enabled:
           type: boolean
+        isPulled:
+          type: boolean
+          readOnly: true
+        pullTarget:
+          type: string
+          readOnly: true
+          description: Scheme, host and port of the pull address.
         streamId:
           type: string
           format: uuid
@@ -15963,8 +15970,10 @@ components:
       required:
         - contributionPath
         - id
+        - isPulled
         - name
         - previewPath
+        - pullTarget
         - streamId
         - upcomingTransmissions
     LiveSourceRequest:
@@ -15972,10 +15981,17 @@ components:
       properties:
         name:
           type: string
-          maxLength: 100
           minLength: 1
+          maxLength: 100
         enabled:
           type: boolean
+        pullUrl:
+          type: string
+          writeOnly: true
+          description: An address Frikanalen pulls this source from (srt://, rtmp(s)://,
+            rtsp(s)://, or https:// for HLS), instead of an encoder pushing to it.
+            Empty makes it a pushed source again. Never returned; see pull_target.
+          maxLength: 2048
       required:
         - name
     LiveSourcesEncoderKeysCreateError:
@@ -18077,10 +18093,17 @@ components:
       properties:
         name:
           type: string
-          maxLength: 100
           minLength: 1
+          maxLength: 100
         enabled:
           type: boolean
+        pullUrl:
+          type: string
+          writeOnly: true
+          description: An address Frikanalen pulls this source from (srt://, rtmp(s)://,
+            rtsp(s)://, or https:// for HLS), instead of an encoder pushing to it.
+            Empty makes it a pushed source again. Never returned; see pull_target.
+          maxLength: 2048
     PatchedOrganizationRequest:
       type: object
       properties:
