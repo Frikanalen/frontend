@@ -8,6 +8,7 @@ import { ssrVideosRetrieve } from "@/generated/ssr/videos/videos";
 import { Metadata } from "next";
 import { VideoParams, parseParamsOr404 } from "@/lib/routeParams";
 import { videoStartTimeFrom } from "@/app/video/[videoId]/videoStartTime";
+import { SuspendedNotice, suspendedOrganizationFrom } from "@/components/suspended/SuspendedNotice";
 
 export const revalidate = 60;
 
@@ -27,6 +28,10 @@ export async function generateMetadata({ params }: VideoPageProps): Promise<Meta
     cache: "no-store",
     next: { tags: [`video:${videoId}`] },
   });
+  if (status === 403) {
+    const suspended = suspendedOrganizationFrom(video);
+    if (suspended) return { title: `${suspended.name} er suspendert - Frikanalen` };
+  }
   if (status !== 200)
     return {
       title: "Frikanalen",
@@ -60,6 +65,15 @@ export default async function VideoPage({ params, searchParams }: VideoPageProps
   });
 
   if (status === 404) return notFound();
+  if (status === 403) {
+    const suspended = suspendedOrganizationFrom(video);
+    if (suspended)
+      return (
+        <main className="w-full max-w-5xl grow px-2 py-8">
+          <SuspendedNotice organization={suspended} context="video" />
+        </main>
+      );
+  }
   if (status !== 200)
     throw new Error(
       `Unexpected status code ${status} when fetching video ${videoId} from ssrVideosRetrieve`,
