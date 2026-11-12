@@ -133,8 +133,17 @@ export const readOnlyReason = (
   const stillOpen = grant.lockExempt || (grant.state === "open" && Date.parse(grant.locksAt) > now);
   if (stillOpen)
     return "Du har ikke tilgang til å sette opp program for denne organisasjonen. Det krever at du er medlem eller redaktør i en godkjent medlemsorganisasjon, og at identiteten din er bekreftet.";
-  return "Fristen er passert og listen er låst. Ta kontakt med Frikanalen hvis den må endres.";
+  return LOCKED;
 };
+
+const LOCKED = "Fristen er passert og listen er låst.";
+
+/** Whether the list is read-only only because its deadline passed, which a
+ * late-change request can undo. */
+export const lockedByDeadline = (
+  grant: Pick<AirtimeGrant, "state" | "lockExempt" | "starttime" | "endtime" | "locksAt">,
+  now: number = Date.now(),
+) => readOnlyReason(grant, now) === LOCKED;
 
 /** Whether two lists play the same videos in the same order. */
 export const sameList = (a: readonly DraftItem[], b: readonly DraftItem[]) =>

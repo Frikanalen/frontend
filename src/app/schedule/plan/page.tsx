@@ -39,6 +39,9 @@ export default async function Page({
           gjøres foreløpig i administrasjonen.
         </p>
         <div className="mt-2 flex flex-wrap gap-x-5 gap-y-1">
+          <Link className="font-semibold text-link hover:underline" href="/schedule/plan/requests">
+            Forespørsler
+          </Link>
           <Link className="font-semibold text-link hover:underline" href="/schedule/plan/slots">
             Faste sendeflater
           </Link>

@@ -1990,6 +1990,668 @@ paths:
         - cookieAuth: []
       tags:
         - fill-rules
+  /api/grant-requests:
+    get:
+      operationId: grant_requests_list
+      description: Airtime and exemption requests together, newest first.
+      parameters:
+        - name: limit
+          in: query
+          description: Number of results to return per page.
+          required: false
+          schema:
+            type: integer
+        - name: offset
+          in: query
+          description: The initial index from which to return the results.
+          required: false
+          schema:
+            type: integer
+        - name: organization
+          in: query
+          description: Only this organization's requests
+          schema:
+            type: integer
+        - name: status
+          in: query
+          description: Only these
+          schema:
+            type: string
+            enum:
+              - approved
+              - denied
+              - pending
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedGrantRequestEnvelopeList'
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GrantRequestsListErrorResponse400'
+        '401':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: authentication_failed
+                        detail: Incorrect authentication credentials.
+                        attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_authenticated
+                        detail: Authentication credentials were not provided.
+                        attr: null
+        '404':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+              examples:
+                NotFound:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_found
+                        detail: Not found.
+                        attr: null
+        '405':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse405'
+              examples:
+                MethodNotAllowed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: method_not_allowed
+                        detail: Method "get" not allowed.
+                        attr: null
+        '406':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse406'
+              examples:
+                NotAcceptable:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_acceptable
+                        detail: Could not satisfy the request Accept header.
+                        attr: null
+        '415':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse415'
+              examples:
+                UnsupportedMediaType:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: unsupported_media_type
+                        detail: Unsupported media type "application/json" in request.
+                        attr: null
+        '500':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+              examples:
+                APIException:
+                  value:
+                    type: server_error
+                    errors:
+                      - code: error
+                        detail: A server error occurred.
+                        attr: null
+      security:
+        - tokenAuth: []
+        - cookieAuth: []
+      tags:
+        - grant-requests
+  /api/grant-requests/airtime:
+    post:
+      operationId: grant_requests_airtime_create
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AirtimeGrantRequestRequest'
+      responses:
+        '201':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AirtimeGrantRequest'
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GrantRequestsAirtimeCreateErrorResponse400'
+        '401':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: authentication_failed
+                        detail: Incorrect authentication credentials.
+                        attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_authenticated
+                        detail: Authentication credentials were not provided.
+                        attr: null
+        '404':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+              examples:
+                NotFound:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_found
+                        detail: Not found.
+                        attr: null
+        '405':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse405'
+              examples:
+                MethodNotAllowed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: method_not_allowed
+                        detail: Method "get" not allowed.
+                        attr: null
+        '406':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse406'
+              examples:
+                NotAcceptable:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_acceptable
+                        detail: Could not satisfy the request Accept header.
+                        attr: null
+        '415':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse415'
+              examples:
+                UnsupportedMediaType:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: unsupported_media_type
+                        detail: Unsupported media type "application/json" in request.
+                        attr: null
+        '500':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+              examples:
+                APIException:
+                  value:
+                    type: server_error
+                    errors:
+                      - code: error
+                        detail: A server error occurred.
+                        attr: null
+      security:
+        - tokenAuth: []
+        - cookieAuth: []
+      tags:
+        - grant-requests
+  /api/grant-requests/airtime/{id}/decision:
+    post:
+      operationId: grant_requests_airtime_decision_create
+      description: |-
+        Approve or deny a pending request, once, with a comment for the
+        organization. Approval applies the request in the same transaction:
+        the grant, slot, transfer or exemption is created then, or the
+        decision fails and the request stays pending.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DecisionRequest'
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AirtimeGrantRequest'
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GrantRequestsAirtimeDecisionCreateErrorResponse400'
+        '401':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: authentication_failed
+                        detail: Incorrect authentication credentials.
+                        attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_authenticated
+                        detail: Authentication credentials were not provided.
+                        attr: null
+        '403':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse403'
+              examples:
+                PermissionDenied:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: permission_denied
+                        detail: You do not have permission to perform this action.
+                        attr: null
+        '404':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+              examples:
+                NotFound:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_found
+                        detail: Not found.
+                        attr: null
+        '405':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse405'
+              examples:
+                MethodNotAllowed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: method_not_allowed
+                        detail: Method "get" not allowed.
+                        attr: null
+        '406':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse406'
+              examples:
+                NotAcceptable:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_acceptable
+                        detail: Could not satisfy the request Accept header.
+                        attr: null
+        '415':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse415'
+              examples:
+                UnsupportedMediaType:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: unsupported_media_type
+                        detail: Unsupported media type "application/json" in request.
+                        attr: null
+        '500':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+              examples:
+                APIException:
+                  value:
+                    type: server_error
+                    errors:
+                      - code: error
+                        detail: A server error occurred.
+                        attr: null
+      security:
+        - tokenAuth: []
+        - cookieAuth: []
+      tags:
+        - grant-requests
+  /api/grant-requests/exemption:
+    post:
+      operationId: grant_requests_exemption_create
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GrantExemptionRequestRequest'
+      responses:
+        '201':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GrantExemptionRequest'
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GrantRequestsExemptionCreateErrorResponse400'
+        '401':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: authentication_failed
+                        detail: Incorrect authentication credentials.
+                        attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_authenticated
+                        detail: Authentication credentials were not provided.
+                        attr: null
+        '404':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+              examples:
+                NotFound:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_found
+                        detail: Not found.
+                        attr: null
+        '405':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse405'
+              examples:
+                MethodNotAllowed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: method_not_allowed
+                        detail: Method "get" not allowed.
+                        attr: null
+        '406':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse406'
+              examples:
+                NotAcceptable:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_acceptable
+                        detail: Could not satisfy the request Accept header.
+                        attr: null
+        '415':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse415'
+              examples:
+                UnsupportedMediaType:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: unsupported_media_type
+                        detail: Unsupported media type "application/json" in request.
+                        attr: null
+        '500':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+              examples:
+                APIException:
+                  value:
+                    type: server_error
+                    errors:
+                      - code: error
+                        detail: A server error occurred.
+                        attr: null
+      security:
+        - tokenAuth: []
+        - cookieAuth: []
+      tags:
+        - grant-requests
+  /api/grant-requests/exemption/{id}/decision:
+    post:
+      operationId: grant_requests_exemption_decision_create
+      description: |-
+        Approve or deny a pending request, once, with a comment for the
+        organization. Approval applies the request in the same transaction:
+        the grant, slot, transfer or exemption is created then, or the
+        decision fails and the request stays pending.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DecisionRequest'
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GrantExemptionRequest'
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GrantRequestsExemptionDecisionCreateErrorResponse400'
+        '401':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: authentication_failed
+                        detail: Incorrect authentication credentials.
+                        attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_authenticated
+                        detail: Authentication credentials were not provided.
+                        attr: null
+        '403':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse403'
+              examples:
+                PermissionDenied:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: permission_denied
+                        detail: You do not have permission to perform this action.
+                        attr: null
+        '404':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+              examples:
+                NotFound:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_found
+                        detail: Not found.
+                        attr: null
+        '405':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse405'
+              examples:
+                MethodNotAllowed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: method_not_allowed
+                        detail: Method "get" not allowed.
+                        attr: null
+        '406':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse406'
+              examples:
+                NotAcceptable:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_acceptable
+                        detail: Could not satisfy the request Accept header.
+                        attr: null
+        '415':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse415'
+              examples:
+                UnsupportedMediaType:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: unsupported_media_type
+                        detail: Unsupported media type "application/json" in request.
+                        attr: null
+        '500':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+              examples:
+                APIException:
+                  value:
+                    type: server_error
+                    errors:
+                      - code: error
+                        detail: A server error occurred.
+                        attr: null
+      security:
+        - tokenAuth: []
+        - cookieAuth: []
+      tags:
+        - grant-requests
   /api/grants:
     get:
       operationId: grants_list
@@ -5877,12 +6539,20 @@ paths:
           required: false
           schema:
             type: integer
-        - name: ordering
+        - name: organization
           in: query
-          description: Which field to use when ordering the results.
-          required: false
+          description: Only this organization's requests
+          schema:
+            type: integer
+        - name: status
+          in: query
+          description: Only these
           schema:
             type: string
+            enum:
+              - approved
+              - denied
+              - pending
       responses:
         '200':
           description: ''
@@ -6110,6 +6780,149 @@ paths:
         - cookieAuth: []
       tags:
         - recurring-slot-requests
+  /api/recurring-slot-requests/creation/{id}/decision:
+    post:
+      operationId: recurring_slot_requests_creation_decision_create
+      description: |-
+        Approve or deny a pending request, once, with a comment for the
+        organization. Approval applies the request in the same transaction:
+        the grant, slot, transfer or exemption is created then, or the
+        decision fails and the request stays pending.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DecisionRequest'
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecurringSlotCreationRequest'
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecurringSlotRequestsCreationDecisionCreateErrorResponse400'
+        '401':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: authentication_failed
+                        detail: Incorrect authentication credentials.
+                        attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_authenticated
+                        detail: Authentication credentials were not provided.
+                        attr: null
+        '403':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse403'
+              examples:
+                PermissionDenied:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: permission_denied
+                        detail: You do not have permission to perform this action.
+                        attr: null
+        '404':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+              examples:
+                NotFound:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_found
+                        detail: Not found.
+                        attr: null
+        '405':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse405'
+              examples:
+                MethodNotAllowed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: method_not_allowed
+                        detail: Method "get" not allowed.
+                        attr: null
+        '406':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse406'
+              examples:
+                NotAcceptable:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_acceptable
+                        detail: Could not satisfy the request Accept header.
+                        attr: null
+        '415':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse415'
+              examples:
+                UnsupportedMediaType:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: unsupported_media_type
+                        detail: Unsupported media type "application/json" in request.
+                        attr: null
+        '500':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+              examples:
+                APIException:
+                  value:
+                    type: server_error
+                    errors:
+                      - code: error
+                        detail: A server error occurred.
+                        attr: null
+      security:
+        - tokenAuth: []
+        - cookieAuth: []
+      tags:
+        - recurring-slot-requests
   /api/recurring-slot-requests/ownership:
     post:
       operationId: recurring_slot_requests_ownership_create
@@ -6152,6 +6965,149 @@ paths:
                     errors:
                       - code: not_authenticated
                         detail: Authentication credentials were not provided.
+                        attr: null
+        '404':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+              examples:
+                NotFound:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_found
+                        detail: Not found.
+                        attr: null
+        '405':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse405'
+              examples:
+                MethodNotAllowed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: method_not_allowed
+                        detail: Method "get" not allowed.
+                        attr: null
+        '406':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse406'
+              examples:
+                NotAcceptable:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_acceptable
+                        detail: Could not satisfy the request Accept header.
+                        attr: null
+        '415':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse415'
+              examples:
+                UnsupportedMediaType:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: unsupported_media_type
+                        detail: Unsupported media type "application/json" in request.
+                        attr: null
+        '500':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+              examples:
+                APIException:
+                  value:
+                    type: server_error
+                    errors:
+                      - code: error
+                        detail: A server error occurred.
+                        attr: null
+      security:
+        - tokenAuth: []
+        - cookieAuth: []
+      tags:
+        - recurring-slot-requests
+  /api/recurring-slot-requests/ownership/{id}/decision:
+    post:
+      operationId: recurring_slot_requests_ownership_decision_create
+      description: |-
+        Approve or deny a pending request, once, with a comment for the
+        organization. Approval applies the request in the same transaction:
+        the grant, slot, transfer or exemption is created then, or the
+        decision fails and the request stays pending.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DecisionRequest'
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecurringSlotOwnershipRequest'
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecurringSlotRequestsOwnershipDecisionCreateErrorResponse400'
+        '401':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: authentication_failed
+                        detail: Incorrect authentication credentials.
+                        attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_authenticated
+                        detail: Authentication credentials were not provided.
+                        attr: null
+        '403':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse403'
+              examples:
+                PermissionDenied:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: permission_denied
+                        detail: You do not have permission to perform this action.
                         attr: null
         '404':
           description: ''
@@ -13803,6 +14759,90 @@ components:
         - endtime
         - organization
         - starttime
+    AirtimeGrantRequest:
+      description: A request for one window of airtime. Approval creates the grant.
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        organization:
+          type: integer
+        organizationName:
+          type: string
+          readOnly: true
+        requestedBy:
+          type: integer
+          readOnly: true
+        requestedByName:
+          type: string
+          readOnly: true
+        starttime:
+          type: string
+          format: date-time
+        endtime:
+          type: string
+          format: date-time
+        message:
+          description: What the organization wants Frikanalen to know.
+          type: string
+        status:
+          allOf:
+            - $ref: '#/components/schemas/ReviewStatusEnum'
+          readOnly: true
+        reviewedBy:
+          type: integer
+          nullable: true
+          readOnly: true
+        adminComment:
+          type: string
+          readOnly: true
+        createdAt:
+          type: string
+          format: date-time
+          readOnly: true
+        reviewedAt:
+          type: string
+          format: date-time
+          nullable: true
+          readOnly: true
+        grant:
+          type: integer
+          nullable: true
+          readOnly: true
+      required:
+        - adminComment
+        - createdAt
+        - endtime
+        - grant
+        - id
+        - organization
+        - organizationName
+        - requestedBy
+        - requestedByName
+        - reviewedAt
+        - reviewedBy
+        - starttime
+        - status
+    AirtimeGrantRequestRequest:
+      description: A request for one window of airtime. Approval creates the grant.
+      type: object
+      properties:
+        organization:
+          type: integer
+        starttime:
+          type: string
+          format: date-time
+        endtime:
+          type: string
+          format: date-time
+        message:
+          description: What the organization wants Frikanalen to know.
+          type: string
+      required:
+        - endtime
+        - organization
+        - starttime
     AirtimeGrantStateEnum:
       description: |-
         * `open` - Open
@@ -15222,6 +16262,27 @@ components:
         - 4
         - 5
         - 6
+    DecisionRequest:
+      description: 'A staff decision on any request: final, with a comment.'
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/DecisionStatusEnum'
+        adminComment:
+          description: Shown to the organization. Required, also for approvals.
+          type: string
+          minLength: 1
+      required:
+        - adminComment
+        - status
+    DecisionStatusEnum:
+      description: |-
+        * `approved` - Approved
+        * `denied` - Denied
+      type: string
+      enum:
+        - approved
+        - denied
     EncoderKey:
       description: "An encoder's publish credential, as listed: never its password."
       type: object
@@ -15556,6 +16617,84 @@ components:
         - daily
         - weekly
         - monthly
+    GrantExemptionRequest:
+      description: A request to keep changing a grant after its deadline.
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        organization:
+          type: integer
+          readOnly: true
+        organizationName:
+          type: string
+          readOnly: true
+        requestedBy:
+          type: integer
+          readOnly: true
+        requestedByName:
+          type: string
+          readOnly: true
+        grant:
+          type: integer
+        grantStarttime:
+          type: string
+          format: date-time
+          readOnly: true
+        grantEndtime:
+          type: string
+          format: date-time
+          readOnly: true
+        message:
+          description: What the organization wants Frikanalen to know.
+          type: string
+        status:
+          default: pending
+          allOf:
+            - $ref: '#/components/schemas/ReviewStatusEnum'
+          readOnly: true
+        reviewedBy:
+          type: integer
+          nullable: true
+          readOnly: true
+        adminComment:
+          type: string
+          readOnly: true
+        createdAt:
+          type: string
+          format: date-time
+          readOnly: true
+        reviewedAt:
+          type: string
+          format: date-time
+          nullable: true
+          readOnly: true
+      required:
+        - adminComment
+        - createdAt
+        - grant
+        - grantEndtime
+        - grantStarttime
+        - id
+        - organization
+        - organizationName
+        - requestedBy
+        - requestedByName
+        - reviewedAt
+        - reviewedBy
+        - status
+    GrantExemptionRequestRequest:
+      description: A request to keep changing a grant after its deadline.
+      type: object
+      properties:
+        grant:
+          type: integer
+        message:
+          description: What the organization wants Frikanalen to know.
+          type: string
+      required:
+        - grant
     GrantItem:
       type: object
       properties:
@@ -15643,6 +16782,522 @@ components:
       required:
         - id
         - name
+    GrantRequestEnvelope:
+      description: Read envelope around the two kinds of grant request.
+      type: object
+      properties:
+        airtime:
+          allOf:
+            - $ref: '#/components/schemas/AirtimeGrantRequest'
+          readOnly: true
+        exemption:
+          allOf:
+            - $ref: '#/components/schemas/GrantExemptionRequest'
+          readOnly: true
+      required:
+        - airtime
+        - exemption
+    GrantRequestsAirtimeCreateEndtimeErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `endtime` - endtime'
+          type: string
+          enum:
+            - endtime
+        code:
+          description: |-
+            * `date` - date
+            * `invalid` - invalid
+            * `make_aware` - make_aware
+            * `null` - null
+            * `overflow` - overflow
+            * `required` - required
+          type: string
+          enum:
+            - date
+            - invalid
+            - make_aware
+            - 'null'
+            - overflow
+            - required
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    GrantRequestsAirtimeCreateError:
+      discriminator:
+        propertyName: attr
+        mapping:
+          non_field_errors: '#/components/schemas/GrantRequestsAirtimeCreateNonFieldErrorsErrorComponent'
+          organization: '#/components/schemas/GrantRequestsAirtimeCreateOrganizationErrorComponent'
+          starttime: '#/components/schemas/GrantRequestsAirtimeCreateStarttimeErrorComponent'
+          endtime: '#/components/schemas/GrantRequestsAirtimeCreateEndtimeErrorComponent'
+          message: '#/components/schemas/GrantRequestsAirtimeCreateMessageErrorComponent'
+      oneOf:
+        - $ref: '#/components/schemas/GrantRequestsAirtimeCreateNonFieldErrorsErrorComponent'
+        - $ref: '#/components/schemas/GrantRequestsAirtimeCreateOrganizationErrorComponent'
+        - $ref: '#/components/schemas/GrantRequestsAirtimeCreateStarttimeErrorComponent'
+        - $ref: '#/components/schemas/GrantRequestsAirtimeCreateEndtimeErrorComponent'
+        - $ref: '#/components/schemas/GrantRequestsAirtimeCreateMessageErrorComponent'
+    GrantRequestsAirtimeCreateErrorResponse400:
+      discriminator:
+        propertyName: type
+        mapping:
+          validation_error: '#/components/schemas/GrantRequestsAirtimeCreateValidationError'
+          client_error: '#/components/schemas/ParseErrorResponse'
+      oneOf:
+        - $ref: '#/components/schemas/GrantRequestsAirtimeCreateValidationError'
+        - $ref: '#/components/schemas/ParseErrorResponse'
+    GrantRequestsAirtimeCreateMessageErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `message` - message'
+          type: string
+          enum:
+            - message
+        code:
+          description: |-
+            * `invalid` - invalid
+            * `null` - null
+            * `null_characters_not_allowed` - null_characters_not_allowed
+            * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed
+          type: string
+          enum:
+            - invalid
+            - 'null'
+            - null_characters_not_allowed
+            - surrogate_characters_not_allowed
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    GrantRequestsAirtimeCreateNonFieldErrorsErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `non_field_errors` - non_field_errors'
+          type: string
+          enum:
+            - non_field_errors
+        code:
+          description: |-
+            * `invalid` - invalid
+            * `null` - null
+          type: string
+          enum:
+            - invalid
+            - 'null'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    GrantRequestsAirtimeCreateOrganizationErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `organization` - organization'
+          type: string
+          enum:
+            - organization
+        code:
+          description: |-
+            * `does_not_exist` - does_not_exist
+            * `incorrect_type` - incorrect_type
+            * `null` - null
+            * `required` - required
+          type: string
+          enum:
+            - does_not_exist
+            - incorrect_type
+            - 'null'
+            - required
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    GrantRequestsAirtimeCreateStarttimeErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `starttime` - starttime'
+          type: string
+          enum:
+            - starttime
+        code:
+          description: |-
+            * `date` - date
+            * `invalid` - invalid
+            * `make_aware` - make_aware
+            * `null` - null
+            * `overflow` - overflow
+            * `required` - required
+          type: string
+          enum:
+            - date
+            - invalid
+            - make_aware
+            - 'null'
+            - overflow
+            - required
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    GrantRequestsAirtimeCreateValidationError:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/ValidationErrorEnum'
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/GrantRequestsAirtimeCreateError'
+      required:
+        - errors
+        - type
+    GrantRequestsAirtimeDecisionCreateAdminCommentErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `admin_comment` - admin_comment'
+          type: string
+          enum:
+            - admin_comment
+        code:
+          description: |-
+            * `blank` - blank
+            * `invalid` - invalid
+            * `null` - null
+            * `null_characters_not_allowed` - null_characters_not_allowed
+            * `required` - required
+            * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed
+          type: string
+          enum:
+            - blank
+            - invalid
+            - 'null'
+            - null_characters_not_allowed
+            - required
+            - surrogate_characters_not_allowed
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    GrantRequestsAirtimeDecisionCreateError:
+      discriminator:
+        propertyName: attr
+        mapping:
+          non_field_errors: '#/components/schemas/GrantRequestsAirtimeDecisionCreateNonFieldErrorsErrorComponent'
+          status: '#/components/schemas/GrantRequestsAirtimeDecisionCreateStatusErrorComponent'
+          admin_comment: '#/components/schemas/GrantRequestsAirtimeDecisionCreateAdminCommentErrorComponent'
+      oneOf:
+        - $ref: '#/components/schemas/GrantRequestsAirtimeDecisionCreateNonFieldErrorsErrorComponent'
+        - $ref: '#/components/schemas/GrantRequestsAirtimeDecisionCreateStatusErrorComponent'
+        - $ref: '#/components/schemas/GrantRequestsAirtimeDecisionCreateAdminCommentErrorComponent'
+    GrantRequestsAirtimeDecisionCreateErrorResponse400:
+      discriminator:
+        propertyName: type
+        mapping:
+          validation_error: '#/components/schemas/GrantRequestsAirtimeDecisionCreateValidationError'
+          client_error: '#/components/schemas/ParseErrorResponse'
+      oneOf:
+        - $ref: '#/components/schemas/GrantRequestsAirtimeDecisionCreateValidationError'
+        - $ref: '#/components/schemas/ParseErrorResponse'
+    GrantRequestsAirtimeDecisionCreateNonFieldErrorsErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `non_field_errors` - non_field_errors'
+          type: string
+          enum:
+            - non_field_errors
+        code:
+          description: |-
+            * `invalid` - invalid
+            * `null` - null
+          type: string
+          enum:
+            - invalid
+            - 'null'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    GrantRequestsAirtimeDecisionCreateStatusErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `status` - status'
+          type: string
+          enum:
+            - status
+        code:
+          description: |-
+            * `invalid_choice` - invalid_choice
+            * `null` - null
+            * `required` - required
+          type: string
+          enum:
+            - invalid_choice
+            - 'null'
+            - required
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    GrantRequestsAirtimeDecisionCreateValidationError:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/ValidationErrorEnum'
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/GrantRequestsAirtimeDecisionCreateError'
+      required:
+        - errors
+        - type
+    GrantRequestsExemptionCreateError:
+      discriminator:
+        propertyName: attr
+        mapping:
+          non_field_errors: '#/components/schemas/GrantRequestsExemptionCreateNonFieldErrorsErrorComponent'
+          grant: '#/components/schemas/GrantRequestsExemptionCreateGrantErrorComponent'
+          message: '#/components/schemas/GrantRequestsExemptionCreateMessageErrorComponent'
+      oneOf:
+        - $ref: '#/components/schemas/GrantRequestsExemptionCreateNonFieldErrorsErrorComponent'
+        - $ref: '#/components/schemas/GrantRequestsExemptionCreateGrantErrorComponent'
+        - $ref: '#/components/schemas/GrantRequestsExemptionCreateMessageErrorComponent'
+    GrantRequestsExemptionCreateErrorResponse400:
+      discriminator:
+        propertyName: type
+        mapping:
+          validation_error: '#/components/schemas/GrantRequestsExemptionCreateValidationError'
+          client_error: '#/components/schemas/ParseErrorResponse'
+      oneOf:
+        - $ref: '#/components/schemas/GrantRequestsExemptionCreateValidationError'
+        - $ref: '#/components/schemas/ParseErrorResponse'
+    GrantRequestsExemptionCreateGrantErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `grant` - grant'
+          type: string
+          enum:
+            - grant
+        code:
+          description: |-
+            * `does_not_exist` - does_not_exist
+            * `incorrect_type` - incorrect_type
+            * `null` - null
+            * `required` - required
+          type: string
+          enum:
+            - does_not_exist
+            - incorrect_type
+            - 'null'
+            - required
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    GrantRequestsExemptionCreateMessageErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `message` - message'
+          type: string
+          enum:
+            - message
+        code:
+          description: |-
+            * `invalid` - invalid
+            * `null` - null
+            * `null_characters_not_allowed` - null_characters_not_allowed
+            * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed
+          type: string
+          enum:
+            - invalid
+            - 'null'
+            - null_characters_not_allowed
+            - surrogate_characters_not_allowed
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    GrantRequestsExemptionCreateNonFieldErrorsErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `non_field_errors` - non_field_errors'
+          type: string
+          enum:
+            - non_field_errors
+        code:
+          description: |-
+            * `invalid` - invalid
+            * `null` - null
+            * `unique` - unique
+          type: string
+          enum:
+            - invalid
+            - 'null'
+            - unique
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    GrantRequestsExemptionCreateValidationError:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/ValidationErrorEnum'
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/GrantRequestsExemptionCreateError'
+      required:
+        - errors
+        - type
+    GrantRequestsExemptionDecisionCreateAdminCommentErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `admin_comment` - admin_comment'
+          type: string
+          enum:
+            - admin_comment
+        code:
+          description: |-
+            * `blank` - blank
+            * `invalid` - invalid
+            * `null` - null
+            * `null_characters_not_allowed` - null_characters_not_allowed
+            * `required` - required
+            * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed
+          type: string
+          enum:
+            - blank
+            - invalid
+            - 'null'
+            - null_characters_not_allowed
+            - required
+            - surrogate_characters_not_allowed
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    GrantRequestsExemptionDecisionCreateError:
+      discriminator:
+        propertyName: attr
+        mapping:
+          non_field_errors: '#/components/schemas/GrantRequestsExemptionDecisionCreateNonFieldErrorsErrorComponent'
+          status: '#/components/schemas/GrantRequestsExemptionDecisionCreateStatusErrorComponent'
+          admin_comment: '#/components/schemas/GrantRequestsExemptionDecisionCreateAdminCommentErrorComponent'
+      oneOf:
+        - $ref: '#/components/schemas/GrantRequestsExemptionDecisionCreateNonFieldErrorsErrorComponent'
+        - $ref: '#/components/schemas/GrantRequestsExemptionDecisionCreateStatusErrorComponent'
+        - $ref: '#/components/schemas/GrantRequestsExemptionDecisionCreateAdminCommentErrorComponent'
+    GrantRequestsExemptionDecisionCreateErrorResponse400:
+      discriminator:
+        propertyName: type
+        mapping:
+          validation_error: '#/components/schemas/GrantRequestsExemptionDecisionCreateValidationError'
+          client_error: '#/components/schemas/ParseErrorResponse'
+      oneOf:
+        - $ref: '#/components/schemas/GrantRequestsExemptionDecisionCreateValidationError'
+        - $ref: '#/components/schemas/ParseErrorResponse'
+    GrantRequestsExemptionDecisionCreateNonFieldErrorsErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `non_field_errors` - non_field_errors'
+          type: string
+          enum:
+            - non_field_errors
+        code:
+          description: |-
+            * `invalid` - invalid
+            * `null` - null
+          type: string
+          enum:
+            - invalid
+            - 'null'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    GrantRequestsExemptionDecisionCreateStatusErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `status` - status'
+          type: string
+          enum:
+            - status
+        code:
+          description: |-
+            * `invalid_choice` - invalid_choice
+            * `null` - null
+            * `required` - required
+          type: string
+          enum:
+            - invalid_choice
+            - 'null'
+            - required
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    GrantRequestsExemptionDecisionCreateValidationError:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/ValidationErrorEnum'
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/GrantRequestsExemptionDecisionCreateError'
+      required:
+        - errors
+        - type
+    GrantRequestsListErrorResponse400:
+      discriminator:
+        propertyName: type
+        mapping:
+          client_error: '#/components/schemas/ParseErrorResponse'
+      oneOf:
+        - $ref: '#/components/schemas/ParseErrorResponse'
     GrantsAutomaticCreateErrorResponse400:
       discriminator:
         propertyName: type
@@ -18613,6 +20268,29 @@ components:
       required:
         - count
         - results
+    PaginatedGrantRequestEnvelopeList:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          format: uri
+          example: http://api.example.org/accounts/?offset=400&limit=100
+          nullable: true
+        previous:
+          type: string
+          format: uri
+          example: http://api.example.org/accounts/?offset=200&limit=100
+          nullable: true
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/GrantRequestEnvelope'
+      required:
+        - count
+        - results
     PaginatedOrganizationList:
       type: object
       properties:
@@ -19374,6 +21052,7 @@ components:
         - startTime
         - startsOn
     RecurringSlotCreationRequest:
+      description: Names for the organization and requester, so lists need no lookups.
       type: object
       properties:
         id:
@@ -19381,9 +21060,18 @@ components:
           readOnly: true
         organization:
           type: integer
+        organizationName:
+          type: string
+          readOnly: true
         requestedBy:
           type: integer
           readOnly: true
+        requestedByName:
+          type: string
+          readOnly: true
+        message:
+          description: What the organization wants Frikanalen to know.
+          type: string
         day:
           allOf:
             - $ref: '#/components/schemas/DayEnum'
@@ -19396,7 +21084,7 @@ components:
           type: string
         status:
           allOf:
-            - $ref: '#/components/schemas/StatusEnum'
+            - $ref: '#/components/schemas/ReviewStatusEnum'
           readOnly: true
         reviewedBy:
           type: integer
@@ -19425,17 +21113,23 @@ components:
         - duration
         - id
         - organization
+        - organizationName
         - requestedBy
+        - requestedByName
         - reviewedAt
         - reviewedBy
         - slot
         - startTime
         - status
     RecurringSlotCreationRequestRequest:
+      description: Names for the organization and requester, so lists need no lookups.
       type: object
       properties:
         organization:
           type: integer
+        message:
+          description: What the organization wants Frikanalen to know.
+          type: string
         day:
           allOf:
             - $ref: '#/components/schemas/DayEnum'
@@ -19452,6 +21146,7 @@ components:
         - organization
         - startTime
     RecurringSlotOwnershipRequest:
+      description: Names for the organization and requester, so lists need no lookups.
       type: object
       properties:
         id:
@@ -19459,11 +21154,23 @@ components:
           readOnly: true
         organization:
           type: integer
+        organizationName:
+          type: string
+          readOnly: true
         requestedBy:
           type: integer
           readOnly: true
+        requestedByName:
+          type: string
+          readOnly: true
+        message:
+          description: What the organization wants Frikanalen to know.
+          type: string
         slot:
           type: integer
+        slotDescription:
+          type: string
+          readOnly: true
         previousOrganization:
           description: The target slot's owner when the request was submitted.
           type: integer
@@ -19472,7 +21179,7 @@ components:
         status:
           default: pending
           allOf:
-            - $ref: '#/components/schemas/StatusEnum'
+            - $ref: '#/components/schemas/ReviewStatusEnum'
           readOnly: true
         reviewedBy:
           type: integer
@@ -19495,17 +21202,24 @@ components:
         - createdAt
         - id
         - organization
+        - organizationName
         - previousOrganization
         - requestedBy
+        - requestedByName
         - reviewedAt
         - reviewedBy
         - slot
+        - slotDescription
         - status
     RecurringSlotOwnershipRequestRequest:
+      description: Names for the organization and requester, so lists need no lookups.
       type: object
       properties:
         organization:
           type: integer
+        message:
+          description: What the organization wants Frikanalen to know.
+          type: string
         slot:
           type: integer
       required:
@@ -19642,12 +21356,14 @@ components:
         mapping:
           non_field_errors: '#/components/schemas/RecurringSlotRequestsCreationCreateNonFieldErrorsErrorComponent'
           organization: '#/components/schemas/RecurringSlotRequestsCreationCreateOrganizationErrorComponent'
+          message: '#/components/schemas/RecurringSlotRequestsCreationCreateMessageErrorComponent'
           day: '#/components/schemas/RecurringSlotRequestsCreationCreateDayErrorComponent'
           start_time: '#/components/schemas/RecurringSlotRequestsCreationCreateStartTimeErrorComponent'
           duration: '#/components/schemas/RecurringSlotRequestsCreationCreateDurationErrorComponent'
       oneOf:
         - $ref: '#/components/schemas/RecurringSlotRequestsCreationCreateNonFieldErrorsErrorComponent'
         - $ref: '#/components/schemas/RecurringSlotRequestsCreationCreateOrganizationErrorComponent'
+        - $ref: '#/components/schemas/RecurringSlotRequestsCreationCreateMessageErrorComponent'
         - $ref: '#/components/schemas/RecurringSlotRequestsCreationCreateDayErrorComponent'
         - $ref: '#/components/schemas/RecurringSlotRequestsCreationCreateStartTimeErrorComponent'
         - $ref: '#/components/schemas/RecurringSlotRequestsCreationCreateDurationErrorComponent'
@@ -19660,6 +21376,32 @@ components:
       oneOf:
         - $ref: '#/components/schemas/RecurringSlotRequestsCreationCreateValidationError'
         - $ref: '#/components/schemas/ParseErrorResponse'
+    RecurringSlotRequestsCreationCreateMessageErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `message` - message'
+          type: string
+          enum:
+            - message
+        code:
+          description: |-
+            * `invalid` - invalid
+            * `null` - null
+            * `null_characters_not_allowed` - null_characters_not_allowed
+            * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed
+          type: string
+          enum:
+            - invalid
+            - 'null'
+            - null_characters_not_allowed
+            - surrogate_characters_not_allowed
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
     RecurringSlotRequestsCreationCreateNonFieldErrorsErrorComponent:
       type: object
       properties:
@@ -19744,6 +21486,114 @@ components:
       required:
         - errors
         - type
+    RecurringSlotRequestsCreationDecisionCreateAdminCommentErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `admin_comment` - admin_comment'
+          type: string
+          enum:
+            - admin_comment
+        code:
+          description: |-
+            * `blank` - blank
+            * `invalid` - invalid
+            * `null` - null
+            * `null_characters_not_allowed` - null_characters_not_allowed
+            * `required` - required
+            * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed
+          type: string
+          enum:
+            - blank
+            - invalid
+            - 'null'
+            - null_characters_not_allowed
+            - required
+            - surrogate_characters_not_allowed
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    RecurringSlotRequestsCreationDecisionCreateError:
+      discriminator:
+        propertyName: attr
+        mapping:
+          non_field_errors: '#/components/schemas/RecurringSlotRequestsCreationDecisionCreateNonFieldErrorsErrorComponent'
+          status: '#/components/schemas/RecurringSlotRequestsCreationDecisionCreateStatusErrorComponent'
+          admin_comment: '#/components/schemas/RecurringSlotRequestsCreationDecisionCreateAdminCommentErrorComponent'
+      oneOf:
+        - $ref: '#/components/schemas/RecurringSlotRequestsCreationDecisionCreateNonFieldErrorsErrorComponent'
+        - $ref: '#/components/schemas/RecurringSlotRequestsCreationDecisionCreateStatusErrorComponent'
+        - $ref: '#/components/schemas/RecurringSlotRequestsCreationDecisionCreateAdminCommentErrorComponent'
+    RecurringSlotRequestsCreationDecisionCreateErrorResponse400:
+      discriminator:
+        propertyName: type
+        mapping:
+          validation_error: '#/components/schemas/RecurringSlotRequestsCreationDecisionCreateValidationError'
+          client_error: '#/components/schemas/ParseErrorResponse'
+      oneOf:
+        - $ref: '#/components/schemas/RecurringSlotRequestsCreationDecisionCreateValidationError'
+        - $ref: '#/components/schemas/ParseErrorResponse'
+    RecurringSlotRequestsCreationDecisionCreateNonFieldErrorsErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `non_field_errors` - non_field_errors'
+          type: string
+          enum:
+            - non_field_errors
+        code:
+          description: |-
+            * `invalid` - invalid
+            * `null` - null
+          type: string
+          enum:
+            - invalid
+            - 'null'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    RecurringSlotRequestsCreationDecisionCreateStatusErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `status` - status'
+          type: string
+          enum:
+            - status
+        code:
+          description: |-
+            * `invalid_choice` - invalid_choice
+            * `null` - null
+            * `required` - required
+          type: string
+          enum:
+            - invalid_choice
+            - 'null'
+            - required
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    RecurringSlotRequestsCreationDecisionCreateValidationError:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/ValidationErrorEnum'
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/RecurringSlotRequestsCreationDecisionCreateError'
+      required:
+        - errors
+        - type
     RecurringSlotRequestsListErrorResponse400:
       discriminator:
         propertyName: type
@@ -19757,10 +21607,12 @@ components:
         mapping:
           non_field_errors: '#/components/schemas/RecurringSlotRequestsOwnershipCreateNonFieldErrorsErrorComponent'
           organization: '#/components/schemas/RecurringSlotRequestsOwnershipCreateOrganizationErrorComponent'
+          message: '#/components/schemas/RecurringSlotRequestsOwnershipCreateMessageErrorComponent'
           slot: '#/components/schemas/RecurringSlotRequestsOwnershipCreateSlotErrorComponent'
       oneOf:
         - $ref: '#/components/schemas/RecurringSlotRequestsOwnershipCreateNonFieldErrorsErrorComponent'
         - $ref: '#/components/schemas/RecurringSlotRequestsOwnershipCreateOrganizationErrorComponent'
+        - $ref: '#/components/schemas/RecurringSlotRequestsOwnershipCreateMessageErrorComponent'
         - $ref: '#/components/schemas/RecurringSlotRequestsOwnershipCreateSlotErrorComponent'
     RecurringSlotRequestsOwnershipCreateErrorResponse400:
       discriminator:
@@ -19771,6 +21623,32 @@ components:
       oneOf:
         - $ref: '#/components/schemas/RecurringSlotRequestsOwnershipCreateValidationError'
         - $ref: '#/components/schemas/ParseErrorResponse'
+    RecurringSlotRequestsOwnershipCreateMessageErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `message` - message'
+          type: string
+          enum:
+            - message
+        code:
+          description: |-
+            * `invalid` - invalid
+            * `null` - null
+            * `null_characters_not_allowed` - null_characters_not_allowed
+            * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed
+          type: string
+          enum:
+            - invalid
+            - 'null'
+            - null_characters_not_allowed
+            - surrogate_characters_not_allowed
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
     RecurringSlotRequestsOwnershipCreateNonFieldErrorsErrorComponent:
       type: object
       properties:
@@ -19856,6 +21734,114 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/RecurringSlotRequestsOwnershipCreateError'
+      required:
+        - errors
+        - type
+    RecurringSlotRequestsOwnershipDecisionCreateAdminCommentErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `admin_comment` - admin_comment'
+          type: string
+          enum:
+            - admin_comment
+        code:
+          description: |-
+            * `blank` - blank
+            * `invalid` - invalid
+            * `null` - null
+            * `null_characters_not_allowed` - null_characters_not_allowed
+            * `required` - required
+            * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed
+          type: string
+          enum:
+            - blank
+            - invalid
+            - 'null'
+            - null_characters_not_allowed
+            - required
+            - surrogate_characters_not_allowed
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    RecurringSlotRequestsOwnershipDecisionCreateError:
+      discriminator:
+        propertyName: attr
+        mapping:
+          non_field_errors: '#/components/schemas/RecurringSlotRequestsOwnershipDecisionCreateNonFieldErrorsErrorComponent'
+          status: '#/components/schemas/RecurringSlotRequestsOwnershipDecisionCreateStatusErrorComponent'
+          admin_comment: '#/components/schemas/RecurringSlotRequestsOwnershipDecisionCreateAdminCommentErrorComponent'
+      oneOf:
+        - $ref: '#/components/schemas/RecurringSlotRequestsOwnershipDecisionCreateNonFieldErrorsErrorComponent'
+        - $ref: '#/components/schemas/RecurringSlotRequestsOwnershipDecisionCreateStatusErrorComponent'
+        - $ref: '#/components/schemas/RecurringSlotRequestsOwnershipDecisionCreateAdminCommentErrorComponent'
+    RecurringSlotRequestsOwnershipDecisionCreateErrorResponse400:
+      discriminator:
+        propertyName: type
+        mapping:
+          validation_error: '#/components/schemas/RecurringSlotRequestsOwnershipDecisionCreateValidationError'
+          client_error: '#/components/schemas/ParseErrorResponse'
+      oneOf:
+        - $ref: '#/components/schemas/RecurringSlotRequestsOwnershipDecisionCreateValidationError'
+        - $ref: '#/components/schemas/ParseErrorResponse'
+    RecurringSlotRequestsOwnershipDecisionCreateNonFieldErrorsErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `non_field_errors` - non_field_errors'
+          type: string
+          enum:
+            - non_field_errors
+        code:
+          description: |-
+            * `invalid` - invalid
+            * `null` - null
+          type: string
+          enum:
+            - invalid
+            - 'null'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    RecurringSlotRequestsOwnershipDecisionCreateStatusErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `status` - status'
+          type: string
+          enum:
+            - status
+        code:
+          description: |-
+            * `invalid_choice` - invalid_choice
+            * `null` - null
+            * `required` - required
+          type: string
+          enum:
+            - invalid_choice
+            - 'null'
+            - required
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    RecurringSlotRequestsOwnershipDecisionCreateValidationError:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/ValidationErrorEnum'
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/RecurringSlotRequestsOwnershipDecisionCreateError'
       required:
         - errors
         - type
@@ -20996,6 +22982,16 @@ components:
         - attr
         - code
         - detail
+    ReviewStatusEnum:
+      description: |-
+        * `pending` - Pending
+        * `approved` - Approved
+        * `denied` - Denied
+      type: string
+      enum:
+        - pending
+        - approved
+        - denied
     RoleEnum:
       description: |-
         * `network_logo` - Network logo
@@ -22392,16 +24388,6 @@ components:
           minLength: 1
       required:
         - name
-    StatusEnum:
-      description: |-
-        * `pending` - Pending
-        * `approved` - Approved
-        * `denied` - Denied
-      type: string
-      enum:
-        - pending
-        - approved
-        - denied
     TvanytimeDateRetrieveErrorResponse400:
       discriminator:
         propertyName: type

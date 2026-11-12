@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { GoCalendar } from "react-icons/go";
+import { GoCalendar, GoInbox } from "react-icons/go";
 import { getCookiesFromRequest } from "@/lib/getCookiesFromRequest";
 import { getUserOrNull } from "@/app/getUserOrNull";
 import { AccountHeader } from "@/app/profile/AccountHeader";
@@ -32,6 +32,9 @@ const StaffTools = () => (
       </ActionLink>
       <ActionLink href="/schedule/plan/slots" icon={<GoCalendar />}>
         Faste sendeflater
+      </ActionLink>
+      <ActionLink href="/schedule/plan/requests" icon={<GoInbox />}>
+        Forespørsler
       </ActionLink>
     </div>
   </section>

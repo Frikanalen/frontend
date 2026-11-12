@@ -1,0 +1,270 @@
+"use client";
+import { useGrantRequestsAirtimeCreate } from "@/generated/grant-requests/grant-requests";
+import { useRecurringSlotRequestsCreationCreate } from "@/generated/recurring-slot-requests/recurring-slot-requests";
+import type { DayEnum } from "@/generated/frikanalenDjangoAPI.schemas";
+import { formatApiError } from "@/lib/formatApiError";
+import { OSLO_TIME_ZONE } from "@/lib/osloTime";
+import { TZDate } from "@date-fns/tz/date";
+import { Button } from "@heroui/react";
+import cx from "classnames";
+import { useState, type ReactNode } from "react";
+import {
+  WEEKDAYS,
+  durationPayload,
+  formatLength,
+  formatTime,
+  osloToday,
+  parseTime,
+  type Shape,
+} from "@/app/schedule/plan/slots/slots";
+import { useRefreshRequests } from "./useRequests";
+
+type Kind = "weekly" | "once";
+
+const fieldClass = "rounded-lg border border-default-300 bg-background px-3 py-2";
+
+const Field = ({ label, children }: { label: string; children: ReactNode }) => (
+  <label className="flex min-w-0 flex-col gap-1 text-sm font-medium">
+    {label}
+    {children}
+  </label>
+);
+
+/** The Oslo date of the next `weekday` after today, as "YYYY-MM-DD". */
+const nextDate = (weekday: number, today = osloToday()) => {
+  const date = new Date(`${today}T12:00:00Z`);
+  const ahead = (weekday - ((date.getUTCDay() + 6) % 7) + 7) % 7 || 7;
+  date.setUTCDate(date.getUTCDate() + ahead);
+  return date.toISOString().slice(0, 10);
+};
+
+const weekdayOf = (date: string) => (new Date(`${date}T12:00:00Z`).getUTCDay() + 6) % 7;
+
+const tomorrow = () => {
+  const date = new Date(`${osloToday()}T12:00:00Z`);
+  date.setUTCDate(date.getUTCDate() + 1);
+  return date.toISOString().slice(0, 10);
+};
+
+/** A wall-clock date and time in Oslo, as the instant the API wants. */
+const osloInstant = (date: string, minutes: number) => {
+  const [year, month, day] = date.split("-").map(Number);
+  return new TZDate(year, month - 1, day, 0, minutes, OSLO_TIME_ZONE).toISOString();
+};
+
+/**
+ * Asking Frikanalen for airtime: the same time every week, or one time
+ * only. The time can be typed or picked on the week beside the form, which
+ * `shape` and `onShapeChange` keep in step.
+ */
+export const AirtimeRequestForm = ({
+  organizationId,
+  shape,
+  onShapeChange,
+}: {
+  organizationId: number;
+  shape: Shape | null;
+  onShapeChange: (_shape: Shape) => void;
+}) => {
+  const createSlot = useRecurringSlotRequestsCreationCreate();
+  const createAirtime = useGrantRequestsAirtimeCreate();
+  const refresh = useRefreshRequests();
+  const [kind, setKind] = useState<Kind>("weekly");
+  const [chosenDate, setDate] = useState(() => nextDate(shape?.days[0] ?? 0));
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState<string>();
+  const [sent, setSent] = useState(false);
+
+  const current = shape ?? { days: [0], start: 19 * 60, duration: 60 };
+  const weekday = current.days[0] ?? 0;
+  // A day picked on the week moves the date to the next such day.
+  const date = weekdayOf(chosenDate) === weekday ? chosenDate : nextDate(weekday);
+  const update = (changes: Partial<Shape>) => {
+    setSent(false);
+    onShapeChange({ ...current, ...changes });
+  };
+
+  const submit = async () => {
+    setError(undefined);
+    try {
+      if (kind === "weekly") {
+        await createSlot.mutateAsync({
+          data: {
+            organization: organizationId,
+            day: weekday as DayEnum,
+            startTime: formatTime(current.start),
+            duration: durationPayload(current.duration),
+            message,
+          },
+        });
+      } else {
+        await createAirtime.mutateAsync({
+          data: {
+            organization: organizationId,
+            starttime: osloInstant(date, current.start),
+            endtime: osloInstant(date, current.start + current.duration),
+            message,
+          },
+        });
+      }
+      setSent(true);
+      setMessage("");
+      await refresh();
+    } catch (caught) {
+      setError(formatApiError(caught));
+    }
+  };
+
+  const invalid =
+    current.duration < 5
+      ? "Velg en lengde."
+      : kind === "once" && date <= osloToday()
+        ? "Velg en dato etter i dag."
+        : null;
+
+  return (
+    <form
+      aria-labelledby="request-heading"
+      className="space-y-4 bg-background p-5"
+      onSubmit={(event) => {
+        event.preventDefault();
+        void submit();
+      }}
+    >
+      <h2 className="text-lg font-bold" id="request-heading">
+        Be om sendetid
+      </h2>
+
+      <fieldset className="grid grid-cols-2 gap-1">
+        <legend className="sr-only">Hvor ofte</legend>
+        {(
+          [
+            ["weekly", "Hver uke", "En fast sendeflate"],
+            ["once", "Én gang", "For eksempel en direktesending"],
+          ] as const
+        ).map(([value, label, hint]) => (
+          <label
+            className={cx(
+              "flex cursor-pointer flex-col border p-2 text-sm",
+              kind === value ? "border-accent bg-accent/10" : "border-default-300",
+            )}
+            key={value}
+          >
+            <input
+              checked={kind === value}
+              className="sr-only"
+              name="kind"
+              type="radio"
+              value={value}
+              onChange={() => {
+                setKind(value);
+                setSent(false);
+              }}
+            />
+            <span className="font-semibold">{label}</span>
+            <span className="text-default-600">{hint}</span>
+          </label>
+        ))}
+      </fieldset>
+
+      {kind === "weekly" ? (
+        <Field label="Ukedag">
+          <select
+            className={fieldClass}
+            value={weekday}
+            onChange={(event) => update({ days: [Number(event.target.value)] })}
+          >
+            {WEEKDAYS.map((name, index) => (
+              <option key={name} value={index}>
+                {name}
+              </option>
+            ))}
+          </select>
+        </Field>
+      ) : (
+        <Field label="Dato">
+          <input
+            className={fieldClass}
+            min={tomorrow()}
+            required
+            type="date"
+            value={date}
+            onChange={(event) => {
+              setDate(event.target.value);
+              setSent(false);
+              if (event.target.value) update({ days: [weekdayOf(event.target.value)] });
+            }}
+          />
+        </Field>
+      )}
+
+      <div className="grid grid-cols-2 gap-3">
+        <Field label="Starter kl.">
+          <input
+            className={fieldClass}
+            required
+            step={300}
+            type="time"
+            value={formatTime(current.start)}
+            onChange={(event) => {
+              if (event.target.value) update({ start: parseTime(event.target.value) });
+            }}
+          />
+        </Field>
+        <Field label="Lengde">
+          <select
+            className={fieldClass}
+            value={current.duration}
+            onChange={(event) => update({ duration: Number(event.target.value) })}
+          >
+            {[15, 30, 45, 60, 90, 120, 180, 240, 360, 480, 720].map((minutes) => (
+              <option key={minutes} value={minutes}>
+                {formatLength(minutes)}
+              </option>
+            ))}
+            {[15, 30, 45, 60, 90, 120, 180, 240, 360, 480, 720].includes(
+              current.duration,
+            ) ? null : (
+              <option value={current.duration}>{formatLength(current.duration)}</option>
+            )}
+          </select>
+        </Field>
+      </div>
+
+      <Field label="Melding til Frikanalen (valgfri)">
+        <textarea
+          className={cx(fieldClass, "min-h-24")}
+          placeholder="Hva vil dere sende?"
+          value={message}
+          onChange={(event) => setMessage(event.target.value)}
+        />
+      </Field>
+
+      <p className="text-sm text-default-600">
+        {kind === "weekly"
+          ? "Frikanalen ser på forespørselen og svarer her. Blir den godkjent, får dere sendetid hver uke fra da av, og den fylles automatisk med deres nyeste videoer til dere setter opp noe selv."
+          : "Frikanalen ser på forespørselen og svarer her. Blir den godkjent, finner dere sendetiden under Sendetid."}
+      </p>
+
+      {sent ? (
+        <p className="bg-success/15 p-3 text-sm font-medium" role="status">
+          Forespørselen er sendt.
+        </p>
+      ) : null}
+      {error || invalid ? (
+        <p className={cx("text-sm", error && "font-medium text-danger-700")} role="alert">
+          {error ?? invalid}
+        </p>
+      ) : null}
+
+      <Button
+        isDisabled={!!invalid}
+        isPending={createSlot.isPending || createAirtime.isPending}
+        type="submit"
+        variant="primary"
+      >
+        Send forespørsel
+      </Button>
+    </form>
+  );
+};

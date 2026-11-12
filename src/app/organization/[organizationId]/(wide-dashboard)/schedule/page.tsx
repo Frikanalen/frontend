@@ -30,12 +30,17 @@ export default async function Page({ params }: { params: Promise<{ organizationI
           Her er sendetiden Frikanalen har gitt dere. Sett opp hva som skal sendes i hver av dem før
           fristen.
         </p>
-        <Link
-          className="mt-2 inline-block font-semibold text-link hover:underline"
-          href="/schedule/plan/rules"
-        >
-          Les hvordan sendetid virker
-        </Link>
+        <div className="mt-2 flex flex-wrap gap-x-5 gap-y-1">
+          <Link
+            className="font-semibold text-link hover:underline"
+            href={`/organization/${organization.id}/schedule/request`}
+          >
+            Be om mer sendetid
+          </Link>
+          <Link className="font-semibold text-link hover:underline" href="/schedule/plan/rules">
+            Les hvordan sendetid virker
+          </Link>
+        </div>
       </header>
 
       {!user.identityConfirmed && !user.isStaff ? (

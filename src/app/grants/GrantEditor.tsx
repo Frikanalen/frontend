@@ -27,9 +27,11 @@ import {
 import { GoBroadcast, GoGrabber, GoX } from "react-icons/go";
 import { durationMilliseconds, formatDuration } from "./duration";
 import { HourBar } from "./HourBar";
+import { ExemptionRequest } from "@/app/requests/ExemptionRequest";
 import {
   deadlineText,
   readOnlyReason,
+  lockedByDeadline,
   isAutomatic,
   itemName,
   itemStatus,
@@ -205,6 +207,7 @@ const Editor = ({ grant, backHref }: { grant: AirtimeGrant; backHref: string }) 
           {readOnlyReason(grant)}
         </p>
       )}
+      {!editable && lockedByDeadline(grant, now) ? <ExemptionRequest grant={grant} /> : null}
 
       {showsAutomatic && editable ? (
         <p className="border-l-4 border-brand-plum bg-background p-3 text-sm">

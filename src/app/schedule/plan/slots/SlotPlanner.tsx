@@ -8,7 +8,7 @@ import {
 import { formatApiError } from "@/lib/formatApiError";
 import { useQueryClient } from "@tanstack/react-query";
 import cx from "classnames";
-import { useEffect, useMemo, useRef, useState, type PointerEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type PointerEvent, type ReactNode } from "react";
 import { GoAlert } from "react-icons/go";
 import { SlotForm, type Draft } from "./SlotForm";
 import {
@@ -68,7 +68,24 @@ const blockStyle = (slot: Pick<RecurringSlot, "organization">) => {
  * drag its lower edge to change its length. Everything else is in the form
  * beside the grid, which is also the keyboard way to do all of the above.
  */
-export const SlotPlanner = ({ organizations }: { organizations: Organization[] }) => {
+/**
+ * In pick mode the week is only a map of what is taken: a member drags or
+ * taps a free stretch to choose a time for a request, and `side` (their form)
+ * replaces the staff tools beside it.
+ */
+export type PickMode = {
+  selection: Shape | null;
+  onSelect: (_shape: Shape) => void;
+  side: ReactNode;
+};
+
+export const SlotPlanner = ({
+  organizations,
+  pick,
+}: {
+  organizations: Organization[];
+  pick?: PickMode;
+}) => {
   const queryClient = useQueryClient();
   const slots = useRecurringSlotsList(LIST_PARAMS);
   const update = useRecurringSlotsPartialUpdate();
@@ -185,12 +202,17 @@ export const SlotPlanner = ({ organizations }: { organizations: Organization[] }
       const from = Math.min(drag.anchor, drag.current);
       const to = Math.max(drag.anchor, drag.current);
       setSelected(null);
+      const duration = to - from >= 15 ? to - from : 60;
+      if (pick) {
+        pick.onSelect({ days: [drag.day], start: from, duration });
+        return;
+      }
       setDraft({
         organization: focus === STATION ? null : focus,
         days: [drag.day],
         start: from,
         // A click rather than a drag asks for the common case: an hour.
-        duration: to - from >= 15 ? to - from : 60,
+        duration,
       });
       return;
     }
@@ -244,14 +266,20 @@ export const SlotPlanner = ({ organizations }: { organizations: Organization[] }
           bottom: Math.max(drag.anchor, drag.current, Math.min(drag.anchor, drag.current) + 15),
         }
       : null;
-  const draftBlocks = draft
-    ? blocksOf({ days: draft.days, start: draft.start, duration: draft.duration })
+  const shown = pick ? pick.selection : draft;
+  const draftBlocks = shown
+    ? blocksOf({ days: shown.days, start: shown.start, duration: shown.duration })
     : [];
 
   return (
     <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_22rem]">
       <section className="min-w-0 space-y-3">
-        <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+        {pick ? (
+          <p className="text-sm text-default-600">
+            Fargede felt er tatt. Dra eller trykk i en ledig del av uken for å velge en tid.
+          </p>
+        ) : null}
+        <div className={cx("flex flex-wrap items-center gap-x-5 gap-y-2", pick && "hidden")}>
           <label className="flex items-center gap-2 text-sm font-medium">
             Fremhev
             <select
@@ -291,7 +319,7 @@ export const SlotPlanner = ({ organizations }: { organizations: Organization[] }
             {error}
           </p>
         ) : null}
-        {colliding.size > 0 ? (
+        {colliding.size > 0 && !pick ? (
           <p className="flex items-center gap-2 bg-warning/20 px-3 py-2 text-sm">
             <GoAlert aria-hidden className="shrink-0" />
             {colliding.size} sendeflater kan overlappe. Når to overlapper, får bare den ene
@@ -385,7 +413,9 @@ export const SlotPlanner = ({ organizations }: { organizations: Organization[] }
                           width: `calc(${100 / 7}% - 4px)`,
                         }}
                         type="button"
+                        tabIndex={pick ? -1 : undefined}
                         onKeyDown={(event) => {
+                          if (pick) return;
                           if (event.key === "Enter" || event.key === " ") {
                             event.preventDefault();
                             setDraft(null);
@@ -393,7 +423,7 @@ export const SlotPlanner = ({ organizations }: { organizations: Organization[] }
                           }
                         }}
                         onPointerDown={(event) =>
-                          block.continued
+                          block.continued || pick
                             ? event.stopPropagation()
                             : startSlotDrag(event, slot, "move", block.day)
                         }
@@ -411,7 +441,7 @@ export const SlotPlanner = ({ organizations }: { organizations: Organization[] }
                             </span>
                           </>
                         )}
-                        {block.bottom === lastBlock(block.day) && !isSuspended ? (
+                        {block.bottom === lastBlock(block.day) && !isSuspended && !pick ? (
                           <span
                             aria-hidden
                             className="absolute inset-x-0 bottom-0 h-2 cursor-ns-resize"
@@ -448,7 +478,7 @@ export const SlotPlanner = ({ organizations }: { organizations: Organization[] }
                         width: `calc(${100 / 7}% - 4px)`,
                       }}
                     >
-                      Ny
+                      {pick ? "Valgt" : "Ny"}
                     </div>
                   ))}
                 </div>
@@ -459,7 +489,9 @@ export const SlotPlanner = ({ organizations }: { organizations: Organization[] }
       </section>
 
       <aside className="space-y-4">
-        {draft || selectedSlot ? (
+        {pick ? (
+          pick.side
+        ) : draft || selectedSlot ? (
           <SlotForm
             key={selectedSlot ? `slot-${selectedSlot.id}` : "new"}
             draft={draft}
