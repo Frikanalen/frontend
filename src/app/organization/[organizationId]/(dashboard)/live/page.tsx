@@ -10,6 +10,7 @@ import { forbidden, notFound, redirect } from "next/navigation";
 import { EncoderKeys } from "./EncoderKeys";
 import { LiveSourcePreview } from "./LiveSourcePreview";
 import { NewLiveSource } from "./NewLiveSource";
+import { PullAddress } from "./PullAddress";
 
 export const dynamic = "force-dynamic";
 
@@ -35,9 +36,9 @@ export default async function Page({ params }: { params: Promise<{ organizationI
       <header>
         <h1 className="text-3xl font-bold tracking-tight">Direktesending</h1>
         <p className="mt-2 max-w-3xl text-default-600">
-          Sett opp kildene {organization.name} sender direkte fra, gi koderne nøkler, og se at
-          signalet kommer fram til Frikanalen før sendingen starter. En direktesending settes opp i
-          sendetiden som en video med en direktekilde.
+          Sett opp kildene {organization.name} sender direkte fra, gi koderne nøkler eller gi
+          Frikanalen en adresse å hente signalet fra, og se at signalet kommer fram før sendingen
+          starter. En direktesending settes opp i sendetiden som en video med en direktekilde.
         </p>
       </header>
       {maySetUp ? (
@@ -56,7 +57,11 @@ export default async function Page({ params }: { params: Promise<{ organizationI
         // so the page does not open a connection per source at once.
         sources.map((source) => (
           <LiveSourcePreview key={source.id} source={source} autoStart={sources.length === 1}>
-            <EncoderKeys maySetUp={maySetUp} source={source} />
+            {source.isPulled ? (
+              <PullAddress maySetUp={maySetUp} source={source} />
+            ) : (
+              <EncoderKeys maySetUp={maySetUp} source={source} />
+            )}
           </LiveSourcePreview>
         ))
       )}

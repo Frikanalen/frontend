@@ -5,12 +5,17 @@ import { formatApiError } from "@/lib/formatApiError";
 import { Button } from "@heroui/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { PULL_URL_HELP } from "./PullAddress";
 
-/** A new live source: one per place you send from, such as a studio. */
+/**
+ * A new live source: one per place you send from, such as a studio. With an
+ * address, Frikanalen pulls the signal from it instead of an encoder pushing.
+ */
 export const NewLiveSource = ({ organizationId }: { organizationId: number }) => {
   const router = useRouter();
   const create = useOrganizationLiveSourcesCreate();
   const [name, setName] = useState("");
+  const [pullUrl, setPullUrl] = useState("");
 
   return (
     <form
@@ -19,9 +24,13 @@ export const NewLiveSource = ({ organizationId }: { organizationId: number }) =>
       onSubmit={(event) => {
         event.preventDefault();
         create
-          .mutateAsync({ id: organizationId, data: { name: name.trim() } })
+          .mutateAsync({
+            id: organizationId,
+            data: { name: name.trim(), ...(pullUrl.trim() ? { pullUrl: pullUrl.trim() } : {}) },
+          })
           .then(() => {
             setName("");
+            setPullUrl("");
             router.refresh();
           })
           .catch(() => undefined);
@@ -33,6 +42,14 @@ export const NewLiveSource = ({ organizationId }: { organizationId: number }) =>
           label="Ny direktekilde"
           value={name}
           onValueChange={setName}
+        />
+      </div>
+      <div className="min-w-64 grow">
+        <FormInput
+          description={`Bare hvis Frikanalen skal hente signalet selv, i stedet for at en koder sender det. ${PULL_URL_HELP}`}
+          label="Henteadresse (valgfritt)"
+          value={pullUrl}
+          onValueChange={setPullUrl}
         />
       </div>
       <Button isDisabled={!name.trim() || create.isPending} type="submit">

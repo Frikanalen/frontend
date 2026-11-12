@@ -60,6 +60,9 @@ export const LiveSourcePreview = ({
       <Card.Header className="flex flex-row flex-wrap items-center justify-between gap-2">
         <div>
           <h2 className="text-xl font-semibold">{source.name}</h2>
+          {source.isPulled && (
+            <p className="text-sm text-default-600">Hentes fra {source.pullTarget}</p>
+          )}
           {!source.enabled && <p className="text-sm text-danger">Denne kilden er deaktivert.</p>}
         </div>
         <div className="flex items-center gap-2">
@@ -87,7 +90,13 @@ export const LiveSourcePreview = ({
             muted
             controls
           />
-          {phase === "waiting" && (
+          {phase === "waiting" && source.isPulled && (
+            <p className="text-sm text-default-600">
+              Frikanalen får ikke signal fra {source.pullTarget}. Sjekk at adressen stemmer og at
+              det sendes derfra; siden prøver på nytt med noen sekunders mellomrom.
+            </p>
+          )}
+          {phase === "waiting" && !source.isPulled && (
             <p className="text-sm text-default-600">
               Ingenting sendes til denne kilden ennå. Start sendingen fra koderen din; siden sjekker
               på nytt med noen sekunders mellomrom.
