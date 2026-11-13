@@ -12,7 +12,13 @@ import { LiveSources } from "./LiveSources";
 
 export const dynamic = "force-dynamic";
 
-export default async function Page({ params }: { params: Promise<{ organizationId: string }> }) {
+export default async function Page({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ organizationId: string }>;
+  searchParams: Promise<{ oppsett?: string }>;
+}) {
   const { organizationId } = await parseParamsOr404(OrganizationParams, params);
 
   const headers = await getCookiesFromRequest();
@@ -51,7 +57,12 @@ export default async function Page({ params }: { params: Promise<{ organizationI
           </Link>
         </p>
       )}
-      <LiveSources maySetUp={maySetUp} organizationId={organizationId} sources={sources} />
+      <LiveSources
+        maySetUp={maySetUp}
+        openSetup={Number((await searchParams).oppsett) || undefined}
+        organizationId={organizationId}
+        sources={sources}
+      />
     </section>
   );
 }

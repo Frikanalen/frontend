@@ -3783,10 +3783,14 @@ paths:
     get:
       operationId: live_sources_retrieve
       description: |-
-        Rename a source, switch it off, or change where it is pulled from.
+        Rename a source, switch it off, change where it is pulled from, or
+        delete it.
 
         A disabled source refuses every encoder and reader, and can't be given
         to a video. Setting a pull address revokes the source's encoder keys.
+        Neither switching off nor changing how the signal comes in is allowed
+        while a live airing of the source is coming. Only a source no programme
+        has ever used can be deleted (see `canDelete`); its keys go with it.
       parameters:
         - name: id
           in: path
@@ -3905,10 +3909,14 @@ paths:
     patch:
       operationId: live_sources_partial_update
       description: |-
-        Rename a source, switch it off, or change where it is pulled from.
+        Rename a source, switch it off, change where it is pulled from, or
+        delete it.
 
         A disabled source refuses every encoder and reader, and can't be given
         to a video. Setting a pull address revokes the source's encoder keys.
+        Neither switching off nor changing how the signal comes in is allowed
+        while a live airing of the source is coming. Only a source no programme
+        has ever used can be deleted (see `canDelete`); its keys go with it.
       parameters:
         - name: id
           in: path
@@ -3933,6 +3941,128 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/LiveSourcesPartialUpdateErrorResponse400'
+        '401':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: authentication_failed
+                        detail: Incorrect authentication credentials.
+                        attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_authenticated
+                        detail: Authentication credentials were not provided.
+                        attr: null
+        '404':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+              examples:
+                NotFound:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_found
+                        detail: Not found.
+                        attr: null
+        '405':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse405'
+              examples:
+                MethodNotAllowed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: method_not_allowed
+                        detail: Method "get" not allowed.
+                        attr: null
+        '406':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse406'
+              examples:
+                NotAcceptable:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_acceptable
+                        detail: Could not satisfy the request Accept header.
+                        attr: null
+        '415':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse415'
+              examples:
+                UnsupportedMediaType:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: unsupported_media_type
+                        detail: Unsupported media type "application/json" in request.
+                        attr: null
+        '500':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+              examples:
+                APIException:
+                  value:
+                    type: server_error
+                    errors:
+                      - code: error
+                        detail: A server error occurred.
+                        attr: null
+      security:
+        - tokenAuth: []
+        - cookieAuth: []
+      tags:
+        - live-sources
+    delete:
+      operationId: live_sources_destroy
+      description: |-
+        Rename a source, switch it off, change where it is pulled from, or
+        delete it.
+
+        A disabled source refuses every encoder and reader, and can't be given
+        to a video. Setting a pull address revokes the source's encoder keys.
+        Neither switching off nor changing how the signal comes in is allowed
+        while a live airing of the source is coming. Only a source no programme
+        has ever used can be deleted (see `canDelete`); its keys go with it.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: No response body
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LiveSourcesDestroyErrorResponse400'
         '401':
           description: ''
           content:
@@ -4306,6 +4436,134 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/LiveSourcesEncoderKeysDestroyErrorResponse400'
+        '401':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: authentication_failed
+                        detail: Incorrect authentication credentials.
+                        attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_authenticated
+                        detail: Authentication credentials were not provided.
+                        attr: null
+        '404':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+              examples:
+                NotFound:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_found
+                        detail: Not found.
+                        attr: null
+        '405':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse405'
+              examples:
+                MethodNotAllowed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: method_not_allowed
+                        detail: Method "get" not allowed.
+                        attr: null
+        '406':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse406'
+              examples:
+                NotAcceptable:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_acceptable
+                        detail: Could not satisfy the request Accept header.
+                        attr: null
+        '415':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse415'
+              examples:
+                UnsupportedMediaType:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: unsupported_media_type
+                        detail: Unsupported media type "application/json" in request.
+                        attr: null
+        '500':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+              examples:
+                APIException:
+                  value:
+                    type: server_error
+                    errors:
+                      - code: error
+                        detail: A server error occurred.
+                        attr: null
+      security:
+        - tokenAuth: []
+        - cookieAuth: []
+      tags:
+        - live-sources
+  /api/live-sources/{id}/encoder-keys/{key_pk}/replace:
+    post:
+      operationId: live_sources_encoder_keys_replace
+      description: |-
+        Give an encoder a new key: for when its settings were lost, or leaked.
+
+        The encoder keeps its name; the old key stops working at once, and the
+        answer shows the new password and settings, once.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: key_pk
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '201':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IssuedEncoderKey'
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LiveSourcesEncoderKeysReplaceErrorResponse400'
         '401':
           description: ''
           content:
@@ -16522,6 +16780,11 @@ components:
           type: string
           format: date-time
           readOnly: true
+        lastUsedAt:
+          type: string
+          format: date-time
+          nullable: true
+          readOnly: true
         revokedAt:
           type: string
           format: date-time
@@ -16532,6 +16795,7 @@ components:
         - id
         - keyId
         - label
+        - lastUsedAt
         - revokedAt
     EncoderKeyRequest:
       description: "An encoder's publish credential, as listed: never its password."
@@ -18513,6 +18777,11 @@ components:
           type: string
           format: date-time
           readOnly: true
+        lastUsedAt:
+          type: string
+          format: date-time
+          nullable: true
+          readOnly: true
         revokedAt:
           type: string
           format: date-time
@@ -18538,6 +18807,7 @@ components:
         - id
         - keyId
         - label
+        - lastUsedAt
         - password
         - revokedAt
     LiveSource:
@@ -18558,6 +18828,14 @@ components:
           description: Scheme, host and port of the pull address.
           type: string
           readOnly: true
+        encoderCount:
+          description: Encoders that hold a key to this source. A pushed source with none cannot receive a signal.
+          type: integer
+          readOnly: true
+        canDelete:
+          description: A source no programme has ever used can be deleted; one that has stays, and can be switched off.
+          type: boolean
+          readOnly: true
         streamId:
           type: string
           format: uuid
@@ -18574,7 +18852,9 @@ components:
             $ref: '#/components/schemas/UpcomingTransmission'
           readOnly: true
       required:
+        - canDelete
         - contributionPath
+        - encoderCount
         - id
         - isPulled
         - name
@@ -18598,6 +18878,13 @@ components:
           writeOnly: true
       required:
         - name
+    LiveSourcesDestroyErrorResponse400:
+      discriminator:
+        propertyName: type
+        mapping:
+          client_error: '#/components/schemas/ParseErrorResponse'
+      oneOf:
+        - $ref: '#/components/schemas/ParseErrorResponse'
     LiveSourcesEncoderKeysCreateError:
       discriminator:
         propertyName: attr
@@ -18690,6 +18977,13 @@ components:
       oneOf:
         - $ref: '#/components/schemas/ParseErrorResponse'
     LiveSourcesEncoderKeysListErrorResponse400:
+      discriminator:
+        propertyName: type
+        mapping:
+          client_error: '#/components/schemas/ParseErrorResponse'
+      oneOf:
+        - $ref: '#/components/schemas/ParseErrorResponse'
+    LiveSourcesEncoderKeysReplaceErrorResponse400:
       discriminator:
         propertyName: type
         mapping:

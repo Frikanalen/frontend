@@ -2,9 +2,7 @@
 import type { LiveSource } from "@/generated/frikanalenDjangoAPI.schemas";
 import { Button } from "@heroui/react";
 import { useState } from "react";
-import { EncoderKeys } from "./EncoderKeys";
 import { LiveSetup } from "./LiveSetup";
-import { PullAddress } from "./PullAddress";
 import { SourceRow } from "./SourceRow";
 
 /**
@@ -15,10 +13,13 @@ export const LiveSources = ({
   organizationId,
   sources,
   maySetUp,
+  openSetup,
 }: {
   organizationId: number;
   sources: readonly LiveSource[];
   maySetUp: boolean;
+  /** A source whose setup is to be open on arrival. */
+  openSetup?: number;
 }) => {
   // The setup stays up until the member closes it, though its source joins
   // the list (and the list stops being empty) as soon as it is created.
@@ -34,6 +35,18 @@ export const LiveSources = ({
     );
   }
 
+  const row = (source: LiveSource) => (
+    <SourceRow
+      initiallyOpen={source.id === openSetup}
+      key={source.id}
+      maySetUp={maySetUp}
+      organizationId={organizationId}
+      source={source}
+    />
+  );
+  const active = sources.filter((source) => source.enabled !== false);
+  const off = sources.filter((source) => source.enabled === false);
+
   return (
     <div className="space-y-4">
       {maySetUp ? (
@@ -44,15 +57,16 @@ export const LiveSources = ({
         </div>
       ) : null}
       {sources.length === 0 ? <p>Organisasjonen har ingen direktekilder ennå.</p> : null}
-      {sources.map((source) => (
-        <SourceRow key={source.id} organizationId={organizationId} source={source}>
-          {source.isPulled ? (
-            <PullAddress maySetUp={maySetUp} source={source} />
-          ) : (
-            <EncoderKeys maySetUp={maySetUp} source={source} />
-          )}
-        </SourceRow>
-      ))}
+      {active.map(row)}
+      {off.length > 0 ? (
+        // Out of the way, but not gone: they are part of what has aired.
+        <details className="group" open={off.some((source) => source.id === openSetup)}>
+          <summary className="cursor-pointer py-2 font-semibold text-default-700">
+            Avslåtte kilder ({off.length})
+          </summary>
+          <div className="mt-2 space-y-4">{off.map(row)}</div>
+        </details>
+      ) : null}
     </div>
   );
 };

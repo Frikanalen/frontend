@@ -79,14 +79,17 @@ const booking = (startsInMs: number) => ({
   starttime: new Date(Date.now() + startsInMs).toISOString(),
   endtime: new Date(Date.now() + startsInMs + 3_600_000).toISOString(),
 });
-const studio = (upcomingTransmissions: object[]) => ({
+const studio = (upcomingTransmissions: object[], overrides: object = {}) => ({
   id: 9,
   name: "Studio",
   enabled: true,
   isPulled: false,
   pullTarget: "",
+  encoderCount: 1,
+  canDelete: true,
   streamId: "cc1367cd-020e-456d-9d4c-b395eab6aa9c",
   upcomingTransmissions,
+  ...overrides,
 });
 
 test.beforeEach(async ({ page, baseURL }) => {
@@ -202,48 +205,80 @@ test("a member sets up a source for Frikanalen to fetch", async ({ page }) => {
   await expect(page.getByText("Dere har ingen kommende sendetid som kan endres.")).toBeVisible();
 });
 
-test("issues an encoder key once, then lists and revokes it", async ({ page }) => {
-  await stubSignal(page);
+test("a source no encoder can send to says so, and encoders are added, rekeyed and removed", async ({
+  page,
+  baseURL,
+}) => {
   let keys: object[] = [];
   const created: unknown[] = [];
-  const revoked: string[] = [];
-  await page.route("**/api/live-sources/9/encoder-keys", (route) => {
+  const calls: string[] = [];
+  // The server's own word on the source: booked, and so far without encoders.
+  const sourceIs = (state: string) =>
+    page.context().addCookies([{ name: "e2e-live", value: state, url: baseURL! }]);
+  await sourceIs("booked.used.noencoder");
+  await page.route("**/api/organization/3/live-sources", (route) =>
+    route.fulfill({
+      status: 200,
+      json: [studio([booking(5 * 3_600_000)], { encoderCount: keys.length, canDelete: false })],
+    }),
+  );
+  await page.route("**/api/live-sources/9/signal", (route) =>
+    route.fulfill({
+      status: 200,
+      json: { available: true, receiving: false, measuredAt: new Date().toISOString() },
+    }),
+  );
+  await page.route("**/api/live-sources/9/encoder-keys", async (route) => {
     if (route.request().method() === "POST") {
       created.push(route.request().postDataJSON());
       keys = [listed];
+      await sourceIs("booked.used");
       return route.fulfill({ status: 201, json: issued });
     }
     return route.fulfill({ status: 200, json: keys });
   });
-  await page.route("**/api/live-sources/9/encoder-keys/21", (route) => {
-    revoked.push(route.request().method());
+  await page.route("**/api/live-sources/9/encoder-keys/21/replace", (route) => {
+    calls.push("replace");
+    keys = [{ ...listed, id: 22, lastUsedAt: null }];
+    return route.fulfill({ status: 201, json: { ...issued, id: 22, password: "n3w" } });
+  });
+  await page.route("**/api/live-sources/9/encoder-keys/22", async (route) => {
+    calls.push(route.request().method());
     keys = [];
+    await sourceIs("booked.used.noencoder");
     return route.fulfill({ status: 204, body: "" });
   });
-  await page.route("**/api/grants?**", (route) =>
-    route.fulfill({
-      status: 200,
-      json: { count: 1, next: null, previous: null, results: [grant] },
-    }),
-  );
-  await page.goto("/organization/3/live");
+  const asked: string[] = [];
+  page.on("dialog", (dialog) => {
+    asked.push(dialog.message());
+    void dialog.accept();
+  });
+
+  // Nothing can send to it: the check page says so and leads to the setup.
+  await page.goto("/organization/3/live/9");
+  await waitForHydration(page);
+  await expect(page.getByRole("status").filter({ hasText: "Mangler koder" })).toBeVisible();
+  await page.getByRole("link", { name: "Koble til en koder" }).click();
+  await expect(page).toHaveURL(/\/organization\/3\/live\?oppsett=9$/);
   await waitForHydration(page);
 
-  // The list says whether a signal is in; the keys fold out.
   const row = page.getByRole("region", { name: "Studio" });
-  await expect(row.getByRole("status")).toHaveText("Mottar signal");
-  await expect(row.getByRole("link", { name: "Sjekk signalet" })).toHaveAttribute(
-    "href",
-    "/organization/3/live/9",
-  );
-  await row.getByRole("button", { name: "Oppsett" }).click();
-  await expect(page.getByText("Ingen nøkler ennå.", { exact: false })).toBeVisible();
+  await expect(row.getByRole("status").first()).toHaveText("Mangler koder");
+  await expect(row.getByRole("link", { name: "Sjekk signalet" })).toHaveCount(0);
+  await expect(
+    row.getByText("Ingen koder er koblet til, så kilden kan ikke ta imot signal."),
+  ).toBeVisible();
+  // Booked, so it can be neither switched off nor deleted, and the page says why.
+  await expect(
+    row.getByText(/kan ikke slås av eller slettes før sendingen er flyttet/),
+  ).toBeVisible();
+  await expect(row.getByRole("button", { name: "Slå av kilden" })).toHaveCount(0);
 
-  await page.getByLabel("Ny nøkkel").fill("ATEM");
-  await page.getByRole("button", { name: "Lag nøkkel" }).click();
+  await row.getByLabel("Legg til en koder").fill("ATEM");
+  await row.getByRole("button", { name: "Legg til" }).click();
   await expect.poll(() => created).toEqual([{ label: "ATEM" }]);
 
-  const shown = page.getByRole("region", { name: "Ny nøkkel «ATEM»" });
+  const shown = page.getByRole("region", { name: "Innstillinger for «ATEM»" });
   await expect(shown).toContainText("vises bare denne ene gangen");
   await shown.getByRole("tab", { name: "Blackmagic" }).click();
   await expect(shown.getByRole("link", { name: /Blackmagic/ })).toHaveAttribute(
@@ -257,10 +292,70 @@ test("issues an encoder key once, then lists and revokes it", async ({ page }) =
   await shown.getByRole("button", { name: "Jeg har kopiert det" }).click();
   await expect(shown).toHaveCount(0);
   await expect(page.getByText("s3cret")).toHaveCount(0);
+  // With an encoder connected, the source waits for its signal.
+  await expect(row.getByRole("status").first()).toHaveText("Venter på signal");
+  await expect(row.getByText("har ikke sendt ennå")).toBeVisible();
 
-  await page.getByRole("button", { name: "Trekk tilbake «ATEM»" }).click();
-  await expect.poll(() => revoked).toEqual(["DELETE"]);
-  await expect(page.getByText("Ingen nøkler ennå.", { exact: false })).toBeVisible();
+  // Lost settings: a new key for the same encoder, shown once again.
+  await row.getByRole("button", { name: "Bytt nøkkel for «ATEM»" }).click();
+  await expect.poll(() => calls).toEqual(["replace"]);
+  expect(asked[0]).toContain("Den gamle slutter å virke med en gang");
+  await expect(shown).toContainText("vises bare denne ene gangen");
+
+  // Removing the only encoder of a booked source is allowed, with a warning.
+  await row.getByRole("button", { name: "Fjern «ATEM»" }).click();
+  await expect.poll(() => calls).toEqual(["replace", "DELETE"]);
+  expect(asked[1]).toContain("den eneste koderen");
+  expect(asked[1]).toContain("skal på lufta: «Høstkonsert»");
+  await expect(shown).toHaveCount(0);
+  await expect(row.getByRole("status").first()).toHaveText("Mangler koder");
+});
+
+test("a source is renamed, switched off into its own fold, and deleted if never used", async ({
+  page,
+  baseURL,
+}) => {
+  await stubSignal(page);
+  const sourceIs = (state: string) =>
+    page.context().addCookies([{ name: "e2e-live", value: state, url: baseURL! }]);
+  await sourceIs("old");
+  const sent: unknown[] = [];
+  await page.route("**/api/live-sources/*/encoder-keys", (route) =>
+    route.fulfill({ status: 200, json: [] }),
+  );
+  await page.route("**/api/live-sources/9", async (route) => {
+    const request = route.request();
+    if (request.method() === "DELETE") {
+      sent.push("DELETE");
+      await sourceIs("old.gone");
+      return route.fulfill({ status: 204, body: "" });
+    }
+    sent.push(request.postDataJSON());
+    return route.fulfill({ status: 200, json: studio([]) });
+  });
+  page.on("dialog", (dialog) => void dialog.accept());
+  await page.goto("/organization/3/live");
+  await waitForHydration(page);
+
+  // Switched-off sources are out of the way until asked for.
+  const old = page.getByRole("region", { name: "Gammel sal" });
+  await expect(old).toBeHidden();
+  await page.getByText("Avslåtte kilder (1)").click();
+  await expect(old.getByRole("status")).toHaveText("Slått av");
+  await old.getByRole("button", { name: "Oppsett" }).click();
+  await expect(old.getByText(/brukt i et program og kan derfor ikke slettes/)).toBeVisible();
+  await expect(old.getByRole("button", { name: "Slett kilden" })).toHaveCount(0);
+  await expect(old.getByRole("button", { name: "Slå på kilden" })).toBeVisible();
+
+  const row = page.getByRole("region", { name: "Studio", exact: true });
+  await row.getByRole("button", { name: "Oppsett" }).click();
+  await row.getByLabel("Navn", { exact: true }).fill("Store sal");
+  await row.getByRole("button", { name: "Lagre navn" }).click();
+  await expect.poll(() => sent).toEqual([{ name: "Store sal" }]);
+
+  await row.getByRole("button", { name: "Slett kilden" }).click();
+  await expect.poll(() => sent).toEqual([{ name: "Store sal" }, "DELETE"]);
+  await expect(row).toHaveCount(0);
 });
 
 test("the check page gives one verdict with its reasons, and leads on to airtime", async ({

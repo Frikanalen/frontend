@@ -37,7 +37,7 @@ export const SourceCheck = ({
         </Link>
       </div>
 
-      <SignalCheck source={source} />
+      <SignalCheck setupHref={`${base}?oppsett=${source.id}`} source={source} />
 
       {booked ? null : (
         <div className="border-t border-default-200 pt-5">

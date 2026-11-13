@@ -1,8 +1,10 @@
 "use client";
 import type { LiveSource } from "@/generated/frikanalenDjangoAPI.schemas";
 import { recentlyBroken } from "@/lib/live/history";
+import { sourceStatus } from "@/lib/live/source";
 import { readiness, type Readiness } from "@/lib/live/signal";
 import cx from "classnames";
+import Link from "next/link";
 import { useEffect } from "react";
 import { useSignalHistory } from "./SignalHistory";
 import { SignalPanel } from "./SignalPanel";
@@ -34,7 +36,14 @@ const previewTrouble = (phase: PreviewPhase, error: string | null) =>
  * only a person can judge, that it is the right picture and the right
  * sound.
  */
-export const SignalCheck = ({ source }: { source: LiveSource }) => {
+export const SignalCheck = ({
+  source,
+  setupHref,
+}: {
+  source: LiveSource;
+  /** Where the source's encoders are managed, when the page can lead there. */
+  setupHref?: string;
+}) => {
   const { phase, variant, stream, stats, error, start } = useLivePreview(source.id);
   const enabled = source.enabled !== false;
   const { signal, previous, history: live } = useSignal(source.id, { enabled, open: true });
@@ -67,6 +76,22 @@ export const SignalCheck = ({ source }: { source: LiveSource }) => {
       <p className="border-l-4 border-warning bg-content1 p-4" role="status">
         Kilden er slått av og tar ikke imot signal. Slå den på under Oppsett.
       </p>
+    );
+  // Nothing can come in, so there is nothing to wait for or look at.
+  if (setupHref && sourceStatus(source, signal) === "no-encoder")
+    return (
+      <div className="space-y-2 border-l-8 border-warning bg-content1 p-4" role="status">
+        <p className="text-2xl font-bold">Mangler koder</p>
+        <p className="text-default-700">
+          Ingen koder er koblet til kilden, så den kan ikke ta imot signal.
+        </p>
+        <Link
+          className="inline-flex h-10 items-center rounded-md bg-accent px-4 text-sm font-semibold text-accent-foreground hover:opacity-90"
+          href={setupHref}
+        >
+          Koble til en koder
+        </Link>
+      </div>
     );
 
   return (
