@@ -5804,30 +5804,28 @@ paths:
   /api/obtain-token:
     post:
       operationId: obtain_token_create
-      description: |-
-        If we don't restrict this to JSON-only, the Python generated
-        code tries to both send form-multipart and JSON.
+      description: 'If we don''t restrict this to JSON-only, the Python generated
+
+        code tries to both send form-multipart and JSON.'
+      tags:
+        - obtain-token
       requestBody:
-        required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AuthTokenRequest'
+              $ref: '#/components/schemas/AuthTokenWithSecondFactorRequest'
+        required: true
+      security:
+        - tokenAuth: []
+        - cookieAuth: []
       responses:
-        '200':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AuthToken'
         '400':
-          description: ''
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ObtainTokenCreateErrorResponse400'
-        '401':
           description: ''
+        '401':
           content:
             application/json:
               schema:
@@ -5847,8 +5845,8 @@ paths:
                       - code: not_authenticated
                         detail: Authentication credentials were not provided.
                         attr: null
-        '404':
           description: ''
+        '404':
           content:
             application/json:
               schema:
@@ -5861,8 +5859,8 @@ paths:
                       - code: not_found
                         detail: Not found.
                         attr: null
-        '405':
           description: ''
+        '405':
           content:
             application/json:
               schema:
@@ -5875,8 +5873,8 @@ paths:
                       - code: method_not_allowed
                         detail: Method "get" not allowed.
                         attr: null
-        '406':
           description: ''
+        '406':
           content:
             application/json:
               schema:
@@ -5889,8 +5887,8 @@ paths:
                       - code: not_acceptable
                         detail: Could not satisfy the request Accept header.
                         attr: null
-        '415':
           description: ''
+        '415':
           content:
             application/json:
               schema:
@@ -5903,8 +5901,8 @@ paths:
                       - code: unsupported_media_type
                         detail: Unsupported media type "application/json" in request.
                         attr: null
-        '500':
           description: ''
+        '500':
           content:
             application/json:
               schema:
@@ -5917,11 +5915,13 @@ paths:
                       - code: error
                         detail: A server error occurred.
                         attr: null
-      security:
-        - tokenAuth: []
-        - cookieAuth: []
-      tags:
-        - obtain-token
+          description: ''
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthTokenWithSecondFactor'
+          description: ''
   /api/organization:
     get:
       operationId: organization_list
@@ -11532,6 +11532,639 @@ paths:
         - cookieAuth: []
       tags:
         - user
+  /api/user/2fa:
+    get:
+      operationId: user_2fa_retrieve
+      description: Whether the account has an authenticator app, and recovery codes left.
+      tags:
+        - user
+      security:
+        - tokenAuth: []
+        - cookieAuth: []
+      responses:
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User2faRetrieveErrorResponse400'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: authentication_failed
+                        detail: Incorrect authentication credentials.
+                        attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_authenticated
+                        detail: Authentication credentials were not provided.
+                        attr: null
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+              examples:
+                NotFound:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_found
+                        detail: Not found.
+                        attr: null
+          description: ''
+        '405':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse405'
+              examples:
+                MethodNotAllowed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: method_not_allowed
+                        detail: Method "get" not allowed.
+                        attr: null
+          description: ''
+        '406':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse406'
+              examples:
+                NotAcceptable:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_acceptable
+                        detail: Could not satisfy the request Accept header.
+                        attr: null
+          description: ''
+        '415':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse415'
+              examples:
+                UnsupportedMediaType:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: unsupported_media_type
+                        detail: Unsupported media type "application/json" in request.
+                        attr: null
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+              examples:
+                APIException:
+                  value:
+                    type: server_error
+                    errors:
+                      - code: error
+                        detail: A server error occurred.
+                        attr: null
+          description: ''
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TwoFactorStatus'
+          description: ''
+  /api/user/2fa/confirm:
+    post:
+      operationId: user_2fa_confirm_create
+      description: 'Finish adding the app with a code from it. Returns the recovery codes.
+
+
+        This is the only time the codes are returned; afterwards the API only
+
+        says how many are left.'
+      tags:
+        - user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CodeRequest'
+        required: true
+      security:
+        - tokenAuth: []
+        - cookieAuth: []
+      responses:
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User2faConfirmCreateErrorResponse400'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: authentication_failed
+                        detail: Incorrect authentication credentials.
+                        attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_authenticated
+                        detail: Authentication credentials were not provided.
+                        attr: null
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+              examples:
+                NotFound:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_found
+                        detail: Not found.
+                        attr: null
+          description: ''
+        '405':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse405'
+              examples:
+                MethodNotAllowed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: method_not_allowed
+                        detail: Method "get" not allowed.
+                        attr: null
+          description: ''
+        '406':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse406'
+              examples:
+                NotAcceptable:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_acceptable
+                        detail: Could not satisfy the request Accept header.
+                        attr: null
+          description: ''
+        '415':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse415'
+              examples:
+                UnsupportedMediaType:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: unsupported_media_type
+                        detail: Unsupported media type "application/json" in request.
+                        attr: null
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse429'
+              examples:
+                Throttled:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: throttled
+                        detail: Request was throttled.
+                        attr: null
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+              examples:
+                APIException:
+                  value:
+                    type: server_error
+                    errors:
+                      - code: error
+                        detail: A server error occurred.
+                        attr: null
+          description: ''
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecoveryCodes'
+          description: ''
+  /api/user/2fa/disable:
+    post:
+      operationId: user_2fa_disable_create
+      description: Turn two-factor off with a current app code or a recovery code.
+      tags:
+        - user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CodeRequest'
+        required: true
+      security:
+        - tokenAuth: []
+        - cookieAuth: []
+      responses:
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User2faDisableCreateErrorResponse400'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: authentication_failed
+                        detail: Incorrect authentication credentials.
+                        attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_authenticated
+                        detail: Authentication credentials were not provided.
+                        attr: null
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+              examples:
+                NotFound:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_found
+                        detail: Not found.
+                        attr: null
+          description: ''
+        '405':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse405'
+              examples:
+                MethodNotAllowed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: method_not_allowed
+                        detail: Method "get" not allowed.
+                        attr: null
+          description: ''
+        '406':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse406'
+              examples:
+                NotAcceptable:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_acceptable
+                        detail: Could not satisfy the request Accept header.
+                        attr: null
+          description: ''
+        '415':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse415'
+              examples:
+                UnsupportedMediaType:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: unsupported_media_type
+                        detail: Unsupported media type "application/json" in request.
+                        attr: null
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse429'
+              examples:
+                Throttled:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: throttled
+                        detail: Request was throttled.
+                        attr: null
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+              examples:
+                APIException:
+                  value:
+                    type: server_error
+                    errors:
+                      - code: error
+                        detail: A server error occurred.
+                        attr: null
+          description: ''
+        '204':
+          description: No response body
+  /api/user/2fa/recovery-codes:
+    post:
+      operationId: user_2fa_recovery_codes_create
+      description: Replace the recovery codes, given a current code. Old ones stop working.
+      tags:
+        - user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CodeRequest'
+        required: true
+      security:
+        - tokenAuth: []
+        - cookieAuth: []
+      responses:
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User2faRecoveryCodesCreateErrorResponse400'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: authentication_failed
+                        detail: Incorrect authentication credentials.
+                        attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_authenticated
+                        detail: Authentication credentials were not provided.
+                        attr: null
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+              examples:
+                NotFound:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_found
+                        detail: Not found.
+                        attr: null
+          description: ''
+        '405':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse405'
+              examples:
+                MethodNotAllowed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: method_not_allowed
+                        detail: Method "get" not allowed.
+                        attr: null
+          description: ''
+        '406':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse406'
+              examples:
+                NotAcceptable:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_acceptable
+                        detail: Could not satisfy the request Accept header.
+                        attr: null
+          description: ''
+        '415':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse415'
+              examples:
+                UnsupportedMediaType:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: unsupported_media_type
+                        detail: Unsupported media type "application/json" in request.
+                        attr: null
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse429'
+              examples:
+                Throttled:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: throttled
+                        detail: Request was throttled.
+                        attr: null
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+              examples:
+                APIException:
+                  value:
+                    type: server_error
+                    errors:
+                      - code: error
+                        detail: A server error occurred.
+                        attr: null
+          description: ''
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecoveryCodes'
+          description: ''
+  /api/user/2fa/setup:
+    post:
+      operationId: user_2fa_setup_create
+      description: 'Start adding an authenticator app: a new secret, as text and QR code.
+
+
+        It protects nothing until confirmed with a code from the app. Starting
+
+        over replaces an unconfirmed secret; an account that already has a
+
+        confirmed app has to turn it off first.'
+      tags:
+        - user
+      security:
+        - tokenAuth: []
+        - cookieAuth: []
+      responses:
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User2faSetupCreateErrorResponse400'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: authentication_failed
+                        detail: Incorrect authentication credentials.
+                        attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_authenticated
+                        detail: Authentication credentials were not provided.
+                        attr: null
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+              examples:
+                NotFound:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_found
+                        detail: Not found.
+                        attr: null
+          description: ''
+        '405':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse405'
+              examples:
+                MethodNotAllowed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: method_not_allowed
+                        detail: Method "get" not allowed.
+                        attr: null
+          description: ''
+        '406':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse406'
+              examples:
+                NotAcceptable:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_acceptable
+                        detail: Could not satisfy the request Accept header.
+                        attr: null
+          description: ''
+        '415':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse415'
+              examples:
+                UnsupportedMediaType:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: unsupported_media_type
+                        detail: Unsupported media type "application/json" in request.
+                        attr: null
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+              examples:
+                APIException:
+                  value:
+                    type: server_error
+                    errors:
+                      - code: error
+                        detail: A server error occurred.
+                        attr: null
+          description: ''
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TwoFactorSetup'
+          description: ''
   /api/user/login:
     post:
       operationId: user_login_create
@@ -16677,6 +17310,33 @@ components:
       required:
         - password
         - username
+    AuthTokenWithSecondFactor:
+      type: object
+      description: DRF's token login (username/password), plus `otp` for accounts with 2FA.
+      properties:
+        token:
+          type: string
+          readOnly: true
+      required:
+        - token
+    AuthTokenWithSecondFactorRequest:
+      type: object
+      description: DRF's token login (username/password), plus `otp` for accounts with 2FA.
+      properties:
+        username:
+          type: string
+          writeOnly: true
+          minLength: 1
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+        otp:
+          type: string
+          writeOnly: true
+      required:
+        - password
+        - username
     BrregEntity:
       description: An entity in Enhetsregisteret, as the fields of a new organization.
       type: object
@@ -17251,6 +17911,14 @@ components:
       type: string
       enum:
         - client_error
+    CodeRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          minLength: 1
+      required:
+        - code
     ConnectionExample:
       type: object
       properties:
@@ -19741,6 +20409,9 @@ components:
         password:
           type: string
           minLength: 1
+        otp:
+          type: string
+          writeOnly: true
       required:
         - email
         - password
@@ -20276,16 +20947,18 @@ components:
       enum:
         - null
     ObtainTokenCreateError:
+      oneOf:
+        - $ref: '#/components/schemas/ObtainTokenCreateNonFieldErrorsErrorComponent'
+        - $ref: '#/components/schemas/ObtainTokenCreateUsernameErrorComponent'
+        - $ref: '#/components/schemas/ObtainTokenCreatePasswordErrorComponent'
+        - $ref: '#/components/schemas/ObtainTokenCreateOtpErrorComponent'
       discriminator:
         propertyName: attr
         mapping:
           non_field_errors: '#/components/schemas/ObtainTokenCreateNonFieldErrorsErrorComponent'
           username: '#/components/schemas/ObtainTokenCreateUsernameErrorComponent'
           password: '#/components/schemas/ObtainTokenCreatePasswordErrorComponent'
-      oneOf:
-        - $ref: '#/components/schemas/ObtainTokenCreateNonFieldErrorsErrorComponent'
-        - $ref: '#/components/schemas/ObtainTokenCreateUsernameErrorComponent'
-        - $ref: '#/components/schemas/ObtainTokenCreatePasswordErrorComponent'
+          otp: '#/components/schemas/ObtainTokenCreateOtpErrorComponent'
     ObtainTokenCreateErrorResponse400:
       discriminator:
         propertyName: type
@@ -20311,6 +20984,34 @@ components:
           enum:
             - invalid
             - 'null'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    ObtainTokenCreateOtpErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+            - otp
+          type: string
+          description: '* `otp` - otp'
+        code:
+          enum:
+            - invalid
+            - 'null'
+            - null_characters_not_allowed
+            - surrogate_characters_not_allowed
+          type: string
+          description: '* `invalid` - invalid
+
+            * `null` - null
+
+            * `null_characters_not_allowed` - null_characters_not_allowed
+
+            * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed'
         detail:
           type: string
       required:
@@ -21632,6 +22333,9 @@ components:
           type: string
           writeOnly: true
           minLength: 1
+        otp:
+          type: string
+          writeOnly: true
       required:
         - newPassword
         - token
@@ -22127,6 +22831,16 @@ components:
           $ref: '#/components/schemas/RoleEnum'
       required:
         - role
+    RecoveryCodes:
+      type: object
+      properties:
+        recoveryCodes:
+          type: array
+          items:
+            type: string
+          readOnly: true
+      required:
+        - recoveryCodes
     RecurringSlot:
       description: |-
         Recurring airtime. Each occurrence becomes an airtime grant two
@@ -25770,6 +26484,36 @@ components:
           client_error: '#/components/schemas/ParseErrorResponse'
       oneOf:
         - $ref: '#/components/schemas/ParseErrorResponse'
+    TwoFactorSetup:
+      type: object
+      properties:
+        secret:
+          type: string
+          readOnly: true
+          description: Base32, for typing into the app
+        otpauthUrl:
+          type: string
+          readOnly: true
+        qrCode:
+          type: string
+          readOnly: true
+          description: The otpauth URL as an SVG data URI
+      required:
+        - otpauthUrl
+        - qrCode
+        - secret
+    TwoFactorStatus:
+      type: object
+      properties:
+        enabled:
+          type: boolean
+          readOnly: true
+        recoveryCodesLeft:
+          type: integer
+          readOnly: true
+      required:
+        - enabled
+        - recoveryCodesLeft
     UpcomingTransmission:
       type: object
       properties:
@@ -25856,6 +26600,278 @@ components:
         - identityConfirmed
         - isStaff
         - memberOf
+    User2faConfirmCreateCodeErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+            - code
+          type: string
+          description: '* `code` - code'
+        code:
+          enum:
+            - blank
+            - invalid
+            - 'null'
+            - null_characters_not_allowed
+            - required
+            - surrogate_characters_not_allowed
+          type: string
+          description: '* `blank` - blank
+
+            * `invalid` - invalid
+
+            * `null` - null
+
+            * `null_characters_not_allowed` - null_characters_not_allowed
+
+            * `required` - required
+
+            * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    User2faConfirmCreateError:
+      oneOf:
+        - $ref: '#/components/schemas/User2faConfirmCreateNonFieldErrorsErrorComponent'
+        - $ref: '#/components/schemas/User2faConfirmCreateCodeErrorComponent'
+      discriminator:
+        propertyName: attr
+        mapping:
+          non_field_errors: '#/components/schemas/User2faConfirmCreateNonFieldErrorsErrorComponent'
+          code: '#/components/schemas/User2faConfirmCreateCodeErrorComponent'
+    User2faConfirmCreateErrorResponse400:
+      oneOf:
+        - $ref: '#/components/schemas/User2faConfirmCreateValidationError'
+        - $ref: '#/components/schemas/ParseErrorResponse'
+      discriminator:
+        propertyName: type
+        mapping:
+          validation_error: '#/components/schemas/User2faConfirmCreateValidationError'
+          client_error: '#/components/schemas/ParseErrorResponse'
+    User2faConfirmCreateNonFieldErrorsErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+            - non_field_errors
+          type: string
+          description: '* `non_field_errors` - non_field_errors'
+        code:
+          enum:
+            - invalid
+            - 'null'
+          type: string
+          description: '* `invalid` - invalid
+
+            * `null` - null'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    User2faConfirmCreateValidationError:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/ValidationErrorEnum'
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/User2faConfirmCreateError'
+      required:
+        - errors
+        - type
+    User2faDisableCreateCodeErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+            - code
+          type: string
+          description: '* `code` - code'
+        code:
+          enum:
+            - blank
+            - invalid
+            - 'null'
+            - null_characters_not_allowed
+            - required
+            - surrogate_characters_not_allowed
+          type: string
+          description: '* `blank` - blank
+
+            * `invalid` - invalid
+
+            * `null` - null
+
+            * `null_characters_not_allowed` - null_characters_not_allowed
+
+            * `required` - required
+
+            * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    User2faDisableCreateError:
+      oneOf:
+        - $ref: '#/components/schemas/User2faDisableCreateNonFieldErrorsErrorComponent'
+        - $ref: '#/components/schemas/User2faDisableCreateCodeErrorComponent'
+      discriminator:
+        propertyName: attr
+        mapping:
+          non_field_errors: '#/components/schemas/User2faDisableCreateNonFieldErrorsErrorComponent'
+          code: '#/components/schemas/User2faDisableCreateCodeErrorComponent'
+    User2faDisableCreateErrorResponse400:
+      oneOf:
+        - $ref: '#/components/schemas/User2faDisableCreateValidationError'
+        - $ref: '#/components/schemas/ParseErrorResponse'
+      discriminator:
+        propertyName: type
+        mapping:
+          validation_error: '#/components/schemas/User2faDisableCreateValidationError'
+          client_error: '#/components/schemas/ParseErrorResponse'
+    User2faDisableCreateNonFieldErrorsErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+            - non_field_errors
+          type: string
+          description: '* `non_field_errors` - non_field_errors'
+        code:
+          enum:
+            - invalid
+            - 'null'
+          type: string
+          description: '* `invalid` - invalid
+
+            * `null` - null'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    User2faDisableCreateValidationError:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/ValidationErrorEnum'
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/User2faDisableCreateError'
+      required:
+        - errors
+        - type
+    User2faRecoveryCodesCreateCodeErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+            - code
+          type: string
+          description: '* `code` - code'
+        code:
+          enum:
+            - blank
+            - invalid
+            - 'null'
+            - null_characters_not_allowed
+            - required
+            - surrogate_characters_not_allowed
+          type: string
+          description: '* `blank` - blank
+
+            * `invalid` - invalid
+
+            * `null` - null
+
+            * `null_characters_not_allowed` - null_characters_not_allowed
+
+            * `required` - required
+
+            * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    User2faRecoveryCodesCreateError:
+      oneOf:
+        - $ref: '#/components/schemas/User2faRecoveryCodesCreateNonFieldErrorsErrorComponent'
+        - $ref: '#/components/schemas/User2faRecoveryCodesCreateCodeErrorComponent'
+      discriminator:
+        propertyName: attr
+        mapping:
+          non_field_errors: '#/components/schemas/User2faRecoveryCodesCreateNonFieldErrorsErrorComponent'
+          code: '#/components/schemas/User2faRecoveryCodesCreateCodeErrorComponent'
+    User2faRecoveryCodesCreateErrorResponse400:
+      oneOf:
+        - $ref: '#/components/schemas/User2faRecoveryCodesCreateValidationError'
+        - $ref: '#/components/schemas/ParseErrorResponse'
+      discriminator:
+        propertyName: type
+        mapping:
+          validation_error: '#/components/schemas/User2faRecoveryCodesCreateValidationError'
+          client_error: '#/components/schemas/ParseErrorResponse'
+    User2faRecoveryCodesCreateNonFieldErrorsErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+            - non_field_errors
+          type: string
+          description: '* `non_field_errors` - non_field_errors'
+        code:
+          enum:
+            - invalid
+            - 'null'
+          type: string
+          description: '* `invalid` - invalid
+
+            * `null` - null'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    User2faRecoveryCodesCreateValidationError:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/ValidationErrorEnum'
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/User2faRecoveryCodesCreateError'
+      required:
+        - errors
+        - type
+    User2faRetrieveErrorResponse400:
+      oneOf:
+        - $ref: '#/components/schemas/ParseErrorResponse'
+      discriminator:
+        propertyName: type
+        mapping:
+          client_error: '#/components/schemas/ParseErrorResponse'
+    User2faSetupCreateErrorResponse400:
+      oneOf:
+        - $ref: '#/components/schemas/ParseErrorResponse'
+      discriminator:
+        propertyName: type
+        mapping:
+          client_error: '#/components/schemas/ParseErrorResponse'
     UserDestroyErrorResponse400:
       discriminator:
         propertyName: type
@@ -25894,16 +26910,18 @@ components:
         - code
         - detail
     UserLoginCreateError:
+      oneOf:
+        - $ref: '#/components/schemas/UserLoginCreateNonFieldErrorsErrorComponent'
+        - $ref: '#/components/schemas/UserLoginCreateEmailErrorComponent'
+        - $ref: '#/components/schemas/UserLoginCreatePasswordErrorComponent'
+        - $ref: '#/components/schemas/UserLoginCreateOtpErrorComponent'
       discriminator:
         propertyName: attr
         mapping:
           non_field_errors: '#/components/schemas/UserLoginCreateNonFieldErrorsErrorComponent'
           email: '#/components/schemas/UserLoginCreateEmailErrorComponent'
           password: '#/components/schemas/UserLoginCreatePasswordErrorComponent'
-      oneOf:
-        - $ref: '#/components/schemas/UserLoginCreateNonFieldErrorsErrorComponent'
-        - $ref: '#/components/schemas/UserLoginCreateEmailErrorComponent'
-        - $ref: '#/components/schemas/UserLoginCreatePasswordErrorComponent'
+          otp: '#/components/schemas/UserLoginCreateOtpErrorComponent'
     UserLoginCreateErrorResponse400:
       discriminator:
         propertyName: type
@@ -25929,6 +26947,34 @@ components:
           enum:
             - invalid
             - 'null'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    UserLoginCreateOtpErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+            - otp
+          type: string
+          description: '* `otp` - otp'
+        code:
+          enum:
+            - invalid
+            - 'null'
+            - null_characters_not_allowed
+            - surrogate_characters_not_allowed
+          type: string
+          description: '* `invalid` - invalid
+
+            * `null` - null
+
+            * `null_characters_not_allowed` - null_characters_not_allowed
+
+            * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed'
         detail:
           type: string
       required:
@@ -26347,6 +27393,7 @@ components:
         - $ref: '#/components/schemas/UserPasswordResetConfirmCreateUidErrorComponent'
         - $ref: '#/components/schemas/UserPasswordResetConfirmCreateTokenErrorComponent'
         - $ref: '#/components/schemas/UserPasswordResetConfirmCreateNewPasswordErrorComponent'
+        - $ref: '#/components/schemas/UserPasswordResetConfirmCreateOtpErrorComponent'
       discriminator:
         propertyName: attr
         mapping:
@@ -26354,6 +27401,7 @@ components:
           uid: '#/components/schemas/UserPasswordResetConfirmCreateUidErrorComponent'
           token: '#/components/schemas/UserPasswordResetConfirmCreateTokenErrorComponent'
           new_password: '#/components/schemas/UserPasswordResetConfirmCreateNewPasswordErrorComponent'
+          otp: '#/components/schemas/UserPasswordResetConfirmCreateOtpErrorComponent'
     UserPasswordResetConfirmCreateErrorResponse400:
       oneOf:
         - $ref: '#/components/schemas/UserPasswordResetConfirmCreateValidationError'
@@ -26413,6 +27461,34 @@ components:
           description: '* `invalid` - invalid
 
             * `null` - null'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    UserPasswordResetConfirmCreateOtpErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+            - otp
+          type: string
+          description: '* `otp` - otp'
+        code:
+          enum:
+            - invalid
+            - 'null'
+            - null_characters_not_allowed
+            - surrogate_characters_not_allowed
+          type: string
+          description: '* `invalid` - invalid
+
+            * `null` - null
+
+            * `null_characters_not_allowed` - null_characters_not_allowed
+
+            * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed'
         detail:
           type: string
       required:
