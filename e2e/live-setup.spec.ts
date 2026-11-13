@@ -258,6 +258,7 @@ test("the check page gives one verdict with its reasons, and leads on to airtime
   await expect(page.getByText("SRT · inne i")).toBeVisible();
   await expect(page.getByText("1280×720 · H.264 High")).toBeVisible();
   await expect(page.getByText("Kodek")).toHaveCount(0);
+  await expect(page.getByText("Forhåndsvisningen er en liten kopi i lav kvalitet.")).toBeVisible();
 
   await expect(page.getByText("Ingen sending er satt opp.")).toBeVisible();
   await expect(page.getByRole("link", { name: "Legg direktesendingen her" })).toHaveAttribute(

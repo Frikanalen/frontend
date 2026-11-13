@@ -79,7 +79,10 @@ describe("describeSignal", () => {
       value: expect.stringMatching(/^2,44 % \(2\s500 pakker\)$/),
       status: "warn",
     });
-    expect(line({ ...good, srt: { ...srt, packetsDropped: 7 } }, "Pakketap")?.status).toBe("bad");
+    expect(line({ ...good, srt: { ...srt, packetsDropped: 7 } }, "Pakketap")).toMatchObject({
+      status: "warn",
+      note: expect.stringContaining("7 pakker har ikke kommet fram"),
+    });
     expect(line({ ...good, srt: { ...good.srt!, packetsLost: 3 } }, "Pakketap")).toMatchObject({
       value: "under 0,01 % (3 pakker)",
       status: "ok",
@@ -143,5 +146,16 @@ describe("readiness", () => {
     expect(result.level).toBe("problem");
     expect(result.reasons[0]).toMatch(/^Lyd:/);
     expect(result.reasons[1]).toMatch(/^Bitrate:/);
+  });
+
+  it("is a problem while the connection is failing now, not for what happened long ago", () => {
+    const dropped = { ...good, srt: { ...good.srt!, packetsLost: 300, packetsDropped: 12 } };
+    expect(ask(dropped).level).toBe("check");
+    expect(
+      readiness({ signal: dropped, pulled: false, silent: false, unstable: true }),
+    ).toMatchObject({
+      level: "problem",
+      reasons: [expect.stringContaining("siste minuttet"), expect.stringContaining("Pakketap")],
+    });
   });
 });

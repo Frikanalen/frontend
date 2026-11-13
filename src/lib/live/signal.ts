@@ -152,8 +152,10 @@ const transport = ({ srt, framesInError = 0 }: Signal): SignalLine[] => {
         ? {
             label: "Pakketap",
             value,
-            status: "bad",
-            note: `${number(srt.packetsDropped)} pakker kom aldri fram. Det synes som hakk i bildet. Sjekk nettet, eller øk latency i koderen.`,
+            // Counted since the encoder connected, so one bad minute long
+            // ago still shows; the timeline says whether it is still so.
+            status: "warn",
+            note: `${number(srt.packetsDropped)} pakker har ikke kommet fram siden tilkoblingen. Det synes som hakk i bildet. Skjer det fortsatt, sjekk nettet eller øk latency i koderen.`,
           }
         : share > 1
           ? {
@@ -210,6 +212,7 @@ export const readiness = ({
   previous,
   pulled,
   silent,
+  unstable = false,
 }: {
   /** Undefined where the receiver cannot be asked. */
   signal: Signal | undefined;
@@ -217,6 +220,8 @@ export const readiness = ({
   pulled: boolean;
   /** The preview has sound to listen to and has heard none for a while. */
   silent: boolean;
+  /** Packets failed to arrive, or the signal dropped, in the last minute. */
+  unstable?: boolean;
 }): Readiness => {
   if (!signal?.receiving) return { level: "waiting", reasons: [] };
   const lines = describeSignal(signal, pulled, previous);
@@ -225,6 +230,10 @@ export const readiness = ({
   const reasons = [...bad, ...warn].map(({ label, note, value }) => `${label}: ${note ?? value}`);
   if (silent && signal.audio)
     reasons.splice(bad.length, 0, "Lyd: Lydsporet er stille. Sjekk mikrofoner og lydmiks.");
+  if (unstable) {
+    reasons.unshift("Forbindelsen: Det siste minuttet har deler av signalet ikke kommet fram.");
+    return { level: "problem", reasons };
+  }
   if (bad.length > 0) return { level: "problem", reasons };
   if (reasons.length > 0) return { level: "check", reasons };
   return { level: "ready", reasons };

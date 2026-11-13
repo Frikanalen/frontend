@@ -8,6 +8,7 @@ import { format } from "date-fns";
 import Link from "next/link";
 import { useEffect, useRef, type ReactNode } from "react";
 import { bookingDay } from "./BookingStatus";
+import { SignalHistory } from "./SignalHistory";
 import { useSignal } from "./SignalReport";
 import { StreamVideo } from "./StreamVideo";
 import { useLivePreview, type PreviewPhase } from "./useLivePreview";
@@ -93,7 +94,7 @@ export const SourceMonitor = ({
 }) => {
   const source = useSource(organizationId, initial);
   const enabled = source.enabled !== false;
-  const { signal, previous, clockOffset } = useSignal(source.id, { enabled, open: true });
+  const { signal, previous, clockOffset, history } = useSignal(source.id, { enabled, open: true });
   const now = useNow(clockOffset, 250);
   const own = useLivePreview(source.id);
   const program = useLivePreview(source.id, "program");
@@ -219,6 +220,7 @@ export const SourceMonitor = ({
               ))}
             </dl>
           ) : null}
+          <SignalHistory dark history={history} />
           {own.phase === "playing" ? <VuMeter stream={own.stream} /> : null}
         </div>
       </footer>

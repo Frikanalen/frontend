@@ -1,8 +1,10 @@
 "use client";
 import type { LiveSource } from "@/generated/frikanalenDjangoAPI.schemas";
+import { recentlyBroken } from "@/lib/live/history";
 import { readiness, type Readiness } from "@/lib/live/signal";
 import cx from "classnames";
 import { useEffect } from "react";
+import { SignalHistory } from "./SignalHistory";
 import { SignalReport, useSignal } from "./SignalReport";
 import { StreamVideo } from "./StreamVideo";
 import { useLivePreview, useSilence, type PreviewPhase } from "./useLivePreview";
@@ -34,7 +36,7 @@ const previewTrouble = (phase: PreviewPhase, error: string | null) =>
 export const SignalCheck = ({ source }: { source: LiveSource }) => {
   const { phase, variant, stream, stats, error, start } = useLivePreview(source.id);
   const enabled = source.enabled !== false;
-  const { signal, previous } = useSignal(source.id, { enabled, open: true });
+  const { signal, previous, history } = useSignal(source.id, { enabled, open: true });
   const silent = useSilence(stats);
 
   // Watching is what makes Frikanalen fetch a pulled source, and for any
@@ -44,7 +46,13 @@ export const SignalCheck = ({ source }: { source: LiveSource }) => {
   }, [enabled, start]);
 
   const seen = phase === "playing";
-  const verdict = readiness({ signal, previous, pulled: source.isPulled, silent });
+  const verdict = readiness({
+    signal,
+    previous,
+    pulled: source.isPulled,
+    silent,
+    unstable: recentlyBroken(history),
+  });
   // Where the receiver cannot be asked, the preview is all there is to go on.
   const { title, className } =
     !signal && seen
@@ -91,6 +99,10 @@ export const SignalCheck = ({ source }: { source: LiveSource }) => {
             label={`Forhåndsvisning av ${source.name}`}
             stream={stream}
           />
+          <p className="text-sm text-default-600">
+            Forhåndsvisningen er en liten kopi i lav kvalitet. Den viser at bilde og lyd kommer
+            fram, ikke hvor godt bildet ser ut på lufta.
+          </p>
           {trouble ? <p className="text-sm text-danger-700">{trouble}</p> : null}
           {seen ? (
             <section className="space-y-1">
@@ -108,6 +120,9 @@ export const SignalCheck = ({ source }: { source: LiveSource }) => {
           <section className="space-y-1">
             <h3 className="font-semibold">Signalet deres</h3>
             <SignalReport previous={previous} pulled={source.isPulled} signal={signal} />
+            <div className="pt-2">
+              <SignalHistory history={history} />
+            </div>
           </section>
         ) : null}
       </div>
