@@ -8,7 +8,7 @@ import { format } from "date-fns";
 import Link from "next/link";
 import { useEffect, useRef, type ReactNode } from "react";
 import { bookingDay } from "./BookingStatus";
-import { SignalHistory } from "./SignalHistory";
+import { SignalHistory, useSignalHistory } from "./SignalHistory";
 import { useSignal } from "./SignalReport";
 import { StreamVideo } from "./StreamVideo";
 import { useLivePreview, type PreviewPhase } from "./useLivePreview";
@@ -60,17 +60,17 @@ const Tile = ({
   children?: ReactNode;
 }) => (
   <section aria-label={title} className="relative flex min-h-0 flex-col bg-black">
-    <h2 className="absolute top-0 left-0 z-10 bg-black/70 px-3 py-1 text-xs font-bold tracking-widest uppercase sm:text-sm">
+    <h2 className="absolute top-0 left-0 z-10 bg-black/70 px-[0.8em] py-[0.25em] text-[0.8em] font-bold tracking-widest uppercase">
       {title}
     </h2>
     <StreamVideo
-      className="aspect-video h-full min-h-0 w-full object-contain lg:aspect-auto"
+      className="aspect-video h-full min-h-0 w-full object-contain landscape:aspect-auto"
       controls={false}
       label={title}
       stream={stream}
     />
     {phase === "playing" ? null : (
-      <p className="absolute inset-0 flex items-center justify-center text-lg text-neutral-400">
+      <p className="absolute inset-0 flex items-center justify-center text-[1.2em] text-neutral-400">
         {WAITING[phase]}
       </p>
     )}
@@ -78,12 +78,22 @@ const Tile = ({
   </section>
 );
 
+// Everything on the monitor is sized in em from this, so it keeps its
+// proportions from a wall screen down to a small window in a multiviewer:
+// by height where the window is wide, by width where it is tall.
+const SCALE = "max(6px, min(2.8vw, 1.85vh))";
+
+/** Digits as large as their number allows: a countdown in days is longer. */
+const digitSize = (text: string) =>
+  text.length <= 5 ? "min(14em, 26vw)" : text.length <= 8 ? "min(12em, 17vw)" : "min(8em, 11vw)";
+
 /**
  * A status display to leave up where a live broadcast is made, on a spare
  * screen or in a multiviewer: how long until air, whether the source is on
  * air, what Frikanalen receives and what it sends back out. Built to be
  * read from across a room, so it says little and says it large; the frame
- * turns amber in the last minutes and red on air.
+ * turns amber in the last minutes and red on air. The buttons stay out of
+ * the picture until the pointer is over it.
  */
 export const SourceMonitor = ({
   organizationId,
@@ -94,7 +104,13 @@ export const SourceMonitor = ({
 }) => {
   const source = useSource(organizationId, initial);
   const enabled = source.enabled !== false;
-  const { signal, previous, clockOffset, history } = useSignal(source.id, { enabled, open: true });
+  const {
+    signal,
+    previous,
+    clockOffset,
+    history: live,
+  } = useSignal(source.id, { enabled, open: true });
+  const history = useSignalHistory(source.id, live, { enabled });
   const now = useNow(clockOffset, 250);
   const own = useLivePreview(source.id);
   const program = useLivePreview(source.id, "program");
@@ -122,50 +138,54 @@ export const SourceMonitor = ({
       )
     : [];
 
+  const countdown =
+    status.state === "none" ? null : formatCountdown(onAir ? status.remaining : status.until);
+
   return (
     <div
       className={cx(
-        "fixed inset-0 z-50 flex flex-col gap-3 overflow-auto border-[10px] bg-neutral-950 p-3 text-white sm:border-[16px] sm:p-4",
+        "group fixed inset-0 z-50 flex flex-col gap-[0.6em] overflow-auto border-[0.8em] bg-neutral-950 p-[0.6em] text-white",
         onAir ? "border-red-600" : soon ? "border-amber-400" : "border-neutral-700",
       )}
       data-state={onAir ? "onair" : soon ? "soon" : status.state}
       ref={frame}
+      style={{ fontSize: SCALE }}
     >
-      <header className="flex flex-wrap items-center gap-x-6 gap-y-1">
-        <h1 className="me-auto text-xl font-bold sm:text-2xl">{source.name}</h1>
-        <time className="font-mono text-2xl tabular-nums sm:text-3xl" suppressHydrationWarning>
+      <header className="flex items-baseline gap-x-[1.5em]">
+        <h1 className="me-auto truncate text-[1.4em] font-bold">{source.name}</h1>
+        <time className="font-mono text-[1.6em] tabular-nums" suppressHydrationWarning>
           {now ? format(inOsloTime(new Date(now)), "HH:mm:ss") : "--:--:--"}
         </time>
-        <div className="flex gap-2 text-sm">
-          <button
-            className="border border-neutral-600 px-3 py-1 text-neutral-300 hover:bg-neutral-800"
-            type="button"
-            onClick={() =>
-              document.fullscreenElement
-                ? void document.exitFullscreen()
-                : void frame.current?.requestFullscreen().catch(() => undefined)
-            }
-          >
-            Fullskjerm
-          </button>
-          <Link
-            className="border border-neutral-600 px-3 py-1 text-neutral-300 hover:bg-neutral-800"
-            href={`/organization/${organizationId}/live/${source.id}`}
-          >
-            Lukk
-          </Link>
-        </div>
       </header>
+      <div className="absolute top-[0.4em] left-1/2 z-20 flex -translate-x-1/2 gap-2 text-sm opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100 [@media(hover:none)]:static [@media(hover:none)]:order-last [@media(hover:none)]:translate-x-0 [@media(hover:none)]:opacity-100">
+        <button
+          className="border border-neutral-600 bg-neutral-950 px-3 py-1 text-neutral-300 hover:bg-neutral-800"
+          type="button"
+          onClick={() =>
+            document.fullscreenElement
+              ? void document.exitFullscreen()
+              : void frame.current?.requestFullscreen().catch(() => undefined)
+          }
+        >
+          Fullskjerm
+        </button>
+        <Link
+          className="border border-neutral-600 bg-neutral-950 px-3 py-1 text-neutral-300 hover:bg-neutral-800"
+          href={`/organization/${organizationId}/live/${source.id}`}
+        >
+          Lukk
+        </Link>
+      </div>
 
       <div
         className={cx(
-          "grid min-h-0 flex-1 gap-3",
-          program.phase === "absent" ? "" : "lg:grid-cols-2",
+          "grid min-h-0 flex-1 gap-[0.6em]",
+          program.phase === "absent" ? "" : "landscape:grid-cols-2",
         )}
       >
         <Tile phase={own.phase} stream={own.stream} title="Fra dere">
           {lost ? (
-            <p className="absolute inset-x-0 bottom-0 bg-red-600 px-3 py-2 text-center text-xl font-bold tracking-wide uppercase">
+            <p className="absolute inset-x-0 bottom-0 bg-red-600 px-[0.6em] py-[0.3em] text-center text-[1.4em] font-bold tracking-wide uppercase">
               Ingen signal
             </p>
           ) : null}
@@ -175,12 +195,12 @@ export const SourceMonitor = ({
         )}
       </div>
 
-      <footer className="grid items-end gap-x-8 gap-y-3 lg:grid-cols-[1fr_auto]">
+      <footer className="grid items-end gap-x-[2em] gap-y-[0.8em] landscape:grid-cols-[minmax(0,1fr)_25em]">
         <div role="timer">
           <p
             className={cx(
-              "inline-block text-lg font-bold tracking-widest uppercase sm:text-2xl",
-              onAir ? "bg-red-600 px-3 py-1" : soon ? "text-amber-400" : "text-neutral-300",
+              "inline-block text-[1.4em] leading-tight font-bold tracking-widest uppercase",
+              onAir ? "bg-red-600 px-[0.5em]" : soon ? "text-amber-400" : "text-neutral-300",
             )}
           >
             {onAir
@@ -189,28 +209,31 @@ export const SourceMonitor = ({
                 ? "Direkte om"
                 : "Ingen sending satt opp"}
           </p>
-          {status.state === "none" ? null : (
-            <p className="font-mono text-[clamp(3.5rem,15vw,11rem)] leading-none font-bold tabular-nums">
-              {formatCountdown(onAir ? status.remaining : status.until)}
+          {countdown === null ? null : (
+            <p
+              className="font-mono leading-none font-bold whitespace-nowrap tabular-nums"
+              style={{ fontSize: digitSize(countdown) }}
+            >
+              {countdown}
             </p>
           )}
           {status.state === "none" ? null : (
-            <p className="text-base text-neutral-300 sm:text-xl">
+            <p className="truncate text-[1.1em] text-neutral-300">
               {onAir ? "igjen av " : ""}«{status.booking.name}» · {bookingDay(status.booking)} kl.{" "}
               {formatOsloTime(status.booking.starttime)}–{formatOsloTime(status.booking.endtime)}
             </p>
           )}
         </div>
 
-        <div className="w-full space-y-3 lg:w-96">
+        <div className="min-w-0 space-y-[0.6em]">
           {lines.length > 0 ? (
-            <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+            <dl className="grid grid-cols-2 gap-x-[1em] gap-y-[0.3em] leading-tight">
               {lines.map(({ label, value, status: mark }) => (
-                <div key={label}>
-                  <dt className="text-xs tracking-wide text-neutral-400 uppercase">{label}</dt>
+                <div className="min-w-0" key={label}>
+                  <dt className="text-[0.7em] tracking-wide text-neutral-400 uppercase">{label}</dt>
                   <dd
                     className={cx(
-                      "font-semibold",
+                      "truncate text-[0.95em] font-semibold",
                       mark === "bad" ? "text-red-400" : mark === "warn" ? "text-amber-400" : "",
                     )}
                   >
@@ -220,8 +243,8 @@ export const SourceMonitor = ({
               ))}
             </dl>
           ) : null}
-          <SignalHistory dark history={history} />
-          {own.phase === "playing" ? <VuMeter stream={own.stream} /> : null}
+          <SignalHistory compact history={history} />
+          {own.phase === "playing" ? <VuMeter compact stream={own.stream} /> : null}
         </div>
       </footer>
     </div>

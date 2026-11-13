@@ -4,7 +4,7 @@ import { recentlyBroken } from "@/lib/live/history";
 import { readiness, type Readiness } from "@/lib/live/signal";
 import cx from "classnames";
 import { useEffect } from "react";
-import { SignalHistory } from "./SignalHistory";
+import { SignalHistory, useSignalHistory } from "./SignalHistory";
 import { SignalReport, useSignal } from "./SignalReport";
 import { StreamVideo } from "./StreamVideo";
 import { useLivePreview, useSilence, type PreviewPhase } from "./useLivePreview";
@@ -36,7 +36,8 @@ const previewTrouble = (phase: PreviewPhase, error: string | null) =>
 export const SignalCheck = ({ source }: { source: LiveSource }) => {
   const { phase, variant, stream, stats, error, start } = useLivePreview(source.id);
   const enabled = source.enabled !== false;
-  const { signal, previous, history } = useSignal(source.id, { enabled, open: true });
+  const { signal, previous, history: live } = useSignal(source.id, { enabled, open: true });
+  const history = useSignalHistory(source.id, live, { enabled });
   const silent = useSilence(stats);
 
   // Watching is what makes Frikanalen fetch a pulled source, and for any

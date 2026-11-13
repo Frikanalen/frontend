@@ -23,14 +23,38 @@ const listed = {
   revokedAt: null,
 };
 
-const stubSignal = (page: Page) =>
-  page.route("**/api/live-sources/9/signal", (route) =>
+// What the server has on record from before the page was opened: forty
+// minutes of signal, with a patch of recovered loss and one hole in it.
+const recorded = () => {
+  const end = Math.floor(Date.now() / 30_000) * 30_000;
+  return Array.from({ length: 80 }, (_, index) => {
+    const receiving = index !== 50;
+    return {
+      at: new Date(end - (79 - index) * 30_000).toISOString(),
+      receiving,
+      bitrate: receiving ? 8_000_000 : null,
+      lost: index === 20 || index === 21 ? 14 : 0,
+      dropped: 0,
+      reconnected: false,
+    };
+  });
+};
+
+const stubSignal = async (page: Page) => {
+  const since = new Date(Date.now() - 5 * 60_000).toISOString();
+  await page.route("**/api/live-sources/9/signal/history?**", (route) =>
+    route.fulfill({
+      status: 200,
+      json: { available: true, stepSeconds: 30, samples: recorded() },
+    }),
+  );
+  await page.route("**/api/live-sources/9/signal", (route) =>
     route.fulfill({
       status: 200,
       json: {
         available: true,
         receiving: true,
-        since: new Date(Date.now() - 5 * 60_000).toISOString(),
+        since,
         protocol: "SRT",
         video: { codec: "H264", width: 1280, height: 720, profile: "High" },
         audio: null,
@@ -47,6 +71,7 @@ const stubSignal = (page: Page) =>
       },
     }),
   );
+};
 
 const booking = (startsInMs: number) => ({
   id: 501,
@@ -259,6 +284,10 @@ test("the check page gives one verdict with its reasons, and leads on to airtime
   await expect(page.getByText("1280×720 · H.264 High")).toBeVisible();
   await expect(page.getByText("Kodek")).toHaveCount(0);
   await expect(page.getByText("Forhåndsvisningen er en liten kopi i lav kvalitet.")).toBeVisible();
+  // The timeline starts with what happened before the page was opened.
+  await expect(
+    page.getByText(/Siste (39|4\d) min: 1 brudd, 1 periode med pakketap\./),
+  ).toBeVisible();
 
   await expect(page.getByText("Ingen sending er satt opp.")).toBeVisible();
   await expect(page.getByRole("link", { name: "Legg direktesendingen her" })).toHaveAttribute(
@@ -303,6 +332,12 @@ test("the monitor counts down to air and turns red on air", async ({ page }) => 
   // No programme return on this receiver: its tile is left out, not empty.
   await expect(page.getByRole("region", { name: "Frikanalen sender nå" })).toHaveCount(0);
   await expect(page.getByText(/Mbit\/s/).first()).toBeVisible();
+  await expect(page.getByText(/Siste (39|4\d) min: 1 brudd, 1 pakketap/)).toBeVisible();
+  // The buttons keep out of the picture until the pointer is over it.
+  const close = page.getByRole("link", { name: "Lukk" });
+  await page.mouse.move(0, 0);
+  await monitor.hover({ position: { x: 200, y: 200 } });
+  await expect(close).toHaveCSS("opacity", "1");
 
   bookings = [booking(-60_000)];
   await page.reload();

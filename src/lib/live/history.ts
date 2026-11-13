@@ -1,11 +1,12 @@
-import type { Signal } from "@/generated/frikanalenDjangoAPI.schemas";
+import type { Signal, SignalSample } from "@/generated/frikanalenDjangoAPI.schemas";
 import { signalBitrate } from "./signal";
 
 /**
- * The signal over the time a page has been open, one sample per report
- * from the receiver, so trouble that comes and goes can be seen at a
- * glance. The receiver counts loss since the connection opened; a sample
- * holds what was added since the report before.
+ * The signal over the last hour, so trouble that comes and goes can be
+ * seen at a glance. While a page is open it adds a sample per report from
+ * the receiver; the time before that is filled in from the record the
+ * server keeps, which is coarser. The receiver counts loss since the
+ * connection opened; a sample holds what was added since the one before.
  */
 export type Sample = {
   at: number;
@@ -19,8 +20,12 @@ export type Sample = {
   reconnected: boolean;
 };
 
-/** Ten minutes of reports five seconds apart. */
-export const HISTORY_LENGTH = 120;
+/** The timeline shows an hour, in bars of half a minute. */
+export const WINDOW_MS = 60 * 60_000;
+export const BUCKETS = 120;
+
+/** An hour of reports five seconds apart. */
+export const HISTORY_LENGTH = 720;
 
 export const sampleOf = (signal: Signal, previous?: Signal): Sample => {
   const at = Date.parse(signal.measuredAt);
@@ -42,6 +47,55 @@ export const sampleOf = (signal: Signal, previous?: Signal): Sample => {
 
 export const appendSample = (history: readonly Sample[], sample: Sample): Sample[] =>
   [...history, sample].slice(-HISTORY_LENGTH);
+
+/** The server's record, in the shape of the page's own samples. */
+export const recordedSamples = (samples: readonly SignalSample[]): Sample[] =>
+  samples.map((sample) => ({ ...sample, at: Date.parse(sample.at) }));
+
+/** The record up to where the page's own, finer samples begin. */
+export const mergeHistory = (recorded: readonly Sample[], live: readonly Sample[]): Sample[] =>
+  live.length === 0
+    ? [...recorded]
+    : [...recorded.filter((sample) => sample.at < live[0].at), ...live];
+
+/**
+ * The samples as `count` bars of equal time ending at the newest sample,
+ * oldest first, so the timeline keeps its scale however many samples
+ * there are. A bar holds the worst of its time: losses add up, and one
+ * moment without signal makes it a bar without. Time with no samples is
+ * null, and draws nothing.
+ */
+export const bucketize = (
+  samples: readonly Sample[],
+  windowMs = WINDOW_MS,
+  count = BUCKETS,
+): (Sample | null)[] => {
+  const size = windowMs / count;
+  const latest = samples[samples.length - 1];
+  if (!latest) return Array.from({ length: count }, () => null);
+  // Bars sit on the clock, so they stay put as new samples come in.
+  const end = Math.ceil(latest.at / size) * size;
+  const groups: Sample[][] = Array.from({ length: count }, () => []);
+  for (const sample of samples) {
+    // A sample tells of the time up to `at`: on a boundary it belongs before it.
+    const index = count - 1 - Math.floor((end - sample.at) / size);
+    if (index >= 0 && index < count) groups[index].push(sample);
+  }
+  return groups.map((group, index) => {
+    if (group.length === 0) return null;
+    const rates = group.flatMap(({ bitrate }) => (bitrate === null ? [] : [bitrate]));
+    return {
+      at: end - (count - 1 - index) * size,
+      receiving: group.every(({ receiving }) => receiving),
+      bitrate: rates.length
+        ? Math.round(rates.reduce((sum, rate) => sum + rate, 0) / rates.length)
+        : null,
+      lost: group.reduce((sum, { lost }) => sum + lost, 0),
+      dropped: group.reduce((sum, { dropped }) => sum + dropped, 0),
+      reconnected: group.some(({ reconnected }) => reconnected),
+    };
+  });
+};
 
 export type SampleState = "ok" | "loss" | "break";
 

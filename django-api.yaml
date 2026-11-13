@@ -4618,6 +4618,119 @@ paths:
         - cookieAuth: []
       tags:
         - live-sources
+  /api/live-sources/{id}/signal/history:
+    get:
+      operationId: live_sources_signal_history_retrieve
+      summary: How a live source's signal has held up
+      description: Bitrate, SRT packet loss and reconnects for this source over the last while, one sample per scrape step, from the receiver's metrics. It covers the time before the caller started watching.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: minutes
+          in: query
+          description: How far back, at most 180. Default 60.
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SignalHistory'
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LiveSourcesSignalHistoryRetrieveErrorResponse400'
+        '401':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: authentication_failed
+                        detail: Incorrect authentication credentials.
+                        attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_authenticated
+                        detail: Authentication credentials were not provided.
+                        attr: null
+        '404':
+          description: No such source in your organizations.
+        '405':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse405'
+              examples:
+                MethodNotAllowed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: method_not_allowed
+                        detail: Method "get" not allowed.
+                        attr: null
+        '406':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse406'
+              examples:
+                NotAcceptable:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_acceptable
+                        detail: Could not satisfy the request Accept header.
+                        attr: null
+        '415':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse415'
+              examples:
+                UnsupportedMediaType:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: unsupported_media_type
+                        detail: Unsupported media type "application/json" in request.
+                        attr: null
+        '500':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+              examples:
+                APIException:
+                  value:
+                    type: server_error
+                    errors:
+                      - code: error
+                        detail: A server error occurred.
+                        attr: null
+      security:
+        - tokenAuth: []
+        - cookieAuth: []
+      tags:
+        - live-sources
   /api/news/bulletins:
     get:
       operationId: news_bulletins_list
@@ -18735,6 +18848,13 @@ components:
           client_error: '#/components/schemas/ParseErrorResponse'
       oneOf:
         - $ref: '#/components/schemas/ParseErrorResponse'
+    LiveSourcesSignalHistoryRetrieveErrorResponse400:
+      discriminator:
+        propertyName: type
+        mapping:
+          client_error: '#/components/schemas/ParseErrorResponse'
+      oneOf:
+        - $ref: '#/components/schemas/ParseErrorResponse'
     LiveSourcesSignalRetrieveErrorResponse400:
       discriminator:
         propertyName: type
@@ -24622,6 +24742,53 @@ components:
         - channelCount
         - codec
         - sampleRate
+    SignalHistory:
+      description: How a source's signal has held up, from before the page was opened.
+      type: object
+      properties:
+        available:
+          description: False where there is no record to ask; `samples` is empty then.
+          type: boolean
+        stepSeconds:
+          type: integer
+        samples:
+          description: Oldest first, from the first step with a signal in.
+          type: array
+          items:
+            $ref: '#/components/schemas/SignalSample'
+      required:
+        - available
+        - samples
+        - stepSeconds
+    SignalSample:
+      type: object
+      properties:
+        at:
+          description: The end of the step this sample covers.
+          type: string
+          format: date-time
+        receiving:
+          type: boolean
+        bitrate:
+          description: Bits per second.
+          type: integer
+          nullable: true
+        lost:
+          description: SRT packets lost on the way and asked for again.
+          type: integer
+        dropped:
+          description: SRT packets that never arrived in time.
+          type: integer
+        reconnected:
+          description: The encoder had connected anew since the step before.
+          type: boolean
+      required:
+        - at
+        - bitrate
+        - dropped
+        - lost
+        - receiving
+        - reconnected
     SignalSrt:
       description: Counters since the SRT connection opened.
       type: object
