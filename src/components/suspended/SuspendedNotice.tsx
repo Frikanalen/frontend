@@ -20,14 +20,14 @@ export function SuspendedNotice({
       )}
       <h1 id="suspended-heading">{name} er suspendert</h1>
       <p>
-        Inntil klagen vår til Enhetsregisteret er behandlet og en ekstraordinær generalforsamling
-        kan avklare situasjonen, formidler vi ikke innhold fra {name}.
+        Inntil klagen vår til Enhetsregisteret er behandlet og situasjonen er avklart, formidler vi
+        ikke innhold fra {name}.
       </p>
       <p>
         Suspensjonen er en følge av forsøket på å sette til side Frikanalens årsmøte og overta
         styringen av organisasjonen gjennom en vedtektsstridig prosess. Etter vedtektene har {name}{" "}
-        rett til å få innholdet sitt formidlet. Dette er en rettighet styret for egen regning velger
-        å suspendere.
+        rett til å få innholdet sitt formidlet. Dette er en rettighet vi for egen regning velger å
+        suspendere.
       </p>
       <p>
         Suspensjonen er ikke en reaksjon på medlemmets innhold, men på et målrettet forsøk på å

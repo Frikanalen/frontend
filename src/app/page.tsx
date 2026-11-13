@@ -43,9 +43,9 @@ export default async function Home() {
             >
               <p className="text-lg font-bold">Frikanalen i unntakstilstand</p>
               <p className="mt-1 max-w-4xl text-stage-muted">
-                Inntil klagen vår til Enhetsregisteret er behandlet og en ekstraordinær
-                generalforsamling kan avklare situasjonen, formidler vi ikke innhold fra medlemmene
-                som sto bak forsøket på å overta styringen av kanalen.
+                Inntil klagen vår til Enhetsregisteret er behandlet og situasjonen er avklart,
+                formidler vi ikke innhold fra medlemmene som sto bak forsøket på å overta styringen
+                av kanalen.
               </p>
               <p className="mt-2 underline underline-offset-4">Les redegjørelsen →</p>
             </Link>
