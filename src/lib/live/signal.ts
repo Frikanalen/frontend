@@ -183,6 +183,82 @@ const transport = ({ srt, framesInError = 0 }: Signal): SignalLine[] => {
   return lines;
 };
 
+/**
+ * The same signal as fixed, labelled slots for a status panel: every slot
+ * is always there, and reads "–" where the receiver has nothing to say,
+ * so the eye finds a figure in the same place each time.
+ */
+export type SignalSlot = { label: string; value: string };
+export type SignalGroup = { label: string; status: SignalLine["status"]; slots: SignalSlot[] };
+
+const NONE = "–";
+
+export const signalSlots = (signal: Signal, pulled: boolean): SignalGroup[] => {
+  const { video, audio, srt } = signal;
+  const on = signal.receiving;
+  const elapsed =
+    on && signal.since
+      ? formatElapsed(Date.parse(signal.measuredAt) - Date.parse(signal.since))
+      : NONE;
+  return [
+    {
+      label: "Mottak",
+      status: on ? "ok" : "bad",
+      slots: [
+        { label: "Vei inn", value: pulled ? "Hentet" : (on && signal.protocol) || NONE },
+        { label: "Inne i", value: elapsed },
+        {
+          label: "Rundetid",
+          value: on && srt?.roundTripMs != null ? `${number(srt.roundTripMs)} ms` : NONE,
+        },
+      ],
+    },
+    {
+      label: "Bilde",
+      status: on ? picture(signal).status : "ok",
+      slots: [
+        {
+          label: "Oppløsning",
+          value: on && video?.width && video.height ? `${video.width}×${video.height}` : NONE,
+        },
+        {
+          label: "Kodek",
+          value: (on && video && (VIDEO_NAMES[video.codec] ?? video.codec)) || NONE,
+        },
+        { label: "Profil", value: (on && video?.profile) || NONE },
+      ],
+    },
+    {
+      label: "Lyd",
+      status: on ? sound(signal).status : "ok",
+      slots: [
+        {
+          label: "Kodek",
+          value: (on && audio && (AUDIO_NAMES[audio.codec] ?? audio.codec)) || NONE,
+        },
+        {
+          label: "Samplingsrate",
+          value: on && audio?.sampleRate ? `${number(audio.sampleRate / 1000, 1)} kHz` : NONE,
+        },
+        {
+          label: "Kanaler",
+          value:
+            !on || !audio?.channelCount
+              ? NONE
+              : audio.channelCount === 2
+                ? "2 (stereo)"
+                : audio.channelCount === 1
+                  ? "1 (mono)"
+                  : String(audio.channelCount),
+        },
+      ],
+    },
+  ];
+};
+
+/** Whether the bitrate is as recommended, for the mark beside it. */
+export const bitrateStatus = (signal: Signal, previous?: Signal) => rate(signal, previous).status;
+
 /** The lines for a signal that is arriving; `previous` is the report before. */
 export const describeSignal = (
   signal: Signal,

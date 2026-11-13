@@ -2,8 +2,6 @@
 import type { Signal } from "@/generated/frikanalenDjangoAPI.schemas";
 import { useLiveSourcesSignalRetrieve } from "@/generated/live-sources/live-sources";
 import { appendSample, sampleOf, type Sample } from "@/lib/live/history";
-import { describeSignal } from "@/lib/live/signal";
-import cx from "classnames";
 import { useState } from "react";
 
 const OPEN_INTERVAL_MS = 5_000;
@@ -35,53 +33,4 @@ export const useSignal = (
   const clockOffset =
     latest && query.dataUpdatedAt ? Date.parse(latest.measuredAt) - query.dataUpdatedAt : 0;
   return { signal, previous: pair.previous, clockOffset, history };
-};
-
-const MARK = {
-  ok: { sign: "✓", className: "text-brand-green", name: "I orden" },
-  warn: { sign: "!", className: "text-warning-700", name: "Bør sjekkes" },
-  bad: { sign: "✕", className: "text-danger-700", name: "Feil" },
-} as const;
-
-/**
- * The signal as the encoder sends it, line by line, each marked as fine or
- * as something to act on. These come from the receiver, not the preview:
- * the preview is a small copy and looks the same whatever is sent.
- */
-export const SignalReport = ({
-  signal,
-  previous,
-  pulled,
-}: {
-  signal: Signal;
-  previous?: Signal;
-  pulled: boolean;
-}) => {
-  if (!signal.receiving)
-    return (
-      <p className="text-sm text-default-600">
-        {pulled
-          ? "Vi henter ikke signalet akkurat nå. Det hentes når noen ser på kilden, og like før en sending."
-          : "Ingenting kommer inn. Start sendingen i koderen."}
-      </p>
-    );
-  return (
-    <dl className="divide-y divide-default-200 border-y border-default-200 text-sm">
-      {describeSignal(signal, pulled, previous).map(({ label, value, status, note }) => (
-        <div className="grid grid-cols-[1.25rem_1fr] gap-x-1 py-2" key={label}>
-          <span aria-hidden className={cx("font-bold", MARK[status].className)}>
-            {MARK[status].sign}
-          </span>
-          <div className="min-w-0">
-            <dt className="text-xs text-default-600">
-              {label}
-              {status === "ok" ? null : <span className="sr-only"> ({MARK[status].name})</span>}
-            </dt>
-            <dd className="font-medium break-words">{value}</dd>
-            {note ? <dd className={cx("text-xs", MARK[status].className)}>{note}</dd> : null}
-          </div>
-        </div>
-      ))}
-    </dl>
-  );
 };

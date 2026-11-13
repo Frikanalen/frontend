@@ -83,14 +83,24 @@ const Tile = ({
 // by height where the window is wide, by width where it is tall.
 const SCALE = "max(6px, min(2.8vw, 1.85vh))";
 
-/** Digits as large as their number allows: a countdown in days is longer. */
+/**
+ * Digits as large as their number allows, a countdown in days being
+ * longer: by the height there is in a wide window, by the column's width
+ * otherwise.
+ */
 const digitSize = (text: string) =>
-  text.length <= 5 ? "min(14em, 26vw)" : text.length <= 8 ? "min(12em, 17vw)" : "min(8em, 11vw)";
+  text.length <= 5
+    ? "min(14em, 30cqw)"
+    : text.length <= 8
+      ? "min(9.5em, 19cqw)"
+      : "min(6em, 12cqw)";
 
 /**
  * A status display to leave up where a live broadcast is made, on a spare
  * screen or in a multiviewer: how long until air, whether the source is on
- * air, what Frikanalen receives and what it sends back out. Built to be
+ * air, what Frikanalen receives and what it sends back out. Two columns:
+ * the crew's own signal with its figures on the left, the programme with
+ * the schedule on the right. Built to be
  * read from across a room, so it says little and says it large; the frame
  * turns amber in the last minutes and red on air. The buttons stay out of
  * the picture until the pointer is over it.
@@ -132,12 +142,7 @@ export const SourceMonitor = ({
   const soon = status.state === "upcoming" && status.until <= SOON_MS;
   // Only a claim where the receiver can be asked; else the picture speaks.
   const lost = signal ? !signal.receiving : false;
-  const lines = signal?.receiving
-    ? describeSignal(signal, source.isPulled, previous).filter(({ label }) =>
-        ["Bilde", "Lyd", "Bitrate", "Pakketap"].includes(label),
-      )
-    : [];
-
+  const lines = signal?.receiving ? describeSignal(signal, source.isPulled, previous) : [];
   const countdown =
     status.state === "none" ? null : formatCountdown(onAir ? status.remaining : status.until);
 
@@ -177,12 +182,9 @@ export const SourceMonitor = ({
         </Link>
       </div>
 
-      <div
-        className={cx(
-          "grid min-h-0 flex-1 gap-[0.6em]",
-          program.phase === "absent" ? "" : "landscape:grid-cols-2",
-        )}
-      >
+      {/* Filled column by column where the window is wide: each picture
+          with what belongs to it underneath, the pictures the same size. */}
+      <div className="grid min-h-0 flex-1 gap-[0.6em] landscape:grid-flow-col landscape:grid-cols-2 landscape:grid-rows-[minmax(0,1fr)_auto]">
         <Tile phase={own.phase} stream={own.stream} title="Fra dere">
           {lost ? (
             <p className="absolute inset-x-0 bottom-0 bg-red-600 px-[0.6em] py-[0.3em] text-center text-[1.4em] font-bold tracking-wide uppercase">
@@ -190,13 +192,42 @@ export const SourceMonitor = ({
             </p>
           ) : null}
         </Tile>
+
+        <section aria-label="Signalet deres" className="min-w-0 space-y-[0.7em]">
+          {lines.length > 0 ? (
+            <dl className="grid grid-cols-2 gap-x-[1.2em] gap-y-[0.5em] leading-tight sm:grid-cols-3">
+              {lines.map(({ label, value, status: mark }) => (
+                <div className="min-w-0 border-t border-neutral-700 pt-[0.3em]" key={label}>
+                  <dt className="text-[0.75em] tracking-widest text-neutral-400 uppercase">
+                    {label}
+                  </dt>
+                  <dd
+                    className={cx(
+                      "truncate text-[1.3em] font-semibold",
+                      mark === "bad" ? "text-red-400" : mark === "warn" ? "text-amber-400" : "",
+                    )}
+                  >
+                    {value}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          ) : null}
+          <SignalHistory history={history} />
+          {own.phase === "playing" ? <VuMeter compact stream={own.stream} /> : null}
+        </section>
+
         {program.phase === "absent" ? null : (
           <Tile phase={program.phase} stream={program.stream} title="Frikanalen sender nå" />
         )}
-      </div>
 
-      <footer className="grid items-end gap-x-[2em] gap-y-[0.8em] landscape:grid-cols-[minmax(0,1fr)_25em]">
-        <div role="timer">
+        <div
+          className={cx(
+            "@container min-w-0",
+            program.phase === "absent" ? "self-center landscape:row-span-2" : "",
+          )}
+          role="timer"
+        >
           <p
             className={cx(
               "inline-block text-[1.4em] leading-tight font-bold tracking-widest uppercase",
@@ -218,35 +249,15 @@ export const SourceMonitor = ({
             </p>
           )}
           {status.state === "none" ? null : (
-            <p className="truncate text-[1.1em] text-neutral-300">
-              {onAir ? "igjen av " : ""}«{status.booking.name}» · {bookingDay(status.booking)} kl.{" "}
-              {formatOsloTime(status.booking.starttime)}–{formatOsloTime(status.booking.endtime)}
+            <p className="text-[1.2em] leading-snug text-neutral-300">
+              {onAir ? "igjen av " : ""}«{status.booking.name}»
+              <br />
+              {bookingDay(status.booking)} kl. {formatOsloTime(status.booking.starttime)}–
+              {formatOsloTime(status.booking.endtime)}
             </p>
           )}
         </div>
-
-        <div className="min-w-0 space-y-[0.6em]">
-          {lines.length > 0 ? (
-            <dl className="grid grid-cols-2 gap-x-[1em] gap-y-[0.3em] leading-tight">
-              {lines.map(({ label, value, status: mark }) => (
-                <div className="min-w-0" key={label}>
-                  <dt className="text-[0.7em] tracking-wide text-neutral-400 uppercase">{label}</dt>
-                  <dd
-                    className={cx(
-                      "truncate text-[0.95em] font-semibold",
-                      mark === "bad" ? "text-red-400" : mark === "warn" ? "text-amber-400" : "",
-                    )}
-                  >
-                    {value}
-                  </dd>
-                </div>
-              ))}
-            </dl>
-          ) : null}
-          <SignalHistory compact history={history} />
-          {own.phase === "playing" ? <VuMeter compact stream={own.stream} /> : null}
-        </div>
-      </footer>
+      </div>
     </div>
   );
 };

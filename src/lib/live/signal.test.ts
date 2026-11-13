@@ -1,6 +1,6 @@
 import type { Signal } from "@/generated/frikanalenDjangoAPI.schemas";
 import { describe, expect, it } from "vitest";
-import { describeSignal, formatElapsed, readiness, signalBitrate } from "./signal";
+import { describeSignal, formatElapsed, readiness, signalBitrate, signalSlots } from "./signal";
 
 const good: Signal = {
   available: true,
@@ -157,5 +157,45 @@ describe("readiness", () => {
       level: "problem",
       reasons: [expect.stringContaining("siste minuttet"), expect.stringContaining("Pakketap")],
     });
+  });
+});
+
+describe("signalSlots", () => {
+  const values = (signal: Signal, pulled = false) =>
+    signalSlots(signal, pulled).map(({ label, status, slots }) => [
+      label,
+      status,
+      ...slots.map(({ value }) => value),
+    ]);
+
+  it("puts each figure in its own labelled slot", () => {
+    expect(values(good)).toEqual([
+      ["Mottak", "ok", "SRT", "12 min", "24 ms"],
+      ["Bilde", "ok", "1920×1080", "H.264", "High"],
+      ["Lyd", "ok", "AAC", "48 kHz", "2 (stereo)"],
+    ]);
+    expect(signalSlots(good, false)[2].slots.map(({ label }) => label)).toEqual([
+      "Kodek",
+      "Samplingsrate",
+      "Kanaler",
+    ]);
+  });
+
+  it("keeps every slot, with a dash, where there is nothing to say", () => {
+    expect(values({ ...good, protocol: "", srt: null, audio: null }, true)).toEqual([
+      ["Mottak", "ok", "Hentet", "12 min", "–"],
+      ["Bilde", "ok", "1920×1080", "H.264", "High"],
+      ["Lyd", "bad", "–", "–", "–"],
+    ]);
+    expect(values({ ...good, receiving: false })).toEqual([
+      ["Mottak", "bad", "–", "–", "–"],
+      ["Bilde", "ok", "–", "–", "–"],
+      ["Lyd", "ok", "–", "–", "–"],
+    ]);
+  });
+
+  it("carries the marks of the report", () => {
+    const small = { ...good, video: { ...good.video!, width: 1280, height: 720 } };
+    expect(signalSlots(small, false)[1].status).toBe("warn");
   });
 });

@@ -279,15 +279,18 @@ test("the check page gives one verdict with its reasons, and leads on to airtime
   const verdict = page.getByRole("status").filter({ hasText: "Ikke klar for sending" });
   await expect(verdict).toContainText("Lyd: Signalet har ikke noe lydspor");
   await expect(verdict).toContainText("Bilde: Lavere oppløsning enn anbefalt");
-  // The receiver's report on the member's signal, not the preview's numbers.
-  await expect(page.getByText("SRT · inne i")).toBeVisible();
-  await expect(page.getByText("1280×720 · H.264 High")).toBeVisible();
-  await expect(page.getByText("Kodek")).toHaveCount(0);
+  // The receiver's report on the member's signal, not the preview's numbers,
+  // each figure in its own slot.
+  const panel = page.getByRole("region", { name: "Signalet deres" });
+  await expect(panel.getByText("Oppløsning")).toBeVisible();
+  await expect(panel.getByText("1280×720")).toBeVisible();
+  await expect(panel.getByText("H.264")).toBeVisible();
+  await expect(panel.getByText("VP8")).toHaveCount(0);
   await expect(page.getByText("Forhåndsvisningen er en liten kopi i lav kvalitet.")).toBeVisible();
-  // The timeline starts with what happened before the page was opened.
-  await expect(
-    page.getByText(/Siste (39|4\d) min: 1 brudd, 1 periode med pakketap\./),
-  ).toBeVisible();
+  // The measures start with what happened before the page was opened.
+  await expect(panel.getByText(/pakker siste (39|4\d) min/)).toBeVisible();
+  await expect(panel.getByText("28", { exact: true })).toBeVisible();
+  await expect(panel.getByText("1", { exact: true })).toBeVisible();
 
   await expect(page.getByText("Ingen sending er satt opp.")).toBeVisible();
   await expect(page.getByRole("link", { name: "Legg direktesendingen her" })).toHaveAttribute(

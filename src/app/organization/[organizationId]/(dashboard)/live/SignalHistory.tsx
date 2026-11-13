@@ -14,7 +14,6 @@ import {
 } from "@/lib/live/history";
 import { formatBitrate } from "@/lib/live/streamStats";
 import { formatOsloTime } from "@/lib/osloTime";
-import cx from "classnames";
 import { useMemo } from "react";
 
 const HEIGHT = 36;
@@ -58,22 +57,13 @@ const describe = (bar: Sample) => {
   return `${time}: ${parts.join(", ")}`;
 };
 
-const plural = (count: number, one: string, many: string) => `${count} ${count === 1 ? one : many}`;
-
 /**
- * The signal over the last hour, newest at the right, in bars of half a
- * minute: bar height is bitrate, amber is loss that was recovered, red is
- * a break a viewer would notice. Quiet on purpose; the sentence with it
- * says the same in words. `compact` is for the broadcast monitor, where
- * it is sized by its surroundings and keeps to one short line.
+ * The last hour as one thin strip for the broadcast monitor, newest at the
+ * right, in bars of half a minute: bar height is bitrate, amber is loss
+ * that was recovered, red is a break a viewer would notice. Sized in em by
+ * its surroundings, with one short line saying the same in words.
  */
-export const SignalHistory = ({
-  history,
-  compact,
-}: {
-  history: readonly Sample[];
-  compact?: boolean;
-}) => {
+export const SignalHistory = ({ history }: { history: readonly Sample[] }) => {
   const bars = useMemo(() => bucketize(history), [history]);
   const drawn = bars.filter((bar) => bar !== null);
   if (drawn.length < 2) return null;
@@ -81,28 +71,16 @@ export const SignalHistory = ({
   const width = BUCKETS * SLOT;
   const summary =
     breaks === 0 && losses === 0
-      ? compact
-        ? "ingen brudd"
-        : "ingen brudd eller pakketap"
-      : [
-          breaks > 0 ? plural(breaks, "brudd", "brudd") : null,
-          losses > 0
-            ? compact
-              ? `${losses} pakketap`
-              : plural(losses, "periode med pakketap", "perioder med pakketap")
-            : null,
-        ]
+      ? "ingen brudd"
+      : [breaks > 0 ? `${breaks} brudd` : null, losses > 0 ? `${losses} pakketap` : null]
           .filter(Boolean)
           .join(", ");
 
   return (
-    <figure className={compact ? "space-y-[0.2em]" : "space-y-1"}>
+    <figure className="space-y-[0.2em]">
       <svg
         aria-hidden
-        className={cx(
-          "block w-full",
-          compact ? "h-[1.6em] text-neutral-300" : "h-9 text-default-700",
-        )}
+        className="block h-[4em] w-full text-neutral-300"
         preserveAspectRatio="none"
         viewBox={`0 0 ${width} ${HEIGHT}`}
       >
@@ -134,24 +112,8 @@ export const SignalHistory = ({
           );
         })}
       </svg>
-      <figcaption
-        className={cx(
-          compact ? "text-[0.7em] leading-tight text-neutral-400" : "text-xs text-default-600",
-        )}
-      >
+      <figcaption className="text-[0.8em] leading-tight text-neutral-400">
         Siste {span >= WINDOW_MS - 60_000 ? "time" : formatElapsed(span)}: {summary}
-        {compact ? null : "."}
-        {!compact && (breaks > 0 || losses > 0) ? (
-          <>
-            {" "}
-            <span className="whitespace-nowrap">
-              <span aria-hidden className="inline-block size-2 bg-warning" /> hentet inn igjen
-            </span>{" "}
-            <span className="whitespace-nowrap">
-              <span aria-hidden className="inline-block size-2 bg-danger" /> synlig brudd
-            </span>
-          </>
-        ) : null}
       </figcaption>
     </figure>
   );

@@ -4,8 +4,9 @@ import { recentlyBroken } from "@/lib/live/history";
 import { readiness, type Readiness } from "@/lib/live/signal";
 import cx from "classnames";
 import { useEffect } from "react";
-import { SignalHistory, useSignalHistory } from "./SignalHistory";
-import { SignalReport, useSignal } from "./SignalReport";
+import { useSignalHistory } from "./SignalHistory";
+import { SignalPanel } from "./SignalPanel";
+import { useSignal } from "./SignalReport";
 import { StreamVideo } from "./StreamVideo";
 import { useLivePreview, useSilence, type PreviewPhase } from "./useLivePreview";
 import { VuMeter } from "./VuMeter";
@@ -93,7 +94,7 @@ export const SignalCheck = ({ source }: { source: LiveSource }) => {
         ) : null}
       </div>
 
-      <div className="grid gap-5 md:grid-cols-[3fr_2fr]">
+      <div className="grid gap-5 lg:grid-cols-2">
         <div className="space-y-3">
           <StreamVideo
             className="aspect-video w-full bg-black"
@@ -118,12 +119,16 @@ export const SignalCheck = ({ source }: { source: LiveSource }) => {
           ) : null}
         </div>
         {signal ? (
-          <section className="space-y-1">
-            <h3 className="font-semibold">Signalet deres</h3>
-            <SignalReport previous={previous} pulled={source.isPulled} signal={signal} />
-            <div className="pt-2">
-              <SignalHistory history={history} />
-            </div>
+          <section aria-labelledby="signal-panel" className="space-y-2">
+            <h3 className="font-semibold" id="signal-panel">
+              Signalet deres
+            </h3>
+            <SignalPanel
+              history={history}
+              previous={previous}
+              pulled={source.isPulled}
+              signal={signal}
+            />
           </section>
         ) : null}
       </div>
