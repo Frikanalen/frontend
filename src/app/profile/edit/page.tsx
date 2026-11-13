@@ -6,15 +6,16 @@ import { getCookiesFromRequest } from "@/lib/getCookiesFromRequest";
 import { getUserOrNull } from "@/app/getUserOrNull";
 import { UserProfileForm } from "@/app/profile/edit/UserProfileForm";
 import { PasswordSection } from "@/app/profile/edit/PasswordSection";
+import { TwoFactorSection } from "@/app/profile/edit/TwoFactorSection";
 
 export const metadata: Metadata = {
   title: "Endre profil - Frikanalen",
 };
 
 /**
- * Two things you come here to do, each in its own card with its own button:
- * correct your details, or change your password. They save separately, so a
- * half-typed password never rides along with a name change or the reverse.
+ * Each thing you come here to do has its own card and its own button: your
+ * details, your password, two-factor. They save separately, so a half-typed
+ * password never rides along with a name change or the reverse.
  */
 export default async function Page() {
   const headers = await getCookiesFromRequest();
@@ -35,7 +36,10 @@ export default async function Page() {
       </div>
       <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
         <UserProfileForm user={user} />
-        <PasswordSection email={user.email} />
+        <div className="flex flex-col gap-6">
+          <PasswordSection email={user.email} />
+          <TwoFactorSection />
+        </div>
       </div>
     </div>
   );

@@ -11,10 +11,14 @@ import { useUserLoginCreate } from "@/generated/user/user";
 import type { LoginRequest } from "@/generated/frikanalenDjangoAPI.schemas";
 import { useApiFormSubmit } from "@/lib/useApiFormSubmit";
 import { FormError } from "@/components/form/FormError";
+import { OtpField } from "@/components/form/OtpField";
+import { apiErrorCode } from "@/lib/apiErrorCode";
+import { useState } from "react";
 
 const UserLoginFormSchema = z.object({
   email: z.email("Skriv inn en gyldig e-postadresse."),
   password: z.string().min(1, "Skriv inn passordet ditt."),
+  otp: z.string().optional(),
 });
 
 export default function Login() {
@@ -24,9 +28,19 @@ export default function Login() {
   });
   const { register, formState } = form;
   const { mutateAsync } = useUserLoginCreate();
+  // Set once the API says this account has two-factor on.
+  const [needsCode, setNeedsCode] = useState(false);
 
   const { onSubmit, error, isSubmitting } = useApiFormSubmit(form, async (data) => {
-    await mutateAsync({ data });
+    try {
+      await mutateAsync({ data });
+    } catch (cause) {
+      if (apiErrorCode(cause, "otp") === "otp_required") {
+        setNeedsCode(true);
+        return;
+      }
+      throw cause;
+    }
     // we force a refresh because profile data is rendered server-side
     router.push("/profile");
     router.refresh();
@@ -59,6 +73,7 @@ export default function Login() {
               isInvalid={!!formState.errors.password}
               errorMessage={formState.errors.password?.message}
             />
+            {needsCode && <OtpField {...register("otp")} />}
             <div className={"flex items-center justify-between gap-4"}>
               <Link href={"/password-reset"} className={"text-sm underline"}>
                 Glemt passordet?

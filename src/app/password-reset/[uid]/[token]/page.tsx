@@ -1,6 +1,8 @@
 "use client";
 import { AuthField } from "@/components/form/AuthField";
 import { FormError } from "@/components/form/FormError";
+import { OtpField } from "@/components/form/OtpField";
+import { apiErrorCode } from "@/lib/apiErrorCode";
 import { MIN_SCORE, TOO_WEAK, usePasswordStrength } from "@/components/password/strength";
 import { PasswordStrengthMeter } from "@/components/password/PasswordStrengthMeter";
 import { useUserPasswordResetConfirmCreate } from "@/generated/user/user";
@@ -21,6 +23,7 @@ const NewPasswordSchema = z
   .object({
     newPassword: z.string().min(10, "Passordet må ha minst 10 tegn."),
     repeatPassword: z.string(),
+    otp: z.string().optional(),
   })
   .refine((data) => data.newPassword === data.repeatPassword, {
     message: "Passordene er ikke like.",
@@ -44,6 +47,8 @@ export default function PasswordResetConfirmPage() {
   const score = usePasswordStrength(useWatch({ control: form.control, name: "newPassword" }) ?? "");
   const { mutateAsync } = useUserPasswordResetConfirmCreate();
   const [badLink, setBadLink] = useState(false);
+  // Set once the API says this account has two-factor on.
+  const [needsCode, setNeedsCode] = useState(false);
 
   const { onSubmit, error, isSubmitting } = useApiFormSubmit(form, async (data) => {
     if (score !== null && score < MIN_SCORE) {
@@ -51,8 +56,12 @@ export default function PasswordResetConfirmPage() {
       return;
     }
     try {
-      await mutateAsync({ data: { uid, token, newPassword: data.newPassword } });
+      await mutateAsync({ data: { uid, token, newPassword: data.newPassword, otp: data.otp } });
     } catch (cause) {
+      if (apiErrorCode(cause, "otp") === "otp_required") {
+        setNeedsCode(true);
+        return;
+      }
       if (isBadLink(cause)) {
         setBadLink(true);
         return;
@@ -104,6 +113,7 @@ export default function PasswordResetConfirmPage() {
           isInvalid={!!formState.errors.repeatPassword}
           errorMessage={formState.errors.repeatPassword?.message}
         />
+        {needsCode && <OtpField {...register("otp")} />}
         <Button className={"ml-auto"} type="submit" isPending={isSubmitting}>
           Lagre passord
         </Button>
