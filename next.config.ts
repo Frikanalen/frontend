@@ -1,5 +1,39 @@
 import type { NextConfig } from "next";
 
+// Everything the site loads comes from its own origin: /api, /media, /upload
+// and MediaMTX's /contrib all sit behind the same ingress, next/font serves
+// the fonts itself, and the player's dash.js and hls.js are bundled. The
+// exception is Google Cast: vidstack fetches the Cast sender from gstatic
+// when a viewer picks a Chromecast.
+//
+// Scripts must allow 'unsafe-inline'. Next streams the page's RSC payload as
+// inline <script> tags, and the strict alternative (a nonce per request)
+// forces every page to render per request, which would throw away the
+// cached static shells. Even so, this keeps out scripts from anywhere else,
+// plugins, framing by other sites and forms posting off-site.
+//
+// React's development build needs eval() for its error overlays.
+const isDev = process.env.NODE_ENV === "development";
+const contentSecurityPolicy = [
+  "default-src 'self'",
+  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""} https://www.gstatic.com`,
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: blob:",
+  "font-src 'self'",
+  // Players build the stream in the page (MediaSource), so video comes from blob: URLs.
+  "media-src 'self' blob:",
+  "connect-src 'self'",
+  "worker-src 'self' blob:",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  "frame-ancestors 'none'",
+].join("; ");
+
+// Report-only until it has been clicked through on staging; browsers then log
+// what it would have blocked to the console instead of blocking it.
+const cspHeader = "Content-Security-Policy-Report-Only";
+
 const nextConfig: NextConfig = {
   // Playwright may run while a developer has `next dev` open for this same
   // checkout. A separate build directory gives the test server its own lock
@@ -13,6 +47,10 @@ const nextConfig: NextConfig = {
   partialPrefetching: true,
   experimental: {
     authInterrupts: true,
+  },
+  poweredByHeader: false,
+  async headers() {
+    return [{ source: "/:path*", headers: [{ key: cspHeader, value: contentSecurityPolicy }] }];
   },
   // next/dist/shared/lib/constants.js requires "@swc/helpers/_/_interop_require_default".
   // That subpath's export map lists "module-sync" before "default", so Node >=22.10
