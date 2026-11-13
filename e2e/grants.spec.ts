@@ -2,6 +2,15 @@ import { expect, test } from "@playwright/test";
 import { stubApi } from "./support/api";
 import { waitForHydration } from "./support/hydration";
 
+const uploads = { id: 12, kind: "uploads", description: "", series: null, seriesName: null };
+const seriesRecipe = {
+  id: 13,
+  kind: "series",
+  description: "",
+  series: 8,
+  seriesName: "Ukens program",
+};
+
 const organization = { id: 3, name: "Havneforeningen" };
 
 const grantVideo = (id: number, name: string, duration: string) => ({
@@ -21,9 +30,7 @@ const grant = (overrides: Record<string, unknown> = {}) => ({
   state: "open",
   locksAt: "2030-01-06T23:00:00Z",
   lockExempt: false,
-  fillRule: 12,
-  fillSeries: null,
-  fillSeriesName: null,
+  recipe: uploads,
   originSlot: 5,
   items: [
     { position: 0, pinned: true, video: grantVideo(1, "Kaia i dag", "00:20:00") },
@@ -99,7 +106,7 @@ test.describe("airtime grants", () => {
           grant(),
           grant({
             id: 701,
-            fillRule: null,
+            recipe: null,
             starttime: "2030-01-15T17:00:00Z",
             endtime: "2030-01-15T18:00:00Z",
           }),
@@ -174,7 +181,7 @@ test.describe("airtime grants", () => {
     const puts: unknown[] = [];
     await page.route("**/api/grants/700/items", (route) => {
       puts.push(route.request().postDataJSON());
-      return route.fulfill({ status: 200, json: grant({ fillRule: null }) });
+      return route.fulfill({ status: 200, json: grant({ recipe: null }) });
     });
     await editor(page, grant({ endtime: "2030-01-14T18:30:00Z" }));
 
@@ -418,7 +425,7 @@ test.describe("airtime grants", () => {
 
   test("chooses a series for one broadcast, or for its whole fixed slot", async ({ page }) => {
     const puts: unknown[] = [];
-    const following = grant({ fillSeries: 8, fillSeriesName: "Ukens program" });
+    const following = grant({ recipe: seriesRecipe });
     await page.route("**/api/series?**", (route) =>
       route.fulfill({ status: 200, json: page_([{ id: 8, name: "Ukens program" }]) }),
     );
@@ -437,14 +444,21 @@ test.describe("airtime grants", () => {
     await expect
       .poll(() => puts)
       .toEqual([
-        { items: [{ video: 1 }, { video: 2 }], automatic: true, series: 8, wholeSlot: false },
+        {
+          items: [{ video: 1 }, { video: 2 }],
+          automatic: true,
+          recipe: { kind: "series", series: 8 },
+          wholeSlot: false,
+        },
       ]);
     await expect(source).toHaveValue("8");
     await expect(page.getByRole("button", { name: "Lagre listen" })).toBeDisabled();
 
     await page.getByRole("checkbox", { name: /alle sendinger i denne faste sendeflaten/ }).check();
     await page.getByRole("button", { name: "Lagre listen" }).click();
-    await expect.poll(() => puts.at(-1)).toMatchObject({ series: 8, wholeSlot: true });
+    await expect
+      .poll(() => puts.at(-1))
+      .toMatchObject({ recipe: { kind: "series", series: 8 }, wholeSlot: true });
   });
 
   test("the board says what each automatic broadcast fills from", async ({ page }) => {
@@ -452,7 +466,7 @@ test.describe("airtime grants", () => {
       route.fulfill({
         status: 200,
         json: page_([
-          grant({ fillSeries: 8, fillSeriesName: "Ukens program" }),
+          grant({ recipe: seriesRecipe }),
           grant({ id: 701, starttime: "2030-01-15T17:00:00Z", endtime: "2030-01-15T18:00:00Z" }),
         ]),
       }),
@@ -502,7 +516,7 @@ test.describe("airtime grants", () => {
     });
     await page.route("**/api/grants/700/items", (route) => {
       puts.push(route.request().postDataJSON());
-      return route.fulfill({ status: 200, json: grant({ fillRule: null }) });
+      return route.fulfill({ status: 200, json: grant({ recipe: null }) });
     });
     await editor(page, filling);
 

@@ -1,11 +1,11 @@
 "use client";
 import type {
-  FillRuleSummary,
   Organization,
   PatchedRecurringSlotRequest,
   RecurringSlot,
 } from "@/generated/frikanalenDjangoAPI.schemas";
-import { useFillRulesList } from "@/generated/fill-rules/fill-rules";
+import { useCategoriesList } from "@/generated/categories/categories";
+import { useSeriesList } from "@/generated/series/series";
 import {
   getRecurringSlotsListQueryKey,
   useRecurringSlotsCreate,
@@ -33,15 +33,16 @@ import {
   shapeOf,
   type Shape,
 } from "./slots";
+import { sameTheme, themeOf, themeProblem, type Theme } from "./theme";
 
 /** Who a slot is for: a member, the video jukebox, or the station's own use. */
 export type SlotKind = "member" | "jukebox" | "station";
 
 /** The station's airtime that fills itself from the filler pool. */
-export const isJukebox = (slot: Pick<RecurringSlot, "organization" | "defaultFillRule">) =>
-  slot.organization == null && slot.defaultFillRule?.pool === "filler";
+export const isJukebox = (slot: Pick<RecurringSlot, "organization" | "recipe">) =>
+  slot.organization == null && slot.recipe?.kind === "jukebox";
 
-export const kindOf = (slot: Pick<RecurringSlot, "organization" | "defaultFillRule">): SlotKind =>
+export const kindOf = (slot: Pick<RecurringSlot, "organization" | "recipe">): SlotKind =>
   slot.organization != null ? "member" : isJukebox(slot) ? "jukebox" : "station";
 
 /** A new slot being drawn: what the planner previews while the form is open. */
@@ -50,32 +51,26 @@ export type Draft = Shape & {
   organization: number | null;
 };
 
-/** "standard" leaves the rule to the server: the owner's new uploads, then their archive. */
-type RuleChoice = number | "none" | "standard";
+/**
+ * What a member's slot fills itself from: everything they upload, one of
+ * their series (its id), nothing, or "kept" for a playlist staff set up in
+ * the administration, which the form leaves as it is.
+ */
+type Source = number | "uploads" | "none" | "kept";
+
+const sourceOf = (slot: RecurringSlot | null): Source => {
+  if (!slot) return "uploads";
+  const recipe = slot.recipe ?? null;
+  if (recipe === null) return slot.organization == null ? "uploads" : "none";
+  if (recipe.kind === "series" && recipe.series != null) return recipe.series;
+  return recipe.kind === "playlist" ? "kept" : "uploads";
+};
 
 const KINDS: { value: SlotKind; label: string; hint: string }[] = [
   { value: "member", label: "Medlem", hint: "Fast sendetid for en organisasjon" },
-  { value: "jukebox", label: "Videojukeboks", hint: "Fylles automatisk fra fyllpoolen" },
+  { value: "jukebox", label: "Videojukeboks", hint: "Fylles automatisk fra fyllstoffet" },
   { value: "station", label: "Frikanalen", hint: "Kanalens egen tid, settes opp for hånd" },
 ];
-
-const POOL = {
-  organization: "egne videoer",
-  playlist: "spilleliste",
-  series: "serie",
-  filler: "fyllpool",
-};
-const ORDERING = {
-  latest: "nyeste først",
-  least_aired: "minst sendt først",
-  premiere: "nytt først, så arkivet",
-  shuffled: "tilfeldig",
-  weighted: "vektet",
-};
-const MODE = { one: "én video", fill: "fyll sendetiden" };
-
-const ruleLabel = (rule: FillRuleSummary) =>
-  `${rule.name} (${POOL[rule.pool]}, ${ORDERING[rule.ordering]}, ${MODE[rule.mode]})`;
 
 const LIST_PARAMS = { limit: 1000 };
 const fieldClass = "rounded-lg border border-default-300 bg-background px-3 py-2";
@@ -85,6 +80,32 @@ const Field = ({ label, children }: { label: string; children: ReactNode }) => (
     {label}
     {children}
   </label>
+);
+
+/** A whole number of at least one, or no limit while the field is empty. */
+const LimitField = ({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: number | null;
+  onChange: (_value: number | null) => void;
+}) => (
+  <Field label={label}>
+    <input
+      className={fieldClass}
+      inputMode="numeric"
+      min={1}
+      placeholder="Ingen grense"
+      type="number"
+      value={value ?? ""}
+      onChange={(event) => {
+        const number = Math.floor(Number(event.target.value));
+        onChange(event.target.value === "" || !(number >= 1) ? null : number);
+      }}
+    />
+  </Field>
 );
 
 const Section = ({ title, children }: { title: string; children: ReactNode }) => (
@@ -130,18 +151,18 @@ export const SlotForm = ({
   const [interval, setInterval] = useState(slot?.interval ?? 1);
   const [startsOn, setStartsOn] = useState(slot?.startsOn ?? osloToday());
   const [endsOn, setEndsOn] = useState(slot?.endsOn ?? "");
-  const [rule, setRule] = useState<RuleChoice>(
-    slot ? (slot.defaultFillRule?.id ?? "none") : "standard",
-  );
+  const [source, setSource] = useState<Source>(() => sourceOf(slot));
+  const savedTheme = themeOf(slot?.recipe);
+  const [theme, setTheme] = useState<Theme>(savedTheme);
   const [error, setError] = useState<string>();
 
   const { days, start, duration } = shape;
   const organizationId = kind === "member" && organization !== "" ? organization : null;
-  const ownerChanged = slot ? slot.organization !== organizationId : true;
-  const rules = useFillRulesList(
-    { organization: organizationId ?? undefined, limit: 100 },
+  const series = useSeriesList(
+    { organization: organizationId ?? undefined, limit: 200 },
     { query: { enabled: organizationId !== null } },
   );
+  const categories = useCategoriesList(undefined, { query: { enabled: kind === "jukebox" } });
   // A slot that repeats in ways the planner doesn't draw (monthly, daily)
   // keeps its pattern; only the shared fields are offered.
   const weekly = !slot || slot.frequency === "weekly";
@@ -173,7 +194,9 @@ export const SlotForm = ({
             ? "En sendeflate kan vare høyst ett døgn."
             : endsOn && endsOn < startsOn
               ? "Sluttdatoen er før startdatoen."
-              : null;
+              : kind === "jukebox"
+                ? themeProblem(theme)
+                : null;
 
   const payload = (): PatchedRecurringSlotRequest => ({
     organization: organizationId,
@@ -188,17 +211,33 @@ export const SlotForm = ({
     startsOn,
     endsOn: endsOn || null,
     ...(kind === "jukebox"
-      ? { jukebox: true }
+      ? // A theme is stored anew when it changes, so an untouched one isn't sent.
+        savedKind === "jukebox" && sameTheme(theme, savedTheme)
+        ? {}
+        : {
+            recipe: {
+              kind: "jukebox" as const,
+              name: theme.name.trim(),
+              categories: theme.categories,
+              shortest: theme.shortest === null ? null : durationPayload(theme.shortest),
+              longest: theme.longest === null ? null : durationPayload(theme.longest),
+              newerThanDays: theme.newerThanDays,
+              olderThanDays: theme.olderThanDays,
+            },
+          }
       : kind === "station"
-        ? // The jukebox's rule doesn't follow a slot the station takes back.
-          savedKind === "jukebox"
-          ? { defaultFillRuleId: null }
-          : {}
-        : // Leaving the rule out gives a new owner the standard one; an
-          // unchanged owner keeps theirs.
-          rule === "standard"
+        ? // The station's own time is set up by hand.
+          { recipe: null }
+        : source === "kept"
           ? {}
-          : { defaultFillRuleId: rule === "none" ? null : rule }),
+          : {
+              recipe:
+                source === "none"
+                  ? null
+                  : source === "uploads"
+                    ? { kind: "uploads" as const }
+                    : { kind: "series" as const, series: source },
+            }),
   });
 
   const refresh = () =>
@@ -245,7 +284,15 @@ export const SlotForm = ({
     }
   };
 
-  const ruleOptions = rules.data?.data.results ?? [];
+  const seriesOptions = series.data?.data.results ?? [];
+  const categoryOptions = categories.data?.data.results ?? [];
+  const toggleCategory = (id: number) =>
+    setTheme({
+      ...theme,
+      categories: theme.categories.includes(id)
+        ? theme.categories.filter((category) => category !== id)
+        : [...theme.categories, id].sort((a, b) => a - b),
+    });
 
   return (
     <form
@@ -311,8 +358,8 @@ export const SlotForm = ({
               value={organization}
               onChange={(event) => {
                 setOrganization(event.target.value === "" ? "" : Number(event.target.value));
-                // Another owner can't use this one's rule.
-                setRule("standard");
+                // Another owner can't use this one's series or playlist.
+                setSource("uploads");
               }}
             >
               <option disabled value="">
@@ -329,7 +376,7 @@ export const SlotForm = ({
         ) : (
           <p className="text-sm text-default-600">
             {kind === "jukebox"
-              ? "Jukeboksen trekker videoer som er merket som fyllstoff, og fyller hele sendeflaten. Ingen trenger å sette opp noe."
+              ? "Jukeboksen trekker videoer som er merket som fyllstoff, og fyller hele sendeflaten. Ingen trenger å sette opp noe. Med et tema under trekker den bare det som passer."
               : "Sendetiden står tom til noen i Frikanalen setter den opp."}
           </p>
         )}
@@ -404,26 +451,109 @@ export const SlotForm = ({
 
       {organizationId !== null ? (
         <Section title="Innhold">
-          <Field label="Automatisk fylling">
+          <Field label="Fylles fra">
             <select
               className={fieldClass}
-              value={rule}
+              value={source}
               onChange={(event) => {
                 const value = event.target.value;
-                setRule(value === "none" || value === "standard" ? value : Number(value));
+                setSource(
+                  value === "uploads" || value === "none" || value === "kept"
+                    ? value
+                    : Number(value),
+                );
               }}
             >
-              {!slot || ownerChanged ? (
-                <option value="standard">Organisasjonens nyeste videoer, fyll sendetiden</option>
-              ) : null}
-              {ruleOptions.map((option) => (
+              <option value="uploads">Alt organisasjonen laster opp</option>
+              {seriesOptions.map((option) => (
                 <option key={option.id} value={option.id}>
-                  {ruleLabel(option)}
+                  Serien «{option.name}»
                 </option>
               ))}
-              <option value="none">Ingen: sendetiden står tom til noen setter den opp</option>
+              {/* A series in use stays on offer while the list loads. */}
+              {typeof source === "number" && !seriesOptions.some(({ id }) => id === source) ? (
+                <option value={source}>Serien «{slot?.recipe?.seriesName ?? "…"}»</option>
+              ) : null}
+              {sourceOf(slot) === "kept" && slot?.organization === organizationId ? (
+                <option value="kept">Spilleliste satt opp i administrasjonen</option>
+              ) : null}
+              <option value="none">Ingenting: sendetiden står tom til noen setter den opp</option>
             </select>
           </Field>
+          {source !== "none" && source !== "kept" ? (
+            <p className="text-sm text-default-600">
+              Det nyeste som ikke er sendt kommer først, så fylles tiden fra arkivet. Organisasjonen
+              kan selv velge noe annet for hver sending.
+            </p>
+          ) : null}
+        </Section>
+      ) : null}
+
+      {kind === "jukebox" ? (
+        <Section title="Tema">
+          <p className="text-sm text-default-600">
+            Valgfritt. Uten noe her trekker jukeboksen fra alt fyllstoffet.
+          </p>
+          <Field label="Navn">
+            <input
+              className={fieldClass}
+              maxLength={100}
+              placeholder="For eksempel Kulturnatt"
+              value={theme.name}
+              onChange={(event) => setTheme({ ...theme, name: event.target.value })}
+            />
+          </Field>
+          <fieldset className="space-y-1">
+            <legend className="text-sm font-medium">Kategorier</legend>
+            <div className="flex flex-wrap gap-1">
+              {categoryOptions.map((category) => (
+                <label
+                  className={cx(
+                    "cursor-pointer border px-2 py-1 text-sm",
+                    theme.categories.includes(category.id)
+                      ? "border-accent bg-accent text-accent-foreground"
+                      : "border-default-300",
+                  )}
+                  key={category.id}
+                >
+                  <input
+                    checked={theme.categories.includes(category.id)}
+                    className="sr-only"
+                    type="checkbox"
+                    onChange={() => toggleCategory(category.id)}
+                  />
+                  {category.name}
+                </label>
+              ))}
+            </div>
+            <p className="text-sm text-default-600">
+              {theme.categories.length === 0
+                ? "Ingen valgt: alle kategorier er med."
+                : "Bare videoer i de valgte kategoriene."}
+            </p>
+          </fieldset>
+          <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-3">
+            <LimitField
+              label="Korteste video (minutter)"
+              value={theme.shortest}
+              onChange={(shortest) => setTheme({ ...theme, shortest })}
+            />
+            <LimitField
+              label="Lengste video (minutter)"
+              value={theme.longest}
+              onChange={(longest) => setTheme({ ...theme, longest })}
+            />
+            <LimitField
+              label="Nyere enn (dager)"
+              value={theme.newerThanDays}
+              onChange={(newerThanDays) => setTheme({ ...theme, newerThanDays })}
+            />
+            <LimitField
+              label="Eldre enn (dager)"
+              value={theme.olderThanDays}
+              onChange={(olderThanDays) => setTheme({ ...theme, olderThanDays })}
+            />
+          </div>
         </Section>
       ) : null}
 

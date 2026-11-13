@@ -36,7 +36,7 @@ const LIST_PARAMS = { limit: 1000 };
 const STATION = 0;
 /** And for the video jukebox's slots, the station's that fill themselves. */
 const JUKEBOX = -1;
-type Owned = Pick<RecurringSlot, "organization" | "defaultFillRule">;
+type Owned = Pick<RecurringSlot, "organization" | "recipe">;
 const focusKey = (slot: Owned) => (isJukebox(slot) ? JUKEBOX : (slot.organization ?? STATION));
 const focusName = (key: number, organizations: Map<number, Organization>) =>
   key === JUKEBOX
@@ -360,7 +360,8 @@ export const SlotPlanner = ({
                     const dimmed =
                       (focus !== null && focusKey(slot) !== focus) || ended || isSuspended;
                     const name =
-                      slot.organizationName ?? (isJukebox(slot) ? "Videojukeboks" : "Frikanalen");
+                      slot.organizationName ??
+                      (isJukebox(slot) ? slot.recipe?.name || "Videojukeboks" : "Frikanalen");
                     const unsaved = selected === slot.id && edit !== null && !dragging;
                     const pattern = recurrenceLabel(slot);
                     const lastBlock = (day: number) =>

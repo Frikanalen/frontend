@@ -34,7 +34,7 @@ export const itemsPayload = (items: readonly DraftItem[]): GrantItemWriteRequest
  * replaced on every run. A hand-made grant is one list, all of it theirs.
  */
 export const splitItems = <T extends Pick<GrantItem, "pinned">>(
-  grant: Pick<AirtimeGrant, "fillRule">,
+  grant: Pick<AirtimeGrant, "recipe">,
   items: readonly T[],
 ) =>
   isAutomatic(grant)
@@ -92,10 +92,23 @@ export const timeline = <T extends DraftItem>(
 };
 
 /** What a self-filling grant draws on, in words. */
-export const fillSourceLabel = (grant: Pick<AirtimeGrant, "fillSeriesName">) =>
-  grant.fillSeriesName ? `serien «${grant.fillSeriesName}»` : "alt dere laster opp";
+export const fillSourceLabel = ({ recipe }: Pick<AirtimeGrant, "recipe">) => {
+  if (recipe?.kind === "series") return `serien «${recipe.seriesName}»`;
+  if (recipe?.kind === "playlist") return "en spilleliste Frikanalen har satt opp";
+  if (recipe?.kind === "jukebox")
+    return recipe.name ? `videojukeboksen «${recipe.name}»` : "videojukeboksen";
+  return "alt dere laster opp";
+};
 
-export const isAutomatic = (grant: Pick<AirtimeGrant, "fillRule">) => grant.fillRule !== null;
+/**
+ * Whether what the grant fills from is the owner's to choose: everything
+ * they upload, or one of their series. A playlist or the jukebox is set up
+ * by staff and left alone here.
+ */
+export const ownerChoosesSource = ({ recipe }: Pick<AirtimeGrant, "recipe">) =>
+  recipe === null || recipe.kind === "uploads" || recipe.kind === "series";
+
+export const isAutomatic = (grant: Pick<AirtimeGrant, "recipe">) => grant.recipe !== null;
 
 export const STATE_LABELS: Record<AirtimeGrant["state"], string> = {
   open: "Åpen",

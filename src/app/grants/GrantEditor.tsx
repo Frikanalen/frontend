@@ -34,6 +34,7 @@ import {
   readOnlyReason,
   lockedByDeadline,
   isAutomatic,
+  ownerChoosesSource,
   itemName,
   itemStatus,
   liveSourceName,
@@ -53,6 +54,10 @@ import { VIDEO_DRAG_TYPE, VideoPicker } from "./VideoPicker";
 
 /** The source choice that is no series: everything the organization uploads. */
 const EVERYTHING = "";
+
+/** The source the grant holds, as the choice in the editor. */
+const sourceOf = ({ recipe }: Pick<AirtimeGrant, "recipe">) =>
+  recipe?.kind === "series" && recipe.series != null ? String(recipe.series) : EVERYTHING;
 
 /** The drag type an entry already in the list travels under, carrying its key. */
 const ITEM_DRAG_TYPE = "application/x-frikanalen-grant-item";
@@ -112,11 +117,12 @@ const Editor = ({
   // Whether the grant's rule fills the time the chosen videos leave.
   const [fillRest, setFillRest] = useState(isAutomatic(grant));
   // What it fills from: one of the organization's series, or everything.
-  const storedSource = grant.fillSeries ? String(grant.fillSeries) : EVERYTHING;
+  const storedSource = sourceOf(grant);
+  const choosesSource = ownerChoosesSource(grant);
   const [source, setSource] = useState(storedSource);
   const [wholeSlot, setWholeSlot] = useState(false);
   const series = useSeriesList({ organization: grant.organization.id, limit: 200 });
-  const sourceChanged = fillRest && (source !== storedSource || wholeSlot);
+  const sourceChanged = fillRest && choosesSource && (source !== storedSource || wholeSlot);
   const stored = splitItems(grant, grant.items);
   // Until a member changes something, the list is what the server holds.
   // Against that, so moving something and moving it back, or adding and
@@ -192,7 +198,7 @@ const Editor = ({
   const refresh = async (data: AirtimeGrant) => {
     setItems(keyedItems(data));
     setFillRest(isAutomatic(data));
-    setSource(data.fillSeries ? String(data.fillSeries) : EVERYTHING);
+    setSource(sourceOf(data));
     setWholeSlot(false);
     queryClient.setQueryData(getGrantsRetrieveQueryKey(grant.id), (old: object | undefined) => ({
       ...(old ?? {}),
@@ -210,7 +216,13 @@ const Editor = ({
           items: itemsPayload(items),
           automatic: fillRest,
           ...(sourceChanged
-            ? { series: source === EVERYTHING ? null : Number(source), wholeSlot }
+            ? {
+                recipe:
+                  source === EVERYTHING
+                    ? { kind: "uploads" as const }
+                    : { kind: "series" as const, series: Number(source) },
+                wholeSlot,
+              }
             : {}),
         },
       });
@@ -444,7 +456,7 @@ const Editor = ({
               </span>
             </label>
           ) : null}
-          {editable && fillRest ? (
+          {editable && fillRest && choosesSource ? (
             <div className="space-y-2 ps-6">
               <label className="flex flex-wrap items-center gap-2">
                 Fylles fra
@@ -481,7 +493,7 @@ const Editor = ({
               ) : null}
             </div>
           ) : null}
-          {!editable && fillRest ? (
+          {fillRest && !(editable && choosesSource) ? (
             <p className="text-sm text-default-600">Fylles fra {fillSourceLabel(grant)}.</p>
           ) : null}
           {editable ? (
