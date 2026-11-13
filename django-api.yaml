@@ -6198,6 +6198,116 @@ paths:
         - cookieAuth: []
       tags:
         - organization
+  /api/organization/brreg/{orgnr}:
+    get:
+      operationId: organization_brreg_retrieve
+      description: |-
+        Look up an organisasjonsnummer in Enhetsregisteret, so the form for a
+        new organization can fill itself in. For logged-in users only: it is
+        there to register an organization, not as an open proxy.
+      parameters:
+        - name: orgnr
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BrregEntity'
+        '400':
+          description: Not a valid organisasjonsnummer.
+        '401':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: authentication_failed
+                        detail: Incorrect authentication credentials.
+                        attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_authenticated
+                        detail: Authentication credentials were not provided.
+                        attr: null
+        '404':
+          description: No entity has this number.
+        '405':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse405'
+              examples:
+                MethodNotAllowed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: method_not_allowed
+                        detail: Method "get" not allowed.
+                        attr: null
+        '406':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse406'
+              examples:
+                NotAcceptable:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_acceptable
+                        detail: Could not satisfy the request Accept header.
+                        attr: null
+        '410':
+          description: The entity has been deleted from the register.
+        '415':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse415'
+              examples:
+                UnsupportedMediaType:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: unsupported_media_type
+                        detail: Unsupported media type "application/json" in request.
+                        attr: null
+        '500':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+              examples:
+                APIException:
+                  value:
+                    type: server_error
+                    errors:
+                      - code: error
+                        detail: A server error occurred.
+                        attr: null
+        '503':
+          description: Enhetsregisteret did not answer.
+      security:
+        - tokenAuth: []
+        - cookieAuth: []
+      tags:
+        - organization
   /api/organization/{id}:
     get:
       operationId: organization_retrieve
@@ -16565,6 +16675,36 @@ components:
       required:
         - password
         - username
+    BrregEntity:
+      description: An entity in Enhetsregisteret, as the fields of a new organization.
+      type: object
+      properties:
+        orgnr:
+          type: string
+        name:
+          type: string
+        organizationForm:
+          description: E.g. Forening/lag/innretning
+          type: string
+        homepage:
+          type: string
+        streetAddress:
+          type: string
+        postalAddress:
+          type: string
+        bankrupt:
+          type: boolean
+        beingDissolved:
+          type: boolean
+      required:
+        - bankrupt
+        - beingDissolved
+        - homepage
+        - name
+        - organizationForm
+        - orgnr
+        - postalAddress
+        - streetAddress
     Bulletin:
       type: object
       properties:
@@ -20276,6 +20416,9 @@ components:
         description:
           type: string
           maxLength: 255
+        orgnr:
+          type: string
+          maxLength: 255
         postalAddress:
           type: string
           maxLength: 2048
@@ -20885,6 +21028,9 @@ components:
           nullable: true
           title: Link back to the organisation home page.
         description:
+          type: string
+          maxLength: 255
+        orgnr:
           type: string
           maxLength: 255
         postalAddress:
@@ -21599,6 +21745,9 @@ components:
           nullable: true
           title: Link back to the organisation home page.
         description:
+          type: string
+          maxLength: 255
+        orgnr:
           type: string
           maxLength: 255
         postalAddress:
