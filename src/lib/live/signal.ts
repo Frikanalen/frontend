@@ -144,7 +144,9 @@ const transport = ({ srt, framesInError = 0 }: Signal): SignalLine[] => {
     const total = srt.packetsReceived + srt.packetsLost;
     const share = total > 0 ? (srt.packetsLost / total) * 100 : 0;
     const value =
-      srt.packetsLost === 0 ? "Ingen" : `${number(share, 2)} % (${number(srt.packetsLost)} pakker)`;
+      srt.packetsLost === 0
+        ? "Ingen"
+        : `${share < 0.01 ? "under 0,01" : number(share, 2)} % (${number(srt.packetsLost)} pakker)`;
     lines.push(
       srt.packetsDropped > 0
         ? {
@@ -191,3 +193,39 @@ export const describeSignal = (
   rate(signal, previous),
   ...transport(signal),
 ];
+
+/**
+ * Whether a source is ready to go on air, from everything that can be
+ * checked without a person: the signal's lines, whether sound is actually
+ * heard, and whether a broadcast is booked.
+ */
+export type Readiness = {
+  level: "waiting" | "ready" | "check" | "problem";
+  /** What stands in the way, most serious first; empty when ready. */
+  reasons: string[];
+};
+
+export const readiness = ({
+  signal,
+  previous,
+  pulled,
+  silent,
+}: {
+  /** Undefined where the receiver cannot be asked. */
+  signal: Signal | undefined;
+  previous?: Signal;
+  pulled: boolean;
+  /** The preview has sound to listen to and has heard none for a while. */
+  silent: boolean;
+}): Readiness => {
+  if (!signal?.receiving) return { level: "waiting", reasons: [] };
+  const lines = describeSignal(signal, pulled, previous);
+  const bad = lines.filter(({ status }) => status === "bad");
+  const warn = lines.filter(({ status }) => status === "warn");
+  const reasons = [...bad, ...warn].map(({ label, note, value }) => `${label}: ${note ?? value}`);
+  if (silent && signal.audio)
+    reasons.splice(bad.length, 0, "Lyd: Lydsporet er stille. Sjekk mikrofoner og lydmiks.");
+  if (bad.length > 0) return { level: "problem", reasons };
+  if (reasons.length > 0) return { level: "check", reasons };
+  return { level: "ready", reasons };
+};

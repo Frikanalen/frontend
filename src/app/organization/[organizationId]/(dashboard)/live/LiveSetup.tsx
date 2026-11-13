@@ -17,7 +17,7 @@ import {
   type PullProtocolId,
 } from "./connections";
 import { EncoderSettings } from "./EncoderSettings";
-import { LiveSourcePreview } from "./LiveSourcePreview";
+import { SignalCheck } from "./SignalCheck";
 
 type Mode = "push" | "pull";
 
@@ -315,13 +315,9 @@ export const LiveSetup = ({
             </section>
           ) : null}
 
-          <LiveSourcePreview autoStart source={source} startOpen>
-            <p className="text-sm text-default-600 md:col-span-2">
-              {source.isPulled
-                ? "Vi kobler til adressen nå. Kommer bildet opp her, virker den."
-                : "Start sendingen i koderen. Kommer bildet opp her og lydmåleren beveger seg, er alt klart."}
-            </p>
-          </LiveSourcePreview>
+          <div className="bg-background p-5">
+            <SignalCheck source={source} />
+          </div>
 
           <div className="max-w-3xl bg-background p-5">
             <AirtimeHandoff organizationId={organizationId} source={source} />

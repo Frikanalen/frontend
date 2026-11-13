@@ -20979,10 +20979,14 @@ components:
         previewPath:
           description: The Opus-audio preview, if a conversion worker runs for this source.
           type: string
+        programPath:
+          description: A low-latency copy of what the channel is airing, readable with the same token. Empty where the receiver has no programme return.
+          type: string
       required:
         - contributionPath
         - expiresAt
         - previewPath
+        - programPath
         - token
     ProgramImage:
       type: object

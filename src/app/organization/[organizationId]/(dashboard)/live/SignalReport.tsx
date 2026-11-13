@@ -26,7 +26,11 @@ export const useSignal = (
   if (latest && latest.measuredAt !== pair.current?.measuredAt)
     setPair({ current: latest, previous: pair.current });
   const signal = enabled && pair.current?.available ? pair.current : undefined;
-  return { signal, previous: pair.previous };
+  // How far this computer's clock is from the server's, as of the last
+  // report: what a countdown to air should be corrected by.
+  const clockOffset =
+    latest && query.dataUpdatedAt ? Date.parse(latest.measuredAt) - query.dataUpdatedAt : 0;
+  return { signal, previous: pair.previous, clockOffset };
 };
 
 const MARK = {

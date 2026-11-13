@@ -4,8 +4,8 @@ import { Button } from "@heroui/react";
 import { useState } from "react";
 import { EncoderKeys } from "./EncoderKeys";
 import { LiveSetup } from "./LiveSetup";
-import { LiveSourcePreview } from "./LiveSourcePreview";
 import { PullAddress } from "./PullAddress";
+import { SourceRow } from "./SourceRow";
 
 /**
  * The page's two states. With no sources it is the guided setup. With
@@ -45,21 +45,13 @@ export const LiveSources = ({
       ) : null}
       {sources.length === 0 ? <p>Organisasjonen har ingen direktekilder ennå.</p> : null}
       {sources.map((source) => (
-        // One source opens and starts by itself; with several, each waits to
-        // be asked so the page does not open a connection per source at once.
-        <LiveSourcePreview
-          autoStart={sources.length === 1}
-          key={source.id}
-          organizationId={organizationId}
-          source={source}
-          startOpen={sources.length === 1}
-        >
+        <SourceRow key={source.id} organizationId={organizationId} source={source}>
           {source.isPulled ? (
             <PullAddress maySetUp={maySetUp} source={source} />
           ) : (
             <EncoderKeys maySetUp={maySetUp} source={source} />
           )}
-        </LiveSourcePreview>
+        </SourceRow>
       ))}
     </div>
   );

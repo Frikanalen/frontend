@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 import { stubApi } from "./support/api";
 import { waitForHydration } from "./support/hydration";
 
@@ -22,6 +22,47 @@ const listed = {
   createdAt: issued.createdAt,
   revokedAt: null,
 };
+
+const stubSignal = (page: Page) =>
+  page.route("**/api/live-sources/9/signal", (route) =>
+    route.fulfill({
+      status: 200,
+      json: {
+        available: true,
+        receiving: true,
+        since: new Date(Date.now() - 5 * 60_000).toISOString(),
+        protocol: "SRT",
+        video: { codec: "H264", width: 1280, height: 720, profile: "High" },
+        audio: null,
+        bytesReceived: 300_000_000,
+        framesInError: 0,
+        srt: {
+          packetsReceived: 1000,
+          packetsLost: 0,
+          packetsRetransmitted: 0,
+          packetsDropped: 0,
+          roundTripMs: 12,
+        },
+        measuredAt: new Date().toISOString(),
+      },
+    }),
+  );
+
+const booking = (startsInMs: number) => ({
+  id: 501,
+  name: "Høstkonsert",
+  starttime: new Date(Date.now() + startsInMs).toISOString(),
+  endtime: new Date(Date.now() + startsInMs + 3_600_000).toISOString(),
+});
+const studio = (upcomingTransmissions: object[]) => ({
+  id: 9,
+  name: "Studio",
+  enabled: true,
+  isPulled: false,
+  pullTarget: "",
+  streamId: "cc1367cd-020e-456d-9d4c-b395eab6aa9c",
+  upcomingTransmissions,
+});
 
 test.beforeEach(async ({ page, baseURL }) => {
   await page.context().addCookies([{ name: "e2e-member", value: "1", url: baseURL! }]);
@@ -137,29 +178,7 @@ test("a member sets up a source for Frikanalen to fetch", async ({ page }) => {
 });
 
 test("issues an encoder key once, then lists and revokes it", async ({ page }) => {
-  await page.route("**/api/live-sources/9/signal", (route) =>
-    route.fulfill({
-      status: 200,
-      json: {
-        available: true,
-        receiving: true,
-        since: new Date(Date.now() - 5 * 60_000).toISOString(),
-        protocol: "SRT",
-        video: { codec: "H264", width: 1280, height: 720, profile: "High" },
-        audio: null,
-        bytesReceived: 300_000_000,
-        framesInError: 0,
-        srt: {
-          packetsReceived: 1000,
-          packetsLost: 0,
-          packetsRetransmitted: 0,
-          packetsDropped: 0,
-          roundTripMs: 12,
-        },
-        measuredAt: new Date().toISOString(),
-      },
-    }),
-  );
+  await stubSignal(page);
   let keys: object[] = [];
   const created: unknown[] = [];
   const revoked: string[] = [];
@@ -185,16 +204,15 @@ test("issues an encoder key once, then lists and revokes it", async ({ page }) =
   await page.goto("/organization/3/live");
   await waitForHydration(page);
 
+  // The list says whether a signal is in; the keys fold out.
+  const row = page.getByRole("region", { name: "Studio" });
+  await expect(row.getByRole("status")).toHaveText("Mottar signal");
+  await expect(row.getByRole("link", { name: "Sjekk signalet" })).toHaveAttribute(
+    "href",
+    "/organization/3/live/9",
+  );
+  await row.getByRole("button", { name: "Oppsett" }).click();
   await expect(page.getByText("Ingen nøkler ennå.", { exact: false })).toBeVisible();
-
-  // The receiver's report on the signal, not the preview's own numbers.
-  const report = page.getByRole("region", { name: "Studio" });
-  await expect(report.getByRole("status")).toHaveText("Mottar signal");
-  await expect(report).toContainText("SRT · inne i");
-  await expect(report).toContainText("1280×720 · H.264 High");
-  await expect(report).toContainText("Lavere oppløsning enn anbefalt");
-  await expect(report).toContainText("Ingen lyd");
-  await expect(report).not.toContainText("Kodek");
 
   await page.getByLabel("Ny nøkkel").fill("ATEM");
   await page.getByRole("button", { name: "Lag nøkkel" }).click();
@@ -211,11 +229,6 @@ test("issues an encoder key once, then lists and revokes it", async ({ page }) =
   await expect(shown).toContainText(
     "rtmp://live.example.test:1935/contrib/live/x?user=k&pass=s3cret",
   );
-  // A source that is already set up leads on to the airtime too.
-  await expect(page.getByRole("link", { name: "Legg direktesendingen her" })).toHaveAttribute(
-    "href",
-    "/organization/3/schedule/77?direkte=9",
-  );
   await shown.getByRole("button", { name: "Jeg har kopiert det" }).click();
   await expect(shown).toHaveCount(0);
   await expect(page.getByText("s3cret")).toHaveCount(0);
@@ -223,4 +236,77 @@ test("issues an encoder key once, then lists and revokes it", async ({ page }) =
   await page.getByRole("button", { name: "Trekk tilbake «ATEM»" }).click();
   await expect.poll(() => revoked).toEqual(["DELETE"]);
   await expect(page.getByText("Ingen nøkler ennå.", { exact: false })).toBeVisible();
+});
+
+test("the check page gives one verdict with its reasons, and leads on to airtime", async ({
+  page,
+}) => {
+  await stubSignal(page);
+  await page.route("**/api/grants?**", (route) =>
+    route.fulfill({
+      status: 200,
+      json: { count: 1, next: null, previous: null, results: [grant] },
+    }),
+  );
+  await page.goto("/organization/3/live/9");
+  await waitForHydration(page);
+
+  const verdict = page.getByRole("status").filter({ hasText: "Ikke klar for sending" });
+  await expect(verdict).toContainText("Lyd: Signalet har ikke noe lydspor");
+  await expect(verdict).toContainText("Bilde: Lavere oppløsning enn anbefalt");
+  // The receiver's report on the member's signal, not the preview's numbers.
+  await expect(page.getByText("SRT · inne i")).toBeVisible();
+  await expect(page.getByText("1280×720 · H.264 High")).toBeVisible();
+  await expect(page.getByText("Kodek")).toHaveCount(0);
+
+  await expect(page.getByText("Ingen sending er satt opp.")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Legg direktesendingen her" })).toHaveAttribute(
+    "href",
+    "/organization/3/schedule/77?direkte=9",
+  );
+  await expect(page.getByRole("link", { name: "Åpne sendeskjerm" })).toHaveAttribute(
+    "href",
+    "/organization/3/live/9/monitor",
+  );
+});
+
+test("the monitor counts down to air and turns red on air", async ({ page }) => {
+  await stubSignal(page);
+  let bookings = [booking(90_000)];
+  await page.route("**/api/organization/3/live-sources", (route) =>
+    route.fulfill({ status: 200, json: [studio(bookings)] }),
+  );
+  await page.route("**/api/live-sources/9/preview-token", (route) =>
+    route.fulfill({
+      status: 201,
+      json: {
+        token: "t",
+        expiresAt: new Date(Date.now() + 300_000).toISOString(),
+        contributionPath: "contrib/live/x",
+        previewPath: "contrib/preview/x",
+        programPath: "",
+      },
+    }),
+  );
+  await page.route("**/contrib/**", (route) => route.fulfill({ status: 404, json: {} }));
+  await page.goto("/organization/3/live/9/monitor");
+  await waitForHydration(page);
+
+  const monitor = page.locator("[data-state]");
+  await expect(monitor).toHaveAttribute("data-state", "soon");
+  const timer = page.getByRole("timer");
+  await expect(timer).toContainText("Direkte om");
+  await expect(timer).toContainText(/01:\d\d/);
+  await expect(timer).toContainText("Høstkonsert");
+  await expect(page.getByRole("region", { name: "Fra dere" })).toBeVisible();
+  // No programme return on this receiver: its tile is left out, not empty.
+  await expect(page.getByRole("region", { name: "Frikanalen sender nå" })).toHaveCount(0);
+  await expect(page.getByText(/Mbit\/s/).first()).toBeVisible();
+
+  bookings = [booking(-60_000)];
+  await page.reload();
+  await waitForHydration(page);
+  await expect(monitor).toHaveAttribute("data-state", "onair");
+  await expect(timer).toContainText("På lufta");
+  await expect(timer).toContainText(/5\d:\d\d/);
 });

@@ -14,6 +14,7 @@ export const SeriesParams = z.object({ seriesId: pk });
 export const VideoParams = z.object({ videoId: pk });
 export const OrganizationSeriesParams = OrganizationParams.extend({ seriesId: pk });
 export const OrganizationGrantParams = OrganizationParams.extend({ grantId: pk });
+export const OrganizationLiveSourceParams = OrganizationParams.extend({ sourceId: pk });
 
 /**
  * A schedule day, as the three padded segments the URL carries.
