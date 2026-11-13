@@ -22,6 +22,8 @@ const grant = (overrides: Record<string, unknown> = {}) => ({
   locksAt: "2030-01-06T23:00:00Z",
   lockExempt: false,
   fillRule: 12,
+  fillSeries: null,
+  fillSeriesName: null,
   originSlot: 5,
   items: [
     { position: 0, pinned: true, video: grantVideo(1, "Kaia i dag", "00:20:00") },
@@ -414,61 +416,53 @@ test.describe("airtime grants", () => {
     await expect(page.getByText(/kan endres helt frem til sending/)).toHaveCount(0);
   });
 
-  test("points a fixed slot at a series", async ({ page }) => {
-    const slot = (series: number | null) => ({
-      id: 5,
-      organization: 3,
-      organizationName: "Kaia TV",
-      frequency: "weekly",
-      interval: 1,
-      weekdays: [3],
-      monthWeeks: [],
-      startTime: "19:00:00",
-      duration: "01:00:00",
-      startsOn: "2026-01-01",
-      endsOn: null,
-      defaultFillRule: {
-        id: 12,
-        name: "Rule",
-        pool: series ? "series" : "organization",
-        ordering: "premiere",
-        mode: "fill",
-        series,
-        seriesName: series ? "Ukens program" : null,
-      },
-      description: "Weekly Thu",
-    });
+  test("chooses a series for one broadcast, or for its whole fixed slot", async ({ page }) => {
     const puts: unknown[] = [];
-    await page.route("**/api/grants?**", (route) =>
-      route.fulfill({ status: 200, json: page_([grant()]) }),
-    );
-    await page.route("**/api/recurring-slots?**", (route) =>
-      route.fulfill({
-        status: 200,
-        json: page_([slot(puts.length ? 8 : null), { ...slot(null), id: 6, organization: 99 }]),
-      }),
-    );
+    const following = grant({ fillSeries: 8, fillSeriesName: "Ukens program" });
     await page.route("**/api/series?**", (route) =>
       route.fulfill({ status: 200, json: page_([{ id: 8, name: "Ukens program" }]) }),
     );
-    await page.route("**/api/recurring-slots/5/series", (route) => {
+    await page.route("**/api/grants/700/items", (route) => {
       puts.push(route.request().postDataJSON());
-      return route.fulfill({ status: 200, json: slot(8) });
+      return route.fulfill({ status: 200, json: following });
     });
+    await editor(page, grant());
 
+    const source = page.getByRole("combobox", { name: "Fylles fra" });
+    await expect(source).toHaveValue("");
+    // Choosing is not saving.
+    await source.selectOption({ label: "Serien «Ukens program»" });
+    expect(puts).toEqual([]);
+    await page.getByRole("button", { name: "Lagre listen" }).click();
+    await expect
+      .poll(() => puts)
+      .toEqual([
+        { items: [{ video: 1 }, { video: 2 }], automatic: true, series: 8, wholeSlot: false },
+      ]);
+    await expect(source).toHaveValue("8");
+    await expect(page.getByRole("button", { name: "Lagre listen" })).toBeDisabled();
+
+    await page.getByRole("checkbox", { name: /alle sendinger i denne faste sendeflaten/ }).check();
+    await page.getByRole("button", { name: "Lagre listen" }).click();
+    await expect.poll(() => puts.at(-1)).toMatchObject({ series: 8, wholeSlot: true });
+  });
+
+  test("the board says what each automatic broadcast fills from", async ({ page }) => {
+    await page.route("**/api/grants?**", (route) =>
+      route.fulfill({
+        status: 200,
+        json: page_([
+          grant({ fillSeries: 8, fillSeriesName: "Ukens program" }),
+          grant({ id: 701, starttime: "2030-01-15T17:00:00Z", endtime: "2030-01-15T18:00:00Z" }),
+        ]),
+      }),
+    );
     await page.goto("/organization/3/schedule");
     await waitForHydration(page);
 
-    const slots = page.getByRole("region", { name: "Faste sendeflater" }).getByRole("listitem");
-    await expect(slots).toHaveCount(1); // only this organization's
-    await expect(slots).toContainText("Torsdag 19:00–20:00");
-    // Choosing is not saving.
-    await slots.getByRole("combobox").selectOption({ label: "Serien «Ukens program»" });
-    expect(puts).toEqual([]);
-
-    await slots.getByRole("button", { name: "Lagre" }).click();
-    await expect.poll(() => puts).toEqual([{ series: 8 }]);
-    await expect(slots.getByRole("status")).toHaveText("Lagret");
+    const cards = page.getByRole("article");
+    await expect(cards.nth(0)).toContainText("Fylles fra serien «Ukens program»");
+    await expect(cards.nth(1)).toContainText("Fylles fra alt dere laster opp");
   });
 
   test("keeps a video the rule picked, and lets the rule fill around it", async ({ page }) => {

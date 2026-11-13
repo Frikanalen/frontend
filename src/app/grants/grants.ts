@@ -91,6 +91,10 @@ export const timeline = <T extends DraftItem>(
   return { rows, graphics };
 };
 
+/** What a self-filling grant draws on, in words. */
+export const fillSourceLabel = (grant: Pick<AirtimeGrant, "fillSeriesName">) =>
+  grant.fillSeriesName ? `serien «${grant.fillSeriesName}»` : "alt dere laster opp";
+
 export const isAutomatic = (grant: Pick<AirtimeGrant, "fillRule">) => grant.fillRule !== null;
 
 export const STATE_LABELS: Record<AirtimeGrant["state"], string> = {

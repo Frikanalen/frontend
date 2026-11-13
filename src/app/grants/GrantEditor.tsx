@@ -5,6 +5,7 @@ import {
   useGrantsItemsUpdate,
   useGrantsRetrieve,
 } from "@/generated/grants/grants";
+import { useSeriesList } from "@/generated/series/series";
 import { formatApiError } from "@/lib/formatApiError";
 import { formatOsloTime, inOsloTime } from "@/lib/osloTime";
 import { Button as HeroButton } from "@heroui/react";
@@ -29,6 +30,7 @@ import { HourBar } from "./HourBar";
 import { ExemptionRequest } from "@/app/requests/ExemptionRequest";
 import {
   deadlineText,
+  fillSourceLabel,
   readOnlyReason,
   lockedByDeadline,
   isAutomatic,
@@ -48,6 +50,9 @@ import {
 import { LockBadge } from "./LockBadge";
 import { ModeBadge } from "./ModeBadge";
 import { VIDEO_DRAG_TYPE, VideoPicker } from "./VideoPicker";
+
+/** The source choice that is no series: everything the organization uploads. */
+const EVERYTHING = "";
 
 /** The drag type an entry already in the list travels under, carrying its key. */
 const ITEM_DRAG_TYPE = "application/x-frikanalen-grant-item";
@@ -106,11 +111,17 @@ const Editor = ({
   const saveItems = useGrantsItemsUpdate();
   // Whether the grant's rule fills the time the chosen videos leave.
   const [fillRest, setFillRest] = useState(isAutomatic(grant));
+  // What it fills from: one of the organization's series, or everything.
+  const storedSource = grant.fillSeries ? String(grant.fillSeries) : EVERYTHING;
+  const [source, setSource] = useState(storedSource);
+  const [wholeSlot, setWholeSlot] = useState(false);
+  const series = useSeriesList({ organization: grant.organization.id, limit: 200 });
+  const sourceChanged = fillRest && (source !== storedSource || wholeSlot);
   const stored = splitItems(grant, grant.items);
   // Until a member changes something, the list is what the server holds.
   // Against that, so moving something and moving it back, or adding and
   // removing a video, isn't a change worth saving.
-  const dirty = !sameList(items, stored.chosen) || fillRest !== isAutomatic(grant);
+  const dirty = !sameList(items, stored.chosen) || fillRest !== isAutomatic(grant) || sourceChanged;
   // The rule's own picks are only known for the list as saved.
   const filled = fillRest && !dirty ? stored.filled : [];
   const windowLength = windowMilliseconds(grant);
@@ -181,6 +192,8 @@ const Editor = ({
   const refresh = async (data: AirtimeGrant) => {
     setItems(keyedItems(data));
     setFillRest(isAutomatic(data));
+    setSource(data.fillSeries ? String(data.fillSeries) : EVERYTHING);
+    setWholeSlot(false);
     queryClient.setQueryData(getGrantsRetrieveQueryKey(grant.id), (old: object | undefined) => ({
       ...(old ?? {}),
       data,
@@ -193,7 +206,13 @@ const Editor = ({
     try {
       const response = await saveItems.mutateAsync({
         id: grant.id,
-        data: { items: itemsPayload(items), automatic: fillRest },
+        data: {
+          items: itemsPayload(items),
+          automatic: fillRest,
+          ...(sourceChanged
+            ? { series: source === EVERYTHING ? null : Number(source), wholeSlot }
+            : {}),
+        },
       });
       setSaved(true);
       await refresh(response.data);
@@ -425,6 +444,46 @@ const Editor = ({
               </span>
             </label>
           ) : null}
+          {editable && fillRest ? (
+            <div className="space-y-2 ps-6">
+              <label className="flex flex-wrap items-center gap-2">
+                Fylles fra
+                <select
+                  className="max-w-full rounded-lg border border-default-300 bg-background px-3 py-2"
+                  value={source}
+                  onChange={(event) => {
+                    setSource(event.target.value);
+                    setSaved(false);
+                    setError(undefined);
+                  }}
+                >
+                  <option value={EVERYTHING}>Alt vi laster opp</option>
+                  {(series.data?.data.results ?? []).map((option) => (
+                    <option key={option.id} value={option.id}>
+                      Serien «{option.name}»
+                    </option>
+                  ))}
+                </select>
+              </label>
+              {grant.originSlot !== null ? (
+                <label className="flex items-start gap-2 text-sm">
+                  <input
+                    checked={wholeSlot}
+                    className="mt-0.5 size-4"
+                    type="checkbox"
+                    onChange={(event) => {
+                      setWholeSlot(event.target.checked);
+                      setSaved(false);
+                    }}
+                  />
+                  Bruk dette for alle sendinger i denne faste sendeflaten
+                </label>
+              ) : null}
+            </div>
+          ) : null}
+          {!editable && fillRest ? (
+            <p className="text-sm text-default-600">Fylles fra {fillSourceLabel(grant)}.</p>
+          ) : null}
           {editable ? (
             <div className="flex flex-wrap items-center gap-2 border-t border-default-200 pt-3">
               <HeroButton
@@ -441,6 +500,8 @@ const Editor = ({
                 onPress={() => {
                   setItems(keyedItems(grant));
                   setFillRest(isAutomatic(grant));
+                  setSource(storedSource);
+                  setWholeSlot(false);
                   setError(undefined);
                 }}
               >

@@ -15722,6 +15722,15 @@ components:
           type: integer
           nullable: true
           readOnly: true
+        fillSeries:
+          description: The series the grant fills itself from, if its rule draws on one.
+          type: integer
+          nullable: true
+          readOnly: true
+        fillSeriesName:
+          type: string
+          nullable: true
+          readOnly: true
         originSlot:
           description: "Provenance only: the grant copied the slot's time when issued."
           type: integer
@@ -15743,6 +15752,8 @@ components:
         - canEdit
         - endtime
         - fillRule
+        - fillSeries
+        - fillSeriesName
         - id
         - items
         - itemsDuration
@@ -17823,6 +17834,14 @@ components:
           description: "True: the grant's rule fills the time these videos leave, and keeps doing so. False: the list stays exactly as given."
           type: boolean
           default: false
+        series:
+          description: "With `automatic`: what the grant fills itself from. One of the owner's series, or null for everything they upload. Leave out to keep what it has."
+          type: integer
+          nullable: true
+        wholeSlot:
+          description: "With `series`: make it the choice for the grant's recurring slot too, so its other broadcasts follow."
+          type: boolean
+          default: false
       required:
         - items
     GrantOrganization:
@@ -18611,12 +18630,16 @@ components:
           items.INDEX.non_field_errors: '#/components/schemas/GrantsItemsUpdateItemsINDEXNonFieldErrorsErrorComponent'
           items.INDEX.video: '#/components/schemas/GrantsItemsUpdateItemsINDEXVideoErrorComponent'
           automatic: '#/components/schemas/GrantsItemsUpdateAutomaticErrorComponent'
+          series: '#/components/schemas/GrantsItemsUpdateSeriesErrorComponent'
+          whole_slot: '#/components/schemas/GrantsItemsUpdateWholeSlotErrorComponent'
       oneOf:
         - $ref: '#/components/schemas/GrantsItemsUpdateNonFieldErrorsErrorComponent'
         - $ref: '#/components/schemas/GrantsItemsUpdateItemsNonFieldErrorsErrorComponent'
         - $ref: '#/components/schemas/GrantsItemsUpdateItemsINDEXNonFieldErrorsErrorComponent'
         - $ref: '#/components/schemas/GrantsItemsUpdateItemsINDEXVideoErrorComponent'
         - $ref: '#/components/schemas/GrantsItemsUpdateAutomaticErrorComponent'
+        - $ref: '#/components/schemas/GrantsItemsUpdateSeriesErrorComponent'
+        - $ref: '#/components/schemas/GrantsItemsUpdateWholeSlotErrorComponent'
     GrantsItemsUpdateErrorResponse400:
       discriminator:
         propertyName: type
@@ -18722,6 +18745,28 @@ components:
         - attr
         - code
         - detail
+    GrantsItemsUpdateSeriesErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `series` - series'
+          type: string
+          enum:
+            - series
+        code:
+          description: |-
+            * `does_not_exist` - does_not_exist
+            * `incorrect_type` - incorrect_type
+          type: string
+          enum:
+            - does_not_exist
+            - incorrect_type
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
     GrantsItemsUpdateValidationError:
       type: object
       properties:
@@ -18734,6 +18779,28 @@ components:
       required:
         - errors
         - type
+    GrantsItemsUpdateWholeSlotErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `whole_slot` - whole_slot'
+          type: string
+          enum:
+            - whole_slot
+        code:
+          description: |-
+            * `invalid` - invalid
+            * `null` - null
+          type: string
+          enum:
+            - invalid
+            - 'null'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
     GrantsListError:
       discriminator:
         propertyName: attr
