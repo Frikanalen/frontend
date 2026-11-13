@@ -36,8 +36,10 @@ test.describe("register form", () => {
   // every client-side render, so a form reached by SPA navigation used to look
   // like a brand new form to anything fingerprinting it by field id.
   test("keeps field ids stable when reached by client-side navigation", async ({ page }) => {
+    // Visible inputs only: Next keeps the last few pages in the document,
+    // hidden, so the login form we came through is still there.
     const ids = () =>
-      page.locator("form input").evaluateAll((els) => els.map((el) => el.id).sort());
+      page.locator("form input:visible").evaluateAll((els) => els.map((el) => el.id).sort());
 
     const onDirectLoad = await ids();
     expect(onDirectLoad).toEqual(["email", "firstName", "lastName", "password"]);

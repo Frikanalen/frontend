@@ -8,6 +8,9 @@ import { UserProfileForm } from "@/app/profile/edit/UserProfileForm";
 import { PasswordSection } from "@/app/profile/edit/PasswordSection";
 import { LoginMethodsSection } from "@/app/profile/edit/LoginMethodsSection";
 
+// Per-visitor: rendered on request, without a static shell of its own.
+export const instant = false;
+
 export const metadata: Metadata = {
   title: "Endre profil - Frikanalen",
 };

@@ -1,4 +1,6 @@
 import type { MetadataRoute } from "next";
+import { cacheLife } from "next/cache";
+import { connection } from "next/server";
 import { ssrOrganizationList } from "@/generated/ssr/organization/organization";
 import { ssrVideosList } from "@/generated/ssr/videos/videos";
 import type {
@@ -10,8 +12,6 @@ import type {
 const BASE_URL = "https://frikanalen.tv";
 const PAGE_SIZE = 500;
 
-export const revalidate = 3600;
-
 const staticPaths = [
   "",
   "/about",
@@ -21,15 +21,17 @@ const staticPaths = [
   "/about/statutes",
 ];
 
+// Each list is cached for an hour. A failed request throws, and a throw is
+// never cached, so a Django hiccup costs one sitemap rather than an hour of
+// them.
 async function getOrganizations(): Promise<Organization[]> {
+  "use cache";
+  cacheLife("hours");
   const organizations: Organization[] = [];
   let offset = 0;
 
   while (true) {
-    const response = await ssrOrganizationList(
-      { limit: PAGE_SIZE, offset, ordering: "id" },
-      { next: { revalidate } },
-    );
+    const response = await ssrOrganizationList({ limit: PAGE_SIZE, offset, ordering: "id" });
 
     if (response.status !== 200) {
       throw new Error(`Organization sitemap request failed with status ${response.status}`);
@@ -45,15 +47,12 @@ async function getOrganizations(): Promise<Organization[]> {
 }
 
 async function getVideoPage(offset: number): Promise<PaginatedVideoList> {
-  const response = await ssrVideosList(
-    {
-      limit: PAGE_SIZE,
-      offset,
-      ordering: "id",
-      publish_on_web: true,
-    },
-    { next: { revalidate } },
-  );
+  const response = await ssrVideosList({
+    limit: PAGE_SIZE,
+    offset,
+    ordering: "id",
+    publish_on_web: true,
+  });
 
   if (response.status !== 200) {
     throw new Error(`Video sitemap request failed with status ${response.status}`);
@@ -63,6 +62,8 @@ async function getVideoPage(offset: number): Promise<PaginatedVideoList> {
 }
 
 async function getVideos(): Promise<Video[]> {
+  "use cache";
+  cacheLife("hours");
   const firstPage = await getVideoPage(0);
   const videos = [...firstPage.results];
   const effectivePageSize = firstPage.results.length;
@@ -83,14 +84,13 @@ async function getVideos(): Promise<Video[]> {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  // Built on request rather than at build time, when Django isn't there to ask.
+  await connection();
   const entries: MetadataRoute.Sitemap = staticPaths.map((path) => ({
     url: `${BASE_URL}${path}`,
   }));
 
-  const [organizations, videos] = await Promise.allSettled([
-    getOrganizations(),
-    getVideos(),
-  ]);
+  const [organizations, videos] = await Promise.allSettled([getOrganizations(), getVideos()]);
 
   if (organizations.status === "fulfilled") {
     entries.push(

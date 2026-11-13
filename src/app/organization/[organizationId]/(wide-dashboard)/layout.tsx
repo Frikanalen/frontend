@@ -1,5 +1,8 @@
 import { ReactNode } from "react";
 
+// Per-visitor: rendered on request, without a static shell of its own.
+export const instant = false;
+
 // The working pages - the grants board and the grant editor - sit straight on
 // the canvas at the full page width, lined up with the channel bar above.
 // Their white blocks are the things being worked on.

@@ -3,7 +3,9 @@ import Link from "next/link";
 import { loadSource } from "../loadSource";
 import { SourceCheck } from "../SourceCheck";
 
-export const dynamic = "force-dynamic";
+// Per-visitor: rendered on request, without a static shell of its own.
+export const instant = false;
+
 export const metadata: Metadata = { title: "Sjekk signalet" };
 
 export default async function Page({

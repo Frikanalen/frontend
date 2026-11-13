@@ -5,7 +5,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-export const dynamic = "force-dynamic";
+// Per-visitor: rendered on request, without a static shell of its own.
+export const instant = false;
 
 export const metadata: Metadata = {
   title: "Forespørsler - Frikanalen",

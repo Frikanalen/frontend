@@ -7,7 +7,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { SlotPlanner } from "./SlotPlanner";
 
-export const dynamic = "force-dynamic";
+// Per-visitor: rendered on request, without a static shell of its own.
+export const instant = false;
 
 export const metadata: Metadata = {
   title: "Faste sendeflater - Frikanalen",

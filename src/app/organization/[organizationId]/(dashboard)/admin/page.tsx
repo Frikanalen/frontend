@@ -6,6 +6,9 @@ import { profileIsAdminOrMember } from "@/app/organization/[organizationId]/admi
 import { getUserOrNull } from "@/app/getUserOrNull";
 import { OrganizationParams, parseParamsOr404 } from "@/lib/routeParams";
 
+// Per-visitor: rendered on request, without a static shell of its own.
+export const instant = false;
+
 export default async function Page({ params }: { params: Promise<{ organizationId: string }> }) {
   const { organizationId } = await parseParamsOr404(OrganizationParams, params);
 

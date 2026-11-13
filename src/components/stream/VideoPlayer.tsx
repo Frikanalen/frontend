@@ -1,4 +1,9 @@
-import React, { MediaHTMLAttributes, ReactNode, useSyncExternalStore } from "react";
+import React, {
+  MediaHTMLAttributes,
+  ReactNode,
+  useLayoutEffect,
+  useSyncExternalStore,
+} from "react";
 import "@vidstack/react/player/styles/default/theme.css";
 import "@vidstack/react/player/styles/default/layouts/video.css";
 import {
@@ -55,6 +60,16 @@ export const hlsFirst = (src: string | PlayerSource | PlayerSource[]) =>
   Array.isArray(src)
     ? [...src.filter(isHLSSrc), ...src.filter((source) => !isHLSSrc(source))]
     : src;
+
+// Next keeps the last few pages in the document, hidden, rather than
+// unmounting them (React Activity), so a player left behind by a navigation
+// would go on playing out of sight. Hiding runs layout-effect cleanups, so
+// pause there; coming back shows it paused where it was.
+const PauseWhenHidden = () => {
+  const remote = useMediaRemote();
+  useLayoutEffect(() => () => remote.pause(), [remote]);
+  return null;
+};
 
 // With `load="play"` vidstack only renders its load layout — a small centre play button — until
 // playback starts, and its click-to-play gestures don't exist yet. Cover the whole poster so any
@@ -182,6 +197,7 @@ export const VideoPlayer = ({
       )}
       <UnsupportedVideoMessage mediaPending={mediaPending} />
       <StartOnClick />
+      <PauseWhenHidden />
       {overlay && <BeforePlayback>{overlay}</BeforePlayback>}
       {/* vidstack's first client render puts the sources in the <video> as <source> children
           (meant for server rendering). Without preload="none" on the element itself the

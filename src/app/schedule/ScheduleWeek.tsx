@@ -4,7 +4,6 @@ import { addDays, format, startOfWeek } from "date-fns";
 import { nb } from "date-fns/locale/nb";
 import { TZDate } from "@date-fns/tz/date";
 import { OSLO_TIME_ZONE } from "@/lib/osloTime";
-import { formatOsloDateISO } from "@/lib/formatOsloDateISO";
 
 /**
  * The week around the day on show, one link per day. A schedule is browsed a
@@ -15,14 +14,16 @@ export const ScheduleWeek = ({
   year,
   month,
   date,
+  today,
 }: {
   year: string;
   month: string;
   date: string;
+  /** Today in Oslo, YYYY-MM-DD; passed in so the page decides how fresh it is. */
+  today: string;
 }) => {
   const selected = new TZDate(parseInt(year), parseInt(month) - 1, parseInt(date), OSLO_TIME_ZONE);
   const monday = startOfWeek(selected, { weekStartsOn: 1 });
-  const today = formatOsloDateISO(new Date());
 
   return (
     <nav aria-label="Ukedager" className="overflow-x-auto">

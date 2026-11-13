@@ -13,6 +13,9 @@ import { ProgramImageManager } from "@/app/video/[videoId]/edit/ProgramImageMana
 import { ssrSeriesList } from "@/generated/ssr/series/series";
 import { VideoParams, parseParamsOr404 } from "@/lib/routeParams";
 
+// Per-visitor: rendered on request, without a static shell of its own.
+export const instant = false;
+
 export default async function Page({ params }: VideoPageProps) {
   const { videoId } = await parseParamsOr404(VideoParams, params);
   const headers = await getCookiesFromRequest();

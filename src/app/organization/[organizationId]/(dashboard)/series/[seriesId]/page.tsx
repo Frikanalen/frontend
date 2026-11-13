@@ -9,6 +9,9 @@ import Link from "next/link";
 import { forbidden, notFound, redirect } from "next/navigation";
 import { OrganizationSeriesParams, parseParamsOr404 } from "@/lib/routeParams";
 
+// Per-visitor: rendered on request, without a static shell of its own.
+export const instant = false;
+
 export default async function Page({
   params,
 }: {

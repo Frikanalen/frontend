@@ -7,7 +7,8 @@ import { OrganizationParams, parseParamsOr404 } from "@/lib/routeParams";
 import Link from "next/link";
 import { RequestPage } from "@/app/requests/RequestPage";
 
-export const dynamic = "force-dynamic";
+// Per-visitor: rendered on request, without a static shell of its own.
+export const instant = false;
 
 export default async function Page({
   params,

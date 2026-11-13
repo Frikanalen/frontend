@@ -50,7 +50,12 @@ vi.mock("@heroui/react", () => {
     ItemIndicator: () => null,
   });
   const MockSelect = Object.assign(
-    ({ children, value, onChange, onBlur }: {
+    ({
+      children,
+      value,
+      onChange,
+      onBlur,
+    }: {
       children: ReactNode;
       value: string;
       onChange: (_key: string) => void;
