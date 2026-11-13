@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { cacheLife, cacheTag } from "next/cache";
 import { ssrVideosList } from "@/generated/ssr/videos/videos";
+import { cacheableResponse } from "@/lib/cacheableResponse";
 import { VideoList } from "@/app/video/VideoList";
 import { ArchivePagination } from "@/app/video/ArchivePagination";
 import {
@@ -11,6 +13,21 @@ import {
   archiveSearchUrl,
   resolveSort,
 } from "@/app/video/archiveSearchUrl";
+
+/**
+ * One archive search, shared by every visitor asking the same thing for a
+ * minute. Keyed by its parameters, so the plain archive and the common
+ * filters are mostly served from memory. The response comes back as is, a
+ * 400 included, since that is an answer; only a failure to reach the API
+ * throws, and that isn't cached.
+ */
+const searchVideos = async (params: Parameters<typeof ssrVideosList>[0]) => {
+  "use cache";
+  cacheLife("minutes");
+  cacheTag("videos");
+
+  return cacheableResponse(await ssrVideosList(params));
+};
 
 const RESULTS_HEADING_ID = "archive-results";
 
@@ -48,26 +65,23 @@ export const SearchResults = async ({
   // the whole page away: the search field and the filters above stay on
   // screen, holding what the visitor asked for, so retrying costs them a
   // keystroke instead of a rewrite.
-  const response = await ssrVideosList(
-    {
-      // Omitted rather than sent empty: `q=` is a search for nothing rather
-      // than an absent search, and it would cost the relevance ordering that
-      // a real query is ranked by.
-      ...(query ? { q: query } : {}),
-      ...(scope ? { organization: scope.id } : {}),
-      // A repeatable parameter, and one the API validates against the real
-      // categories - so an invented name comes back 400 rather than empty.
-      ...(category ? { categories__name__icontains: [category] } : {}),
-      ...(length ? ARCHIVE_LENGTHS[length].params : {}),
-      // Absent for relevance, which is the API's own ranking of a free-text
-      // search and has no field to sort by.
-      ...(ARCHIVE_SORTS[sort].ordering ? { ordering: ARCHIVE_SORTS[sort].ordering } : {}),
-      publish_on_web: true,
-      limit: ARCHIVE_PAGE_SIZE,
-      offset: (page - 1) * ARCHIVE_PAGE_SIZE,
-    },
-    { cache: "no-store" },
-  ).catch((error: unknown) => {
+  const response = await searchVideos({
+    // Omitted rather than sent empty: `q=` is a search for nothing rather
+    // than an absent search, and it would cost the relevance ordering that
+    // a real query is ranked by.
+    ...(query ? { q: query } : {}),
+    ...(scope ? { organization: scope.id } : {}),
+    // A repeatable parameter, and one the API validates against the real
+    // categories - so an invented name comes back 400 rather than empty.
+    ...(category ? { categories__name__icontains: [category] } : {}),
+    ...(length ? ARCHIVE_LENGTHS[length].params : {}),
+    // Absent for relevance, which is the API's own ranking of a free-text
+    // search and has no field to sort by.
+    ...(ARCHIVE_SORTS[sort].ordering ? { ordering: ARCHIVE_SORTS[sort].ordering } : {}),
+    publish_on_web: true,
+    limit: ARCHIVE_PAGE_SIZE,
+    offset: (page - 1) * ARCHIVE_PAGE_SIZE,
+  }).catch((error: unknown) => {
     console.error(`Archive search for "${query}" could not reach the API:`, error);
     return null;
   });

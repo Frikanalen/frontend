@@ -7,6 +7,10 @@ const nextConfig: NextConfig = {
   distDir: process.env.PLAYWRIGHT_TEST ? ".next-playwright" : ".next",
   output: "standalone",
   staticPageGenerationTimeout: 180,
+  // Public pages share one static shell and cache what they ask Django for
+  // ("use cache"); anything per visitor streams in behind <Suspense>.
+  cacheComponents: true,
+  partialPrefetching: true,
   experimental: {
     authInterrupts: true,
   },

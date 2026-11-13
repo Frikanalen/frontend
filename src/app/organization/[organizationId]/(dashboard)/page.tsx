@@ -16,6 +16,9 @@ import { ssrOrganizationRetrieve } from "@/generated/ssr/organization/organizati
 import { OrganizationParams, parseParamsOr404 } from "@/lib/routeParams";
 import { SuspendedNotice } from "@/components/suspended/SuspendedNotice";
 
+// Per-visitor: rendered on request, without a static shell of its own.
+export const instant = false;
+
 type OrgPageProps = { params: Promise<{ organizationId: string }> };
 export async function generateMetadata({ params }: OrgPageProps): Promise<Metadata> {
   const { organizationId } = await parseParamsOr404(OrganizationParams, params);

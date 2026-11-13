@@ -1,6 +1,25 @@
+import { cache } from "react";
+import { cacheLife, cacheTag } from "next/cache";
+import { connection } from "next/server";
 import { ScheduleitemRead } from "@/generated/frikanalenDjangoAPI.schemas";
 import { ssrScheduleitemsList } from "@/generated/ssr/scheduleitems/scheduleitems";
 import { formatOsloDateISO } from "@/lib/formatOsloDateISO";
+
+/**
+ * One day's schedule with the items on either side, shared by every visitor
+ * for a minute. Throws rather than returning an empty day, because a throw is
+ * never cached: a backend hiccup then costs one page view, not a minute of
+ * them.
+ */
+const fetchScheduleAround = async (date: string): Promise<ScheduleitemRead[]> => {
+  "use cache";
+  cacheLife("minutes");
+  cacheTag("schedule");
+
+  const { data, status } = await ssrScheduleitemsList({ date, surrounding: true });
+  if (status !== 200) throw new Error(`the API answered ${status}`);
+  return data.results ?? [];
+};
 
 /**
  * Today's schedule for the front page's now/next display, or an empty one if it
@@ -10,22 +29,17 @@ import { formatOsloDateISO } from "@/lib/formatOsloDateISO";
  * context, so a backend that is down, slow or unhappy costs us the listing
  * rather than the whole page. `surrounding` pulls in the items on either side of
  * the day, which is what keeps "next" populated late in the evening.
+ *
+ * "Today" is the request's, not the build's, hence connection(): whatever
+ * awaits this streams in behind <Suspense>. Shared within a render, since the
+ * front page shows the schedule in two places.
  */
-export const getScheduleForToday = async (): Promise<ScheduleitemRead[]> => {
+export const getScheduleForToday = cache(async (): Promise<ScheduleitemRead[]> => {
+  await connection();
   try {
-    const { data, status } = await ssrScheduleitemsList(
-      { date: formatOsloDateISO(new Date()), surrounding: true },
-      { cache: "no-store" },
-    );
-
-    if (status !== 200) {
-      console.error(`Could not load the front page schedule: the API answered ${status}`);
-      return [];
-    }
-
-    return data.results ?? [];
+    return await fetchScheduleAround(formatOsloDateISO(new Date()));
   } catch (error) {
     console.error("Could not load the front page schedule", error);
     return [];
   }
-};
+});

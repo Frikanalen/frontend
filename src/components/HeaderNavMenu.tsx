@@ -6,7 +6,7 @@ import Link from "next/link";
 import cx from "classnames";
 import { usePathname } from "next/navigation";
 import { User } from "@/generated/frikanalenDjangoAPI.schemas";
-import { useState } from "react";
+import { use, useState } from "react";
 import { StudioButton } from "@/components/StudioButton";
 
 const SECTIONS = [
@@ -17,13 +17,45 @@ const SECTIONS = [
   { href: "/about/join", label: "Bli med" },
 ];
 
-export const HeaderNavMenu = ({ className, user }: { className?: string; user: User | null }) => {
+/**
+ * The main menu, with the visitor's account on the right. `user` is a
+ * promise because it is the per-visitor part of an otherwise cached page:
+ * the layout renders HeaderNavMenuPlaceholder in the static shell and this
+ * replaces it once the request has said who is asking.
+ */
+export const HeaderNavMenu = ({
+  className,
+  user,
+}: {
+  className?: string;
+  user: Promise<User | null>;
+}) => <HeaderNavMenuView className={className} user={use(user)} path={usePathname()} />;
+
+/**
+ * The menu as the static shell has it: no section marked as current (the
+ * shell is shared by every URL under a dynamic route) and the account area
+ * held empty, so a signed-in member never sees "Logg inn" flash past.
+ */
+export const HeaderNavMenuPlaceholder = ({ className }: { className?: string }) => (
+  <HeaderNavMenuView className={className} user={undefined} path={null} />
+);
+
+const HeaderNavMenuView = ({
+  className,
+  user,
+  path,
+}: {
+  className?: string;
+  /** undefined while not yet known */
+  user: User | null | undefined;
+  path: string | null;
+}) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const path = usePathname();
-  const activeHref = SECTIONS.filter(({ href, activeRegexp }) =>
-    activeRegexp ? activeRegexp.test(path) : href === path,
+  const activeHref = SECTIONS.filter(
+    ({ href, activeRegexp }) =>
+      path !== null && (activeRegexp ? activeRegexp.test(path) : href === path),
   ).sort((a, b) => b.href.length - a.href.length)[0]?.href;
-  const studio = user !== null && user.memberOf.length + user.editorOf.length > 0;
+  const studio = !!user && user.memberOf.length + user.editorOf.length > 0;
   const sections = SECTIONS.map((section) => ({
     ...section,
     isActive: section.href === activeHref,
@@ -43,7 +75,9 @@ export const HeaderNavMenu = ({ className, user }: { className?: string; user: U
         </ul>
 
         <div className="ml-auto flex items-center gap-2">
-          {user ? (
+          {user === undefined ? (
+            <span aria-hidden className="block h-8 w-20" />
+          ) : user ? (
             <>
               <StudioButton user={user} />
               <Link

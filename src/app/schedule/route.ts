@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
-
-export const runtime = "edge";
+import { connection } from "next/server";
 
 const formatter = new Intl.DateTimeFormat("en-CA", {
   timeZone: "Europe/Oslo",
@@ -10,7 +9,9 @@ const formatter = new Intl.DateTimeFormat("en-CA", {
 });
 
 // Redirect to today's schedule, in [year]/[month]/[date]/page.tsx.
-export function GET() {
+export async function GET() {
+  // Today, as of this request, not as of the build.
+  await connection();
   const [year, month, day] = formatter.format(new Date()).split("-");
   redirect(`/schedule/${year}/${month}/${day}`);
 }

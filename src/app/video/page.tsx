@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { Suspense, cache } from "react";
+import { Suspense } from "react";
+import { cacheLife, cacheTag } from "next/cache";
 import { ArchiveSearch } from "@/app/video/ArchiveSearch";
 import { ArchiveFilters } from "@/app/video/ArchiveFilters";
 import { ActiveFilters } from "@/app/video/ActiveFilters";
@@ -15,16 +16,18 @@ type ArchivePageProps = {
 
 /**
  * Resolves `?organization=` to something showable, or to null if it names no
- * organization. Cached because the metadata and the page both need the name
- * and would otherwise ask for it twice on every request.
+ * organization. Cached because the metadata and the page both need the name,
+ * and an organization's name hardly ever changes.
  */
-const loadScope = cache(async (organization: number): Promise<ArchiveScope | null> => {
-  const { data, status } = await ssrOrganizationRetrieve(organization, {
-    cache: "no-store",
-  });
+const loadScope = async (organization: number): Promise<ArchiveScope | null> => {
+  "use cache";
+  cacheLife("hours");
+  cacheTag(`organization:${organization}`);
+
+  const { data, status } = await ssrOrganizationRetrieve(organization);
 
   return status === 200 ? { id: data.id, name: data.name } : null;
-});
+};
 
 export async function generateMetadata({ searchParams }: ArchivePageProps): Promise<Metadata> {
   const state = archiveStateFrom(await searchParams);
@@ -64,7 +67,23 @@ export async function generateMetadata({ searchParams }: ArchivePageProps): Prom
  * bundle arrives. The search box is the one exception, and it degrades to a
  * plain GET.
  */
-export default async function ArchivePage({ searchParams }: ArchivePageProps) {
+export default function ArchivePage({ searchParams }: ArchivePageProps) {
+  // Everything here follows the query string, which is only known per
+  // request; the searches themselves are cached (SearchResults).
+  return (
+    <Suspense
+      fallback={
+        <main className="w-full max-w-7xl grow px-4 pt-10 sm:px-6">
+          <ResultsSkeleton />
+        </main>
+      }
+    >
+      <Archive searchParams={searchParams} />
+    </Suspense>
+  );
+}
+
+const Archive = async ({ searchParams }: ArchivePageProps) => {
   const params = await searchParams;
   const state = archiveStateFrom(params);
   const scope = state.organization === undefined ? null : await loadScope(state.organization);
@@ -153,4 +172,4 @@ export default async function ArchivePage({ searchParams }: ArchivePageProps) {
       </div>
     </main>
   );
-}
+};

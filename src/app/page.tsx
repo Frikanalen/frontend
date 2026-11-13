@@ -6,30 +6,52 @@ import { FromArchive } from "@/app/frontpage/FromArchive";
 import { ssrVideosList } from "@/generated/ssr/videos/videos";
 import { Video } from "@/generated/frikanalenDjangoAPI.schemas";
 import Link from "next/link";
-
-export const dynamic = "force-dynamic"; // ensure Date() is evaluated at request time
+import { Suspense } from "react";
+import { cacheLife, cacheTag } from "next/cache";
+import { connection } from "next/server";
 
 /**
- * The newest programmes published to the web, or none if the archive can't be
- * had. Like the schedule, it is context around the live stream: a backend that
- * is down costs the page this section, not the page.
+ * The newest programmes published to the web, shared by every visitor for a
+ * minute. Throws on a bad answer so that the failure isn't what gets cached.
  */
-const getNewestVideos = async (): Promise<Video[]> => {
-  try {
-    const { data, status } = await ssrVideosList(
-      { publish_on_web: true, ordering: "-created_time", limit: 4 },
-      { cache: "no-store" },
-    );
-    return status === 200 ? (data.results ?? []) : [];
-  } catch (error) {
-    console.error("Could not load the front page archive", error);
-    return [];
-  }
+const fetchNewestVideos = async (): Promise<Video[]> => {
+  "use cache";
+  cacheLife("minutes");
+  cacheTag("videos");
+
+  const { data, status } = await ssrVideosList({
+    publish_on_web: true,
+    ordering: "-created_time",
+    limit: 4,
+  });
+  if (status !== 200) throw new Error(`the API answered ${status}`);
+  return data.results ?? [];
 };
 
-export default async function Home() {
-  const [schedule, newest] = await Promise.all([getScheduleForToday(), getNewestVideos()]);
+/**
+ * The newest programmes, or nothing if the archive can't be had. Like the
+ * schedule, it is context around the live stream: a backend that is down
+ * costs the page this section, not the page. Asked at request time (Django
+ * isn't there during the build), but from the cache above.
+ */
+const NewestVideos = async () => {
+  await connection();
+  const videos = await fetchNewestVideos().catch((error: unknown) => {
+    console.error("Could not load the front page archive", error);
+    return [];
+  });
+  return <FromArchive videos={videos} />;
+};
 
+const NowNext = async () => <NowNextPanel schedule={await getScheduleForToday()} />;
+const Tonight = async () => <TonightStrip schedule={await getScheduleForToday()} />;
+
+/**
+ * The front page. Everything but the schedule and the newest videos is the
+ * same for everyone and always, so it is served as a static shell at once;
+ * those two stream in behind it from a cache shared by all visitors.
+ */
+export default function Home() {
   return (
     <main className="w-full grow">
       {/* The stage: the channel itself, on the same dark surface as the bar
@@ -52,7 +74,11 @@ export default async function Home() {
           </aside>
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(18rem,1fr)]">
             <Live />
-            <NowNextPanel schedule={schedule} />
+            {/* Holds the column's height so the player doesn't move when
+                the schedule arrives. */}
+            <Suspense fallback={<div className="min-h-64" />}>
+              <NowNext />
+            </Suspense>
           </div>
         </div>
       </div>
@@ -76,8 +102,12 @@ export default async function Home() {
           </div>
         </section>
 
-        <TonightStrip schedule={schedule} />
-        <FromArchive videos={newest} />
+        <Suspense fallback={null}>
+          <Tonight />
+        </Suspense>
+        <Suspense fallback={null}>
+          <NewestVideos />
+        </Suspense>
       </div>
 
       <section

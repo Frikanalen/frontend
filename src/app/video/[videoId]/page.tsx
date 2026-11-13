@@ -1,8 +1,10 @@
 import { VideoCard } from "@/app/video/[videoId]/VideoCard";
-import { getCookiesFromRequest } from "@/lib/getCookiesFromRequest";
 import { notFound } from "next/navigation";
 import { profileIsAdminOrMember } from "@/app/organization/[organizationId]/admin/profileIsAdminOrMember";
-import { getUserOrNull } from "@/app/getUserOrNull";
+import { getCurrentUser } from "@/lib/getCurrentUser";
+import { cacheLife, cacheTag } from "next/cache";
+import { Suspense } from "react";
+import { cacheableResponse } from "@/lib/cacheableResponse";
 import { VideoCardForAdmin } from "@/app/video/[videoId]/VideoCardForAdmin";
 import { ssrVideosRetrieve } from "@/generated/ssr/videos/videos";
 import { Metadata } from "next";
@@ -10,7 +12,21 @@ import { VideoParams, parseParamsOr404 } from "@/lib/routeParams";
 import { videoStartTimeFrom } from "@/app/video/[videoId]/videoStartTime";
 import { SuspendedNotice, suspendedOrganizationFrom } from "@/components/suspended/SuspendedNotice";
 
-export const revalidate = 60;
+/**
+ * A video as a visitor sees it, shared by every visitor and by the page and
+ * its metadata for a minute. Asked anonymously, since the video API answers
+ * everyone alike; whether to show a member the processing view is decided per
+ * request below. Saving in the editor expires it at once.
+ * Statuses come back as answers, so a missing video is cached as missing; a
+ * failure to reach the API throws and isn't cached.
+ */
+const loadVideo = async (videoId: number) => {
+  "use cache";
+  cacheLife("minutes");
+  cacheTag(`video:${videoId}`);
+
+  return cacheableResponse(await ssrVideosRetrieve(videoId));
+};
 
 export interface VideoPageParams {
   videoId: string;
@@ -24,10 +40,7 @@ export type VideoPageProps = {
 export async function generateMetadata({ params }: VideoPageProps): Promise<Metadata> {
   const { videoId } = await parseParamsOr404(VideoParams, params);
 
-  const { data: video, status } = await ssrVideosRetrieve(videoId, {
-    cache: "no-store",
-    next: { tags: [`video:${videoId}`] },
-  });
+  const { data: video, status } = await loadVideo(videoId);
   if (status === 403) {
     const suspended = suspendedOrganizationFrom(video);
     if (suspended) return { title: `${suspended.name} er suspendert - Frikanalen` };
@@ -53,16 +66,22 @@ export async function generateMetadata({ params }: VideoPageProps): Promise<Meta
   };
 }
 
-export default async function VideoPage({ params, searchParams }: VideoPageProps) {
+export default function VideoPage(props: VideoPageProps) {
+  // Which video, the ?t= offset and who is asking are all per request, so
+  // the page streams in behind the layout's static shell, from the cache
+  // above. A visitor without a session costs no call to Django at all.
+  return (
+    <Suspense>
+      <Video {...props} />
+    </Suspense>
+  );
+}
+
+const Video = async ({ params, searchParams }: VideoPageProps) => {
   const { videoId } = await parseParamsOr404(VideoParams, params);
   const startTime = videoStartTimeFrom((await searchParams).t);
-  const headers = await getCookiesFromRequest();
 
-  const { data: video, status } = await ssrVideosRetrieve(videoId, {
-    headers,
-    cache: "no-cache",
-    next: { tags: [`video:${videoId}`] },
-  });
+  const [{ data: video, status }, user] = await Promise.all([loadVideo(videoId), getCurrentUser()]);
 
   if (status === 404) return notFound();
   if (status === 403) {
@@ -79,7 +98,6 @@ export default async function VideoPage({ params, searchParams }: VideoPageProps
     throw new Error(
       `Unexpected status code ${status} when fetching video ${videoId} from ssrVideosRetrieve`,
     );
-  const user = await getUserOrNull(headers);
   const mayEdit = profileIsAdminOrMember(video.organization.id, user);
 
   return mayEdit ? (
@@ -87,4 +105,4 @@ export default async function VideoPage({ params, searchParams }: VideoPageProps
   ) : (
     <VideoCard video={video} startTime={startTime} />
   );
-}
+};

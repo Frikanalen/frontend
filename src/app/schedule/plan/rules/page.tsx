@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 
+// Per-visitor: rendered on request, without a static shell of its own.
+export const instant = false;
+
 export const metadata: Metadata = {
   title: "Slik virker sendetid",
   description: "Hvordan organisasjoner får sendetid på Frikanalen og setter opp hva som sendes.",

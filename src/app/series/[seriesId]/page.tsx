@@ -6,12 +6,33 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { SeriesParams, parseParamsOr404 } from "@/lib/routeParams";
+import { Suspense } from "react";
+import { cacheLife, cacheTag } from "next/cache";
+import { cacheableResponse } from "@/lib/cacheableResponse";
 
 type SeriesPageProps = { params: Promise<{ seriesId: string }> };
 
+/**
+ * A series and its published episodes, shared by every visitor for a minute
+ * and by the page and its metadata. Statuses are returned rather than thrown
+ * so a missing series is cached as missing; a network failure throws, and a
+ * throw is never cached.
+ */
+const loadSeries = async (seriesId: number) => {
+  "use cache";
+  cacheLife("minutes");
+  cacheTag(`series:${seriesId}`, "videos");
+
+  const [series, videos] = await Promise.all([
+    ssrSeriesRetrieve(seriesId),
+    ssrVideosList({ series: seriesId, publish_on_web: true, ordering: "id", limit: 100 }),
+  ]);
+  return { series: cacheableResponse(series), videos: cacheableResponse(videos) };
+};
+
 export async function generateMetadata({ params }: SeriesPageProps): Promise<Metadata> {
   const { seriesId } = await parseParamsOr404(SeriesParams, params);
-  const response = await ssrSeriesRetrieve(seriesId, { cache: "no-store" });
+  const { series: response } = await loadSeries(seriesId);
   if (response.status !== 200 || !response.data.organization.fkmember)
     return { title: "Frikanalen" };
   return {
@@ -25,15 +46,17 @@ export async function generateMetadata({ params }: SeriesPageProps): Promise<Met
   };
 }
 
-export default async function Page({ params }: SeriesPageProps) {
+export default function Page({ params }: SeriesPageProps) {
+  return (
+    <Suspense>
+      <Series params={params} />
+    </Suspense>
+  );
+}
+
+const Series = async ({ params }: SeriesPageProps) => {
   const { seriesId } = await parseParamsOr404(SeriesParams, params);
-  const [seriesResponse, videosResponse] = await Promise.all([
-    ssrSeriesRetrieve(seriesId, { cache: "no-store" }),
-    ssrVideosList(
-      { series: seriesId, publish_on_web: true, ordering: "id", limit: 100 },
-      { cache: "no-store" },
-    ),
-  ]);
+  const { series: seriesResponse, videos: videosResponse } = await loadSeries(seriesId);
 
   if (seriesResponse.status === 404) return notFound();
   if (seriesResponse.status !== 200)
@@ -82,4 +105,4 @@ export default async function Page({ params }: SeriesPageProps) {
       </section>
     </article>
   );
-}
+};

@@ -9,8 +9,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { forbidden, notFound, redirect } from "next/navigation";
 
+// Per-visitor: rendered on request, without a static shell of its own.
+export const instant = false;
+
 export const metadata: Metadata = { title: "Kom i gang - Frikanalen" };
-export const dynamic = "force-dynamic";
 
 export default async function Page({ params }: { params: Promise<{ organizationId: string }> }) {
   const { organizationId } = await parseParamsOr404(OrganizationParams, params);

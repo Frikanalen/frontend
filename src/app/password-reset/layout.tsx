@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
+// Per-visitor: rendered on request, without a static shell of its own.
+export const instant = false;
+
 export const metadata: Metadata = {
   title: "Nytt passord",
   // The reset link carries its token in the path; keep it out of the

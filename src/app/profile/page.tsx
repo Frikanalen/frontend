@@ -8,6 +8,9 @@ import { ActionLink } from "@/app/profile/ActionLink";
 import { IdentityNotice } from "@/app/profile/IdentityNotice";
 import { NoOrganizations } from "@/app/profile/NoOrganizations";
 
+// Per-visitor: rendered on request, without a static shell of its own.
+export const instant = false;
+
 export const metadata: Metadata = {
   title: "Min side - Frikanalen",
 };

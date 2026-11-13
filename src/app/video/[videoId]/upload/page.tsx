@@ -8,6 +8,9 @@ import { PageShell, PageShellBody } from "@/components/layout/PageShell";
 import { getUserOrNull } from "@/app/getUserOrNull";
 import { FileUpload } from "@/components/upload/FileUpload";
 
+// Per-visitor: rendered on request, without a static shell of its own.
+export const instant = false;
+
 export default async function Page({ params }: { params: Promise<{ videoId: string }> }) {
   const { videoId } = await parseParamsOr404(VideoParams, params);
   const headers = await getCookiesFromRequest();

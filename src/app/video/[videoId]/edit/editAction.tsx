@@ -1,11 +1,11 @@
 "use server";
 
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidateTag, updateTag } from "next/cache";
 
 export const editAction = async (videoId: number) => {
-  // Next 16 requires an explicit cacheLife profile. "max" keeps the previous
-  // stale-while-revalidate behaviour; switch to updateTag() if the editor
-  // should see their change immediately instead.
-  revalidateTag(`video:${videoId}`, "max");
-  revalidatePath(`/video/${videoId}`);
+  // The editor should see their change on the video page at once, so its
+  // cached copy is expired rather than refreshed in the background. Lists the
+  // video appears in (archive, front page, series) catch up behind it.
+  updateTag(`video:${videoId}`);
+  revalidateTag("videos", "max");
 };

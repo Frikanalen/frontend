@@ -5,7 +5,8 @@ import { getCookiesFromRequest } from "@/lib/getCookiesFromRequest";
 import { OrganizationGrantParams, parseParamsOr404 } from "@/lib/routeParams";
 import { forbidden, redirect } from "next/navigation";
 
-export const dynamic = "force-dynamic";
+// Per-visitor: rendered on request, without a static shell of its own.
+export const instant = false;
 
 export default async function Page({
   params,

@@ -3,6 +3,9 @@ import { ScheduleitemRead } from "@/generated/frikanalenDjangoAPI.schemas";
 
 const { listSchedule } = vi.hoisted(() => ({ listSchedule: vi.fn() }));
 
+vi.mock("next/server", () => ({ connection: async () => {} }));
+vi.mock("next/cache", () => ({ cacheLife: () => {}, cacheTag: () => {} }));
+
 vi.mock("@/generated/ssr/scheduleitems/scheduleitems", () => ({
   ssrScheduleitemsList: listSchedule,
 }));
@@ -41,10 +44,7 @@ describe("getScheduleForToday", () => {
 
     await getScheduleForToday();
 
-    expect(listSchedule).toHaveBeenCalledWith(
-      { date: "2026-08-22", surrounding: true },
-      expect.anything(),
-    );
+    expect(listSchedule).toHaveBeenCalledWith({ date: "2026-08-22", surrounding: true });
   });
 
   it("gives up quietly when the API answers with an error", async () => {

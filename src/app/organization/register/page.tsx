@@ -5,6 +5,9 @@ import { getCookiesFromRequest } from "@/lib/getCookiesFromRequest";
 import { getUserOrNull } from "@/app/getUserOrNull";
 import Link from "next/link";
 
+// Per-visitor: rendered on request, without a static shell of its own.
+export const instant = false;
+
 export default async function Page() {
   const headers = await getCookiesFromRequest();
   const user = await getUserOrNull(headers);

@@ -6,6 +6,9 @@ import { PageShell, PageShellBody } from "@/components/layout/PageShell";
 import { seriesList } from "@/generated/series/series";
 import { OrganizationParams, parseParamsOr404 } from "@/lib/routeParams";
 
+// Per-visitor: rendered on request, without a static shell of its own.
+export const instant = false;
+
 export default async function Page({ params }: { params: Promise<{ organizationId: string }> }) {
   const { data: categories } = await categoriesList();
   const { organizationId } = await parseParamsOr404(OrganizationParams, params);

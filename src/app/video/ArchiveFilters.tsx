@@ -1,4 +1,5 @@
 import { GoChevronDown, GoFilter } from "react-icons/go";
+import { cacheLife, cacheTag } from "next/cache";
 import { ssrCategoriesList } from "@/generated/ssr/categories/categories";
 import { ArchiveCategory, ArchiveFacets } from "@/app/video/ArchiveFacets";
 import { ArchiveState, resolveSort } from "@/app/video/archiveSearchUrl";
@@ -9,23 +10,27 @@ import { ArchiveState, resolveSort } from "@/app/video/archiveSearchUrl";
  */
 const CATEGORY_LIMIT = 100;
 
-const loadCategories = async (): Promise<ArchiveCategory[]> => {
-  // A missing category list costs the reader one facet, not the page: the
-  // search box and the other two facets still work, so the group simply isn't
-  // drawn.
-  const response = await ssrCategoriesList(
-    { limit: CATEGORY_LIMIT },
-    { next: { revalidate: 3600 } },
-  ).catch((error: unknown) => {
-    console.error("Archive categories could not be fetched:", error);
-    return null;
-  });
+/** Shared by every visitor for an hour; a failure throws and isn't cached. */
+const fetchCategories = async (): Promise<ArchiveCategory[]> => {
+  "use cache";
+  cacheLife("hours");
+  cacheTag("categories");
 
-  if (response?.status !== 200) return [];
+  const response = await ssrCategoriesList({ limit: CATEGORY_LIMIT });
+  if (response.status !== 200) throw new Error(`the API answered ${response.status}`);
 
   // An empty category leads nowhere, so it isn't offered.
   return response.data.results.filter((category) => category.videocount > 0);
 };
+
+const loadCategories = async (): Promise<ArchiveCategory[]> =>
+  // A missing category list costs the reader one facet, not the page: the
+  // search box and the other two facets still work, so the group simply isn't
+  // drawn.
+  fetchCategories().catch((error: unknown) => {
+    console.error("Archive categories could not be fetched:", error);
+    return [];
+  });
 
 /**
  * The archive's filter rail: a column beside the results on a desktop, and a

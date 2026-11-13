@@ -5,6 +5,9 @@ import { profileIsAdminOrMember } from "@/app/organization/[organizationId]/admi
 import { ssrOrganizationRetrieve } from "@/generated/ssr/organization/organization";
 import { StudioNav } from "@/app/organization/[organizationId]/StudioNav";
 
+// Per-visitor: rendered on request, without a static shell of its own.
+export const instant = false;
+
 /**
  * Everything under an organisation. Its members get the studio bar above the
  * page: one fixed place for the tools, so that Sendetid, Direktesending and
