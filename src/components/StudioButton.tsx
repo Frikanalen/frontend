@@ -4,9 +4,7 @@ import type { User } from "@/generated/frikanalenDjangoAPI.schemas";
 import cx from "classnames";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Button, Menu, MenuItem, MenuTrigger, Popover, Separator } from "react-aria-components";
-
-const REGISTER = "/organization/register";
+import { Button, Menu, MenuItem, MenuTrigger, Popover } from "react-aria-components";
 
 /**
  * The way into the member tools, from anywhere on the site. Most users
@@ -68,13 +66,6 @@ export const StudioButton = ({ user }: { user: Pick<User, "memberOf" | "editorOf
               </span>
             </MenuItem>
           ))}
-          <Separator className="my-1 border-t border-default-200" />
-          <MenuItem
-            className="cursor-pointer px-4 py-2 text-sm text-default-700 outline-none data-[focused]:bg-default-100"
-            id={REGISTER}
-          >
-            Registrer en organisasjon til
-          </MenuItem>
         </Menu>
       </Popover>
     </MenuTrigger>
