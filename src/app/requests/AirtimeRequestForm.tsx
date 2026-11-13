@@ -6,15 +6,15 @@ import { formatApiError } from "@/lib/formatApiError";
 import { OSLO_TIME_ZONE } from "@/lib/osloTime";
 import { TZDate } from "@date-fns/tz/date";
 import { Button } from "@heroui/react";
+import { DayField } from "@/components/time/DayField";
+import { TimeRange } from "@/components/time/TimeRange";
 import cx from "classnames";
 import { useState, type ReactNode } from "react";
 import {
   WEEKDAYS,
   durationPayload,
-  formatLength,
   formatTime,
   osloToday,
-  parseTime,
   type Shape,
 } from "@/app/schedule/plan/slots/slots";
 import { useRefreshRequests } from "./useRequests";
@@ -139,7 +139,7 @@ export const AirtimeRequestForm = ({
         <legend className="sr-only">Hvor ofte</legend>
         {(
           [
-            ["weekly", "Hver uke", "En fast sendeflate"],
+            ["weekly", "Ukentlig", "En fast sendeflate"],
             ["once", "Én gang", "For eksempel en direktesending"],
           ] as const
         ).map(([value, label, hint]) => (
@@ -182,54 +182,25 @@ export const AirtimeRequestForm = ({
           </select>
         </Field>
       ) : (
-        <Field label="Dato">
-          <input
-            className={fieldClass}
-            min={tomorrow()}
-            required
-            type="date"
-            value={date}
-            onChange={(event) => {
-              setDate(event.target.value);
-              setSent(false);
-              if (event.target.value) update({ days: [weekdayOf(event.target.value)] });
-            }}
-          />
-        </Field>
+        <DayField
+          isRequired
+          label="Dato"
+          min={tomorrow()}
+          value={date}
+          onChange={(value) => {
+            setSent(false);
+            if (!value) return;
+            setDate(value);
+            update({ days: [weekdayOf(value)] });
+          }}
+        />
       )}
 
-      <div className="grid grid-cols-2 gap-3">
-        <Field label="Starter kl.">
-          <input
-            className={fieldClass}
-            required
-            step={300}
-            type="time"
-            value={formatTime(current.start)}
-            onChange={(event) => {
-              if (event.target.value) update({ start: parseTime(event.target.value) });
-            }}
-          />
-        </Field>
-        <Field label="Lengde">
-          <select
-            className={fieldClass}
-            value={current.duration}
-            onChange={(event) => update({ duration: Number(event.target.value) })}
-          >
-            {[15, 30, 45, 60, 90, 120, 180, 240, 360, 480, 720].map((minutes) => (
-              <option key={minutes} value={minutes}>
-                {formatLength(minutes)}
-              </option>
-            ))}
-            {[15, 30, 45, 60, 90, 120, 180, 240, 360, 480, 720].includes(
-              current.duration,
-            ) ? null : (
-              <option value={current.duration}>{formatLength(current.duration)}</option>
-            )}
-          </select>
-        </Field>
-      </div>
+      <TimeRange
+        duration={current.duration}
+        start={current.start}
+        onChange={(range) => update(range)}
+      />
 
       <Field label="Melding til Frikanalen (valgfri)">
         <textarea

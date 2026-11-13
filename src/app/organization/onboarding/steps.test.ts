@@ -22,7 +22,6 @@ describe("onboardingSteps", () => {
       organization: "blocked",
       affidavit: "blocked",
       identity: "blocked",
-      authority: "blocked",
     });
   });
 
@@ -38,7 +37,6 @@ describe("onboardingSteps", () => {
       organization: "done",
       affidavit: "waiting",
       identity: "waiting",
-      authority: "self",
     });
     expect(isOnboarded(steps)).toBe(false);
   });

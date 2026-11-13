@@ -102,7 +102,7 @@ const Join = () => (
       <div className="min-w-0 grow basis-80">
         <h2 className="text-2xl font-bold">Klar til å melde dere inn?</h2>
         <p className="mt-1 text-default-700">
-          Fem steg til aktivt medlemskap. Vi viser dere veien.
+          Fire steg til aktivt medlemskap. Vi viser dere veien.
         </p>
       </div>
       <Link

@@ -1,4 +1,5 @@
 import { SimpleOrg } from "@/generated/frikanalenDjangoAPI.schemas";
+import Link from "next/link";
 import { GoPlus } from "react-icons/go";
 import { ActionLink } from "@/app/profile/ActionLink";
 import { Membership, OrganizationCard } from "@/app/profile/OrganizationCard";
@@ -55,6 +56,41 @@ export const OrganizationSection = ({
   editorOf: readonly SimpleOrg[];
 }) => {
   const memberships = mergeMemberships(memberOf, editorOf);
+
+  // The usual case, one organization: no list to pick from, just the
+  // organization and the way into its tools.
+  if (memberships.length === 1) {
+    const [{ id, name, isEditor }] = memberships;
+    return (
+      <section
+        aria-labelledby="organizations-heading"
+        className="bg-background rounded-xl p-6 shadow-lg"
+      >
+        <p className="text-foreground/75 text-sm">
+          {isEditor ? "Du er redaktør for" : "Du er medlem av"}
+        </p>
+        <h2 id="organizations-heading" className="text-2xl font-bold">
+          {name}
+        </h2>
+        <div className="mt-4 flex flex-wrap items-center gap-1">
+          <ActionLink href={`/organization/${id}/admin`} variant="solid">
+            Åpne Studio
+          </ActionLink>
+          <ActionLink href={`/organization/${id}/create`} icon={<GoPlus />}>
+            Ny video
+          </ActionLink>
+          <ActionLink href={`/organization/${id}/schedule`}>Sendetid</ActionLink>
+          <ActionLink href={`/organization/${id}`}>Offentlig side</ActionLink>
+        </div>
+        <p className="text-foreground/75 mt-4 text-sm">
+          Med i flere?{" "}
+          <Link className="font-semibold text-link hover:underline" href="/organization/register">
+            Registrer en organisasjon til
+          </Link>
+        </p>
+      </section>
+    );
+  }
 
   return (
     <section

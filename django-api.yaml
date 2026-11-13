@@ -20676,6 +20676,10 @@ components:
           type: integer
           nullable: true
           writeOnly: true
+        jukebox:
+          description: "True makes this a jukebox slot: the station's airtime, filled from the filler pool. Takes the place of an owner and a fill rule. Read it back as a slot with no organization whose rule's pool is 'filler'."
+          type: boolean
+          writeOnly: true
     PatchedScheduleitemModifyRequest:
       description: |-
         Staff corrections to the compiled schedule.
@@ -21275,6 +21279,10 @@ components:
           description: Leave out to use the owner's 'newest uploads, fill the window' rule, created if needed. Null means grants don't fill themselves.
           type: integer
           nullable: true
+          writeOnly: true
+        jukebox:
+          description: "True makes this a jukebox slot: the station's airtime, filled from the filler pool. Takes the place of an owner and a fill rule. Read it back as a slot with no organization whose rule's pool is 'filler'."
+          type: boolean
           writeOnly: true
       required:
         - duration
@@ -21932,6 +21940,7 @@ components:
           starts_on: '#/components/schemas/RecurringSlotsCreateStartsOnErrorComponent'
           ends_on: '#/components/schemas/RecurringSlotsCreateEndsOnErrorComponent'
           default_fill_rule_id: '#/components/schemas/RecurringSlotsCreateDefaultFillRuleIdErrorComponent'
+          jukebox: '#/components/schemas/RecurringSlotsCreateJukeboxErrorComponent'
       oneOf:
         - $ref: '#/components/schemas/RecurringSlotsCreateNonFieldErrorsErrorComponent'
         - $ref: '#/components/schemas/RecurringSlotsCreateOrganizationErrorComponent'
@@ -21946,6 +21955,7 @@ components:
         - $ref: '#/components/schemas/RecurringSlotsCreateStartsOnErrorComponent'
         - $ref: '#/components/schemas/RecurringSlotsCreateEndsOnErrorComponent'
         - $ref: '#/components/schemas/RecurringSlotsCreateDefaultFillRuleIdErrorComponent'
+        - $ref: '#/components/schemas/RecurringSlotsCreateJukeboxErrorComponent'
     RecurringSlotsCreateErrorResponse400:
       discriminator:
         propertyName: type
@@ -21998,6 +22008,28 @@ components:
             - max_string_length
             - max_value
             - min_value
+            - 'null'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    RecurringSlotsCreateJukeboxErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `jukebox` - jukebox'
+          type: string
+          enum:
+            - jukebox
+        code:
+          description: |-
+            * `invalid` - invalid
+            * `null` - null
+          type: string
+          enum:
+            - invalid
             - 'null'
         detail:
           type: string
@@ -22318,6 +22350,7 @@ components:
           starts_on: '#/components/schemas/RecurringSlotsPartialUpdateStartsOnErrorComponent'
           ends_on: '#/components/schemas/RecurringSlotsPartialUpdateEndsOnErrorComponent'
           default_fill_rule_id: '#/components/schemas/RecurringSlotsPartialUpdateDefaultFillRuleIdErrorComponent'
+          jukebox: '#/components/schemas/RecurringSlotsPartialUpdateJukeboxErrorComponent'
       oneOf:
         - $ref: '#/components/schemas/RecurringSlotsPartialUpdateNonFieldErrorsErrorComponent'
         - $ref: '#/components/schemas/RecurringSlotsPartialUpdateOrganizationErrorComponent'
@@ -22332,6 +22365,7 @@ components:
         - $ref: '#/components/schemas/RecurringSlotsPartialUpdateStartsOnErrorComponent'
         - $ref: '#/components/schemas/RecurringSlotsPartialUpdateEndsOnErrorComponent'
         - $ref: '#/components/schemas/RecurringSlotsPartialUpdateDefaultFillRuleIdErrorComponent'
+        - $ref: '#/components/schemas/RecurringSlotsPartialUpdateJukeboxErrorComponent'
     RecurringSlotsPartialUpdateErrorResponse400:
       discriminator:
         propertyName: type
@@ -22384,6 +22418,28 @@ components:
             - max_string_length
             - max_value
             - min_value
+            - 'null'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    RecurringSlotsPartialUpdateJukeboxErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `jukebox` - jukebox'
+          type: string
+          enum:
+            - jukebox
+        code:
+          description: |-
+            * `invalid` - invalid
+            * `null` - null
+          type: string
+          enum:
+            - invalid
             - 'null'
         detail:
           type: string
@@ -22697,6 +22753,7 @@ components:
           starts_on: '#/components/schemas/RecurringSlotsUpdateStartsOnErrorComponent'
           ends_on: '#/components/schemas/RecurringSlotsUpdateEndsOnErrorComponent'
           default_fill_rule_id: '#/components/schemas/RecurringSlotsUpdateDefaultFillRuleIdErrorComponent'
+          jukebox: '#/components/schemas/RecurringSlotsUpdateJukeboxErrorComponent'
       oneOf:
         - $ref: '#/components/schemas/RecurringSlotsUpdateNonFieldErrorsErrorComponent'
         - $ref: '#/components/schemas/RecurringSlotsUpdateOrganizationErrorComponent'
@@ -22711,6 +22768,7 @@ components:
         - $ref: '#/components/schemas/RecurringSlotsUpdateStartsOnErrorComponent'
         - $ref: '#/components/schemas/RecurringSlotsUpdateEndsOnErrorComponent'
         - $ref: '#/components/schemas/RecurringSlotsUpdateDefaultFillRuleIdErrorComponent'
+        - $ref: '#/components/schemas/RecurringSlotsUpdateJukeboxErrorComponent'
     RecurringSlotsUpdateErrorResponse400:
       discriminator:
         propertyName: type
@@ -22763,6 +22821,28 @@ components:
             - max_string_length
             - max_value
             - min_value
+            - 'null'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    RecurringSlotsUpdateJukeboxErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `jukebox` - jukebox'
+          type: string
+          enum:
+            - jukebox
+        code:
+          description: |-
+            * `invalid` - invalid
+            * `null` - null
+          type: string
+          enum:
+            - invalid
             - 'null'
         detail:
           type: string

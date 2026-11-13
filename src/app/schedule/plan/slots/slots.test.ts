@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { RecurringSlot } from "@/generated/frikanalenDjangoAPI.schemas";
 import {
   blocksOf,
+  describeShape,
   describeSlot,
   durationPayload,
   formatTime,
@@ -9,6 +10,7 @@ import {
   parseDuration,
   parseTime,
   recurrenceLabel,
+  sameShape,
   shapesOverlap,
   slotDays,
   slotsMayCollide,
@@ -128,5 +130,21 @@ describe("labels", () => {
     expect(describeSlot(slot({ weekdays: [1, 3], interval: 2 }))).toBe(
       "Hver tirsdag og torsdag, annenhver uke 19:00–20:00",
     );
+  });
+});
+
+describe("describeShape and sameShape", () => {
+  it("names the days and the time on the 24-hour clock", () => {
+    expect(describeShape({ days: [2], start: 16 * 60, duration: 60 })).toBe("onsdag 16:00–17:00");
+    expect(describeShape({ days: [0, 1, 2, 3, 4, 5, 6], start: 23 * 60, duration: 120 })).toBe(
+      "hver dag 23:00–01:00",
+    );
+  });
+
+  it("tells a moved shape from an untouched one", () => {
+    const shape = { days: [1], start: 19 * 60, duration: 60 };
+    expect(sameShape(shape, { ...shape, days: [1] })).toBe(true);
+    expect(sameShape(shape, { ...shape, start: 18 * 60 })).toBe(false);
+    expect(sameShape(shape, { ...shape, days: [2] })).toBe(false);
   });
 });

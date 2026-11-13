@@ -89,8 +89,13 @@ const Editor = ({ grant, backHref }: { grant: AirtimeGrant; backHref: string }) 
   const windowLength = windowMilliseconds(grant);
   const used = listMilliseconds(items);
   const { rows, graphics } = timeline(items, grant);
-  const editable = grant.canEdit;
   const [now] = useState(Date.now);
+  // Locked for transmission: the list is settled, so it is shown as it will
+  // air, without the tools for changing it. Staff may still change it until
+  // it airs, but have to ask for the tools first.
+  const locked = !grant.lockExempt && (grant.state !== "open" || Date.parse(grant.locksAt) <= now);
+  const [unlocked, setUnlocked] = useState(false);
+  const editable = grant.canEdit && (!locked || unlocked);
   // Until a member changes it, an automatic list is still automatic.
   // Against what the server holds, so moving something and moving it back,
   // or adding and removing a video, isn't a change worth saving.
@@ -202,12 +207,26 @@ const Editor = ({ grant, backHref }: { grant: AirtimeGrant; backHref: string }) 
 
       <p className="text-default-700">{deadlineText(grant, osloDateTime(grant.locksAt))}</p>
 
-      {editable ? null : (
+      {grant.canEdit ? null : (
         <p className="border-l-4 border-warning bg-background p-3 text-sm" role="note">
           {readOnlyReason(grant)}
         </p>
       )}
-      {!editable && lockedByDeadline(grant, now) ? <ExemptionRequest grant={grant} /> : null}
+      {!grant.canEdit && lockedByDeadline(grant, now) ? <ExemptionRequest grant={grant} /> : null}
+      {grant.canEdit && locked && !unlocked ? (
+        <p
+          className="flex flex-wrap items-center gap-x-4 gap-y-2 border-l-4 border-warning bg-background p-3 text-sm"
+          role="note"
+        >
+          <span className="grow">
+            Listen er låst og gjort klar for sending. Som ansatt kan du likevel endre den frem til
+            den går på lufta.
+          </span>
+          <HeroButton size="sm" variant="tertiary" onPress={() => setUnlocked(true)}>
+            Endre likevel
+          </HeroButton>
+        </p>
+      ) : null}
 
       {showsAutomatic && editable ? (
         <p className="border-l-4 border-brand-plum bg-background p-3 text-sm">

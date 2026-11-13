@@ -14,14 +14,12 @@ export type StepState =
   /** Frikanalen's move: the organization has done what it can. */
   | "waiting"
   /** Can't be started until an earlier step is finished. */
-  | "blocked"
-  /** Has to be done, but nothing on this site can tell whether it has been. */
-  | "self";
+  | "blocked";
 
 export type StepAction = { href: string; label: string };
 
 export type OnboardingStep = {
-  id: "account" | "organization" | "affidavit" | "identity" | "authority";
+  id: "account" | "organization" | "affidavit" | "identity";
   title: string;
   text: string;
   state: StepState;
@@ -90,13 +88,6 @@ export const onboardingSteps = (facts: OnboardingFacts): OnboardingStep[] => {
       state: identityOk ? "done" : loggedIn ? "waiting" : "blocked",
       actions: identityOk || !loggedIn ? [] : [{ href: "/about/contact", label: "Ta kontakt" }],
     },
-    {
-      id: "authority",
-      title: "Registrer dere hos Medietilsynet",
-      text: "Hvert medlem må selv være registrert som tjenestetilbyder og melde inn sin redaktør. Dette gjør dere hos Medietilsynet, ikke her.",
-      state: registered ? "self" : "blocked",
-      actions: [{ href: "/about/informasjon-om-registrering", label: "Slik gjør dere det" }],
-    },
   ];
 };
 
@@ -106,4 +97,4 @@ export const nextStep = (steps: readonly OnboardingStep[]) =>
 
 /** Onboarding is over when nothing is left for either side to do. */
 export const isOnboarded = (steps: readonly OnboardingStep[]) =>
-  steps.every(({ state }) => state === "done" || state === "self");
+  steps.every(({ state }) => state === "done");

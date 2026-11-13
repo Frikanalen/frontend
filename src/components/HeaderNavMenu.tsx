@@ -7,6 +7,7 @@ import cx from "classnames";
 import { usePathname } from "next/navigation";
 import { User } from "@/generated/frikanalenDjangoAPI.schemas";
 import { useState } from "react";
+import { studioHref } from "@/app/profile/studio";
 
 const SECTIONS = [
   { href: "/", label: "Direkte" },
@@ -22,6 +23,8 @@ export const HeaderNavMenu = ({ className, user }: { className?: string; user: U
   const activeHref = SECTIONS.filter(({ href, activeRegexp }) =>
     activeRegexp ? activeRegexp.test(path) : href === path,
   ).sort((a, b) => b.href.length - a.href.length)[0]?.href;
+  const studio = user ? studioHref(user) : null;
+  const inStudio = /^\/organization\/\d+\/./.test(path);
   const sections = SECTIONS.map((section) => ({
     ...section,
     isActive: section.href === activeHref,
@@ -42,12 +45,35 @@ export const HeaderNavMenu = ({ className, user }: { className?: string; user: U
 
         <div className="ml-auto flex items-center gap-2">
           {user ? (
-            <Link
-              href="/profile"
-              className="font-medium text-stage-muted hover:text-stage-foreground"
-            >
-              {user.firstName}
-            </Link>
+            <>
+              {/* The member tools, one click from anywhere: most users have
+                  one organization, and this goes straight to it. */}
+              {studio ? (
+                <Link
+                  aria-current={inStudio ? "page" : undefined}
+                  href={studio}
+                  className={cx(
+                    "rounded-md border px-3 py-1.5 font-semibold whitespace-nowrap text-stage-foreground",
+                    inStudio
+                      ? "border-brand-green"
+                      : "border-stage-foreground/40 hover:border-stage-foreground",
+                  )}
+                >
+                  Studio
+                </Link>
+              ) : null}
+              <Link
+                href="/profile"
+                className={cx(
+                  "ml-3 font-medium text-stage-muted hover:text-stage-foreground",
+                  // On a phone the bar has room for one of the two; Min side
+                  // is in the menu there.
+                  studio && "hidden sm:block",
+                )}
+              >
+                {user.firstName || "Min side"}
+              </Link>
+            </>
           ) : (
             // Said in words: an icon alone left a visitor guessing whether it
             // meant an account, a profile or a menu.
@@ -85,7 +111,12 @@ export const HeaderNavMenu = ({ className, user }: { className?: string; user: U
           id="mobile-navigation"
           className="mb-3 flex flex-col border-t border-stage-line sm:hidden"
         >
-          {sections.map(({ href, label, isActive }) => (
+          {[
+            ...sections,
+            ...(user
+              ? [{ href: "/profile", label: "Min side", isActive: path === "/profile" }]
+              : []),
+          ].map(({ href, label, isActive }) => (
             <li key={href}>
               <Link
                 href={href}
