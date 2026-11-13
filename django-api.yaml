@@ -3783,10 +3783,14 @@ paths:
     get:
       operationId: live_sources_retrieve
       description: |-
-        Rename a source, switch it off, or change where it is pulled from.
+        Rename a source, switch it off, change where it is pulled from, or
+        delete it.
 
         A disabled source refuses every encoder and reader, and can't be given
         to a video. Setting a pull address revokes the source's encoder keys.
+        Neither switching off nor changing how the signal comes in is allowed
+        while a live airing of the source is coming. Only a source no programme
+        has ever used can be deleted (see `canDelete`); its keys go with it.
       parameters:
         - name: id
           in: path
@@ -3905,10 +3909,14 @@ paths:
     patch:
       operationId: live_sources_partial_update
       description: |-
-        Rename a source, switch it off, or change where it is pulled from.
+        Rename a source, switch it off, change where it is pulled from, or
+        delete it.
 
         A disabled source refuses every encoder and reader, and can't be given
         to a video. Setting a pull address revokes the source's encoder keys.
+        Neither switching off nor changing how the signal comes in is allowed
+        while a live airing of the source is coming. Only a source no programme
+        has ever used can be deleted (see `canDelete`); its keys go with it.
       parameters:
         - name: id
           in: path
@@ -3933,6 +3941,128 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/LiveSourcesPartialUpdateErrorResponse400'
+        '401':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: authentication_failed
+                        detail: Incorrect authentication credentials.
+                        attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_authenticated
+                        detail: Authentication credentials were not provided.
+                        attr: null
+        '404':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+              examples:
+                NotFound:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_found
+                        detail: Not found.
+                        attr: null
+        '405':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse405'
+              examples:
+                MethodNotAllowed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: method_not_allowed
+                        detail: Method "get" not allowed.
+                        attr: null
+        '406':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse406'
+              examples:
+                NotAcceptable:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_acceptable
+                        detail: Could not satisfy the request Accept header.
+                        attr: null
+        '415':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse415'
+              examples:
+                UnsupportedMediaType:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: unsupported_media_type
+                        detail: Unsupported media type "application/json" in request.
+                        attr: null
+        '500':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+              examples:
+                APIException:
+                  value:
+                    type: server_error
+                    errors:
+                      - code: error
+                        detail: A server error occurred.
+                        attr: null
+      security:
+        - tokenAuth: []
+        - cookieAuth: []
+      tags:
+        - live-sources
+    delete:
+      operationId: live_sources_destroy
+      description: |-
+        Rename a source, switch it off, change where it is pulled from, or
+        delete it.
+
+        A disabled source refuses every encoder and reader, and can't be given
+        to a video. Setting a pull address revokes the source's encoder keys.
+        Neither switching off nor changing how the signal comes in is allowed
+        while a live airing of the source is coming. Only a source no programme
+        has ever used can be deleted (see `canDelete`); its keys go with it.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: No response body
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LiveSourcesDestroyErrorResponse400'
         '401':
           description: ''
           content:
@@ -4402,6 +4532,134 @@ paths:
         - cookieAuth: []
       tags:
         - live-sources
+  /api/live-sources/{id}/encoder-keys/{key_pk}/replace:
+    post:
+      operationId: live_sources_encoder_keys_replace
+      description: |-
+        Give an encoder a new key: for when its settings were lost, or leaked.
+
+        The encoder keeps its name; the old key stops working at once, and the
+        answer shows the new password and settings, once.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: key_pk
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '201':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IssuedEncoderKey'
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LiveSourcesEncoderKeysReplaceErrorResponse400'
+        '401':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: authentication_failed
+                        detail: Incorrect authentication credentials.
+                        attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_authenticated
+                        detail: Authentication credentials were not provided.
+                        attr: null
+        '404':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+              examples:
+                NotFound:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_found
+                        detail: Not found.
+                        attr: null
+        '405':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse405'
+              examples:
+                MethodNotAllowed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: method_not_allowed
+                        detail: Method "get" not allowed.
+                        attr: null
+        '406':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse406'
+              examples:
+                NotAcceptable:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_acceptable
+                        detail: Could not satisfy the request Accept header.
+                        attr: null
+        '415':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse415'
+              examples:
+                UnsupportedMediaType:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: unsupported_media_type
+                        detail: Unsupported media type "application/json" in request.
+                        attr: null
+        '500':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+              examples:
+                APIException:
+                  value:
+                    type: server_error
+                    errors:
+                      - code: error
+                        detail: A server error occurred.
+                        attr: null
+      security:
+        - tokenAuth: []
+        - cookieAuth: []
+      tags:
+        - live-sources
   /api/live-sources/{id}/preview-token:
     post:
       operationId: live_sources_preview_token_create
@@ -4449,6 +4707,227 @@ paths:
                         attr: null
         '404':
           description: No such enabled source in your organizations.
+        '405':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse405'
+              examples:
+                MethodNotAllowed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: method_not_allowed
+                        detail: Method "get" not allowed.
+                        attr: null
+        '406':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse406'
+              examples:
+                NotAcceptable:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_acceptable
+                        detail: Could not satisfy the request Accept header.
+                        attr: null
+        '415':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse415'
+              examples:
+                UnsupportedMediaType:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: unsupported_media_type
+                        detail: Unsupported media type "application/json" in request.
+                        attr: null
+        '500':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+              examples:
+                APIException:
+                  value:
+                    type: server_error
+                    errors:
+                      - code: error
+                        detail: A server error occurred.
+                        attr: null
+      security:
+        - tokenAuth: []
+        - cookieAuth: []
+      tags:
+        - live-sources
+  /api/live-sources/{id}/signal:
+    get:
+      operationId: live_sources_signal_retrieve
+      summary: The signal a live source is receiving
+      description: 'What the receiver sees arriving on this source right now, as the encoder sends it: format, how long it has been in, and transport health. Reading it does not start a pulled source.'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Signal'
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LiveSourcesSignalRetrieveErrorResponse400'
+        '401':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: authentication_failed
+                        detail: Incorrect authentication credentials.
+                        attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_authenticated
+                        detail: Authentication credentials were not provided.
+                        attr: null
+        '404':
+          description: No such source in your organizations.
+        '405':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse405'
+              examples:
+                MethodNotAllowed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: method_not_allowed
+                        detail: Method "get" not allowed.
+                        attr: null
+        '406':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse406'
+              examples:
+                NotAcceptable:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_acceptable
+                        detail: Could not satisfy the request Accept header.
+                        attr: null
+        '415':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse415'
+              examples:
+                UnsupportedMediaType:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: unsupported_media_type
+                        detail: Unsupported media type "application/json" in request.
+                        attr: null
+        '500':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+              examples:
+                APIException:
+                  value:
+                    type: server_error
+                    errors:
+                      - code: error
+                        detail: A server error occurred.
+                        attr: null
+      security:
+        - tokenAuth: []
+        - cookieAuth: []
+      tags:
+        - live-sources
+  /api/live-sources/{id}/signal/history:
+    get:
+      operationId: live_sources_signal_history_retrieve
+      summary: How a live source's signal has held up
+      description: Bitrate, SRT packet loss and reconnects for this source over the last while, one sample per scrape step, from the receiver's metrics. It covers the time before the caller started watching.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: minutes
+          in: query
+          description: How far back, at most 180. Default 60.
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SignalHistory'
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LiveSourcesSignalHistoryRetrieveErrorResponse400'
+        '401':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: authentication_failed
+                        detail: Incorrect authentication credentials.
+                        attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_authenticated
+                        detail: Authentication credentials were not provided.
+                        attr: null
+        '404':
+          description: No such source in your organizations.
         '405':
           description: ''
           content:
@@ -16301,6 +16780,11 @@ components:
           type: string
           format: date-time
           readOnly: true
+        lastUsedAt:
+          type: string
+          format: date-time
+          nullable: true
+          readOnly: true
         revokedAt:
           type: string
           format: date-time
@@ -16311,6 +16795,7 @@ components:
         - id
         - keyId
         - label
+        - lastUsedAt
         - revokedAt
     EncoderKeyRequest:
       description: "An encoder's publish credential, as listed: never its password."
@@ -18292,6 +18777,11 @@ components:
           type: string
           format: date-time
           readOnly: true
+        lastUsedAt:
+          type: string
+          format: date-time
+          nullable: true
+          readOnly: true
         revokedAt:
           type: string
           format: date-time
@@ -18317,6 +18807,7 @@ components:
         - id
         - keyId
         - label
+        - lastUsedAt
         - password
         - revokedAt
     LiveSource:
@@ -18337,6 +18828,14 @@ components:
           description: Scheme, host and port of the pull address.
           type: string
           readOnly: true
+        encoderCount:
+          description: Encoders that hold a key to this source. A pushed source with none cannot receive a signal.
+          type: integer
+          readOnly: true
+        canDelete:
+          description: A source no programme has ever used can be deleted; one that has stays, and can be switched off.
+          type: boolean
+          readOnly: true
         streamId:
           type: string
           format: uuid
@@ -18353,7 +18852,9 @@ components:
             $ref: '#/components/schemas/UpcomingTransmission'
           readOnly: true
       required:
+        - canDelete
         - contributionPath
+        - encoderCount
         - id
         - isPulled
         - name
@@ -18377,6 +18878,13 @@ components:
           writeOnly: true
       required:
         - name
+    LiveSourcesDestroyErrorResponse400:
+      discriminator:
+        propertyName: type
+        mapping:
+          client_error: '#/components/schemas/ParseErrorResponse'
+      oneOf:
+        - $ref: '#/components/schemas/ParseErrorResponse'
     LiveSourcesEncoderKeysCreateError:
       discriminator:
         propertyName: attr
@@ -18469,6 +18977,13 @@ components:
       oneOf:
         - $ref: '#/components/schemas/ParseErrorResponse'
     LiveSourcesEncoderKeysListErrorResponse400:
+      discriminator:
+        propertyName: type
+        mapping:
+          client_error: '#/components/schemas/ParseErrorResponse'
+      oneOf:
+        - $ref: '#/components/schemas/ParseErrorResponse'
+    LiveSourcesEncoderKeysReplaceErrorResponse400:
       discriminator:
         propertyName: type
         mapping:
@@ -18621,6 +19136,20 @@ components:
       oneOf:
         - $ref: '#/components/schemas/ParseErrorResponse'
     LiveSourcesRetrieveErrorResponse400:
+      discriminator:
+        propertyName: type
+        mapping:
+          client_error: '#/components/schemas/ParseErrorResponse'
+      oneOf:
+        - $ref: '#/components/schemas/ParseErrorResponse'
+    LiveSourcesSignalHistoryRetrieveErrorResponse400:
+      discriminator:
+        propertyName: type
+        mapping:
+          client_error: '#/components/schemas/ParseErrorResponse'
+      oneOf:
+        - $ref: '#/components/schemas/ParseErrorResponse'
+    LiveSourcesSignalRetrieveErrorResponse400:
       discriminator:
         propertyName: type
         mapping:
@@ -20864,10 +21393,14 @@ components:
         previewPath:
           description: The Opus-audio preview, if a conversion worker runs for this source.
           type: string
+        programPath:
+          description: A low-latency copy of what the channel is airing, readable with the same token. Empty where the receiver has no programme return.
+          type: string
       required:
         - contributionPath
         - expiresAt
         - previewPath
+        - programPath
         - token
     ProgramImage:
       type: object
@@ -24447,6 +24980,152 @@ components:
       type: string
       enum:
         - server_error
+    Signal:
+      description: The signal arriving on a source, as the encoder sends it.
+      type: object
+      properties:
+        available:
+          description: False where the receiver cannot be asked; nothing else is known then.
+          type: boolean
+        receiving:
+          type: boolean
+        since:
+          type: string
+          format: date-time
+          nullable: true
+        protocol:
+          description: '`SRT`, `RTMP`, `RTSP` or `WebRTC`; empty for a pulled source.'
+          type: string
+        video:
+          allOf:
+            - $ref: '#/components/schemas/SignalVideo'
+          nullable: true
+        audio:
+          allOf:
+            - $ref: '#/components/schemas/SignalAudio'
+          nullable: true
+        bytesReceived:
+          description: Since the signal came in. The difference between two reads gives the bitrate.
+          type: integer
+        framesInError:
+          type: integer
+        srt:
+          allOf:
+            - $ref: '#/components/schemas/SignalSrt'
+          nullable: true
+        measuredAt:
+          type: string
+          format: date-time
+      required:
+        - available
+        - measuredAt
+        - receiving
+    SignalAudio:
+      type: object
+      properties:
+        codec:
+          description: As MediaMTX names it, e.g. `MPEG-4 Audio`.
+          type: string
+        sampleRate:
+          type: integer
+          nullable: true
+        channelCount:
+          type: integer
+          nullable: true
+      required:
+        - channelCount
+        - codec
+        - sampleRate
+    SignalHistory:
+      description: How a source's signal has held up, from before the page was opened.
+      type: object
+      properties:
+        available:
+          description: False where there is no record to ask; `samples` is empty then.
+          type: boolean
+        stepSeconds:
+          type: integer
+        samples:
+          description: Oldest first, from the first step with a signal in.
+          type: array
+          items:
+            $ref: '#/components/schemas/SignalSample'
+      required:
+        - available
+        - samples
+        - stepSeconds
+    SignalSample:
+      type: object
+      properties:
+        at:
+          description: The end of the step this sample covers.
+          type: string
+          format: date-time
+        receiving:
+          type: boolean
+        bitrate:
+          description: Bits per second.
+          type: integer
+          nullable: true
+        lost:
+          description: SRT packets lost on the way and asked for again.
+          type: integer
+        dropped:
+          description: SRT packets that never arrived in time.
+          type: integer
+        reconnected:
+          description: The encoder had connected anew since the step before.
+          type: boolean
+      required:
+        - at
+        - bitrate
+        - dropped
+        - lost
+        - receiving
+        - reconnected
+    SignalSrt:
+      description: Counters since the SRT connection opened.
+      type: object
+      properties:
+        packetsReceived:
+          type: integer
+        packetsLost:
+          description: Lost on the way; SRT asks for these again.
+          type: integer
+        packetsRetransmitted:
+          type: integer
+        packetsDropped:
+          description: 'Never recovered in time: these are what a viewer sees as glitches.'
+          type: integer
+        roundTripMs:
+          type: number
+          format: double
+          nullable: true
+      required:
+        - packetsDropped
+        - packetsLost
+        - packetsReceived
+        - packetsRetransmitted
+        - roundTripMs
+    SignalVideo:
+      type: object
+      properties:
+        codec:
+          description: As MediaMTX names it, e.g. `H264`.
+          type: string
+        width:
+          type: integer
+          nullable: true
+        height:
+          type: integer
+          nullable: true
+        profile:
+          type: string
+      required:
+        - codec
+        - height
+        - profile
+        - width
     SimpleOrg:
       type: object
       properties:

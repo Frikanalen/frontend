@@ -1,4 +1,5 @@
 "use client";
+import cx from "classnames";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@heroui/react";
 import { ballistics, FLOOR_DB, meterFraction, PEAK_HOLD_MS, peakDb } from "@/lib/live/meter";
@@ -11,7 +12,14 @@ const SCALE = [-48, -36, -24, -18, -12, -6, 0];
  * so it moves with the picture. It listens to the stream rather than the
  * player's output, so it works with playback muted.
  */
-export const VuMeter = ({ stream }: { stream: MediaStream | null }) => {
+export const VuMeter = ({
+  stream,
+  compact,
+}: {
+  stream: MediaStream | null;
+  /** Sized by its surroundings and without the scale: for the monitor. */
+  compact?: boolean;
+}) => {
   const covers = useRef<(HTMLDivElement | null)[]>([]);
   const peaks = useRef<(HTMLDivElement | null)[]>([]);
   // Browsers start an AudioContext suspended until the page is interacted
@@ -70,41 +78,65 @@ export const VuMeter = ({ stream }: { stream: MediaStream | null }) => {
     };
   }, [stream]);
 
-  if (!hasAudio) return <p className="text-sm text-default-600">Ingen lyd mottas.</p>;
+  if (!hasAudio)
+    return (
+      <p className={compact ? "text-[0.8em] text-neutral-400" : "text-sm text-default-600"}>
+        Ingen lyd mottas.
+      </p>
+    );
 
   return (
-    <div className="space-y-1" aria-label="Lydnivå">
+    <div className={compact ? "space-y-[0.25em]" : "space-y-1"} aria-label="Lydnivå">
       {CHANNELS.map((name, channel) => (
-        <div key={name} className="flex items-center gap-2">
-          <span className="w-3 text-xs text-default-500">{name}</span>
+        <div key={name} className={cx("flex items-center", compact ? "gap-[0.5em]" : "gap-2")}>
+          <span
+            className={
+              compact ? "w-[1em] text-[0.7em] text-neutral-400" : "w-3 text-xs text-default-500"
+            }
+          >
+            {name}
+          </span>
           {/* Green to -18 dBFS, yellow to -6, red above. */}
-          <div className="relative h-3 grow overflow-hidden rounded bg-[linear-gradient(to_right,var(--color-green-500)_70%,var(--color-yellow-400)_70%,var(--color-yellow-400)_90%,var(--color-red-500)_90%)]">
+          <div
+            className={cx(
+              "relative grow overflow-hidden bg-[linear-gradient(to_right,var(--color-green-500)_70%,var(--color-yellow-400)_70%,var(--color-yellow-400)_90%,var(--color-red-500)_90%)]",
+              compact ? "h-[0.55em]" : "h-3 rounded",
+            )}
+          >
             <div
               ref={(element) => {
                 covers.current[channel] = element;
               }}
-              className="absolute inset-0 origin-right bg-default-200"
+              className={cx(
+                "absolute inset-0 origin-right",
+                compact ? "bg-neutral-800" : "bg-default-200",
+              )}
             />
             <div
               ref={(element) => {
                 peaks.current[channel] = element;
               }}
-              className="absolute inset-y-0 w-0.5 bg-foreground opacity-0"
+              className={cx(
+                "absolute inset-y-0 w-0.5 opacity-0",
+                compact ? "bg-white" : "bg-foreground",
+              )}
             />
           </div>
         </div>
       ))}
-      <div className="relative ml-5 h-4 text-[10px] text-default-500">
-        {SCALE.map((db) => (
-          <span
-            key={db}
-            className="absolute -translate-x-1/2"
-            style={{ left: `${meterFraction(db) * 100}%` }}
-          >
-            {db}
-          </span>
-        ))}
-      </div>
+      {compact ? null : (
+        <div className="relative ml-5 h-4 text-[10px] text-default-500">
+          {SCALE.map((db) => (
+            <span
+              key={db}
+              className="absolute -translate-x-1/2"
+              style={{ left: `${meterFraction(db) * 100}%` }}
+            >
+              {db}
+            </span>
+          ))}
+        </div>
+      )}
       {suspended && (
         <Button size="sm" variant="tertiary" onPress={() => void suspended.resume()}>
           Vis lydnivå
