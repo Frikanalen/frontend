@@ -1,6 +1,25 @@
 2025-05-31 
 # Changelog
 
+## [3.6.0](https://github.com/Frikanalen/frontend/compare/v3.5.0...v3.6.0) (2026-11-13)
+
+
+### Features
+
+* **live:** guided setup for live sources ([#108](https://github.com/Frikanalen/frontend/issues/108)) ([05ed077](https://github.com/Frikanalen/frontend/commit/05ed077654086a53cfcd224ece803076a9285c77))
+* **live:** pulled live sources ([#100](https://github.com/Frikanalen/frontend/issues/100)) ([70382ff](https://github.com/Frikanalen/frontend/commit/70382ff2ec9a03c23b0fb84329cc2c0877dff0d4))
+* **nav:** Studio is a menu for users in several organizations ([#107](https://github.com/Frikanalen/frontend/issues/107)) ([8736ec8](https://github.com/Frikanalen/frontend/commit/8736ec8c7b8965b57e03f223c412a7526bd5cd67))
+* redesign the site ([#99](https://github.com/Frikanalen/frontend/issues/99)) ([f24e3d3](https://github.com/Frikanalen/frontend/commit/f24e3d3e7cc2e6cc61df15edc99ec7b2ec121228))
+* **schedule:** members request airtime, staff answer requests ([#104](https://github.com/Frikanalen/frontend/issues/104)) ([c5a8c5c](https://github.com/Frikanalen/frontend/commit/c5a8c5c65feb13edb774091373957b167127e1ab))
+* **schedule:** slot drags only propose, 24-hour time fields, jukebox slots ([#106](https://github.com/Frikanalen/frontend/issues/106)) ([bb1d305](https://github.com/Frikanalen/frontend/commit/bb1d3051d95d3a9cd9042941a57985164f96fed6))
+* **schedule:** weekly planner for staff to allocate recurring slots ([#103](https://github.com/Frikanalen/frontend/issues/103)) ([55c12c4](https://github.com/Frikanalen/frontend/commit/55c12c49aca5d5c862e61238473e2994203208d9))
+* suspension notice for rogue members, /protest becomes /unntakstilstand ([#102](https://github.com/Frikanalen/frontend/issues/102)) ([22f0199](https://github.com/Frikanalen/frontend/commit/22f01990f2b294df94658ca8e9c3d270da035ef5))
+
+
+### Bug Fixes
+
+* **copy:** tighten the unntakstilstand and suspension wording ([#105](https://github.com/Frikanalen/frontend/issues/105)) ([8c92b82](https://github.com/Frikanalen/frontend/commit/8c92b8289ee294476325f33a5b0706ba2a45bfdb))
+
 ## [3.5.0](https://github.com/Frikanalen/frontend/compare/v3.4.1...v3.5.0) (2026-11-11)
 
 

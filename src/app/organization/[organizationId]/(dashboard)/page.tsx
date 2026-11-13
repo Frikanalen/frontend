@@ -14,6 +14,7 @@ import { ArchiveSearch } from "@/app/video/ArchiveSearch";
 import { Metadata } from "next";
 import { ssrOrganizationRetrieve } from "@/generated/ssr/organization/organization";
 import { OrganizationParams, parseParamsOr404 } from "@/lib/routeParams";
+import { SuspendedNotice } from "@/components/suspended/SuspendedNotice";
 
 type OrgPageProps = { params: Promise<{ organizationId: string }> };
 export async function generateMetadata({ params }: OrgPageProps): Promise<Metadata> {
@@ -25,6 +26,12 @@ export async function generateMetadata({ params }: OrgPageProps): Promise<Metada
   if (status !== 200)
     return {
       title: "Frikanalen",
+    };
+
+  if (organization.isRogue)
+    return {
+      title: `${organization.name} er suspendert - Frikanalen`,
+      robots: { index: false },
     };
 
   return {
@@ -50,13 +57,21 @@ export default async function Page({ params }: OrgPageProps) {
 
   const isAdmin = profileIsAdminOrMember(organizationId, profile);
 
+  // Staff get the full payload and page; everyone else sees why it's gone.
+  if (organization.isRogue && !profile?.isStaff)
+    return (
+      <div className="grow">
+        <SuspendedNotice organization={organization} />
+      </div>
+    );
+
   if (!organization.fkmember && !isAdmin) return notFound();
 
   // No <main> of its own: organization/layout.tsx already provides the page's
   // one main landmark, and nesting a second inside it leaves the document
   // with two.
   return (
-    <div className="grow rounded-lg p-4 space-y-6">
+    <div className="grow space-y-6">
       <OrgBlurb organization={organization} />
       {isAdmin && <AdminAlert organizationId={organizationId} />}
       <OrganizationSeries organizationId={organization.id} />

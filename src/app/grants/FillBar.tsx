@@ -21,7 +21,7 @@ export const FillBar = ({
     : `${formatDuration(used)} av ${formatDuration(window)} brukt, ${formatDuration(window - used)} grafikk`;
   const fill = automatic
     ? "bg-secondary-500 bg-[repeating-linear-gradient(45deg,transparent_0_6px,rgb(255_255_255/0.35)_6px_12px)]"
-    : "bg-success-500";
+    : "bg-primary-600";
 
   return (
     <div className="space-y-1">
@@ -37,7 +37,7 @@ export const FillBar = ({
           // The window is the green or blue part; what doesn't fit is red.
           <div className="flex h-full">
             <div
-              className={automatic ? "bg-secondary-500" : "bg-success-500"}
+              className={automatic ? "bg-secondary-500" : "bg-primary-600"}
               style={{ width: `${(window / used) * 100}%` }}
             />
             <div className="grow bg-danger-500" />

@@ -1,32 +1,24 @@
 "use client";
 import Link from "next/link";
-// The footer carries no slab of its own: no border, no background panel. It sits
-// straight on the page's own canvas and the brand glow behind it, and reads as a
-// quiet colophon rather than a second piece of chrome under the content.
-//
-// The copyright and the links sit on one row on a wide screen and wrap to
-// their own lines on a narrow one, so nothing has to be hidden to make room.
-export const Footer = () => (
-  <footer
-    className={
-      "flex w-full max-w-5xl flex-wrap items-center justify-between gap-x-6 gap-y-1 px-2 py-4 text-sm text-foreground-500"
-    }
-  >
-    <div>© 2009 - {new Date().getFullYear()} Foreningen Frikanalen</div>
+import { Logo } from "@/components/Logo";
 
-    <div className="flex gap-4">
-      <Link
-        className={"text-sm text-foreground-500 hover:text-foreground"}
-        href="https://github.com/Frikanalen"
-      >
-        GitHub
-      </Link>
-      <Link
-        className={"text-sm text-foreground-500 hover:text-foreground"}
-        href="https://frikanalen.tv/api"
-      >
-        API
-      </Link>
+// The footer closes the page on the same dark stage the channel bar opens it
+// with. The copyright and the links wrap to their own lines on a narrow
+// screen, so nothing has to be hidden to make room.
+export const Footer = () => (
+  <footer className="mt-16 w-full bg-stage text-stage-muted">
+    <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-x-10 gap-y-4 px-4 py-8 text-sm sm:px-6">
+      <Logo className="h-7 w-auto text-stage-foreground" />
+      <div>© 2009 - {new Date().getFullYear()} Foreningen Frikanalen</div>
+
+      <div className="flex gap-6">
+        <Link className="py-2 hover:text-stage-foreground" href="https://github.com/Frikanalen">
+          GitHub
+        </Link>
+        <Link className="py-2 hover:text-stage-foreground" href="https://frikanalen.tv/api">
+          API
+        </Link>
+      </div>
     </div>
   </footer>
 );

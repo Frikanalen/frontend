@@ -9,8 +9,10 @@ export const dynamic = "force-dynamic";
 
 export default async function Page({
   params,
+  searchParams,
 }: {
   params: Promise<{ organizationId: string; grantId: string }>;
+  searchParams: Promise<{ direkte?: string }>;
 }) {
   const { organizationId, grantId } = await parseParamsOr404(OrganizationGrantParams, params);
 
@@ -19,9 +21,13 @@ export default async function Page({
   if (!user) redirect("/login");
   if (!user.isStaff && !profileIsAdminOrMember(organizationId, user)) forbidden();
 
+  // The live setup links here to book a broadcast from the source it made.
+  const liveSourceId = Number((await searchParams).direkte);
+
   return (
-    <div className="grow rounded-lg p-4">
+    <div className="grow">
       <GrantEditor
+        newLiveFrom={Number.isInteger(liveSourceId) && liveSourceId > 0 ? liveSourceId : undefined}
         backHref={user.isStaff ? "/schedule/plan" : `/organization/${organizationId}/schedule`}
         grantId={grantId}
       />

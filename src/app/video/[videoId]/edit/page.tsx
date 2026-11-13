@@ -51,7 +51,7 @@ export default async function Page({ params }: VideoPageProps) {
   if (!uploadToken) throw new Error(`No upload token returned for video ${videoId}`);
 
   return (
-    <section className={"bg-background rounded-md shadow-lg p-8 space-y-3"}>
+    <section className={"mx-auto mt-10 max-w-5xl space-y-3 bg-background p-6 sm:p-8"}>
       <div className={"prose dark:prose-invert"}>
         <h2>Rediger video</h2>
       </div>

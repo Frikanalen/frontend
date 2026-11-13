@@ -6,5 +6,5 @@ import { ReactNode } from "react";
  * separations those sections are for.
  */
 export default function Layout({ children }: { children: ReactNode }) {
-  return <main className="w-full max-w-5xl px-2 pb-12">{children}</main>;
+  return <main className="w-full max-w-7xl grow px-4 pt-10 sm:px-6">{children}</main>;
 }

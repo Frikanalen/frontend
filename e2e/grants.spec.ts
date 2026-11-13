@@ -366,6 +366,21 @@ test.describe("airtime grants", () => {
     );
   });
 
+  test("keeps the tools away on a locked grant staff may still change", async ({ page }) => {
+    await editor(page, grant({ state: "compiled", canEdit: true }));
+
+    // Locked for transmission: the list as it will air, nothing about editing.
+    await expect(page.getByRole("note")).toContainText("Listen er låst");
+    await expect(page.getByText(/Endrer du den, blir den manuell/)).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Lagre listen" })).toHaveCount(0);
+    await expect(page.getByRole("grid", { name: "Videoer du kan legge til" })).toHaveCount(0);
+
+    await page.getByRole("button", { name: "Endre likevel" }).click();
+    await expect(page.getByRole("button", { name: "Lagre listen" })).toBeVisible();
+    await expect(page.getByRole("grid", { name: "Videoer du kan legge til" })).toBeVisible();
+    await expect(page.getByRole("note")).toHaveCount(0);
+  });
+
   test("offers no editing on a grant the user can't change", async ({ page }) => {
     await editor(page, grant({ state: "compiled", canEdit: false }));
 

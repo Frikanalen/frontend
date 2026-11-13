@@ -31,16 +31,24 @@ export default async function Page({
   ).data.results;
 
   return (
-    <main className="w-full max-w-7xl grow space-y-5 px-3 py-4">
+    <main className="w-full max-w-7xl grow px-4 pt-10 sm:px-6 space-y-5">
       <header>
-        <h1 className="text-3xl font-bold">Sendetid</h1>
+        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">Sendetid</h1>
         <p className="mt-2 text-default-600">
           Tildelt sendetid for alle organisasjoner. Ny sendetid, avlysning og unntak fra låsing
           gjøres foreløpig i administrasjonen.
         </p>
-        <Link className="mt-2 inline-block text-primary-700 underline" href="/schedule/plan/rules">
-          Les hvordan sendetid virker
-        </Link>
+        <div className="mt-2 flex flex-wrap gap-x-5 gap-y-1">
+          <Link className="font-semibold text-link hover:underline" href="/schedule/plan/requests">
+            Forespørsler
+          </Link>
+          <Link className="font-semibold text-link hover:underline" href="/schedule/plan/slots">
+            Faste sendeflater
+          </Link>
+          <Link className="font-semibold text-link hover:underline" href="/schedule/plan/rules">
+            Les hvordan sendetid virker
+          </Link>
+        </div>
       </header>
       <GrantsBoard
         organizations={organizations}

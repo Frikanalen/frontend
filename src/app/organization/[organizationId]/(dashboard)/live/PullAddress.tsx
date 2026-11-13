@@ -21,14 +21,14 @@ export const PullAddress = ({ source, maySetUp }: { source: LiveSource; maySetUp
   const update = useLiveSourcesPartialUpdate();
   const [pullUrl, setPullUrl] = useState("");
 
-  const save = async (data: { pullUrl?: string; enabled?: boolean }) => {
+  const save = async (data: { pullUrl: string }) => {
     await update.mutateAsync({ id: source.id, data });
     setPullUrl("");
     router.refresh();
   };
 
   return (
-    <section className="space-y-3 border-t border-default-200 pt-4 md:col-span-2">
+    <section className="space-y-3">
       <h3 className="font-semibold">Henteadresse</h3>
       <p className="text-sm text-default-600">
         Frikanalen henter signalet fra <code>{source.pullTarget}</code> når noen ser på kilden: når
@@ -63,17 +63,18 @@ export const PullAddress = ({ source, maySetUp }: { source: LiveSource; maySetUp
             isDisabled={update.isPending}
             size="sm"
             variant="tertiary"
-            onPress={() => void save({ pullUrl: "" }).catch(() => undefined)}
+            onPress={() => {
+              // The address can't be read back, so losing it by a slip is costly.
+              if (
+                globalThis.confirm(
+                  "Slutte å hente fra adressen? Den slettes og kan ikke vises igjen. Kilden kan da ikke ta imot signal før en koder er koblet til.",
+                )
+              ) {
+                void save({ pullUrl: "" }).catch(() => undefined);
+              }
+            }}
           >
             Send fra koder i stedet
-          </Button>
-          <Button
-            isDisabled={update.isPending}
-            size="sm"
-            variant="tertiary"
-            onPress={() => void save({ enabled: !source.enabled }).catch(() => undefined)}
-          >
-            {source.enabled ? "Slå av kilden" : "Slå på kilden"}
           </Button>
         </div>
       ) : null}

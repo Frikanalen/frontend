@@ -1,19 +1,19 @@
 "use client";
 
-import { Avatar, Button } from "@heroui/react";
+import { Button } from "@heroui/react";
 import { NavLink } from "@/components/NavLink";
 import Link from "next/link";
 import cx from "classnames";
 import { usePathname } from "next/navigation";
 import { User } from "@/generated/frikanalenDjangoAPI.schemas";
 import { useState } from "react";
-import { GoPersonFill } from "react-icons/go";
+import { StudioButton } from "@/components/StudioButton";
 
 const SECTIONS = [
   { href: "/", label: "Direkte" },
-  { href: "/video", label: "Arkiv", activeRegexp: /\/video.*/ },
-  { href: "/schedule", label: "Sendeplan", activeRegexp: /\/schedule.*/ },
-  { href: "/about", label: "Om oss", activeRegexp: /\/about.*/ },
+  { href: "/video", label: "Arkiv", activeRegexp: /^\/video.*/ },
+  { href: "/schedule", label: "Sendeplan", activeRegexp: /^\/schedule.*/ },
+  { href: "/about", label: "Om oss", activeRegexp: /^\/about.*/ },
   { href: "/about/join", label: "Bli med" },
 ];
 
@@ -23,15 +23,16 @@ export const HeaderNavMenu = ({ className, user }: { className?: string; user: U
   const activeHref = SECTIONS.filter(({ href, activeRegexp }) =>
     activeRegexp ? activeRegexp.test(path) : href === path,
   ).sort((a, b) => b.href.length - a.href.length)[0]?.href;
+  const studio = user !== null && user.memberOf.length + user.editorOf.length > 0;
   const sections = SECTIONS.map((section) => ({
     ...section,
     isActive: section.href === activeHref,
   }));
 
   return (
-    <nav aria-label="Hovedmeny" className={cx("mb-3", className)}>
+    <nav aria-label="Hovedmeny" className={className}>
       <div className="flex h-12 items-center justify-between">
-        <ul className="hidden items-center gap-5 sm:flex">
+        <ul className="hidden items-center gap-7 font-medium sm:flex">
           {sections.map(({ href, label, isActive }) => (
             <li key={href}>
               <NavLink href={href} isActive={isActive}>
@@ -42,20 +43,42 @@ export const HeaderNavMenu = ({ className, user }: { className?: string; user: U
         </ul>
 
         <div className="ml-auto flex items-center gap-2">
-          <Link href={user ? "/profile" : "/login"} className="text-foreground hover:text-accent">
-            {user ? (
-              user.firstName
-            ) : (
-              <Avatar size="sm" aria-label="Logg inn">
-                <Avatar.Fallback>
-                  <GoPersonFill className="size-5" aria-hidden="true" />
-                </Avatar.Fallback>
-              </Avatar>
-            )}
-          </Link>
+          {user ? (
+            <>
+              <StudioButton user={user} />
+              <Link
+                href="/profile"
+                className={cx(
+                  "ml-3 font-medium text-stage-muted hover:text-stage-foreground",
+                  // On a phone the bar has room for one of the two; Min side
+                  // is in the menu there.
+                  studio && "hidden sm:block",
+                )}
+              >
+                {user.firstName || "Min side"}
+              </Link>
+            </>
+          ) : (
+            // Said in words: an icon alone left a visitor guessing whether it
+            // meant an account, a profile or a menu.
+            <>
+              <Link
+                href="/login"
+                className="font-medium whitespace-nowrap text-stage-muted hover:text-stage-foreground"
+              >
+                Logg inn
+              </Link>
+              <Link
+                href="/register"
+                className="ml-3 hidden rounded-md border border-stage-foreground/40 px-3 py-1.5 font-semibold whitespace-nowrap text-stage-foreground hover:border-stage-foreground sm:block"
+              >
+                Registrer deg
+              </Link>
+            </>
+          )}
           <Button
-            className="sm:hidden"
-            variant="secondary"
+            className="text-stage-foreground sm:hidden"
+            variant="ghost"
             isIconOnly
             aria-expanded={isMenuOpen}
             aria-controls="mobile-navigation"
@@ -70,19 +93,24 @@ export const HeaderNavMenu = ({ className, user }: { className?: string; user: U
       {isMenuOpen && (
         <ul
           id="mobile-navigation"
-          className="border-default-200 bg-content1/60 mb-3 flex flex-col gap-1 rounded-2xl border p-2 sm:hidden"
+          className="mb-3 flex flex-col border-t border-stage-line sm:hidden"
         >
-          {sections.map(({ href, label, isActive }) => (
+          {[
+            ...sections,
+            ...(user
+              ? [{ href: "/profile", label: "Min side", isActive: path === "/profile" }]
+              : []),
+          ].map(({ href, label, isActive }) => (
             <li key={href}>
               <Link
                 href={href}
                 onClick={() => setIsMenuOpen(false)}
                 aria-current={isActive ? "page" : undefined}
                 className={cx(
-                  "flex h-11 items-center rounded-xl px-3 transition-colors outline-focus focus-visible:outline-2 focus-visible:outline-offset-2",
+                  "flex h-12 items-center border-b border-stage-line px-1 text-lg outline-focus transition-colors focus-visible:outline-2 focus-visible:outline-offset-2",
                   isActive
-                    ? "bg-primary-100 text-primary-800 font-semibold"
-                    : "text-foreground/80 hover:bg-default-100 hover:text-foreground",
+                    ? "font-semibold text-stage-foreground"
+                    : "text-stage-muted hover:text-stage-foreground",
                 )}
               >
                 {label}

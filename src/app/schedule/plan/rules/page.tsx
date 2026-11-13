@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Slik virker sendetid",
@@ -9,7 +8,7 @@ export const metadata: Metadata = {
 export default function Page() {
   return (
     <main className="w-full max-w-3xl grow px-4 pb-10">
-      <article className="prose max-w-none rounded-xl bg-background p-6 shadow-lg dark:prose-invert">
+      <article className="prose mt-10 max-w-none bg-background p-6 sm:p-8 dark:prose-invert">
         <h1>Slik virker sendetid</h1>
 
         <p>
@@ -31,6 +30,13 @@ export default function Page() {
           </li>
         </ul>
 
+        <h2>Be om sendetid</h2>
+        <p>
+          Under <em>Sendetid</em> velger dere <em>Be om mer sendetid</em>. Der ser dere uken med de
+          faste sendeflatene som allerede er tatt, og kan be om en fast sendeflate hver uke eller
+          sendetid én gang. Frikanalen svarer på samme side.
+        </p>
+
         <h2>Hvem kan sette opp en liste?</h2>
         <ul>
           <li>Du må være innlogget, og identiteten din må være bekreftet av Frikanalen.</li>
@@ -49,8 +55,9 @@ export default function Page() {
           den. Slik vet seere og programoversikter hva som sendes, en uke i forveien.
         </p>
         <p>
-          Trenger dere å endre noe etter fristen, for eksempel rundt en direktesending, kan
-          Frikanalen unnta sendetiden fra låsing. Da kan listen endres helt frem til sending.
+          Trenger dere å endre noe etter fristen, for eksempel rundt en direktesending, kan dere be
+          om det fra den låste sendetiden. Godkjenner Frikanalen det, kan listen endres helt frem
+          til sending.
         </p>
 
         <h2>Automatisk fylling</h2>
@@ -74,8 +81,7 @@ export default function Page() {
         </p>
 
         <p>
-          Gå til <Link href="/profile">Min side</Link> og velg <em>Sendetid</em> under riktig
-          organisasjon.
+          Åpne <em>Studio</em> øverst på siden og velg <em>Sendetid</em>.
         </p>
       </article>
     </main>

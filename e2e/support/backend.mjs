@@ -119,18 +119,49 @@ createServer((request, response) => {
     });
   if (url.pathname === `/api/organization/${organization.id}`)
     return json(response, 200, organization);
-  if (url.pathname === `/api/organization/${organization.id}/live-sources`)
+  if (url.pathname === `/api/organization/${organization.id}/live-sources`) {
+    // A test sets the state of the sources with dot-separated words in the
+    // `e2e-live` cookie, and changes it as its story moves on.
+    const words = (
+      /e2e-live=([\w.]*)/.exec(request.headers.cookie ?? "")?.[1] ?? ""
+    ).split(".");
+    const has = (word) => words.includes(word);
+    const start = Date.now() + 5 * 3_600_000;
+    const studio = {
+      id: 9,
+      name: "Studio",
+      enabled: true,
+      isPulled: false,
+      pullTarget: "",
+      encoderCount: has("noencoder") ? 0 : 1,
+      canDelete: !has("used"),
+      streamId: "cc1367cd-020e-456d-9d4c-b395eab6aa9c",
+      contributionPath: "contrib/live/cc1367cd-020e-456d-9d4c-b395eab6aa9c",
+      previewPath: "contrib/preview/cc1367cd-020e-456d-9d4c-b395eab6aa9c",
+      upcomingTransmissions: has("booked")
+        ? [
+            {
+              id: 501,
+              name: "Høstkonsert",
+              starttime: new Date(start).toISOString(),
+              endtime: new Date(start + 3_600_000).toISOString(),
+            },
+          ]
+        : [],
+    };
+    const retired = {
+      ...studio,
+      id: 12,
+      name: "Gammel sal",
+      enabled: false,
+      canDelete: false,
+      upcomingTransmissions: [],
+    };
     return json(response, 200, [
-      {
-        id: 9,
-        name: "Studio",
-        enabled: true,
-        streamId: "cc1367cd-020e-456d-9d4c-b395eab6aa9c",
-        contributionPath: "contrib/live/cc1367cd-020e-456d-9d4c-b395eab6aa9c",
-        previewPath: "contrib/preview/cc1367cd-020e-456d-9d4c-b395eab6aa9c",
-        upcomingTransmissions: [],
-      },
+      ...(has("gone") ? [] : [studio]),
+      ...(has("old") ? [retired] : []),
     ]);
+  }
   if (url.pathname === `/api/series/${series.id}`)
     return json(response, 200, series);
 
