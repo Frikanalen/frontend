@@ -2,6 +2,7 @@
 import { AuthField } from "@/components/form/AuthField";
 import { Button, Form } from "@heroui/react";
 import { ButtonLink } from "@/components/ButtonLink";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import z from "zod";
 import { useForm } from "react-hook-form";
@@ -58,9 +59,14 @@ export default function Login() {
               isInvalid={!!formState.errors.password}
               errorMessage={formState.errors.password?.message}
             />
-            <Button className={"ml-auto"} type="submit" isPending={isSubmitting}>
-              Logg inn
-            </Button>
+            <div className={"flex items-center justify-between gap-4"}>
+              <Link href={"/password-reset"} className={"text-sm underline"}>
+                Glemt passordet?
+              </Link>
+              <Button type="submit" isPending={isSubmitting}>
+                Logg inn
+              </Button>
+            </div>
           </div>
         </Form>
         <div className={"space-y-4 flex flex-col justify-between"}>

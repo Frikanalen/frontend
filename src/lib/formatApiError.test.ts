@@ -65,6 +65,14 @@ describe("formatApiError", () => {
     );
   });
 
+  it("says a throttled request in Norwegian instead of DRF's English seconds count", () => {
+    const error = axiosErrorWith(
+      { detail: "Request was throttled. Expected available in 3599 seconds." },
+      429,
+    );
+    expect(formatApiError(error)).toBe("For mange forsøk. Vent litt og prøv igjen.");
+  });
+
   it("falls back to the axios message when the body carries no usable text", () => {
     const error = axiosErrorWith({ unexpected: { nested: true } });
     expect(formatApiError(error)).toBe("Request failed with status code 400");

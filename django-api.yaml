@@ -9510,6 +9510,280 @@ paths:
         - cookieAuth: []
       tags:
         - user
+  /api/user/password-reset:
+    post:
+      operationId: user_password_reset_create
+      description: 'Mail a password reset link to an address, if it has an account.
+
+
+        The answer is the same whether or not it does.'
+      tags:
+        - user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetRequestRequest'
+        required: true
+      security:
+        - tokenAuth: []
+        - cookieAuth: []
+        - {}
+      responses:
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPasswordResetCreateErrorResponse400'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: authentication_failed
+                        detail: Incorrect authentication credentials.
+                        attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_authenticated
+                        detail: Authentication credentials were not provided.
+                        attr: null
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+              examples:
+                NotFound:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_found
+                        detail: Not found.
+                        attr: null
+          description: ''
+        '405':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse405'
+              examples:
+                MethodNotAllowed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: method_not_allowed
+                        detail: Method "get" not allowed.
+                        attr: null
+          description: ''
+        '406':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse406'
+              examples:
+                NotAcceptable:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_acceptable
+                        detail: Could not satisfy the request Accept header.
+                        attr: null
+          description: ''
+        '415':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse415'
+              examples:
+                UnsupportedMediaType:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: unsupported_media_type
+                        detail: Unsupported media type "application/json" in request.
+                        attr: null
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse429'
+              examples:
+                Throttled:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: throttled
+                        detail: Request was throttled.
+                        attr: null
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+              examples:
+                APIException:
+                  value:
+                    type: server_error
+                    errors:
+                      - code: error
+                        detail: A server error occurred.
+                        attr: null
+          description: ''
+        '202':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Detail'
+          description: ''
+  /api/user/password-reset/confirm:
+    post:
+      operationId: user_password_reset_confirm_create
+      description: 'Set a new password from a reset link''s uid and token.
+
+
+        Logs the user in and returns their profile, as the login endpoint does.'
+      tags:
+        - user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetConfirmRequest'
+        required: true
+      security:
+        - tokenAuth: []
+        - cookieAuth: []
+        - {}
+      responses:
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPasswordResetConfirmCreateErrorResponse400'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: authentication_failed
+                        detail: Incorrect authentication credentials.
+                        attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_authenticated
+                        detail: Authentication credentials were not provided.
+                        attr: null
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+              examples:
+                NotFound:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_found
+                        detail: Not found.
+                        attr: null
+          description: ''
+        '405':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse405'
+              examples:
+                MethodNotAllowed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: method_not_allowed
+                        detail: Method "get" not allowed.
+                        attr: null
+          description: ''
+        '406':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse406'
+              examples:
+                NotAcceptable:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_acceptable
+                        detail: Could not satisfy the request Accept header.
+                        attr: null
+          description: ''
+        '415':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse415'
+              examples:
+                UnsupportedMediaType:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: unsupported_media_type
+                        detail: Unsupported media type "application/json" in request.
+                        attr: null
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse429'
+              examples:
+                Throttled:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: throttled
+                        detail: Request was throttled.
+                        attr: null
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+              examples:
+                APIException:
+                  value:
+                    type: server_error
+                    errors:
+                      - code: error
+                        detail: A server error occurred.
+                        attr: null
+          description: ''
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
   /api/user/register:
     post:
       operationId: user_register_create
@@ -14499,6 +14773,14 @@ components:
         - 4
         - 5
         - 6
+    Detail:
+      type: object
+      properties:
+        detail:
+          type: string
+          readOnly: true
+      required:
+        - detail
     EncoderKey:
       description: "An encoder's publish credential, as listed: never its password."
       type: object
@@ -18013,6 +18295,32 @@ components:
       required:
         - errors
         - type
+    PasswordResetConfirmRequest:
+      type: object
+      properties:
+        uid:
+          type: string
+          minLength: 1
+        token:
+          type: string
+          minLength: 1
+        newPassword:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+        - newPassword
+        - token
+        - uid
+    PasswordResetRequestRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+      required:
+        - email
     PatchedAirtimeGrantUpdateRequest:
       description: Staff cancels a grant, moves its deadline or exempts it from locking.
       type: object
@@ -20826,6 +21134,250 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/UserPartialUpdateError'
+      required:
+        - errors
+        - type
+    UserPasswordResetConfirmCreateError:
+      oneOf:
+        - $ref: '#/components/schemas/UserPasswordResetConfirmCreateNonFieldErrorsErrorComponent'
+        - $ref: '#/components/schemas/UserPasswordResetConfirmCreateUidErrorComponent'
+        - $ref: '#/components/schemas/UserPasswordResetConfirmCreateTokenErrorComponent'
+        - $ref: '#/components/schemas/UserPasswordResetConfirmCreateNewPasswordErrorComponent'
+      discriminator:
+        propertyName: attr
+        mapping:
+          non_field_errors: '#/components/schemas/UserPasswordResetConfirmCreateNonFieldErrorsErrorComponent'
+          uid: '#/components/schemas/UserPasswordResetConfirmCreateUidErrorComponent'
+          token: '#/components/schemas/UserPasswordResetConfirmCreateTokenErrorComponent'
+          new_password: '#/components/schemas/UserPasswordResetConfirmCreateNewPasswordErrorComponent'
+    UserPasswordResetConfirmCreateErrorResponse400:
+      oneOf:
+        - $ref: '#/components/schemas/UserPasswordResetConfirmCreateValidationError'
+        - $ref: '#/components/schemas/ParseErrorResponse'
+      discriminator:
+        propertyName: type
+        mapping:
+          validation_error: '#/components/schemas/UserPasswordResetConfirmCreateValidationError'
+          client_error: '#/components/schemas/ParseErrorResponse'
+    UserPasswordResetConfirmCreateNewPasswordErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+            - new_password
+          type: string
+          description: '* `new_password` - new_password'
+        code:
+          enum:
+            - blank
+            - invalid
+            - 'null'
+            - null_characters_not_allowed
+            - required
+            - surrogate_characters_not_allowed
+          type: string
+          description: '* `blank` - blank
+
+            * `invalid` - invalid
+
+            * `null` - null
+
+            * `null_characters_not_allowed` - null_characters_not_allowed
+
+            * `required` - required
+
+            * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    UserPasswordResetConfirmCreateNonFieldErrorsErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+            - non_field_errors
+          type: string
+          description: '* `non_field_errors` - non_field_errors'
+        code:
+          enum:
+            - invalid
+            - 'null'
+          type: string
+          description: '* `invalid` - invalid
+
+            * `null` - null'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    UserPasswordResetConfirmCreateTokenErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+            - token
+          type: string
+          description: '* `token` - token'
+        code:
+          enum:
+            - blank
+            - invalid
+            - 'null'
+            - null_characters_not_allowed
+            - required
+            - surrogate_characters_not_allowed
+          type: string
+          description: '* `blank` - blank
+
+            * `invalid` - invalid
+
+            * `null` - null
+
+            * `null_characters_not_allowed` - null_characters_not_allowed
+
+            * `required` - required
+
+            * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    UserPasswordResetConfirmCreateUidErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+            - uid
+          type: string
+          description: '* `uid` - uid'
+        code:
+          enum:
+            - blank
+            - invalid
+            - 'null'
+            - null_characters_not_allowed
+            - required
+            - surrogate_characters_not_allowed
+          type: string
+          description: '* `blank` - blank
+
+            * `invalid` - invalid
+
+            * `null` - null
+
+            * `null_characters_not_allowed` - null_characters_not_allowed
+
+            * `required` - required
+
+            * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    UserPasswordResetConfirmCreateValidationError:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/ValidationErrorEnum'
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserPasswordResetConfirmCreateError'
+      required:
+        - errors
+        - type
+    UserPasswordResetCreateEmailErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+            - email
+          type: string
+          description: '* `email` - email'
+        code:
+          enum:
+            - blank
+            - invalid
+            - 'null'
+            - null_characters_not_allowed
+            - required
+            - surrogate_characters_not_allowed
+          type: string
+          description: '* `blank` - blank
+
+            * `invalid` - invalid
+
+            * `null` - null
+
+            * `null_characters_not_allowed` - null_characters_not_allowed
+
+            * `required` - required
+
+            * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    UserPasswordResetCreateError:
+      oneOf:
+        - $ref: '#/components/schemas/UserPasswordResetCreateNonFieldErrorsErrorComponent'
+        - $ref: '#/components/schemas/UserPasswordResetCreateEmailErrorComponent'
+      discriminator:
+        propertyName: attr
+        mapping:
+          non_field_errors: '#/components/schemas/UserPasswordResetCreateNonFieldErrorsErrorComponent'
+          email: '#/components/schemas/UserPasswordResetCreateEmailErrorComponent'
+    UserPasswordResetCreateErrorResponse400:
+      oneOf:
+        - $ref: '#/components/schemas/UserPasswordResetCreateValidationError'
+        - $ref: '#/components/schemas/ParseErrorResponse'
+      discriminator:
+        propertyName: type
+        mapping:
+          validation_error: '#/components/schemas/UserPasswordResetCreateValidationError'
+          client_error: '#/components/schemas/ParseErrorResponse'
+    UserPasswordResetCreateNonFieldErrorsErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+            - non_field_errors
+          type: string
+          description: '* `non_field_errors` - non_field_errors'
+        code:
+          enum:
+            - invalid
+            - 'null'
+          type: string
+          description: '* `invalid` - invalid
+
+            * `null` - null'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    UserPasswordResetCreateValidationError:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/ValidationErrorEnum'
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserPasswordResetCreateError'
       required:
         - errors
         - type
