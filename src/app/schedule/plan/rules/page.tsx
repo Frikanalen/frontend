@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Slik virker sendetid",
@@ -82,8 +81,7 @@ export default function Page() {
         </p>
 
         <p>
-          Gå til <Link href="/profile">Min side</Link> og velg <em>Sendetid</em> under riktig
-          organisasjon.
+          Åpne <em>Studio</em> øverst på siden og velg <em>Sendetid</em>.
         </p>
       </article>
     </main>

@@ -6,7 +6,7 @@ import { getUserOrNull } from "@/app/getUserOrNull";
 import { AccountHeader } from "@/app/profile/AccountHeader";
 import { ActionLink } from "@/app/profile/ActionLink";
 import { IdentityNotice } from "@/app/profile/IdentityNotice";
-import { OrganizationSection } from "@/app/profile/OrganizationSection";
+import { NoOrganizations } from "@/app/profile/NoOrganizations";
 
 export const metadata: Metadata = {
   title: "Min side - Frikanalen",
@@ -55,7 +55,10 @@ export default async function Page() {
     <div className="flex flex-col gap-6">
       <AccountHeader user={user} />
       {isBlockedFromScheduling && <IdentityNotice />}
-      <OrganizationSection memberOf={user.memberOf} editorOf={user.editorOf} />
+      {/* An organization's tools are behind Studio in the channel bar on every
+          page, so this page is about the account. Only someone with no
+          organization yet is told here what to do next. */}
+      {user.memberOf.length + user.editorOf.length === 0 && <NoOrganizations />}
       {user.isStaff && <StaffTools />}
     </div>
   );
