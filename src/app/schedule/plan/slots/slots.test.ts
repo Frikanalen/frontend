@@ -28,7 +28,7 @@ const slot = (fields: Partial<RecurringSlot>): RecurringSlot => ({
   duration: "01:00:00",
   startsOn: "2026-01-01",
   endsOn: null,
-  defaultFillRule: null,
+  recipe: null,
   description: "",
   ...fields,
 });

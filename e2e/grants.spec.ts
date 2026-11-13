@@ -2,6 +2,15 @@ import { expect, test } from "@playwright/test";
 import { stubApi } from "./support/api";
 import { waitForHydration } from "./support/hydration";
 
+const uploads = { id: 12, kind: "uploads", description: "", series: null, seriesName: null };
+const seriesRecipe = {
+  id: 13,
+  kind: "series",
+  description: "",
+  series: 8,
+  seriesName: "Ukens program",
+};
+
 const organization = { id: 3, name: "Havneforeningen" };
 
 const grantVideo = (id: number, name: string, duration: string) => ({
@@ -21,11 +30,11 @@ const grant = (overrides: Record<string, unknown> = {}) => ({
   state: "open",
   locksAt: "2030-01-06T23:00:00Z",
   lockExempt: false,
-  fillRule: 12,
+  recipe: uploads,
   originSlot: 5,
   items: [
-    { position: 0, video: grantVideo(1, "Kaia i dag", "00:20:00") },
-    { position: 1, video: grantVideo(2, "Båtliv", "00:15:00") },
+    { position: 0, pinned: true, video: grantVideo(1, "Kaia i dag", "00:20:00") },
+    { position: 1, pinned: true, video: grantVideo(2, "Båtliv", "00:15:00") },
   ],
   itemsDuration: "00:35:00",
   canEdit: true,
@@ -97,7 +106,7 @@ test.describe("airtime grants", () => {
           grant(),
           grant({
             id: 701,
-            fillRule: null,
+            recipe: null,
             starttime: "2030-01-15T17:00:00Z",
             endtime: "2030-01-15T18:00:00Z",
           }),
@@ -172,7 +181,7 @@ test.describe("airtime grants", () => {
     const puts: unknown[] = [];
     await page.route("**/api/grants/700/items", (route) => {
       puts.push(route.request().postDataJSON());
-      return route.fulfill({ status: 200, json: grant({ fillRule: null }) });
+      return route.fulfill({ status: 200, json: grant({ recipe: null }) });
     });
     await editor(page, grant({ endtime: "2030-01-14T18:30:00Z" }));
 
@@ -192,8 +201,9 @@ test.describe("airtime grants", () => {
     await page.keyboard.press("Enter");
     await expect(listRows(page)).toHaveCount(3);
     await expect(listRows(page).nth(1)).toContainText("Fjordglimt");
-    // A changed automatic list is a manual one from here on.
-    await expect(page.getByText("Satt opp manuelt")).toBeVisible();
+    // Choosing videos doesn't turn automatic filling off.
+    await expect(page.getByText("Automatisk fylt")).toBeVisible();
+    await expect(page.getByText("Fylles automatisk når du lagrer")).toBeVisible();
 
     await page.getByRole("button", { name: "Flytt «Båtliv»" }).focus();
     await page.keyboard.press("Enter");
@@ -205,7 +215,9 @@ test.describe("airtime grants", () => {
     await expect(listRows(page).nth(0)).toContainText("Båtliv");
 
     await page.getByRole("button", { name: "Lagre listen" }).click();
-    await expect.poll(() => puts).toEqual([{ items: [{ video: 2 }, { video: 1 }, { video: 3 }] }]);
+    await expect
+      .poll(() => puts)
+      .toEqual([{ items: [{ video: 2 }, { video: 1 }, { video: 3 }], automatic: true }]);
     await expect(page.getByRole("status")).toHaveText("Listen er lagret.");
   });
 
@@ -224,7 +236,7 @@ test.describe("airtime grants", () => {
   test("an edit undone by hand is no change to save", async ({ page }) => {
     await editor(page, grant());
     await page.getByRole("button", { name: "Legg til" }).click();
-    await expect(page.getByText("Satt opp manuelt")).toBeVisible();
+    await expect(page.getByText("Ikke lagret")).toBeVisible();
     await page.getByRole("button", { name: "Fjern «Fjordglimt»" }).click();
 
     await expect(page.getByRole("button", { name: "Lagre listen" })).toBeDisabled();
@@ -411,20 +423,111 @@ test.describe("airtime grants", () => {
     await expect(page.getByText(/kan endres helt frem til sending/)).toHaveCount(0);
   });
 
-  test("switches an edited slot grant back to automatic", async ({ page }) => {
-    let posted = 0;
-    await page.route("**/api/grants/700/automatic", (route) => {
-      posted += 1;
-      return route.fulfill({ status: 200, json: grant() });
+  test("chooses a series for one broadcast, or for its whole fixed slot", async ({ page }) => {
+    const puts: unknown[] = [];
+    const following = grant({ recipe: seriesRecipe });
+    await page.route("**/api/series?**", (route) =>
+      route.fulfill({ status: 200, json: page_([{ id: 8, name: "Ukens program" }]) }),
+    );
+    await page.route("**/api/grants/700/items", (route) => {
+      puts.push(route.request().postDataJSON());
+      return route.fulfill({ status: 200, json: following });
     });
-    await editor(page, grant({ fillRule: null }));
+    await editor(page, grant());
+
+    const source = page.getByRole("combobox", { name: "Fylles fra" });
+    await expect(source).toHaveValue("");
+    // Choosing is not saving.
+    await source.selectOption({ label: "Serien «Ukens program»" });
+    expect(puts).toEqual([]);
+    await page.getByRole("button", { name: "Lagre listen" }).click();
+    await expect
+      .poll(() => puts)
+      .toEqual([
+        {
+          items: [{ video: 1 }, { video: 2 }],
+          automatic: true,
+          recipe: { kind: "series", series: 8 },
+          wholeSlot: false,
+        },
+      ]);
+    await expect(source).toHaveValue("8");
+    await expect(page.getByRole("button", { name: "Lagre listen" })).toBeDisabled();
+
+    await page.getByRole("checkbox", { name: /alle sendinger i denne faste sendeflaten/ }).check();
+    await page.getByRole("button", { name: "Lagre listen" }).click();
+    await expect
+      .poll(() => puts.at(-1))
+      .toMatchObject({ recipe: { kind: "series", series: 8 }, wholeSlot: true });
+  });
+
+  test("the board says what each automatic broadcast fills from", async ({ page }) => {
+    await page.route("**/api/grants?**", (route) =>
+      route.fulfill({
+        status: 200,
+        json: page_([
+          grant({ recipe: seriesRecipe }),
+          grant({ id: 701, starttime: "2030-01-15T17:00:00Z", endtime: "2030-01-15T18:00:00Z" }),
+        ]),
+      }),
+    );
+    await page.goto("/organization/3/schedule");
+    await waitForHydration(page);
+
+    const cards = page.getByRole("article");
+    await expect(cards.nth(0)).toContainText("Fylles fra serien «Ukens program»");
+    await expect(cards.nth(1)).toContainText("Fylles fra alt dere laster opp");
+  });
+
+  test("keeps a video the rule picked, and lets the rule fill around it", async ({ page }) => {
+    const puts: unknown[] = [];
+    const filling = grant({
+      items: [
+        { position: 0, pinned: false, video: grantVideo(1, "Kaia i dag", "00:20:00") },
+        { position: 1, pinned: false, video: grantVideo(2, "Båtliv", "00:15:00") },
+      ],
+    });
+    await page.route("**/api/grants/700/items", (route) => {
+      puts.push(route.request().postDataJSON());
+      return route.fulfill({ status: 200, json: filling });
+    });
+    await editor(page, filling);
+
+    // Nothing is chosen by hand; the rule's picks are listed apart.
+    const filled = page.getByRole("list", { name: "Fylt automatisk" }).getByRole("listitem");
+    await expect(filled).toHaveCount(2);
+    await expect(filled.nth(1)).toContainText("18:20–18:35");
+
+    await filled.nth(1).getByRole("button", { name: "Behold" }).click();
+    await expect(listRows(page)).toHaveCount(1);
+    await expect(listRows(page).nth(0)).toContainText("Båtliv");
+
+    await page.getByRole("button", { name: "Lagre listen" }).click();
+    await expect.poll(() => puts).toEqual([{ items: [{ video: 2 }], automatic: true }]);
+  });
+
+  test("turning automatic filling off keeps the list as a hand-made one", async ({ page }) => {
+    const puts: unknown[] = [];
+    const filling = grant({
+      items: [
+        { position: 0, pinned: true, video: grantVideo(1, "Kaia i dag", "00:20:00") },
+        { position: 1, pinned: false, video: grantVideo(2, "Båtliv", "00:15:00") },
+      ],
+    });
+    await page.route("**/api/grants/700/items", (route) => {
+      puts.push(route.request().postDataJSON());
+      return route.fulfill({ status: 200, json: grant({ recipe: null }) });
+    });
+    await editor(page, filling);
+
+    await page.getByRole("checkbox", { name: /Fyll resten av tiden automatisk/ }).uncheck();
+    await expect(listRows(page)).toHaveCount(2);
+
+    await page.getByRole("button", { name: "Lagre listen" }).click();
+    await expect
+      .poll(() => puts)
+      .toEqual([{ items: [{ video: 1 }, { video: 2 }], automatic: false }]);
     await expect(page.getByText("Satt opp manuelt")).toBeVisible();
-
-    page.once("dialog", (dialog) => dialog.accept());
-    await page.getByRole("button", { name: "Fyll automatisk igjen" }).click();
-
-    await expect.poll(() => posted).toBe(1);
-    await expect(page.getByText("Automatisk fylt").first()).toBeVisible();
   });
 });
 

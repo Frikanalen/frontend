@@ -7,6 +7,9 @@ import {
   listMilliseconds,
   placeItems,
   sameList,
+  fillSourceLabel,
+  ownerChoosesSource,
+  splitItems,
   timeline,
   windowMilliseconds,
   type DraftItem,
@@ -120,5 +123,44 @@ describe("grant lists", () => {
     expect(readOnlyReason(grant, Date.parse("2030-01-14T17:30:00Z"))).toMatch(/på lufta/);
     expect(readOnlyReason(grant, now)).toMatch(/låst/);
     expect(readOnlyReason({ ...grant, lockExempt: true }, now)).toMatch(/ikke tilgang/);
+  });
+});
+
+const uploads = { id: 4, kind: "uploads", description: "", seriesName: null } as const;
+
+describe("fillSourceLabel", () => {
+  it("names what a self-filling grant draws on", () => {
+    expect(fillSourceLabel({ recipe: uploads })).toBe("alt dere laster opp");
+    expect(
+      fillSourceLabel({ recipe: { ...uploads, kind: "series", series: 8, seriesName: "Ukens" } }),
+    ).toBe("serien «Ukens»");
+    expect(fillSourceLabel({ recipe: { ...uploads, kind: "jukebox", name: "Kulturnatt" } })).toBe(
+      "videojukeboksen «Kulturnatt»",
+    );
+  });
+
+  it("leaves a playlist or the jukebox to staff", () => {
+    expect(ownerChoosesSource({ recipe: null })).toBe(true);
+    expect(ownerChoosesSource({ recipe: uploads })).toBe(true);
+    expect(ownerChoosesSource({ recipe: { ...uploads, kind: "jukebox" } })).toBe(false);
+  });
+});
+
+describe("splitItems", () => {
+  const items = [
+    { ...video(1, "00:10:00"), pinned: true },
+    { ...video(2, "00:10:00"), pinned: false },
+  ];
+
+  it("separates what the owner pinned from what the rule filled", () => {
+    const { chosen, filled } = splitItems({ recipe: uploads }, items);
+    expect(chosen.map((item) => item.video.id)).toEqual([1]);
+    expect(filled.map((item) => item.video.id)).toEqual([2]);
+  });
+
+  it("treats a hand-made list as all the owner's", () => {
+    const { chosen, filled } = splitItems({ recipe: null }, items);
+    expect(chosen).toHaveLength(2);
+    expect(filled).toEqual([]);
   });
 });

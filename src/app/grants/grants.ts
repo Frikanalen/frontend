@@ -28,6 +28,19 @@ export const itemName = (item: DraftItem) => item.video.name;
 export const itemsPayload = (items: readonly DraftItem[]): GrantItemWriteRequest[] =>
   items.map((item) => ({ video: item.video.id }));
 
+/**
+ * A grant's list as the editor holds it. While the grant fills itself, the
+ * member edits only what they pinned; the rule's own picks follow and are
+ * replaced on every run. A hand-made grant is one list, all of it theirs.
+ */
+export const splitItems = <T extends Pick<GrantItem, "pinned">>(
+  grant: Pick<AirtimeGrant, "recipe">,
+  items: readonly T[],
+) =>
+  isAutomatic(grant)
+    ? { chosen: items.filter((item) => item.pinned), filled: items.filter((item) => !item.pinned) }
+    : { chosen: [...items], filled: [] as T[] };
+
 /** A list entry with a key of its own, since the same video can be listed twice. */
 export type KeyedItem = DraftItem & { key: string };
 
@@ -78,7 +91,24 @@ export const timeline = <T extends DraftItem>(
   return { rows, graphics };
 };
 
-export const isAutomatic = (grant: Pick<AirtimeGrant, "fillRule">) => grant.fillRule !== null;
+/** What a self-filling grant draws on, in words. */
+export const fillSourceLabel = ({ recipe }: Pick<AirtimeGrant, "recipe">) => {
+  if (recipe?.kind === "series") return `serien «${recipe.seriesName}»`;
+  if (recipe?.kind === "playlist") return "en spilleliste Frikanalen har satt opp";
+  if (recipe?.kind === "jukebox")
+    return recipe.name ? `videojukeboksen «${recipe.name}»` : "videojukeboksen";
+  return "alt dere laster opp";
+};
+
+/**
+ * Whether what the grant fills from is the owner's to choose: everything
+ * they upload, or one of their series. A playlist or the jukebox is set up
+ * by staff and left alone here.
+ */
+export const ownerChoosesSource = ({ recipe }: Pick<AirtimeGrant, "recipe">) =>
+  recipe === null || recipe.kind === "uploads" || recipe.kind === "series";
+
+export const isAutomatic = (grant: Pick<AirtimeGrant, "recipe">) => grant.recipe !== null;
 
 export const STATE_LABELS: Record<AirtimeGrant["state"], string> = {
   open: "Åpen",

@@ -7,6 +7,7 @@ import { nb } from "date-fns/locale/nb";
 import { FillBar } from "./FillBar";
 import {
   deadlineText,
+  fillSourceLabel,
   isAutomatic,
   itemName,
   itemStatus,
@@ -68,6 +69,11 @@ export const GrantCard = ({
         used={listMilliseconds(grant.items)}
         window={windowMilliseconds(grant)}
       />
+
+      {/* On a member's own board; the staff board also lists the station's jukebox. */}
+      {automatic && !cancelled && !showOrganization ? (
+        <p className="text-sm text-default-600">Fylles fra {fillSourceLabel(grant)}</p>
+      ) : null}
 
       {rows.length === 0 ? (
         <p className="text-sm">Ingenting er satt opp. Sendetiden viser grafikk.</p>
