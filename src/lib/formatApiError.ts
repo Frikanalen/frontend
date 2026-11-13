@@ -1,6 +1,7 @@
 import { isAxiosError } from "axios";
 
 const FALLBACK = "Noe gikk galt. Prøv igjen.";
+const TOO_MANY_REQUESTS = "For mange forsøk. Vent litt og prøv igjen.";
 
 /**
  * DRF reports failures in a handful of shapes: a top-level `detail` for
@@ -50,6 +51,9 @@ export const formatApiError = (error: unknown): string => {
   if (isAxiosError(error)) {
     // No response at all means the request never completed: offline, DNS, CORS.
     if (!error.response) return error.message || FALLBACK;
+
+    // DRF's throttle message is English and counts seconds; say it plainly.
+    if (error.response.status === 429) return TOO_MANY_REQUESTS;
 
     return formatResponseBody(error.response.data) ?? error.message ?? FALLBACK;
   }
