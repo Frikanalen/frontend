@@ -477,7 +477,7 @@ export const LoginMethodsSection = () => {
   } else if (status.error) {
     body = <FormError error={formatApiError(status.error)} />;
   } else {
-    const { enabled, verified, methods, recoveryCodesLeft } = status.data.data;
+    const { enabled, verified, methods, recoveryCodesLeft, passkeys } = status.data.data;
     const canChange = !enabled || verified;
     body = (
       <div className="flex flex-col gap-4">
@@ -488,14 +488,15 @@ export const LoginMethodsSection = () => {
           </div>
         ) : (
           <p className="text-sm">
-            Du logger inn med passord. Legg til en passkey for å logge inn uten passord, eller en
-            app eller nøkkel som ekstra steg etter passordet. Valgfritt, men anbefalt.
+            {passkeys && webauthn
+              ? "Du logger inn med passord. Legg til en passkey for å logge inn uten passord, eller en app eller nøkkel som ekstra steg etter passordet. Valgfritt, men anbefalt."
+              : "Du logger inn med passord. Legg til en autentiseringsapp som ekstra steg etter passordet. Valgfritt, men anbefalt."}
           </p>
         )}
 
         {enabled && !verified && (
           <VerifyFirst
-            withKey={webauthn && methods.some((m) => m.kind === "webauthn")}
+            withKey={webauthn && passkeys && methods.some((m) => m.kind === "webauthn")}
             onVerified={refresh}
           />
         )}
@@ -521,7 +522,7 @@ export const LoginMethodsSection = () => {
             <AddApp onAdded={added} onCancel={() => setAdding(null)} />
           ) : (
             <div className="flex flex-wrap gap-2">
-              {webauthn && (
+              {webauthn && passkeys && (
                 <Button onPress={() => setAdding("key")}>
                   <GoPasskeyFill aria-hidden="true" />
                   Legg til passkey eller sikkerhetsnøkkel
@@ -566,7 +567,7 @@ export const LoginMethodsSection = () => {
     <ProfileCard
       id="login-methods-heading"
       title="Innlogging og totrinnsbekreftelse"
-      description="Passkeys, sikkerhetsnøkler og autentiseringsapper."
+      description="Hvordan du logger inn, og et ekstra steg etter passordet."
     >
       {body}
     </ProfileCard>
