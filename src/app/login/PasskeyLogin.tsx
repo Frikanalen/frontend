@@ -5,6 +5,7 @@ import { GoPasskeyFill } from "react-icons/go";
 import { FormError } from "@/components/form/FormError";
 import { browserSupportsWebAuthn, Cancelled, loginWithPasskey } from "@/lib/webauthn";
 import { browserSupportsWebAuthnAutofill } from "@simplewebauthn/browser";
+import { useUserLoginPasskeyRetrieve } from "@/generated/user/user";
 
 const noop = () => () => {};
 
@@ -15,12 +16,15 @@ const noop = () => () => {};
  */
 export const PasskeyLogin = ({ onLoggedIn }: { onLoggedIn: () => void }) => {
   const supported = useSyncExternalStore(noop, browserSupportsWebAuthn, () => false);
+  // The API says whether passkeys are switched on in this environment.
+  const enabled = useUserLoginPasskeyRetrieve().data?.data.enabled === true;
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Autofill: a request that waits quietly until the person picks a passkey
   // from the email field's suggestions. Pressing the button replaces it.
   useEffect(() => {
+    if (!enabled) return;
     let live = true;
     void browserSupportsWebAuthnAutofill().then((autofill) => {
       if (!autofill || !live) return;
@@ -33,9 +37,9 @@ export const PasskeyLogin = ({ onLoggedIn }: { onLoggedIn: () => void }) => {
     return () => {
       live = false;
     };
-  }, [onLoggedIn]);
+  }, [onLoggedIn, enabled]);
 
-  if (!supported) return null;
+  if (!supported || !enabled) return null;
 
   return (
     <div className="mt-6 flex w-full flex-col gap-2 border-t border-foreground/10 pt-6">

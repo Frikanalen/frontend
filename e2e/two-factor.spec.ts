@@ -66,6 +66,10 @@ const virtualAuthenticator = async (page: Page) => {
   return { addPasskey };
 };
 
+/** The API says passkeys are switched on in this environment. */
+const passkeysOn = (page: Page) =>
+  page.route("**/api/user/login/passkey", (route) => route.fulfill({ json: { enabled: true } }));
+
 const requestOptions = (allow: string[] = []) => ({
   challenge: b64url(randomBytes(32)),
   timeout: 60000,
@@ -149,6 +153,7 @@ test.describe("passkeys and security keys at login", () => {
 
   const stubPasskeyLogin = async (page: Page) => {
     await stubApi(page);
+    await passkeysOn(page);
     await page.route("**/api/user/login/passkey/begin", (route) =>
       route.fulfill({ json: requestOptions() }),
     );
@@ -175,6 +180,20 @@ test.describe("passkeys and security keys at login", () => {
     expect(completes[0]).toMatchObject({ credential: { id: credentialId, type: "public-key" } });
   });
 
+  test("switched off, the login page does not offer passkeys", async ({ page }) => {
+    await stubApi(page);
+    await page.route("**/api/user/login/passkey", (route) =>
+      route.fulfill({ json: { enabled: false } }),
+    );
+    const begins = await resolveWith(page, "/api/user/login/passkey/begin", requestOptions());
+    await page.goto("/login");
+    await waitForHydration(page);
+
+    await expect(page.getByLabel("E-post")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Logg inn med passkey" })).toHaveCount(0);
+    expect(begins).toEqual([]);
+  });
+
   test("offers the passkey in the email field's autofill", async ({ page }) => {
     const completes = await stubPasskeyLogin(page);
     const authenticator = await virtualAuthenticator(page);
@@ -189,6 +208,7 @@ test.describe("passkeys and security keys at login", () => {
 
   test("password, then a security key instead of a code", async ({ page }) => {
     await stubApi(page);
+    await passkeysOn(page);
     const credentialId = await (await virtualAuthenticator(page)).addPasskey();
     const logins: unknown[] = [];
     await page.route("**/api/user/login", (route) => {
@@ -248,6 +268,27 @@ test.describe("sign-in methods in Endre profil", () => {
 
   const card = (page: Page) =>
     page.getByRole("region", { name: "Innlogging og totrinnsbekreftelse" });
+
+  test("switched off, only an app can be added", async ({ page }) => {
+    await page.route("**/api/user/2fa", (route) =>
+      route.fulfill({
+        json: {
+          enabled: false,
+          recoveryCodesLeft: 0,
+          verified: false,
+          methods: [],
+          passkeys: false,
+        },
+      }),
+    );
+    await page.goto("/profile/edit");
+    await waitForHydration(page);
+
+    await expect(
+      card(page).getByRole("button", { name: "Legg til autentiseringsapp" }),
+    ).toBeVisible();
+    await expect(card(page).getByRole("button", { name: /passkey/ })).toHaveCount(0);
+  });
 
   test("add an app: scan, confirm with a code, keep the recovery codes", async ({ page }) => {
     let methods: unknown[] = [];
@@ -363,7 +404,7 @@ test.describe("sign-in methods in Endre profil", () => {
       let methods: unknown[] = [method()];
       await page.route("**/api/user/2fa", (route) =>
         route.fulfill({
-          json: { enabled: true, recoveryCodesLeft: 10, verified: true, methods },
+          json: { enabled: true, recoveryCodesLeft: 10, verified: true, methods, passkeys: true },
         }),
       );
       await page.route("**/api/user/2fa/webauthn/register/begin", (route) =>
