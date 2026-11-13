@@ -2,11 +2,11 @@
 import { type ReactNode, useEffect, useId, useRef, useState } from "react";
 import { Button } from "@heroui/react";
 import cx from "classnames";
-import Link from "next/link";
 import type { LiveSource } from "@/generated/frikanalenDjangoAPI.schemas";
 import { formatBitrate } from "@/lib/live/streamStats";
 import { formatOsloTime, inOsloTime } from "@/lib/osloTime";
 import { format } from "date-fns";
+import { AirtimeHandoff } from "./AirtimeHandoff";
 import { type PreviewPhase, useLivePreview } from "./useLivePreview";
 import { VuMeter } from "./VuMeter";
 
@@ -208,20 +208,7 @@ export const LiveSourcePreview = ({
           <section>
             <h3 className="font-semibold">Kommende sendinger</h3>
             {source.upcomingTransmissions.length === 0 ? (
-              <p className="text-sm text-default-600">
-                Ingen ennå.
-                {organizationId != null ? (
-                  <>
-                    {" "}
-                    <Link
-                      className="font-semibold text-link hover:underline"
-                      href={`/organization/${organizationId}/schedule`}
-                    >
-                      Sett opp i sendetiden →
-                    </Link>
-                  </>
-                ) : null}
-              </p>
+              <p className="text-sm text-default-600">Ingen ennå.</p>
             ) : (
               <ul className="text-sm">
                 {source.upcomingTransmissions.map((item) => (
@@ -234,6 +221,13 @@ export const LiveSourcePreview = ({
             )}
           </section>
         </div>
+        {/* Going on air again is what most come back for, so it sits above
+            the setup. Only while open: it asks for the airtime. */}
+        {organizationId != null && open && source.enabled ? (
+          <div className="border-t border-default-200 pt-4 md:col-span-2">
+            <AirtimeHandoff organizationId={organizationId} source={source} />
+          </div>
+        ) : null}
         {children}
       </div>
     </section>

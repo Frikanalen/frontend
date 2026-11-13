@@ -153,6 +153,12 @@ test("issues an encoder key once, then lists and revokes it", async ({ page }) =
     keys = [];
     return route.fulfill({ status: 204, body: "" });
   });
+  await page.route("**/api/grants?**", (route) =>
+    route.fulfill({
+      status: 200,
+      json: { count: 1, next: null, previous: null, results: [grant] },
+    }),
+  );
   await page.goto("/organization/3/live");
   await waitForHydration(page);
 
@@ -171,6 +177,11 @@ test("issues an encoder key once, then lists and revokes it", async ({ page }) =
   await shown.getByRole("tab", { name: "Annen koder" }).click();
   await expect(shown).toContainText(
     "rtmp://live.example.test:1935/contrib/live/x?user=k&pass=s3cret",
+  );
+  // A source that is already set up leads on to the airtime too.
+  await expect(page.getByRole("link", { name: "Legg direktesendingen her" })).toHaveAttribute(
+    "href",
+    "/organization/3/schedule/77?direkte=9",
   );
   await shown.getByRole("button", { name: "Jeg har kopiert det" }).click();
   await expect(shown).toHaveCount(0);
