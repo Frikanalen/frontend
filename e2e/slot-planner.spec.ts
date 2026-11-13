@@ -128,8 +128,8 @@ test.describe("fixed slots", () => {
         },
       });
 
-    // Saved as it stands, the theme isn't stored again.
-    await page.getByRole("button", { name: /Videojukeboks, fredag/i }).press("Enter");
+    // The slot now goes by its theme. Saved as it stands, it isn't stored again.
+    await page.getByRole("button", { name: /Kulturnatt, fredag/i }).press("Enter");
     await page.getByRole("button", { name: "Lagre" }).click();
     await expect.poll(() => patches.length).toBe(2);
     expect(patches.at(-1)).not.toHaveProperty("recipe");
