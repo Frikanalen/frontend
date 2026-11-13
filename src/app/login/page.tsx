@@ -65,7 +65,7 @@ export default function Login() {
               <FormError error={error} />
               <AuthField
                 {...register("email")}
-                id="email"
+                id="login-email"
                 required
                 label="E-post"
                 type="email"
@@ -75,7 +75,7 @@ export default function Login() {
               />
               <AuthField
                 {...register("password")}
-                id="password"
+                id="login-password"
                 required
                 label="Passord"
                 type="password"
