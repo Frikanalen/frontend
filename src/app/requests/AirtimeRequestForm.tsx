@@ -3,8 +3,6 @@ import { useGrantRequestsAirtimeCreate } from "@/generated/grant-requests/grant-
 import { useRecurringSlotRequestsCreationCreate } from "@/generated/recurring-slot-requests/recurring-slot-requests";
 import type { DayEnum } from "@/generated/frikanalenDjangoAPI.schemas";
 import { formatApiError } from "@/lib/formatApiError";
-import { OSLO_TIME_ZONE } from "@/lib/osloTime";
-import { TZDate } from "@date-fns/tz/date";
 import { Button } from "@heroui/react";
 import { DayField } from "@/components/time/DayField";
 import { TimeRange } from "@/components/time/TimeRange";
@@ -17,6 +15,7 @@ import {
   osloToday,
   type Shape,
 } from "@/app/schedule/plan/slots/slots";
+import { nextDate, osloInstant, tomorrow, weekdayOf } from "./dates";
 import { useRefreshRequests } from "./useRequests";
 
 type Kind = "weekly" | "once";
@@ -29,28 +28,6 @@ const Field = ({ label, children }: { label: string; children: ReactNode }) => (
     {children}
   </label>
 );
-
-/** The Oslo date of the next `weekday` after today, as "YYYY-MM-DD". */
-const nextDate = (weekday: number, today = osloToday()) => {
-  const date = new Date(`${today}T12:00:00Z`);
-  const ahead = (weekday - ((date.getUTCDay() + 6) % 7) + 7) % 7 || 7;
-  date.setUTCDate(date.getUTCDate() + ahead);
-  return date.toISOString().slice(0, 10);
-};
-
-const weekdayOf = (date: string) => (new Date(`${date}T12:00:00Z`).getUTCDay() + 6) % 7;
-
-const tomorrow = () => {
-  const date = new Date(`${osloToday()}T12:00:00Z`);
-  date.setUTCDate(date.getUTCDate() + 1);
-  return date.toISOString().slice(0, 10);
-};
-
-/** A wall-clock date and time in Oslo, as the instant the API wants. */
-const osloInstant = (date: string, minutes: number) => {
-  const [year, month, day] = date.split("-").map(Number);
-  return new TZDate(year, month - 1, day, 0, minutes, OSLO_TIME_ZONE).toISOString();
-};
 
 /**
  * Asking Frikanalen for airtime: the same time every week, or one time
