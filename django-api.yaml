@@ -11668,6 +11668,146 @@ paths:
         - cookieAuth: []
       tags:
         - user
+  /api/user/password:
+    post:
+      operationId: user_password_create
+      description: 'Change your own password, given the current one.
+
+
+        Django''s PasswordChangeForm: the current password must be right and the
+
+        new one must pass AUTH_PASSWORD_VALIDATORS. Other sessions end (the
+
+        session auth hash rotates); this one stays signed in. Someone holding
+
+        only a stolen session cannot use this to take the account over; they
+
+        would have to know the password, or have the mailbox for a reset.'
+      tags:
+        - user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordChangeRequest'
+        required: true
+      security:
+        - tokenAuth: []
+        - cookieAuth: []
+      responses:
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPasswordCreateErrorResponse400'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: authentication_failed
+                        detail: Incorrect authentication credentials.
+                        attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_authenticated
+                        detail: Authentication credentials were not provided.
+                        attr: null
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+              examples:
+                NotFound:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_found
+                        detail: Not found.
+                        attr: null
+          description: ''
+        '405':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse405'
+              examples:
+                MethodNotAllowed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: method_not_allowed
+                        detail: Method "get" not allowed.
+                        attr: null
+          description: ''
+        '406':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse406'
+              examples:
+                NotAcceptable:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_acceptable
+                        detail: Could not satisfy the request Accept header.
+                        attr: null
+          description: ''
+        '415':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse415'
+              examples:
+                UnsupportedMediaType:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: unsupported_media_type
+                        detail: Unsupported media type "application/json" in request.
+                        attr: null
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse429'
+              examples:
+                Throttled:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: throttled
+                        detail: Request was throttled.
+                        attr: null
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+              examples:
+                APIException:
+                  value:
+                    type: server_error
+                    errors:
+                      - code: error
+                        detail: A server error occurred.
+                        attr: null
+          description: ''
+        '204':
+          description: No response body
   /api/user/password-reset:
     post:
       operationId: user_password_reset_create
@@ -21317,6 +21457,20 @@ components:
       required:
         - errors
         - type
+    PasswordChangeRequest:
+      type: object
+      properties:
+        currentPassword:
+          type: string
+          writeOnly: true
+          minLength: 1
+        newPassword:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+        - currentPassword
+        - newPassword
     PasswordResetConfirmRequest:
       type: object
       properties:
@@ -21561,13 +21715,9 @@ components:
           format: date
           nullable: true
         phoneNumber:
+          type: string
           description: Phone number at which this user can be reached
-          type: string
           maxLength: 128
-        password:
-          type: string
-          minLength: 1
-          writeOnly: true
     PatchedVideoFileRequest:
       type: object
       properties:
@@ -25749,6 +25899,12 @@ components:
         - code
         - detail
     UserPartialUpdateError:
+      oneOf:
+        - $ref: '#/components/schemas/UserPartialUpdateNonFieldErrorsErrorComponent'
+        - $ref: '#/components/schemas/UserPartialUpdateFirstNameErrorComponent'
+        - $ref: '#/components/schemas/UserPartialUpdateLastNameErrorComponent'
+        - $ref: '#/components/schemas/UserPartialUpdateDateOfBirthErrorComponent'
+        - $ref: '#/components/schemas/UserPartialUpdatePhoneNumberErrorComponent'
       discriminator:
         propertyName: attr
         mapping:
@@ -25757,14 +25913,6 @@ components:
           last_name: '#/components/schemas/UserPartialUpdateLastNameErrorComponent'
           date_of_birth: '#/components/schemas/UserPartialUpdateDateOfBirthErrorComponent'
           phone_number: '#/components/schemas/UserPartialUpdatePhoneNumberErrorComponent'
-          password: '#/components/schemas/UserPartialUpdatePasswordErrorComponent'
-      oneOf:
-        - $ref: '#/components/schemas/UserPartialUpdateNonFieldErrorsErrorComponent'
-        - $ref: '#/components/schemas/UserPartialUpdateFirstNameErrorComponent'
-        - $ref: '#/components/schemas/UserPartialUpdateLastNameErrorComponent'
-        - $ref: '#/components/schemas/UserPartialUpdateDateOfBirthErrorComponent'
-        - $ref: '#/components/schemas/UserPartialUpdatePhoneNumberErrorComponent'
-        - $ref: '#/components/schemas/UserPartialUpdatePasswordErrorComponent'
     UserPartialUpdateErrorResponse400:
       discriminator:
         propertyName: type
@@ -25917,6 +26065,128 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/UserPartialUpdateError'
+      required:
+        - errors
+        - type
+    UserPasswordCreateCurrentPasswordErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+            - current_password
+          type: string
+          description: '* `current_password` - current_password'
+        code:
+          enum:
+            - blank
+            - invalid
+            - 'null'
+            - null_characters_not_allowed
+            - required
+            - surrogate_characters_not_allowed
+          type: string
+          description: '* `blank` - blank
+
+            * `invalid` - invalid
+
+            * `null` - null
+
+            * `null_characters_not_allowed` - null_characters_not_allowed
+
+            * `required` - required
+
+            * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    UserPasswordCreateError:
+      oneOf:
+        - $ref: '#/components/schemas/UserPasswordCreateNonFieldErrorsErrorComponent'
+        - $ref: '#/components/schemas/UserPasswordCreateCurrentPasswordErrorComponent'
+        - $ref: '#/components/schemas/UserPasswordCreateNewPasswordErrorComponent'
+      discriminator:
+        propertyName: attr
+        mapping:
+          non_field_errors: '#/components/schemas/UserPasswordCreateNonFieldErrorsErrorComponent'
+          current_password: '#/components/schemas/UserPasswordCreateCurrentPasswordErrorComponent'
+          new_password: '#/components/schemas/UserPasswordCreateNewPasswordErrorComponent'
+    UserPasswordCreateErrorResponse400:
+      oneOf:
+        - $ref: '#/components/schemas/UserPasswordCreateValidationError'
+        - $ref: '#/components/schemas/ParseErrorResponse'
+      discriminator:
+        propertyName: type
+        mapping:
+          validation_error: '#/components/schemas/UserPasswordCreateValidationError'
+          client_error: '#/components/schemas/ParseErrorResponse'
+    UserPasswordCreateNewPasswordErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+            - new_password
+          type: string
+          description: '* `new_password` - new_password'
+        code:
+          enum:
+            - blank
+            - invalid
+            - 'null'
+            - null_characters_not_allowed
+            - required
+            - surrogate_characters_not_allowed
+          type: string
+          description: '* `blank` - blank
+
+            * `invalid` - invalid
+
+            * `null` - null
+
+            * `null_characters_not_allowed` - null_characters_not_allowed
+
+            * `required` - required
+
+            * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    UserPasswordCreateNonFieldErrorsErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+            - non_field_errors
+          type: string
+          description: '* `non_field_errors` - non_field_errors'
+        code:
+          enum:
+            - invalid
+            - 'null'
+          type: string
+          description: '* `invalid` - invalid
+
+            * `null` - null'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    UserPasswordCreateValidationError:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/ValidationErrorEnum'
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserPasswordCreateError'
       required:
         - errors
         - type
@@ -26360,13 +26630,9 @@ components:
           format: date
           nullable: true
         phoneNumber:
+          type: string
           description: Phone number at which this user can be reached
-          type: string
           maxLength: 128
-        password:
-          type: string
-          minLength: 1
-          writeOnly: true
     UserRetrieveErrorResponse400:
       discriminator:
         propertyName: type
@@ -26397,6 +26663,12 @@ components:
         - code
         - detail
     UserUpdateError:
+      oneOf:
+        - $ref: '#/components/schemas/UserUpdateNonFieldErrorsErrorComponent'
+        - $ref: '#/components/schemas/UserUpdateFirstNameErrorComponent'
+        - $ref: '#/components/schemas/UserUpdateLastNameErrorComponent'
+        - $ref: '#/components/schemas/UserUpdateDateOfBirthErrorComponent'
+        - $ref: '#/components/schemas/UserUpdatePhoneNumberErrorComponent'
       discriminator:
         propertyName: attr
         mapping:
@@ -26405,14 +26677,6 @@ components:
           last_name: '#/components/schemas/UserUpdateLastNameErrorComponent'
           date_of_birth: '#/components/schemas/UserUpdateDateOfBirthErrorComponent'
           phone_number: '#/components/schemas/UserUpdatePhoneNumberErrorComponent'
-          password: '#/components/schemas/UserUpdatePasswordErrorComponent'
-      oneOf:
-        - $ref: '#/components/schemas/UserUpdateNonFieldErrorsErrorComponent'
-        - $ref: '#/components/schemas/UserUpdateFirstNameErrorComponent'
-        - $ref: '#/components/schemas/UserUpdateLastNameErrorComponent'
-        - $ref: '#/components/schemas/UserUpdateDateOfBirthErrorComponent'
-        - $ref: '#/components/schemas/UserUpdatePhoneNumberErrorComponent'
-        - $ref: '#/components/schemas/UserUpdatePasswordErrorComponent'
     UserUpdateErrorResponse400:
       discriminator:
         propertyName: type
