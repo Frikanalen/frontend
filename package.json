@@ -23,7 +23,7 @@
     "@date-fns/tz": "^1.5.0",
     "@heroui/react": "3.2.7",
     "@heroui/styles": "3.2.7",
-    "@hookform/resolvers": "^5.9.0",
+    "@hookform/resolvers": "^7.0.6",
     "@internationalized/date": "^3.12.4",
     "@mdxeditor/editor": "^4.5.0",
     "@react-aria/ssr": "^3.10.1",
@@ -65,15 +65,16 @@
     "@types/node": "^24",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@vitest/coverage-v8": "^4.1.12",
-    "@vitest/ui": "^4.1.12",
-    "eslint": "^9.39.1",
+    "@vitest/coverage-v8": "^5.1.0",
+    "@vitest/ui": "^5.1.0",
+    "eslint": "^10.14.0",
     "eslint-config-next": "16.4.6",
-    "happy-dom": "^20.14.6",
-    "msw": "^2.15.0",
+    "happy-dom": "^21.0.4",
+    "msw": "^3.0.5",
     "orval": "^8.47.0",
     "tailwindcss": "4.3.5",
-    "typescript": "^5.9.2",
-    "vitest": "^4.1.12"
+    "typescript": "^6.0.3",
+    "vite": "^8.3.8",
+    "vitest": "^5.1.0"
   }
 }
