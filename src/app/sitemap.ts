@@ -16,7 +16,6 @@ const staticPaths = [
   "",
   "/about",
   "/about/contact",
-  "/about/informasjon-om-registrering",
   "/about/join",
   "/about/join/affidavit",
   "/about/statutes",
