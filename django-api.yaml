@@ -4510,6 +4510,114 @@ paths:
         - cookieAuth: []
       tags:
         - live-sources
+  /api/live-sources/{id}/signal:
+    get:
+      operationId: live_sources_signal_retrieve
+      summary: The signal a live source is receiving
+      description: 'What the receiver sees arriving on this source right now, as the encoder sends it: format, how long it has been in, and transport health. Reading it does not start a pulled source.'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Signal'
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LiveSourcesSignalRetrieveErrorResponse400'
+        '401':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: authentication_failed
+                        detail: Incorrect authentication credentials.
+                        attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_authenticated
+                        detail: Authentication credentials were not provided.
+                        attr: null
+        '404':
+          description: No such source in your organizations.
+        '405':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse405'
+              examples:
+                MethodNotAllowed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: method_not_allowed
+                        detail: Method "get" not allowed.
+                        attr: null
+        '406':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse406'
+              examples:
+                NotAcceptable:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_acceptable
+                        detail: Could not satisfy the request Accept header.
+                        attr: null
+        '415':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse415'
+              examples:
+                UnsupportedMediaType:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: unsupported_media_type
+                        detail: Unsupported media type "application/json" in request.
+                        attr: null
+        '500':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+              examples:
+                APIException:
+                  value:
+                    type: server_error
+                    errors:
+                      - code: error
+                        detail: A server error occurred.
+                        attr: null
+      security:
+        - tokenAuth: []
+        - cookieAuth: []
+      tags:
+        - live-sources
   /api/news/bulletins:
     get:
       operationId: news_bulletins_list
@@ -18627,6 +18735,13 @@ components:
           client_error: '#/components/schemas/ParseErrorResponse'
       oneOf:
         - $ref: '#/components/schemas/ParseErrorResponse'
+    LiveSourcesSignalRetrieveErrorResponse400:
+      discriminator:
+        propertyName: type
+        mapping:
+          client_error: '#/components/schemas/ParseErrorResponse'
+      oneOf:
+        - $ref: '#/components/schemas/ParseErrorResponse'
     Login:
       type: object
       properties:
@@ -24447,6 +24562,105 @@ components:
       type: string
       enum:
         - server_error
+    Signal:
+      description: The signal arriving on a source, as the encoder sends it.
+      type: object
+      properties:
+        available:
+          description: False where the receiver cannot be asked; nothing else is known then.
+          type: boolean
+        receiving:
+          type: boolean
+        since:
+          type: string
+          format: date-time
+          nullable: true
+        protocol:
+          description: '`SRT`, `RTMP`, `RTSP` or `WebRTC`; empty for a pulled source.'
+          type: string
+        video:
+          allOf:
+            - $ref: '#/components/schemas/SignalVideo'
+          nullable: true
+        audio:
+          allOf:
+            - $ref: '#/components/schemas/SignalAudio'
+          nullable: true
+        bytesReceived:
+          description: Since the signal came in. The difference between two reads gives the bitrate.
+          type: integer
+        framesInError:
+          type: integer
+        srt:
+          allOf:
+            - $ref: '#/components/schemas/SignalSrt'
+          nullable: true
+        measuredAt:
+          type: string
+          format: date-time
+      required:
+        - available
+        - measuredAt
+        - receiving
+    SignalAudio:
+      type: object
+      properties:
+        codec:
+          description: As MediaMTX names it, e.g. `MPEG-4 Audio`.
+          type: string
+        sampleRate:
+          type: integer
+          nullable: true
+        channelCount:
+          type: integer
+          nullable: true
+      required:
+        - channelCount
+        - codec
+        - sampleRate
+    SignalSrt:
+      description: Counters since the SRT connection opened.
+      type: object
+      properties:
+        packetsReceived:
+          type: integer
+        packetsLost:
+          description: Lost on the way; SRT asks for these again.
+          type: integer
+        packetsRetransmitted:
+          type: integer
+        packetsDropped:
+          description: 'Never recovered in time: these are what a viewer sees as glitches.'
+          type: integer
+        roundTripMs:
+          type: number
+          format: double
+          nullable: true
+      required:
+        - packetsDropped
+        - packetsLost
+        - packetsReceived
+        - packetsRetransmitted
+        - roundTripMs
+    SignalVideo:
+      type: object
+      properties:
+        codec:
+          description: As MediaMTX names it, e.g. `H264`.
+          type: string
+        width:
+          type: integer
+          nullable: true
+        height:
+          type: integer
+          nullable: true
+        profile:
+          type: string
+      required:
+        - codec
+        - height
+        - profile
+        - width
     SimpleOrg:
       type: object
       properties:

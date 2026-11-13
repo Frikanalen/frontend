@@ -137,6 +137,29 @@ test("a member sets up a source for Frikanalen to fetch", async ({ page }) => {
 });
 
 test("issues an encoder key once, then lists and revokes it", async ({ page }) => {
+  await page.route("**/api/live-sources/9/signal", (route) =>
+    route.fulfill({
+      status: 200,
+      json: {
+        available: true,
+        receiving: true,
+        since: new Date(Date.now() - 5 * 60_000).toISOString(),
+        protocol: "SRT",
+        video: { codec: "H264", width: 1280, height: 720, profile: "High" },
+        audio: null,
+        bytesReceived: 300_000_000,
+        framesInError: 0,
+        srt: {
+          packetsReceived: 1000,
+          packetsLost: 0,
+          packetsRetransmitted: 0,
+          packetsDropped: 0,
+          roundTripMs: 12,
+        },
+        measuredAt: new Date().toISOString(),
+      },
+    }),
+  );
   let keys: object[] = [];
   const created: unknown[] = [];
   const revoked: string[] = [];
@@ -163,6 +186,16 @@ test("issues an encoder key once, then lists and revokes it", async ({ page }) =
   await waitForHydration(page);
 
   await expect(page.getByText("Ingen nøkler ennå.", { exact: false })).toBeVisible();
+
+  // The receiver's report on the signal, not the preview's own numbers.
+  const report = page.getByRole("region", { name: "Studio" });
+  await expect(report.getByRole("status")).toHaveText("Mottar signal");
+  await expect(report).toContainText("SRT · inne i");
+  await expect(report).toContainText("1280×720 · H.264 High");
+  await expect(report).toContainText("Lavere oppløsning enn anbefalt");
+  await expect(report).toContainText("Ingen lyd");
+  await expect(report).not.toContainText("Kodek");
+
   await page.getByLabel("Ny nøkkel").fill("ATEM");
   await page.getByRole("button", { name: "Lag nøkkel" }).click();
   await expect.poll(() => created).toEqual([{ label: "ATEM" }]);

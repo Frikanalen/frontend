@@ -3,10 +3,10 @@ import { type ReactNode, useEffect, useId, useRef, useState } from "react";
 import { Button } from "@heroui/react";
 import cx from "classnames";
 import type { LiveSource } from "@/generated/frikanalenDjangoAPI.schemas";
-import { formatBitrate } from "@/lib/live/streamStats";
 import { formatOsloTime, inOsloTime } from "@/lib/osloTime";
 import { format } from "date-fns";
 import { AirtimeHandoff } from "./AirtimeHandoff";
+import { SignalReport, useSignal } from "./SignalReport";
 import { type PreviewPhase, useLivePreview } from "./useLivePreview";
 import { VuMeter } from "./VuMeter";
 
@@ -19,13 +19,6 @@ const PHASES: Record<PreviewPhase, { label: string; className: string }> = {
   unsupported: { label: "Kan ikke spilles av", className: "border-danger text-danger-700" },
   error: { label: "Feil", className: "border-danger text-danger-700" },
 };
-
-const Stat = ({ label, value }: { label: string; value: string }) => (
-  <div>
-    <dt className="text-xs text-default-500">{label}</dt>
-    <dd className="font-mono">{value}</dd>
-  </div>
-);
 
 /**
  * One live source: what it is and whether a signal arrives, and, opened, the
@@ -60,7 +53,18 @@ export const LiveSourcePreview = ({
     if (videoRef.current) videoRef.current.srcObject = stream;
   }, [stream, open]);
 
-  const { label, className } = PHASES[phase];
+  const { signal, previous } = useSignal(source.id, { enabled: source.enabled !== false, open });
+
+  // The receiver knows whether a signal is in without a preview running;
+  // where it cannot say, the preview's own state is the next best thing.
+  const { label, className } = signal
+    ? signal.receiving
+      ? PHASES.playing
+      : {
+          label: source.isPulled ? "Hentes ved behov" : "Ingen signal",
+          className: "border-default-300 text-default-600",
+        }
+    : PHASES[phase];
   const video = stats?.video;
   // Packets arriving but carrying nothing: the encoder is connected yet
   // sending no picture, which is worth saying apart from "no signal".
@@ -83,7 +87,7 @@ export const LiveSourcePreview = ({
           {!source.enabled && <p className="text-sm text-danger-700">Kilden er slått av.</p>}
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          {running ? (
+          {signal || running ? (
             <span
               className={cx("border-l-4 px-2 py-1 text-sm font-semibold", className)}
               role="status"
@@ -178,28 +182,15 @@ export const LiveSourcePreview = ({
         </div>
 
         <div className="space-y-4">
-          <section>
-            <h3 className="font-semibold">Forhåndsvisningen</h3>
-            <p className="text-xs text-default-500">
-              Målt på kopien som vises her, ikke på signalet slik koderen sender det.
-            </p>
-            <dl className="mt-1 grid grid-cols-2 gap-2">
-              <Stat label="Bitrate" value={formatBitrate(video?.bitrate ?? null)} />
-              <Stat label="Kodek" value={video?.codec ?? "–"} />
-              <Stat
-                label="Oppløsning"
-                value={video?.width && video.height ? `${video.width}×${video.height}` : "–"}
-              />
-              <Stat
-                label="Bilder/s"
-                value={video?.framesPerSecond != null ? String(video.framesPerSecond) : "–"}
-              />
-              <Stat label="Tapte pakker" value={video ? String(video.packetsLost) : "–"} />
-            </dl>
-          </section>
+          {signal ? (
+            <section className="space-y-1">
+              <h3 className="font-semibold">Signalet deres</h3>
+              <SignalReport previous={previous} pulled={source.isPulled} signal={signal} />
+            </section>
+          ) : null}
           {phase === "playing" && (
             <section>
-              <h3 className="font-semibold">Lyd</h3>
+              <h3 className="font-semibold">Lydnivå</h3>
               <div className="mt-1">
                 <VuMeter stream={stream} />
               </div>
