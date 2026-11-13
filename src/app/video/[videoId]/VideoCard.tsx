@@ -5,8 +5,11 @@ import { notFound } from "next/navigation";
 import {
   DASH_VIDEO_TYPES,
   VIDEO_TYPES,
+  HLS_VIDEO_TYPES,
   type DASHMimeType,
   type DASHSrc,
+  type HLSMimeType,
+  type HLSSrc,
   type VideoMimeType,
   type VideoSrc,
 } from "@vidstack/react";
@@ -16,11 +19,14 @@ import { VideoCardMeta } from "@/app/video/[videoId]/VideoCardMeta";
 // Ordered by preference: vidstack plays the first source it finds a provider for,
 // so DASH wins wherever Media Source Extensions are available and the progressive
 // files serve as the fallback everywhere else — WebM ahead of the ageing Theora.
+// HLS is the same ladder as DASH; VideoPlayer moves it to the front on browsers
+// that can AirPlay, and elsewhere it is only reached if nothing above it plays.
 const playbackPreference = [
   "dash",
   "dashPreview",
   "webmMed",
   "theora",
+  "hls",
 ] as const satisfies readonly (keyof VideoFiles)[];
 
 // A bare `video/ogg` isn't enough to choose by: browsers that play Ogg audio but not Theora video
@@ -34,10 +40,13 @@ const codecs: Partial<Record<(typeof playbackPreference)[number], string>> = {
 
 const isVidstackVideoMimeType = (
   mimeType: string | null,
-): mimeType is VideoMimeType | DASHMimeType =>
-  mimeType !== null && (VIDEO_TYPES.has(mimeType) || DASH_VIDEO_TYPES.has(mimeType));
+): mimeType is VideoMimeType | DASHMimeType | HLSMimeType =>
+  mimeType !== null &&
+  (VIDEO_TYPES.has(mimeType) || DASH_VIDEO_TYPES.has(mimeType) || HLS_VIDEO_TYPES.has(mimeType));
 
-export const djangoVideoFilesToVidstackSrcList = (videoFiles: VideoFiles): (VideoSrc | DASHSrc)[] =>
+export const djangoVideoFilesToVidstackSrcList = (
+  videoFiles: VideoFiles,
+): (VideoSrc | DASHSrc | HLSSrc)[] =>
   playbackPreference.flatMap((variant) => {
     const file = videoFiles[variant];
     if (!file || !isVidstackVideoMimeType(file.mimeType)) return [];

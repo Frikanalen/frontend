@@ -12385,6 +12385,7 @@ paths:
             * `dash` - MPEG-DASH manifest
             * `dash_preview` - Transient low-quality MPEG-DASH manifest
             * `webm_med` - Medium-quality WebM
+            * `hls` - HLS playlists over the DASH media
           schema:
             type: string
             enum:
@@ -12392,6 +12393,7 @@ paths:
               - cloudflare_id
               - dash
               - dash_preview
+              - hls
               - large_thumb
               - med_thumb
               - original
@@ -27411,6 +27413,7 @@ components:
         * `dash` - MPEG-DASH manifest
         * `dash_preview` - Transient low-quality MPEG-DASH manifest
         * `webm_med` - Medium-quality WebM
+        * `hls` - HLS playlists over the DASH media
       type: string
       enum:
         - large_thumb
@@ -27425,6 +27428,7 @@ components:
         - dash
         - dash_preview
         - webm_med
+        - hls
     VideoFiles:
       type: object
       properties:
@@ -27451,6 +27455,8 @@ components:
         dashPreview:
           $ref: '#/components/schemas/VideoFileLink'
         webmMed:
+          $ref: '#/components/schemas/VideoFileLink'
+        hls:
           $ref: '#/components/schemas/VideoFileLink'
     VideoRequest:
       description: 'The read serializer: the organization arrives whole.'

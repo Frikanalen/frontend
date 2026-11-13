@@ -13,6 +13,10 @@ describe("djangoVideoFilesToVidstackSrcList", () => {
       },
       webmMed: { url: "https://media.example/video.webm", mimeType: "video/webm" },
       broadcast: { url: "https://media.example/master.dv", mimeType: "video/DV" },
+      hls: {
+        url: "https://media.example/hls/master.m3u8",
+        mimeType: "application/vnd.apple.mpegurl",
+      },
     } satisfies VideoFiles;
 
     expect(djangoVideoFilesToVidstackSrcList(files)).toEqual([
@@ -20,6 +24,8 @@ describe("djangoVideoFilesToVidstackSrcList", () => {
       { src: "https://media.example/preview/manifest.mpd", type: "application/dash+xml" },
       { src: "https://media.example/video.webm", type: "video/webm" },
       { src: "https://media.example/video.ogv", type: 'video/ogg; codecs="theora, vorbis"' },
+      // Last here; VideoPlayer moves it first on browsers that can AirPlay.
+      { src: "https://media.example/hls/master.m3u8", type: "application/vnd.apple.mpegurl" },
     ]);
   });
 

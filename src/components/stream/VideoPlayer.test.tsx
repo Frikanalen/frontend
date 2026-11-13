@@ -6,6 +6,7 @@ const vidstack = vi.hoisted(() => ({
   MediaProvider: vi.fn(),
   Poster: vi.fn(),
   isDASHProvider: vi.fn(),
+  isHLSSrc: vi.fn(),
   useMediaRemote: vi.fn(),
   useMediaState: vi.fn(),
 }));
@@ -54,9 +55,43 @@ describe("UnsupportedVideoMessage", () => {
 });
 
 describe("VideoPlayer", () => {
-  it("passes an initial playback time to Vidstack", () => {
-    const player = VideoPlayer({ title: "A video", src: "/video.webm", startTime: 90 });
+  const sources = [
+    { src: "/dash/manifest.mpd", type: "application/dash+xml" as const },
+    { src: "/hls/master.m3u8", type: "application/vnd.apple.mpegurl" as const },
+  ];
 
-    expect(player.props.currentTime).toBe(90);
+  const renderedPlayerProps = (props: Parameters<typeof VideoPlayer>[0]) => {
+    vidstack.MediaPlayer.mockReturnValue(null);
+    vidstack.isHLSSrc.mockImplementation((source: { type: string }) =>
+      source.type.includes("mpegurl"),
+    );
+    render(<VideoPlayer {...props} />);
+    return vidstack.MediaPlayer.mock.calls.at(-1)![0];
+  };
+
+  afterEach(() => {
+    delete (window as unknown as Record<string, unknown>).WebKitPlaybackTargetAvailabilityEvent;
+  });
+
+  it("passes an initial playback time to Vidstack", () => {
+    expect(
+      renderedPlayerProps({ title: "A video", src: "/video.webm", startTime: 90 }).currentTime,
+    ).toBe(90);
+  });
+
+  it("leaves source order and hls.js alone where AirPlay is not available", () => {
+    const props = renderedPlayerProps({ title: "A video", src: sources });
+
+    expect(props.src).toEqual(sources);
+    expect(props.preferNativeHLS).toBe(false);
+  });
+
+  it("plays HLS natively first where the browser can AirPlay", () => {
+    (window as unknown as Record<string, unknown>).WebKitPlaybackTargetAvailabilityEvent = class {};
+
+    const props = renderedPlayerProps({ title: "A video", src: sources });
+
+    expect(props.src).toEqual([sources[1], sources[0]]);
+    expect(props.preferNativeHLS).toBe(true);
   });
 });

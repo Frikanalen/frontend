@@ -1,9 +1,11 @@
-import React, { ReactNode } from "react";
+import React, { ReactNode, useSyncExternalStore } from "react";
 import "@vidstack/react/player/styles/default/theme.css";
 import "@vidstack/react/player/styles/default/layouts/video.css";
 import {
   DASHSrc,
+  HLSSrc,
   isDASHProvider,
+  isHLSSrc,
   MediaPlayer,
   MediaProvider,
   MediaProviderAdapter,
@@ -36,6 +38,24 @@ const loadDashjs = async () => {
 const onProviderChange = (provider: MediaProviderAdapter | null) => {
   if (isDASHProvider(provider)) provider.library = loadDashjs;
 };
+
+// Safari is the only browser that can AirPlay, and only a stream it plays itself: through
+// (Managed)MediaSource the page builds the stream, there is no URL for an Apple TV to fetch, and
+// hls.js and dash.js both switch remote playback off, which hides the AirPlay button. iOS 17+ has
+// ManagedMediaSource, so left to itself vidstack would choose hls.js or dash.js there. On a
+// browser that can AirPlay, HLS goes first and plays natively; that also hands seeking to the
+// system player. Everywhere else nothing changes: DASH (with AV1) stays first and live keeps hls.js.
+const canAirPlay = () => "WebKitPlaybackTargetAvailabilityEvent" in window;
+const noSubscription = () => () => {};
+
+export const useCanAirPlay = () => useSyncExternalStore(noSubscription, canAirPlay, () => false);
+
+type PlayerSource = VideoSrc | DASHSrc | HLSSrc;
+
+export const hlsFirst = (src: string | PlayerSource | PlayerSource[]) =>
+  Array.isArray(src)
+    ? [...src.filter(isHLSSrc), ...src.filter((source) => !isHLSSrc(source))]
+    : src;
 
 // With `load="play"` vidstack only renders its load layout — a small centre play button — until
 // playback starts, and its click-to-play gestures don't exist yet. Cover the whole poster so any
@@ -96,16 +116,19 @@ export const VideoPlayer = ({
   startTime,
 }: {
   title: string;
-  src: string | VideoSrc | DASHSrc | (VideoSrc | DASHSrc)[];
+  src: string | PlayerSource | PlayerSource[];
   poster?: string;
   mediaPending?: boolean;
   overlay?: ReactNode;
   startTime?: number;
 }) => {
+  const airPlay = useCanAirPlay();
+
   return (
     <MediaPlayer
       title={title}
-      src={src}
+      src={airPlay ? hlsFirst(src) : src}
+      preferNativeHLS={airPlay}
       poster={poster}
       aspectRatio="16/9"
       load="play"
