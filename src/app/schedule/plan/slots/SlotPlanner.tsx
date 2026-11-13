@@ -1,16 +1,11 @@
 "use client";
 import type { Organization, RecurringSlot } from "@/generated/frikanalenDjangoAPI.schemas";
-import {
-  getRecurringSlotsListQueryKey,
-  useRecurringSlotsList,
-  useRecurringSlotsPartialUpdate,
-} from "@/generated/recurring-slots/recurring-slots";
+import { useRecurringSlotsList } from "@/generated/recurring-slots/recurring-slots";
 import { formatApiError } from "@/lib/formatApiError";
-import { useQueryClient } from "@tanstack/react-query";
 import cx from "classnames";
 import { useEffect, useMemo, useRef, useState, type PointerEvent, type ReactNode } from "react";
 import { GoAlert } from "react-icons/go";
-import { SlotForm, type Draft } from "./SlotForm";
+import { SlotForm, isJukebox, type Draft } from "./SlotForm";
 import {
   DAY,
   MIN_DURATION,
@@ -18,7 +13,6 @@ import {
   WEEKDAYS_SHORT,
   blocksOf,
   clamp,
-  durationPayload,
   formatLength,
   formatTime,
   isCurrent,
@@ -26,6 +20,7 @@ import {
   organizationHue,
   osloToday,
   recurrenceLabel,
+  sameShape,
   shapeOf,
   slotsMayCollide,
   snap,
@@ -39,7 +34,16 @@ const DRAG_THRESHOLD = 4;
 const LIST_PARAMS = { limit: 1000 };
 /** What "Fremhev" holds for the station's own slots, which have no organization. */
 const STATION = 0;
-const focusKey = (slot: Pick<RecurringSlot, "organization">) => slot.organization ?? STATION;
+/** And for the video jukebox's slots, the station's that fill themselves. */
+const JUKEBOX = -1;
+type Owned = Pick<RecurringSlot, "organization" | "defaultFillRule">;
+const focusKey = (slot: Owned) => (isJukebox(slot) ? JUKEBOX : (slot.organization ?? STATION));
+const focusName = (key: number, organizations: Map<number, Organization>) =>
+  key === JUKEBOX
+    ? "Videojukeboks"
+    : key === STATION
+      ? "Frikanalen"
+      : (organizations.get(key)?.name ?? `#${key}`);
 
 type Drag =
   | { kind: "create"; day: number; anchor: number; current: number }
@@ -55,18 +59,25 @@ type Drag =
       shape: Shape;
     };
 
-/** An organization's colour; the station's own slots are a neutral grey. */
-const blockStyle = (slot: Pick<RecurringSlot, "organization">) => {
-  const hue = organizationHue(slot.organization);
+/**
+ * An organization's colour. The station's own slots are a neutral grey, and
+ * the jukebox's are plum, the colour of everything automatic.
+ */
+const keyStyle = (key: number) => {
+  if (key === JUKEBOX) return { backgroundColor: "var(--color-brand-plum)" };
+  const hue = key === STATION ? null : organizationHue(key);
   return { backgroundColor: hue === null ? "oklch(0.45 0 0)" : `oklch(0.48 0.1 ${hue})` };
 };
+const blockStyle = (slot: Owned) => keyStyle(focusKey(slot));
 
 /**
  * The week as Frikanalen's regular programming sees it: one column per
  * weekday, every recurring slot drawn where it airs. Staff drag on an empty
  * stretch to give an organization a new slot, drag a slot to move it, and
- * drag its lower edge to change its length. Everything else is in the form
- * beside the grid, which is also the keyboard way to do all of the above.
+ * drag its lower edge to change its length. A drag only proposes: it opens
+ * the slot in the form beside the grid with the new time filled in, and
+ * nothing changes until that form is saved. The form is also the keyboard
+ * way to do all of the above.
  */
 /**
  * In pick mode the week is only a map of what is taken: a member drags or
@@ -86,18 +97,15 @@ export const SlotPlanner = ({
   organizations: Organization[];
   pick?: PickMode;
 }) => {
-  const queryClient = useQueryClient();
   const slots = useRecurringSlotsList(LIST_PARAMS);
-  const update = useRecurringSlotsPartialUpdate();
   const [today] = useState(() => osloToday());
   const [showEnded, setShowEnded] = useState(false);
   const [focus, setFocus] = useState<number | null>(null);
   const [selected, setSelected] = useState<number | null>(null);
   const [draft, setDraft] = useState<Draft | null>(null);
   const [drag, setDrag] = useState<Drag | null>(null);
-  // Shapes saved but not yet confirmed, so a dropped slot stays put meanwhile.
-  const [pending, setPending] = useState<Record<number, Shape>>({});
-  const [error, setError] = useState<string>();
+  // Where the selected slot has been dragged or typed to, until it is saved.
+  const [edit, setEdit] = useState<Shape | null>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -118,7 +126,7 @@ export const SlotPlanner = ({
   const shapeFor = (slot: RecurringSlot): Shape =>
     drag && drag.kind !== "create" && drag.slot.id === slot.id
       ? drag.shape
-      : (pending[slot.id] ?? shapeOf(slot));
+      : ((selected === slot.id ? edit : null) ?? shapeOf(slot));
 
   // Slots that issue airtime and could be on air at the same time. The server
   // refuses new collisions; these are the ones already there, or a drag
@@ -183,7 +191,7 @@ export const SlotPlanner = ({
     const moved =
       drag.moved || Math.hypot(event.clientX - drag.x, event.clientY - drag.y) > DRAG_THRESHOLD;
     if (!moved) return;
-    const original = pending[drag.slot.id] ?? shapeOf(drag.slot);
+    const original = (selected === drag.slot.id ? edit : null) ?? shapeOf(drag.slot);
     if (drag.kind === "resize") {
       const end = snap(minute);
       const duration = Math.max(MIN_DURATION, end - original.start);
@@ -207,8 +215,10 @@ export const SlotPlanner = ({
         pick.onSelect({ days: [drag.day], start: from, duration });
         return;
       }
+      setEdit(null);
       setDraft({
-        organization: focus === STATION ? null : focus,
+        kind: focus === JUKEBOX ? "jukebox" : focus === STATION ? "station" : "member",
+        organization: focus !== null && focus > 0 ? focus : null,
         days: [drag.day],
         start: from,
         // A click rather than a drag asks for the common case: an hour.
@@ -216,45 +226,11 @@ export const SlotPlanner = ({
       });
       return;
     }
-    if (!drag.moved) {
-      setDraft(null);
-      setSelected(drag.slot.id);
-      return;
-    }
-    void save(drag.slot, drag.shape);
-  };
-
-  const save = async (slot: RecurringSlot, shape: Shape) => {
-    const before = pending[slot.id] ?? shapeOf(slot);
-    if (
-      shape.start === before.start &&
-      shape.duration === before.duration &&
-      shape.days.join() === before.days.join()
-    ) {
-      return;
-    }
-    setError(undefined);
-    setPending((current) => ({ ...current, [slot.id]: shape }));
-    try {
-      await update.mutateAsync({
-        id: slot.id,
-        data: {
-          startTime: formatTime(shape.start),
-          duration: durationPayload(shape.duration),
-          // A daily slot with no weekdays stays that way unless a day moved.
-          ...(shape.days.join() !== before.days.join() ? { weekdays: shape.days } : {}),
-        },
-      });
-      await queryClient.invalidateQueries({ queryKey: getRecurringSlotsListQueryKey(LIST_PARAMS) });
-    } catch (caught) {
-      setError(`Kunne ikke flytte sendeflaten: ${formatApiError(caught)}`);
-    } finally {
-      setPending((current) => {
-        const rest = { ...current };
-        delete rest[slot.id];
-        return rest;
-      });
-    }
+    setDraft(null);
+    if (selected !== drag.slot.id) setEdit(null);
+    setSelected(drag.slot.id);
+    // A drag proposes a new time; saving it is the form's job.
+    if (drag.moved) setEdit(sameShape(drag.shape, shapeOf(drag.slot)) ? null : drag.shape);
   };
 
   const selectedSlot = all.find((slot) => slot.id === selected) ?? null;
@@ -288,7 +264,10 @@ export const SlotPlanner = ({
               onChange={(event) => setFocus(event.target.value ? Number(event.target.value) : null)}
             >
               <option value="">Alle organisasjoner</option>
-              {all.some((slot) => slot.organization == null) ? (
+              {all.some((slot) => focusKey(slot) === JUKEBOX) ? (
+                <option value={JUKEBOX}>Videojukeboks</option>
+              ) : null}
+              {all.some((slot) => focusKey(slot) === STATION) ? (
                 <option value={STATION}>Frikanalen</option>
               ) : null}
               {organizations
@@ -314,11 +293,6 @@ export const SlotPlanner = ({
         </div>
 
         {slots.isError ? <p role="alert">{formatApiError(slots.error)}</p> : null}
-        {error ? (
-          <p className="bg-danger/10 px-3 py-2 text-sm font-medium text-danger-700" role="alert">
-            {error}
-          </p>
-        ) : null}
         {colliding.size > 0 && !pick ? (
           <p className="flex items-center gap-2 bg-warning/20 px-3 py-2 text-sm">
             <GoAlert aria-hidden className="shrink-0" />
@@ -385,7 +359,9 @@ export const SlotPlanner = ({
                     const isSuspended = suspended(slot);
                     const dimmed =
                       (focus !== null && focusKey(slot) !== focus) || ended || isSuspended;
-                    const name = slot.organizationName ?? "Frikanalen";
+                    const name =
+                      slot.organizationName ?? (isJukebox(slot) ? "Videojukeboks" : "Frikanalen");
+                    const unsaved = selected === slot.id && edit !== null && !dragging;
                     const pattern = recurrenceLabel(slot);
                     const lastBlock = (day: number) =>
                       blocksOf({ ...shape, days: [day] }).at(-1)!.bottom;
@@ -399,6 +375,7 @@ export const SlotPlanner = ({
                           dragging && "z-20 cursor-grabbing shadow-lg ring-2 ring-white/70",
                           selected === slot.id && "z-10 ring-2 ring-foreground ring-offset-1",
                           colliding.has(slot.id) && "outline-2 outline-danger",
+                          unsaved && "outline-2 outline-offset-1 outline-warning outline-dashed",
                           dimmed && !dragging && "opacity-35",
                           (pattern || isSuspended) &&
                             "bg-[repeating-linear-gradient(45deg,transparent_0_6px,rgb(255_255_255/0.14)_6px_12px)]",
@@ -419,6 +396,7 @@ export const SlotPlanner = ({
                           if (event.key === "Enter" || event.key === " ") {
                             event.preventDefault();
                             setDraft(null);
+                            if (selected !== slot.id) setEdit(null);
                             setSelected(slot.id);
                           }
                         }}
@@ -453,6 +431,23 @@ export const SlotPlanner = ({
                       </button>
                     ));
                   })}
+
+                  {selectedSlot && edit
+                    ? // Where the slot still is, as far as anyone else can tell.
+                      blocksOf(shapeOf(selectedSlot)).map((block) => (
+                        <div
+                          aria-hidden
+                          className="pointer-events-none absolute border border-dashed border-foreground/60"
+                          key={`was-${block.day}-${block.column}`}
+                          style={{
+                            top: block.top * PX_PER_MINUTE,
+                            height: (block.bottom - block.top) * PX_PER_MINUTE - 1,
+                            left: `calc(${(block.column / 7) * 100}% + 2px)`,
+                            width: `calc(${100 / 7}% - 4px)`,
+                          }}
+                        />
+                      ))
+                    : null}
 
                   {createPreview ? (
                     <div
@@ -496,16 +491,23 @@ export const SlotPlanner = ({
             key={selectedSlot ? `slot-${selectedSlot.id}` : "new"}
             draft={draft}
             organizations={organizations}
+            shape={selectedSlot ? (edit ?? shapeOf(selectedSlot)) : draft!}
             slot={selectedSlot}
             onClose={() => {
               setDraft(null);
+              setEdit(null);
               setSelected(null);
             }}
-            onDraftChange={setDraft}
             onSaved={(saved) => {
               setDraft(null);
+              setEdit(null);
               setSelected(saved?.id ?? null);
             }}
+            onShapeChange={(shape) =>
+              selectedSlot
+                ? setEdit(sameShape(shape, shapeOf(selectedSlot)) ? null : shape)
+                : setDraft((current) => ({ ...current!, ...shape }))
+            }
           />
         ) : (
           <Totals
@@ -565,14 +567,8 @@ const Totals = ({
               type="button"
               onClick={() => onFocus(id)}
             >
-              <span
-                aria-hidden
-                className="size-3 shrink-0"
-                style={blockStyle({ organization: id === STATION ? null : id })}
-              />
-              <span className="min-w-0 grow truncate">
-                {id === STATION ? "Frikanalen" : (organizations.get(id)?.name ?? `#${id}`)}
-              </span>
+              <span aria-hidden className="size-3 shrink-0" style={keyStyle(id)} />
+              <span className="min-w-0 grow truncate">{focusName(id, organizations)}</span>
               <span className="tabular-nums text-default-600">
                 {formatLength(Math.round(minutes))}
               </span>

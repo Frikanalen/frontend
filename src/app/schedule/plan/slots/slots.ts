@@ -81,6 +81,9 @@ export const recurrenceLabel = (
 /** A slot's shape on the planner, which a drag can change before it's saved. */
 export type Shape = { days: number[]; start: number; duration: number };
 
+export const sameShape = (a: Shape, b: Shape) =>
+  a.start === b.start && a.duration === b.duration && a.days.join() === b.days.join();
+
 export const shapeOf = (slot: RecurringSlot): Shape => ({
   days: slotDays(slot),
   start: parseTime(slot.startTime),
@@ -178,6 +181,13 @@ export const organizationHue = (organizationId: number | null | undefined): numb
 
 const listJoin = (parts: string[]) =>
   parts.length < 2 ? parts.join("") : `${parts.slice(0, -1).join(", ")} og ${parts.at(-1)}`;
+
+/** "torsdag 19:00–20:00" for a shape alone, without how often it repeats. */
+export const describeShape = ({ days, start, duration }: Shape): string => {
+  const names =
+    days.length === 7 ? "hver dag" : listJoin(days.map((day) => WEEKDAYS[day].toLowerCase()));
+  return `${names} ${formatTime(start)}–${formatTime(start + duration)}`.trim();
+};
 
 /** "Hver torsdag 19:00–20:00", in Norwegian, for headings and labels. */
 export const describeSlot = (slot: RecurringSlot): string => {
