@@ -13,7 +13,7 @@ export const UserRegisterForm = ({ className }: { className?: string }) => {
   const router = useRouter();
   const { mutateAsync } = useUserRegisterCreate();
   const form = useForm<NewUserRequest>();
-  const { register } = form;
+  const { register, formState } = form;
 
   const { onSubmit, error, isSubmitting } = useApiFormSubmit(form, async (data) => {
     await mutateAsync({ data });
@@ -50,11 +50,19 @@ export const UserRegisterForm = ({ className }: { className?: string }) => {
         />
         <AuthField
           id="password"
-          {...register("password")}
+          {...register("password", {
+            // The backend runs Django's full password checks; the length is
+            // repeated here so the commonest miss gets a Norwegian answer
+            // before the round trip (Django's own length message isn't
+            // translated).
+            minLength: { value: 8, message: "Passordet må ha minst 8 tegn." },
+          })}
           label={"Passord"}
           type={"password"}
           autoComplete={"new-password"}
           required
+          isInvalid={!!formState.errors.password}
+          errorMessage={formState.errors.password?.message}
         />
       </div>
       <div className={"ml-auto w-fit py-4"}>

@@ -78,6 +78,19 @@ test.describe("register form", () => {
     await expect(page).toHaveURL(/\/register$/);
   });
 
+  test("asks for at least 8 characters before reaching the API", async ({ page }) => {
+    const attempts = await hangOn(page, REGISTER);
+
+    await fillAndConfirm(page.getByLabel("Epost (brukernavn)"), "someone@example.com");
+    await fillAndConfirm(page.getByLabel("Fornavn"), "Kari");
+    await fillAndConfirm(page.getByLabel("Etternavn"), "Nordmann");
+    await fillAndConfirm(page.getByLabel("Passord"), "kort");
+    await page.getByRole("button", { name: "Registrer deg" }).click();
+
+    await expect(page.getByText("Passordet må ha minst 8 tegn.")).toBeVisible();
+    expect(attempts()).toBe(0);
+  });
+
   test("shows every password complaint the backend returns", async ({ page }) => {
     await rejectWith(page, REGISTER, 400, {
       password: ["Passordet er for kort.", "Passordet er for vanlig."],
