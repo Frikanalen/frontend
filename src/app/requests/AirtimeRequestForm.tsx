@@ -61,15 +61,17 @@ export const AirtimeRequestForm = ({
   organizationId,
   shape,
   onShapeChange,
+  initialKind = "weekly",
 }: {
   organizationId: number;
+  initialKind?: Kind;
   shape: Shape | null;
   onShapeChange: (_shape: Shape) => void;
 }) => {
   const createSlot = useRecurringSlotRequestsCreationCreate();
   const createAirtime = useGrantRequestsAirtimeCreate();
   const refresh = useRefreshRequests();
-  const [kind, setKind] = useState<Kind>("weekly");
+  const [kind, setKind] = useState<Kind>(initialKind);
   const [chosenDate, setDate] = useState(() => nextDate(shape?.days[0] ?? 0));
   const [message, setMessage] = useState("");
   const [error, setError] = useState<string>();

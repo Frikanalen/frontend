@@ -63,7 +63,16 @@ export const PullAddress = ({ source, maySetUp }: { source: LiveSource; maySetUp
             isDisabled={update.isPending}
             size="sm"
             variant="tertiary"
-            onPress={() => void save({ pullUrl: "" }).catch(() => undefined)}
+            onPress={() => {
+              // The address can't be read back, so losing it by a slip is costly.
+              if (
+                globalThis.confirm(
+                  "Slutte å hente fra adressen? Den slettes og kan ikke vises igjen. Kilden venter da på signal fra en koder.",
+                )
+              ) {
+                void save({ pullUrl: "" }).catch(() => undefined);
+              }
+            }}
           >
             Send fra koder i stedet
           </Button>
@@ -76,6 +85,11 @@ export const PullAddress = ({ source, maySetUp }: { source: LiveSource; maySetUp
             {source.enabled ? "Slå av kilden" : "Slå på kilden"}
           </Button>
         </div>
+      ) : null}
+      {maySetUp ? (
+        <p className="text-xs text-default-600">
+          En kilde som er slått av, tar ikke imot signal og kan ikke settes i sendeplanen.
+        </p>
       ) : null}
       {update.error ? <p role="alert">{formatApiError(update.error)}</p> : null}
     </section>

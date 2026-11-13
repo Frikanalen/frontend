@@ -70,16 +70,33 @@ const droppedVideos = async (items: DropItem[]) =>
 const osloDateTime = (instant: string) =>
   format(inOsloTime(instant), "EEEE d. MMMM 'kl.' HH:mm", { locale: nb });
 
-export const GrantEditor = ({ grantId, backHref }: { grantId: number; backHref: string }) => {
+export const GrantEditor = ({
+  grantId,
+  backHref,
+  newLiveFrom,
+}: {
+  grantId: number;
+  backHref: string;
+  /** Opens with a new live broadcast from this source ready to fill in. */
+  newLiveFrom?: number;
+}) => {
   const query = useGrantsRetrieve(grantId);
   const grant = query.data?.data;
 
   if (query.isLoading) return <p>Laster sendetid…</p>;
   if (query.isError || !grant) return <p role="alert">{formatApiError(query.error)}</p>;
-  return <Editor backHref={backHref} grant={grant} key={grant.id} />;
+  return <Editor backHref={backHref} grant={grant} key={grant.id} newLiveFrom={newLiveFrom} />;
 };
 
-const Editor = ({ grant, backHref }: { grant: AirtimeGrant; backHref: string }) => {
+const Editor = ({
+  grant,
+  backHref,
+  newLiveFrom,
+}: {
+  grant: AirtimeGrant;
+  backHref: string;
+  newLiveFrom?: number;
+}) => {
   const [items, setItems] = useState<KeyedItem[]>(() => keyedItems(grant));
   const [error, setError] = useState<string>();
   const [saved, setSaved] = useState(false);
@@ -389,6 +406,7 @@ const Editor = ({ grant, backHref }: { grant: AirtimeGrant; backHref: string }) 
         {editable ? (
           <aside className="bg-background p-4 sm:p-6">
             <VideoPicker
+              newLiveFrom={newLiveFrom}
               organizationId={grant.organization.id}
               remaining={windowLength - used}
               onPick={(video) => change([...items, keyed(video)])}
