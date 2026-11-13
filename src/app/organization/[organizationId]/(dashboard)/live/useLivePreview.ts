@@ -62,9 +62,18 @@ async function connect(sourceId: number, target: PreviewTarget) {
     // which it answers with 400 rather than 404: any other failure falls
     // through to the original.
     console.warn("Opus preview unavailable, showing the original:", cause);
+    try {
+      const session = await startWhep(whepUrl(data.contributionPath), data.token);
+      return { session, variant: "contribution" as const };
+    } catch (fallback) {
+      // The preview was only slow to start (a pulled source takes a few
+      // seconds), and the original has sound no browser plays. That is no
+      // fault of the browser: report the preview's own failure, so the
+      // next attempt asks for the preview again.
+      if (fallback instanceof WhepError && fallback.reason === "unsupported-codec") throw cause;
+      throw fallback;
+    }
   }
-  const session = await startWhep(whepUrl(data.contributionPath), data.token);
-  return { session, variant: "contribution" as const };
 }
 
 export function useLivePreview(sourceId: number, target: PreviewTarget = "source") {
