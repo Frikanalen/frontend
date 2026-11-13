@@ -8,18 +8,20 @@ import { ScheduleItemList } from "@/app/schedule/ScheduleItemView";
 import { ScheduleWeek } from "@/app/schedule/ScheduleWeek";
 import { ScheduleDateParams, parseParamsOr404 } from "@/lib/routeParams";
 import { formatOsloDateISO } from "@/lib/formatOsloDateISO";
+import { getScheduleVersion } from "@/lib/scheduleVersion";
 
 type ScheduleParams = Promise<{ year: string; month: string; date: string }>;
 
 /**
- * One day's schedule, shared by every visitor for a minute: the same day is
- * asked for by everyone who opens the schedule today, and it rarely changes
- * once it is locked a week ahead.
+ * One day's schedule, shared by every visitor until the schedule version
+ * moves (or a minute passes): the same day is asked for by everyone who opens
+ * the schedule today, and it rarely changes. Passing `version` makes it part
+ * of the cache key.
  */
-const fetchScheduleDay = async (date: string): Promise<ScheduleitemRead[]> => {
+const fetchScheduleDay = async (date: string, version: string): Promise<ScheduleitemRead[]> => {
   "use cache";
   cacheLife("minutes");
-  cacheTag("schedule");
+  cacheTag("schedule", `schedule-version:${version}`);
 
   const { data, status } = await ssrScheduleitemsList({ date });
   if (status !== 200) throw new Error(`Schedule for ${date}: the API answered ${status}`);
@@ -51,7 +53,8 @@ const DayNavigation = async ({ params }: { params: ScheduleParams }) => {
 
 const DayItems = async ({ params }: { params: ScheduleParams }) => {
   const { year, month, date } = await parseParamsOr404(ScheduleDateParams, params);
-  return <ScheduleItemList items={await fetchScheduleDay(`${year}-${month}-${date}`)} />;
+  const items = await fetchScheduleDay(`${year}-${month}-${date}`, await getScheduleVersion());
+  return <ScheduleItemList items={items} />;
 };
 
 /**

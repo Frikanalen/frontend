@@ -4,17 +4,19 @@ import { connection } from "next/server";
 import { ScheduleitemRead } from "@/generated/frikanalenDjangoAPI.schemas";
 import { ssrScheduleitemsList } from "@/generated/ssr/scheduleitems/scheduleitems";
 import { formatOsloDateISO } from "@/lib/formatOsloDateISO";
+import { getScheduleVersion } from "@/lib/scheduleVersion";
 
 /**
  * One day's schedule with the items on either side, shared by every visitor
- * for a minute. Throws rather than returning an empty day, because a throw is
- * never cached: a backend hiccup then costs one page view, not a minute of
- * them.
+ * until the schedule version moves (or a minute passes); passing `version`
+ * makes it part of the cache key. Throws rather than returning an empty day,
+ * because a throw is never cached: a backend hiccup then costs one page view,
+ * not a minute of them.
  */
-const fetchScheduleAround = async (date: string): Promise<ScheduleitemRead[]> => {
+const fetchScheduleAround = async (date: string, version: string): Promise<ScheduleitemRead[]> => {
   "use cache";
   cacheLife("minutes");
-  cacheTag("schedule");
+  cacheTag("schedule", `schedule-version:${version}`);
 
   const { data, status } = await ssrScheduleitemsList({ date, surrounding: true });
   if (status !== 200) throw new Error(`the API answered ${status}`);
@@ -37,7 +39,7 @@ const fetchScheduleAround = async (date: string): Promise<ScheduleitemRead[]> =>
 export const getScheduleForToday = cache(async (): Promise<ScheduleitemRead[]> => {
   await connection();
   try {
-    return await fetchScheduleAround(formatOsloDateISO(new Date()));
+    return await fetchScheduleAround(formatOsloDateISO(new Date()), await getScheduleVersion());
   } catch (error) {
     console.error("Could not load the front page schedule", error);
     return [];
