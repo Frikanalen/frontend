@@ -1,6 +1,13 @@
 2025-05-31 
 # Changelog
 
+## [3.8.0](https://github.com/Frikanalen/frontend/compare/v3.7.0...v3.8.0) (2026-11-13)
+
+
+### Features
+
+* **grants:** staff give an organization airtime directly ([#125](https://github.com/Frikanalen/frontend/issues/125)) ([dc2d1bb](https://github.com/Frikanalen/frontend/commit/dc2d1bbd58ee8185d7ef9b630f3912ff16476534))
+
 ## [3.7.0](https://github.com/Frikanalen/frontend/compare/v3.6.0...v3.7.0) (2026-11-13)
 
 
