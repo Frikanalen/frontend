@@ -50,7 +50,7 @@ export type Draft = Shape & {
   organization: number | null;
 };
 
-/** "standard" leaves the rule to the server: the owner's newest uploads. */
+/** "standard" leaves the rule to the server: the owner's new uploads, then their archive. */
 type RuleChoice = number | "none" | "standard";
 
 const KINDS: { value: SlotKind; label: string; hint: string }[] = [
@@ -59,10 +59,16 @@ const KINDS: { value: SlotKind; label: string; hint: string }[] = [
   { value: "station", label: "Frikanalen", hint: "Kanalens egen tid, settes opp for hånd" },
 ];
 
-const POOL = { organization: "egne videoer", playlist: "spilleliste", filler: "fyllpool" };
+const POOL = {
+  organization: "egne videoer",
+  playlist: "spilleliste",
+  series: "serie",
+  filler: "fyllpool",
+};
 const ORDERING = {
   latest: "nyeste først",
   least_aired: "minst sendt først",
+  premiere: "nytt først, så arkivet",
   shuffled: "tilfeldig",
   weighted: "vektet",
 };

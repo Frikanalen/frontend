@@ -2,7 +2,6 @@
 import type { AirtimeGrant, GrantItemVideo } from "@/generated/frikanalenDjangoAPI.schemas";
 import {
   getGrantsRetrieveQueryKey,
-  useGrantsAutomaticCreate,
   useGrantsItemsUpdate,
   useGrantsRetrieve,
 } from "@/generated/grants/grants";
@@ -24,7 +23,7 @@ import {
   useDragAndDrop,
   type DropItem,
 } from "react-aria-components";
-import { GoBroadcast, GoGrabber, GoX } from "react-icons/go";
+import { GoBroadcast, GoGrabber, GoPin, GoSync, GoX } from "react-icons/go";
 import { durationMilliseconds, formatDuration } from "./duration";
 import { HourBar } from "./HourBar";
 import { ExemptionRequest } from "@/app/requests/ExemptionRequest";
@@ -41,6 +40,7 @@ import {
   listMilliseconds,
   placeItems,
   sameList,
+  splitItems,
   STATE_LABELS,
   timeline,
   windowMilliseconds,
@@ -57,7 +57,9 @@ const keyed = (video: GrantItemVideo): KeyedItem => ({
   key: `item-${nextKey++}`,
   video,
 });
-const keyedItems = (grant: AirtimeGrant) => grant.items.map((item) => keyed(item.video));
+/** What the editor edits: the pinned items of a self-filling grant, or all of a hand-made one. */
+const keyedItems = (grant: AirtimeGrant) =>
+  splitItems(grant, grant.items).chosen.map((item) => keyed(item.video));
 
 const droppedVideos = async (items: DropItem[]) =>
   Promise.all(
@@ -102,10 +104,23 @@ const Editor = ({
   const [saved, setSaved] = useState(false);
   const queryClient = useQueryClient();
   const saveItems = useGrantsItemsUpdate();
-  const automatic = useGrantsAutomaticCreate();
+  // Whether the grant's rule fills the time the chosen videos leave.
+  const [fillRest, setFillRest] = useState(isAutomatic(grant));
+  const stored = splitItems(grant, grant.items);
+  // Until a member changes something, the list is what the server holds.
+  // Against that, so moving something and moving it back, or adding and
+  // removing a video, isn't a change worth saving.
+  const dirty = !sameList(items, stored.chosen) || fillRest !== isAutomatic(grant);
+  // The rule's own picks are only known for the list as saved.
+  const filled = fillRest && !dirty ? stored.filled : [];
   const windowLength = windowMilliseconds(grant);
   const used = listMilliseconds(items);
-  const { rows, graphics } = timeline(items, grant);
+  const { rows: allRows, graphics } = timeline(
+    [...items, ...filled.map((item, index) => ({ key: `filled-${index}`, video: item.video }))],
+    grant,
+  );
+  const rows = allRows.slice(0, items.length);
+  const filledRows = allRows.slice(items.length);
   const [now] = useState(Date.now);
   // Locked for transmission: the list is settled, so it is shown as it will
   // air, without the tools for changing it. Staff may still change it until
@@ -113,11 +128,7 @@ const Editor = ({
   const locked = !grant.lockExempt && (grant.state !== "open" || Date.parse(grant.locksAt) <= now);
   const [unlocked, setUnlocked] = useState(false);
   const editable = grant.canEdit && (!locked || unlocked);
-  // Until a member changes it, an automatic list is still automatic.
-  // Against what the server holds, so moving something and moving it back,
-  // or adding and removing a video, isn't a change worth saving.
-  const dirty = !sameList(items, grant.items);
-  const showsAutomatic = isAutomatic(grant) && !dirty;
+  const showsAutomatic = fillRest;
 
   const change = (next: KeyedItem[]) => {
     setItems(next);
@@ -169,6 +180,7 @@ const Editor = ({
   // Starts the editor afresh from what the server now holds.
   const refresh = async (data: AirtimeGrant) => {
     setItems(keyedItems(data));
+    setFillRest(isAutomatic(data));
     queryClient.setQueryData(getGrantsRetrieveQueryKey(grant.id), (old: object | undefined) => ({
       ...(old ?? {}),
       data,
@@ -181,7 +193,7 @@ const Editor = ({
     try {
       const response = await saveItems.mutateAsync({
         id: grant.id,
-        data: { items: itemsPayload(items) },
+        data: { items: itemsPayload(items), automatic: fillRest },
       });
       setSaved(true);
       await refresh(response.data);
@@ -190,15 +202,12 @@ const Editor = ({
     }
   };
 
-  const backToAutomatic = async () => {
-    if (!globalThis.confirm("Erstatte listen med et automatisk utvalg?")) return;
+  const toggleFillRest = (on: boolean) => {
+    // Turning it off keeps what the rule had picked, as a list of one's own.
+    if (!on) setItems([...items, ...filled.map((item) => keyed(item.video))]);
+    setFillRest(on);
+    setSaved(false);
     setError(undefined);
-    try {
-      const response = await automatic.mutateAsync({ id: grant.id });
-      await refresh(response.data);
-    } catch (caught) {
-      setError(formatApiError(caught));
-    }
   };
 
   return (
@@ -247,8 +256,8 @@ const Editor = ({
 
       {showsAutomatic && editable ? (
         <p className="border-l-4 border-brand-plum bg-background p-3 text-sm">
-          Listen fylles automatisk hver natt frem til fristen. Endrer du den, blir den manuell og
-          blir stående slik du lagrer den.
+          Sendetiden fyller seg selv hver natt, helt frem til et døgn før sending. Videoer dere
+          legger inn selv, blir stående først, og resten fylles rundt dem.
         </p>
       ) : null}
 
@@ -258,9 +267,9 @@ const Editor = ({
           <HourBar
             automatic={showsAutomatic}
             end={grant.endtime}
-            rows={rows}
+            rows={allRows}
             start={grant.starttime}
-            used={used}
+            used={used + listMilliseconds(filled)}
           />
           {editable ? (
             <p className="text-sm text-default-600">
@@ -275,8 +284,12 @@ const Editor = ({
             renderEmptyState={() => (
               <p className="flex min-h-24 items-center justify-center border-b border-dashed border-default-300 p-4 text-center text-default-600">
                 {editable
-                  ? "Dra en video hit."
-                  : "Ingenting er satt opp. Sendetiden viser grafikk."}
+                  ? fillRest
+                    ? "Dra en video hit for å sette den først. Resten fylles automatisk."
+                    : "Dra en video hit."
+                  : fillRest
+                    ? "Ingenting er valgt for hånd."
+                    : "Ingenting er satt opp. Sendetiden viser grafikk."}
               </p>
             )}
             selectionMode="none"
@@ -343,6 +356,40 @@ const Editor = ({
               </GridListItem>
             )}
           </GridList>
+          {filledRows.length > 0 ? (
+            <ul aria-label="Fylt automatisk" className="border-l-4 border-brand-plum">
+              {filledRows.map((row) => (
+                <li
+                  key={row.item.key}
+                  className="flex items-center gap-2 border-b border-default-200 px-2 py-3"
+                >
+                  <GoSync aria-label="Fylt automatisk" className="shrink-0 text-default-600" />
+                  <span className="hidden w-28 shrink-0 whitespace-nowrap font-bold sm:block">
+                    {formatOsloTime(row.start)}–{formatOsloTime(row.end)}
+                  </span>
+                  <span className="min-w-0 grow">
+                    <span className="block text-sm font-bold sm:hidden">
+                      {formatOsloTime(row.start)}–{formatOsloTime(row.end)}
+                    </span>
+                    <span className="block truncate font-semibold">{itemName(row.item)}</span>
+                    <span className="text-sm text-default-600">
+                      {formatDuration(durationMilliseconds(row.item.video.duration) ?? 0)}
+                      {itemStatus(row.item.video) ? ` · ${itemStatus(row.item.video)}` : ""}
+                    </span>
+                  </span>
+                  {editable ? (
+                    <HeroButton
+                      size="sm"
+                      variant="tertiary"
+                      onPress={() => change([...items, keyed(row.item.video)])}
+                    >
+                      <GoPin aria-hidden /> Behold
+                    </HeroButton>
+                  ) : null}
+                </li>
+              ))}
+            </ul>
+          ) : null}
           {graphics ? (
             <div className="flex items-center gap-2 px-1 text-default-600">
               <span
@@ -353,7 +400,7 @@ const Editor = ({
               >
                 {formatOsloTime(graphics.start)}–{formatOsloTime(graphics.end)}
               </span>
-              <span>Grafikk</span>
+              <span>{fillRest && dirty ? "Fylles automatisk når du lagrer" : "Grafikk"}</span>
             </div>
           ) : null}
 
@@ -361,6 +408,22 @@ const Editor = ({
             <p className="border-l-4 border-danger bg-danger-50 p-3 text-danger-700" role="alert">
               {error}
             </p>
+          ) : null}
+          {editable ? (
+            <label className="flex items-start gap-2 border-t border-default-200 pt-3">
+              <input
+                checked={fillRest}
+                className="mt-1 size-4"
+                type="checkbox"
+                onChange={(event) => toggleFillRest(event.target.checked)}
+              />
+              <span>
+                <span className="font-semibold">Fyll resten av tiden automatisk</span>
+                <span className="block text-sm text-default-600">
+                  Uten dette sendes bare det som står i listen, og resten av tiden viser grafikk.
+                </span>
+              </span>
+            </label>
           ) : null}
           {editable ? (
             <div className="flex flex-wrap items-center gap-2 border-t border-default-200 pt-3">
@@ -377,21 +440,12 @@ const Editor = ({
                 variant="tertiary"
                 onPress={() => {
                   setItems(keyedItems(grant));
+                  setFillRest(isAutomatic(grant));
                   setError(undefined);
                 }}
               >
                 Forkast endringer
               </HeroButton>
-              {!isAutomatic(grant) && grant.originSlot !== null ? (
-                <HeroButton
-                  className="ms-auto"
-                  isPending={automatic.isPending}
-                  variant="tertiary"
-                  onPress={backToAutomatic}
-                >
-                  Fyll automatisk igjen
-                </HeroButton>
-              ) : null}
               {saved ? (
                 <span className="text-sm text-success-700" role="status">
                   Listen er lagret.

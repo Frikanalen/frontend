@@ -7,6 +7,7 @@ import {
   listMilliseconds,
   placeItems,
   sameList,
+  splitItems,
   timeline,
   windowMilliseconds,
   type DraftItem,
@@ -120,5 +121,24 @@ describe("grant lists", () => {
     expect(readOnlyReason(grant, Date.parse("2030-01-14T17:30:00Z"))).toMatch(/på lufta/);
     expect(readOnlyReason(grant, now)).toMatch(/låst/);
     expect(readOnlyReason({ ...grant, lockExempt: true }, now)).toMatch(/ikke tilgang/);
+  });
+});
+
+describe("splitItems", () => {
+  const items = [
+    { ...video(1, "00:10:00"), pinned: true },
+    { ...video(2, "00:10:00"), pinned: false },
+  ];
+
+  it("separates what the owner pinned from what the rule filled", () => {
+    const { chosen, filled } = splitItems({ fillRule: 4 }, items);
+    expect(chosen.map((item) => item.video.id)).toEqual([1]);
+    expect(filled.map((item) => item.video.id)).toEqual([2]);
+  });
+
+  it("treats a hand-made list as all the owner's", () => {
+    const { chosen, filled } = splitItems({ fillRule: null }, items);
+    expect(chosen).toHaveLength(2);
+    expect(filled).toEqual([]);
   });
 });

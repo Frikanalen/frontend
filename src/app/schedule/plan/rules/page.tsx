@@ -62,9 +62,12 @@ export default function Page() {
 
         <h2>Automatisk fylling</h2>
         <p>
-          Sendetid fra en fast sendeflate fylles automatisk, normalt med organisasjonens nyeste
-          videoer. Gjør dere ingenting, blir sendetiden likevel fylt. Endrer dere listen selv,
-          slutter den å fylles automatisk; velg <em>Fyll automatisk igjen</em> for å gå tilbake.
+          Sendetid fra en fast sendeflate fyller seg selv: først det nyeste som ikke har vært sendt,
+          deretter arkivet, det som er sendt minst først. Organisasjonen kan la en sendeflate følge
+          en av seriene sine. Gjør dere ingenting, blir sendetiden likevel fylt, og nye opplastinger
+          kommer med helt frem til et døgn før sending. Videoer dere velger selv, blir stående
+          først, og resten fylles rundt dem. Slå av <em>Fyll resten av tiden automatisk</em> for å
+          sende bare det dere selv har satt opp.
         </p>
 
         <h2>Video som ikke er ferdig</h2>

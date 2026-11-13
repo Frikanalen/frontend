@@ -1,5 +1,6 @@
 import { getUserOrNull } from "@/app/getUserOrNull";
 import { GrantsBoard } from "@/app/grants/GrantsBoard";
+import { SlotProgrammes } from "@/app/grants/SlotProgrammes";
 import { profileIsAdminOrMember } from "@/app/organization/[organizationId]/admin/profileIsAdminOrMember";
 import { getCookiesFromRequest } from "@/lib/getCookiesFromRequest";
 import { organizationRetrieve } from "@/generated/organization/organization";
@@ -52,6 +53,7 @@ export default async function Page({ params }: { params: Promise<{ organizationI
         </section>
       ) : null}
 
+      <SlotProgrammes organizationId={organization.id} />
       <GrantsBoard organizationId={organization.id} />
     </div>
   );

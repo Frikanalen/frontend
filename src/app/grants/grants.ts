@@ -28,6 +28,19 @@ export const itemName = (item: DraftItem) => item.video.name;
 export const itemsPayload = (items: readonly DraftItem[]): GrantItemWriteRequest[] =>
   items.map((item) => ({ video: item.video.id }));
 
+/**
+ * A grant's list as the editor holds it. While the grant fills itself, the
+ * member edits only what they pinned; the rule's own picks follow and are
+ * replaced on every run. A hand-made grant is one list, all of it theirs.
+ */
+export const splitItems = <T extends Pick<GrantItem, "pinned">>(
+  grant: Pick<AirtimeGrant, "fillRule">,
+  items: readonly T[],
+) =>
+  isAutomatic(grant)
+    ? { chosen: items.filter((item) => item.pinned), filled: items.filter((item) => !item.pinned) }
+    : { chosen: [...items], filled: [] as T[] };
+
 /** A list entry with a key of its own, since the same video can be listed twice. */
 export type KeyedItem = DraftItem & { key: string };
 

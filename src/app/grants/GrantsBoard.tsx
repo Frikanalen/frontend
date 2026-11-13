@@ -81,7 +81,8 @@ export const GrantsBoard = ({
           ) : (
             <>
               <p className="flex flex-wrap items-center gap-2 text-sm text-default-600">
-                <ModeBadge automatic /> fylles hver natt frem til fristen.
+                <ModeBadge automatic /> fyller seg selv rundt det dere velger, til et døgn før
+                sending.
                 <ModeBadge automatic={false} /> blir stående slik den ble lagret.
               </p>
               <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
