@@ -13,7 +13,15 @@ export const Providers = ({ children }: Readonly<{ children: ReactNode }>) => {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <NextThemesProvider attribute="class" defaultTheme="system" enableSystem>
+      {/* Its own storage key: Django admin, on the same origin, saves its
+          theme toggle ("auto", "light", "dark") under "theme", and
+          next-themes would apply "auto" as a class and drop dark mode. */}
+      <NextThemesProvider
+        attribute="class"
+        defaultTheme="system"
+        enableSystem
+        storageKey="frikanalen-theme"
+      >
         {/* React Aria otherwise follows the browser's language, so a visitor
             with an English browser hears "Insert before …" on a Norwegian page. */}
         <I18nProvider locale="nb-NO">
