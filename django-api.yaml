@@ -16690,6 +16690,9 @@ components:
           type: string
         homepage:
           type: string
+        purpose:
+          type: string
+          description: 'Vedtektsfestet formål: what the organization is for.'
         streetAddress:
           type: string
         postalAddress:
@@ -16706,6 +16709,7 @@ components:
         - organizationForm
         - orgnr
         - postalAddress
+        - purpose
         - streetAddress
     Bulletin:
       type: object

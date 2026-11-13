@@ -1,7 +1,7 @@
 "use client";
 import { FormInput, FormTextArea } from "@/components/FormField";
 import { useForm, useWatch } from "react-hook-form";
-import { OrganizationRequest } from "@/generated/frikanalenDjangoAPI.schemas";
+import { BrregEntity, OrganizationRequest } from "@/generated/frikanalenDjangoAPI.schemas";
 import { Button, Form } from "@heroui/react";
 import { useOrganizationCreate } from "@/generated/organization/organization";
 import { useRouter } from "next/navigation";
@@ -11,8 +11,18 @@ import { FormError } from "@/components/form/FormError";
 import { isValidOrgnr, normalizeOrgnr } from "@/lib/orgnr";
 import { BrregLookup, useBrregLookup } from "@/app/organization/register/useBrregLookup";
 
-// The fields the register fills in.
-const PREFILLED = ["name", "homepage", "streetAddress", "postalAddress"] as const;
+// The form fields the register fills in, and where in its answer each comes from.
+const PREFILLED = {
+  name: "name",
+  homepage: "homepage",
+  description: "purpose",
+  streetAddress: "streetAddress",
+  postalAddress: "postalAddress",
+} as const satisfies Partial<Record<keyof OrganizationRequest, keyof BrregEntity>>;
+
+// Organization.description's limit in Django. A long vedtektsfestet formål
+// is filled in whole, for the member to shorten.
+const DESCRIPTION_MAX = 255;
 
 const LookupStatus = ({ lookup }: { lookup: BrregLookup }) => {
   switch (lookup.state) {
@@ -67,17 +77,18 @@ export const OrgCreateForm = ({ className }: { className?: string }) => {
   const form = useForm<OrganizationRequest>();
   const { register } = form;
   // Controlled, so what the register fills in shows up in the fields.
-  const [name, homepage, streetAddress, postalAddress] = useWatch({
+  const [name, homepage, description, streetAddress, postalAddress] = useWatch({
     control: form.control,
-    name: [...PREFILLED],
+    name: ["name", "homepage", "description", "streetAddress", "postalAddress"],
   });
   const { lookup, canFetch, fetch } = useBrregLookup(
     useWatch({ control: form.control, name: "orgnr" }),
     (entity) => {
       // Asked for with the button, so it replaces what is there.
-      for (const field of PREFILLED) {
-        form.setValue(field, entity[field], { shouldDirty: true });
+      for (const [field, source] of Object.entries(PREFILLED)) {
+        form.setValue(field as keyof typeof PREFILLED, entity[source], { shouldDirty: true });
       }
+      void form.trigger("description");
     },
   );
   const router = useRouter();
@@ -146,7 +157,17 @@ export const OrgCreateForm = ({ className }: { className?: string }) => {
           labelPlacement={"outside-top"}
           classNames={{ input: "py-2" }} // heroui bug? margins very stingy
           id="org-description"
-          {...register("description")}
+          rows={4}
+          {...register("description", {
+            maxLength: {
+              value: DESCRIPTION_MAX,
+              message: `Høyst ${DESCRIPTION_MAX} tegn. Kort ned teksten.`,
+            },
+          })}
+          value={description ?? ""}
+          description={`${(description ?? "").length} av ${DESCRIPTION_MAX} tegn`}
+          isInvalid={!!form.formState.errors.description}
+          errorMessage={form.formState.errors.description?.message}
           isRequired
         />
         <div className="flex flex-col gap-4 sm:flex-row">
@@ -155,18 +176,22 @@ export const OrgCreateForm = ({ className }: { className?: string }) => {
             labelPlacement={"outside-top"}
             isRequired
             id="org-streetAddress"
+            className="flex-1"
+            rows={4}
             {...register("streetAddress")}
             value={streetAddress ?? ""}
-            classNames={{ input: "py-2" }} // heroui bug? margins very stingy
+            classNames={{ input: "w-full py-2" }} // heroui bug? margins very stingy
           />
           <FormTextArea
             label={"Postadresse"}
             labelPlacement={"outside-top"}
             isRequired
             id="org-postalAddress"
+            className="flex-1"
+            rows={4}
             {...register("postalAddress")}
             value={postalAddress ?? ""}
-            classNames={{ input: "py-2" }} // heroui bug? margins very stingy
+            classNames={{ input: "w-full py-2" }} // heroui bug? margins very stingy
           />
         </div>
         <div className="ml-auto">

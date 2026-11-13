@@ -10,6 +10,7 @@ const entity = {
   name: "TESTFORENINGEN",
   organizationForm: "Forening/lag/innretning",
   homepage: "https://www.testforeningen.no",
+  purpose: "Foreningen skal lage lokal-TV.",
   streetAddress: "Testgata 1\n0150 OSLO",
   postalAddress: "Postboks 1\n0101 OSLO",
   bankrupt: false,
@@ -36,8 +37,20 @@ test("fills the form from Enhetsregisteret", async ({ page }) => {
   await expect(page.getByLabel("Organisasjonens nettside")).toHaveValue(
     "https://www.testforeningen.no",
   );
+  await expect(page.getByLabel("En kort beskrivelse av organisasjonen")).toHaveValue(
+    "Foreningen skal lage lokal-TV.",
+  );
   await expect(page.getByLabel("Besøksadresse")).toHaveValue("Testgata 1\n0150 OSLO");
   await expect(page.getByLabel("Postadresse")).toHaveValue("Postboks 1\n0101 OSLO");
+});
+
+test("asks for a long purpose to be shortened", async ({ page }) => {
+  await resolveWith(page, LOOKUP, { ...entity, purpose: "Formål. ".repeat(40) });
+
+  await fillAndConfirm(page.getByLabel("Organisasjonsnummer"), ORGNR);
+  await fetchButton(page).click();
+
+  await expect(page.getByText("Høyst 255 tegn. Kort ned teksten.")).toBeVisible();
 });
 
 test("waits for the button, then replaces what is there", async ({ page }) => {
@@ -91,13 +104,13 @@ test("sends the number along with the new organization", async ({ page }) => {
   await fillAndConfirm(page.getByLabel("Organisasjonsnummer"), "971 526 920");
   await fetchButton(page).click();
   await expect(page.getByLabel("Organisasjonens navn")).toHaveValue("TESTFORENINGEN");
-  await fillAndConfirm(page.getByLabel("En kort beskrivelse av organisasjonen"), "Vi lager TV.");
   await page.getByRole("button", { name: "Opprett organisasjon" }).click();
 
   await expect.poll(() => created.length).toBe(1);
   expect(created[0]).toMatchObject({
     orgnr: ORGNR,
     name: "TESTFORENINGEN",
+    description: "Foreningen skal lage lokal-TV.",
     streetAddress: "Testgata 1\n0150 OSLO",
   });
 });
