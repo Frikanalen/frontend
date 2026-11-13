@@ -1,6 +1,13 @@
 import type { Signal } from "@/generated/frikanalenDjangoAPI.schemas";
 import { describe, expect, it } from "vitest";
-import { describeSignal, formatElapsed, readiness, signalBitrate, signalSlots } from "./signal";
+import {
+  describeSignal,
+  formatElapsed,
+  heldOver,
+  readiness,
+  signalBitrate,
+  signalSlots,
+} from "./signal";
 
 const good: Signal = {
   available: true,
@@ -197,5 +204,27 @@ describe("signalSlots", () => {
   it("carries the marks of the report", () => {
     const small = { ...good, video: { ...good.video!, width: 1280, height: 720 } };
     expect(signalSlots(small, false)[1].status).toBe("warn");
+  });
+});
+
+describe("heldOver", () => {
+  const at = (seconds: number, available: boolean) => ({
+    available,
+    measuredAt: new Date(Date.UTC(2026, 10, 13, 10, 0, seconds)).toISOString(),
+  });
+
+  it("keeps the last report through a missed answer or two", () => {
+    expect(heldOver(at(0, true), at(5, false))).toBe(true);
+    expect(heldOver(at(0, true), at(25, false))).toBe(true);
+  });
+
+  it("lets go once the receiver has been out of reach for half a minute", () => {
+    expect(heldOver(at(0, true), at(30, false))).toBe(false);
+  });
+
+  it("never holds back a real report, or holds on to nothing", () => {
+    expect(heldOver(at(0, true), at(5, true))).toBe(false);
+    expect(heldOver(undefined, at(5, false))).toBe(false);
+    expect(heldOver(at(0, false), at(5, false))).toBe(false);
   });
 });

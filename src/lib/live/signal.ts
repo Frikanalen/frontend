@@ -314,3 +314,20 @@ export const readiness = ({
   if (reasons.length > 0) return { level: "check", reasons };
   return { level: "ready", reasons };
 };
+
+/** How long the last report stands in when the receiver cannot be asked. */
+export const HOLD_OVER_MS = 30_000;
+
+/**
+ * Whether the report shown should stay although a newer one says the
+ * receiver could not be asked. A single missed answer (Django restarting,
+ * a slow reply) says nothing about the signal, and dropping the report for
+ * it makes the panel blink and the verdict change for no reason.
+ */
+export const heldOver = (
+  shown: Pick<Signal, "available" | "measuredAt"> | undefined,
+  latest: Pick<Signal, "available" | "measuredAt">,
+): boolean =>
+  !latest.available &&
+  !!shown?.available &&
+  Date.parse(latest.measuredAt) - Date.parse(shown.measuredAt) < HOLD_OVER_MS;
