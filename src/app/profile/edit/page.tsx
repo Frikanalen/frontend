@@ -6,7 +6,7 @@ import { getCookiesFromRequest } from "@/lib/getCookiesFromRequest";
 import { getUserOrNull } from "@/app/getUserOrNull";
 import { UserProfileForm } from "@/app/profile/edit/UserProfileForm";
 import { PasswordSection } from "@/app/profile/edit/PasswordSection";
-import { TwoFactorSection } from "@/app/profile/edit/TwoFactorSection";
+import { LoginMethodsSection } from "@/app/profile/edit/LoginMethodsSection";
 
 export const metadata: Metadata = {
   title: "Endre profil - Frikanalen",
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 
 /**
  * Each thing you come here to do has its own card and its own button: your
- * details, your password, two-factor. They save separately, so a half-typed
+ * details, your password, how you log in. They save separately, so a half-typed
  * password never rides along with a name change or the reverse.
  */
 export default async function Page() {
@@ -38,7 +38,7 @@ export default async function Page() {
         <UserProfileForm user={user} />
         <div className="flex flex-col gap-6">
           <PasswordSection email={user.email} />
-          <TwoFactorSection />
+          <LoginMethodsSection />
         </div>
       </div>
     </div>

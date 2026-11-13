@@ -3,6 +3,8 @@ import { AuthField } from "@/components/form/AuthField";
 import { FormError } from "@/components/form/FormError";
 import { OtpField } from "@/components/form/OtpField";
 import { apiErrorCode } from "@/lib/apiErrorCode";
+import { SecurityKeyStep } from "@/components/form/SecurityKeyStep";
+import { hasSecurityKey } from "@/lib/webauthn";
 import { MIN_SCORE, TOO_WEAK, usePasswordStrength } from "@/components/password/strength";
 import { PasswordStrengthMeter } from "@/components/password/PasswordStrengthMeter";
 import { useUserPasswordResetConfirmCreate } from "@/generated/user/user";
@@ -47,8 +49,9 @@ export default function PasswordResetConfirmPage() {
   const score = usePasswordStrength(useWatch({ control: form.control, name: "newPassword" }) ?? "");
   const { mutateAsync } = useUserPasswordResetConfirmCreate();
   const [badLink, setBadLink] = useState(false);
-  // Set once the API says this account has two-factor on.
-  const [needsCode, setNeedsCode] = useState(false);
+  // Set once the API says this account has two-factor on: whether it can
+  // use a security key, or only a code.
+  const [secondStep, setSecondStep] = useState<"code" | "key" | null>(null);
 
   const { onSubmit, error, isSubmitting } = useApiFormSubmit(form, async (data) => {
     if (score !== null && score < MIN_SCORE) {
@@ -56,10 +59,12 @@ export default function PasswordResetConfirmPage() {
       return;
     }
     try {
-      await mutateAsync({ data: { uid, token, newPassword: data.newPassword, otp: data.otp } });
+      await mutateAsync({
+        data: { uid, token, newPassword: data.newPassword, otp: data.otp || undefined },
+      });
     } catch (cause) {
       if (apiErrorCode(cause, "otp") === "otp_required") {
-        setNeedsCode(true);
+        setSecondStep((await hasSecurityKey().catch(() => false)) ? "key" : "code");
         return;
       }
       if (isBadLink(cause)) {
@@ -113,7 +118,8 @@ export default function PasswordResetConfirmPage() {
           isInvalid={!!formState.errors.repeatPassword}
           errorMessage={formState.errors.repeatPassword?.message}
         />
-        {needsCode && <OtpField {...register("otp")} />}
+        {secondStep === "key" && <SecurityKeyStep onPassed={() => onSubmit()} />}
+        {secondStep && <OtpField {...register("otp")} withKey={secondStep === "key"} />}
         <Button className={"ml-auto"} type="submit" isPending={isSubmitting}>
           Lagre passord
         </Button>

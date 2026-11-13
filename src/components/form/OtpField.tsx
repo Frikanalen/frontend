@@ -10,8 +10,10 @@ export const OtpField = forwardRef<
   HTMLInputElement,
   Omit<InputHTMLAttributes<HTMLInputElement>, "id" | "value" | "defaultValue"> & {
     errorMessage?: string;
+    /** The account also has a security key, so the code is one way of two. */
+    withKey?: boolean;
   }
->(({ errorMessage, ...props }, ref) => (
+>(({ errorMessage, withKey, ...props }, ref) => (
   <div className="flex flex-col gap-1">
     <AuthField
       {...props}
@@ -20,13 +22,15 @@ export const OtpField = forwardRef<
       label="Kode fra autentiseringsappen"
       autoComplete="one-time-code"
       inputMode="text"
-      autoFocus
-      required
+      autoFocus={!withKey}
+      required={!withKey}
       isInvalid={!!errorMessage}
       errorMessage={errorMessage}
     />
     <p className="text-foreground/60 text-xs">
-      Kontoen har totrinnsbekreftelse. Mistet telefonen? Skriv inn en av gjenopprettingskodene.
+      {withKey
+        ? "Eller skriv inn en kode fra appen, eller en av gjenopprettingskodene."
+        : "Kontoen har totrinnsbekreftelse. Mistet telefonen? Skriv inn en av gjenopprettingskodene."}
     </p>
   </div>
 ));
