@@ -4,7 +4,7 @@ import Link from "next/link";
 const title = "Frikanalen i unntakstilstand";
 const description =
   "Frikanalen sender igjen, men i unntakstilstand: inntil klagen vår til Enhetsregisteret er " +
-  "behandlet og en ekstraordinær generalforsamling kan avklare situasjonen, formidler vi ikke innhold fra medlemmene som sto bak forsøket på å overta " +
+  "behandlet og situasjonen er avklart, formidler vi ikke innhold fra medlemmene som sto bak forsøket på å overta " +
   "styringen av organisasjonen.";
 
 // The og:image and twitter:image come from opengraph-image.tsx next to this file.
@@ -44,10 +44,9 @@ export default function Unntakstilstand() {
           <span className="font-normal">teknisk leder, Frikanalen</span>
         </h2>
         <p className="lead">
-          Frikanalen sender igjen. Men inntil klagen vår til Enhetsregisteret er behandlet og en
-          ekstraordinær generalforsamling kan avklare situasjonen, driver vi kanalen i
-          unntakstilstand: medlemmene som sto bak forsøket på å overta styringen av organisasjonen,
-          får ikke innholdet sitt formidlet.
+          Frikanalen sender igjen. Men inntil klagen vår til Enhetsregisteret er behandlet og
+          situasjonen er avklart, driver vi kanalen i unntakstilstand: medlemmene som sto bak
+          forsøket på å overta styringen av organisasjonen, får ikke innholdet sitt formidlet.
         </p>
 
         <h2>Nettadresse og kontakt</h2>
@@ -67,12 +66,12 @@ export default function Unntakstilstand() {
 
         <h2>Hva unntakstilstanden betyr</h2>
         <p>
-          PROION, Medieovervåkerne og Trond Ali Linstad er midlertidig suspendert. Innholdet deres
-          er tatt ut av sendeplanen, arkivet og nettsidene.
+          Medlemmene som sto bak forsøket, er midlertidig suspendert, og innholdet deres er tatt ut
+          av sendeplanen, arkivet og nettsidene.
         </p>
         <p>
-          Etter vedtektene har disse medlemmene rett til å få innholdet sitt formidlet. Dette er en
-          rettighet styret for egen regning velger å suspendere.
+          Etter vedtektene har de rett til å få innholdet sitt formidlet. Dette er en rettighet vi
+          for egen regning velger å suspendere.
         </p>
         <p>
           Dette handler ikke om ytringsfrihet eller om hvilke synspunkter som skal kunne fremmes på
@@ -85,8 +84,7 @@ export default function Unntakstilstand() {
         <p>
           Den 19. august 2026 godkjente Brønnøysundregistrene registreringen av et styre valgt på et
           møte 6. juni 2026. Registreringen bygger på dokumenter vi mener er falske. Vi har klaget
-          på vedtaket. Unntakstilstanden varer til klagen er behandlet og en ekstraordinær
-          generalforsamling kan avklare situasjonen.
+          på vedtaket. Unntakstilstanden varer til klagen er behandlet og situasjonen er avklart.
         </p>
 
         <h2>Bakgrunn</h2>
