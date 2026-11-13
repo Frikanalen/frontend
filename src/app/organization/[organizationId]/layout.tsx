@@ -2,7 +2,7 @@ import { ReactNode } from "react";
 import { getCookiesFromRequest } from "@/lib/getCookiesFromRequest";
 import { getUserOrNull } from "@/app/getUserOrNull";
 import { profileIsAdminOrMember } from "@/app/organization/[organizationId]/admin/profileIsAdminOrMember";
-import { ssrOrganizationRetrieve } from "@/generated/ssr/organization/organization";
+import { loadOrganization } from "@/app/organization/[organizationId]/loadOrganization";
 import { StudioNav } from "@/app/organization/[organizationId]/StudioNav";
 
 // Per-visitor: rendered on request, without a static shell of its own.
@@ -33,10 +33,7 @@ export default async function Layout({
   // after that the road in is behind them and the bar is for daily work.
   let showStart = false;
   if (inStudio) {
-    const organization = await ssrOrganizationRetrieve(organizationId, {
-      headers,
-      cache: "no-store",
-    }).catch(() => null);
+    const organization = await loadOrganization(organizationId).catch(() => null);
     showStart =
       organization?.status === 200 &&
       (!organization.data.fkmember || !(user.identityConfirmed || user.isStaff));

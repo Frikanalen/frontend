@@ -8,6 +8,11 @@ const VideoPlayer = dynamic(() => import("@/components/stream/VideoPlayer"), {
 
 export const Live = () => (
   <div className="w-full overflow-hidden rounded-xs">
-    <VideoPlayer title="Frikanalen direkte" src="/stream/index.m3u8" overlay={<LiveBadge />} />
+    <VideoPlayer
+      title="Frikanalen direkte"
+      src="/stream/index.m3u8"
+      preload="none"
+      overlay={<LiveBadge />}
+    />
   </div>
 );
