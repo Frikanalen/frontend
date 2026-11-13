@@ -1,24 +1,23 @@
 "use client";
-import { type ReactNode, useEffect, useRef } from "react";
-import { Button, Card, Chip } from "@heroui/react";
+import { type ReactNode, useEffect, useId, useRef, useState } from "react";
+import { Button } from "@heroui/react";
+import cx from "classnames";
 import type { LiveSource } from "@/generated/frikanalenDjangoAPI.schemas";
 import { formatBitrate } from "@/lib/live/streamStats";
 import { formatOsloTime, inOsloTime } from "@/lib/osloTime";
 import { format } from "date-fns";
+import { AirtimeHandoff } from "./AirtimeHandoff";
 import { type PreviewPhase, useLivePreview } from "./useLivePreview";
 import { VuMeter } from "./VuMeter";
 
-const PHASES: Record<
-  PreviewPhase,
-  { label: string; color: "default" | "primary" | "success" | "warning" | "danger" }
-> = {
-  idle: { label: "Ikke startet", color: "default" },
-  connecting: { label: "Kobler til …", color: "primary" },
-  waiting: { label: "Venter på signal", color: "warning" },
-  playing: { label: "Mottar signal", color: "success" },
-  unauthorized: { label: "Ingen tilgang", color: "danger" },
-  unsupported: { label: "Kan ikke spilles av", color: "danger" },
-  error: { label: "Feil", color: "danger" },
+const PHASES: Record<PreviewPhase, { label: string; className: string }> = {
+  idle: { label: "Ikke startet", className: "border-default-300 text-default-600" },
+  connecting: { label: "Kobler til …", className: "border-default-300 text-default-600" },
+  waiting: { label: "Venter på signal", className: "border-warning text-warning-700" },
+  playing: { label: "Mottar signal", className: "border-brand-green text-brand-green" },
+  unauthorized: { label: "Ingen tilgang", className: "border-danger text-danger-700" },
+  unsupported: { label: "Kan ikke spilles av", className: "border-danger text-danger-700" },
+  error: { label: "Feil", className: "border-danger text-danger-700" },
 };
 
 const Stat = ({ label, value }: { label: string; value: string }) => (
@@ -28,18 +27,30 @@ const Stat = ({ label, value }: { label: string; value: string }) => (
   </div>
 );
 
+/**
+ * One live source: what it is and whether a signal arrives, and, opened, the
+ * preview with its measurements and the source's setup.
+ */
 export const LiveSourcePreview = ({
   source,
   autoStart,
+  startOpen = true,
+  organizationId,
   children,
 }: {
   source: LiveSource;
   autoStart: boolean;
+  /** Closed, the source is one row; several sources start that way. */
+  startOpen?: boolean;
+  /** Links the coming broadcasts to the organization's airtime. */
+  organizationId?: number;
   /** Setup for the source -- its encoder keys -- under the preview. */
   children?: ReactNode;
 }) => {
   const { phase, variant, stream, stats, error, start, stop, running } = useLivePreview(source.id);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [open, setOpen] = useState(startOpen);
+  const bodyId = useId();
 
   useEffect(() => {
     if (autoStart) start();
@@ -47,40 +58,74 @@ export const LiveSourcePreview = ({
 
   useEffect(() => {
     if (videoRef.current) videoRef.current.srcObject = stream;
-  }, [stream]);
+  }, [stream, open]);
 
-  const { label, color } = PHASES[phase];
+  const { label, className } = PHASES[phase];
   const video = stats?.video;
   // Packets arriving but carrying nothing: the encoder is connected yet
   // sending no picture, which is worth saying apart from "no signal".
   const videoStalled = phase === "playing" && video?.bitrate === 0;
+  const next = source.upcomingTransmissions[0];
 
   return (
-    <Card>
-      <Card.Header className="flex flex-row flex-wrap items-center justify-between gap-2">
-        <div>
-          <h2 className="text-xl font-semibold">{source.name}</h2>
-          {source.isPulled && (
-            <p className="text-sm text-default-600">Hentes fra {source.pullTarget}</p>
-          )}
-          {!source.enabled && <p className="text-sm text-danger">Denne kilden er deaktivert.</p>}
+    <section aria-label={source.name} className="bg-background">
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 p-5">
+        <div className="min-w-0">
+          <h2 className="text-xl font-bold">{source.name}</h2>
+          <p className="text-sm break-words text-default-600">
+            {source.isPulled
+              ? `Frikanalen henter fra ${source.pullTarget}`
+              : "Sendes til Frikanalen fra en koder"}
+            {next
+              ? ` · Neste sending ${format(inOsloTime(next.starttime), "dd.MM.")} ${formatOsloTime(next.starttime)}`
+              : ""}
+          </p>
+          {!source.enabled && <p className="text-sm text-danger-700">Kilden er slått av.</p>}
         </div>
-        <div className="flex items-center gap-2">
-          <Chip color={color === "primary" ? "accent" : color} variant="soft" role="status">
-            <Chip.Label>{label}</Chip.Label>
-          </Chip>
+        <div className="flex flex-wrap items-center gap-2">
+          {running ? (
+            <span
+              className={cx("border-l-4 px-2 py-1 text-sm font-semibold", className)}
+              role="status"
+            >
+              {label}
+            </span>
+          ) : null}
           {running ? (
             <Button size="sm" variant="tertiary" onPress={stop}>
               Stopp
             </Button>
           ) : (
-            <Button size="sm" onPress={start} isDisabled={!source.enabled} variant="primary">
+            <Button
+              isDisabled={!source.enabled}
+              size="sm"
+              variant="primary"
+              onPress={() => {
+                setOpen(true);
+                start();
+              }}
+            >
               Start forhåndsvisning
             </Button>
           )}
+          <Button
+            aria-controls={bodyId}
+            aria-expanded={open}
+            size="sm"
+            variant="tertiary"
+            onPress={() => setOpen(!open)}
+          >
+            {open ? "Skjul" : "Vis oppsett"}
+          </Button>
         </div>
-      </Card.Header>
-      <Card.Content className="grid gap-4 md:grid-cols-[2fr_1fr]">
+      </div>
+      <div
+        className={cx(
+          "grid gap-4 border-t border-default-200 p-5 md:grid-cols-[2fr_1fr]",
+          open ? "" : "hidden",
+        )}
+        id={bodyId}
+      >
         <div className="space-y-2">
           <video
             ref={videoRef}
@@ -134,7 +179,10 @@ export const LiveSourcePreview = ({
 
         <div className="space-y-4">
           <section>
-            <h3 className="font-semibold">Video</h3>
+            <h3 className="font-semibold">Forhåndsvisningen</h3>
+            <p className="text-xs text-default-500">
+              Målt på kopien som vises her, ikke på signalet slik koderen sender det.
+            </p>
             <dl className="mt-1 grid grid-cols-2 gap-2">
               <Stat label="Bitrate" value={formatBitrate(video?.bitrate ?? null)} />
               <Stat label="Kodek" value={video?.codec ?? "–"} />
@@ -160,7 +208,7 @@ export const LiveSourcePreview = ({
           <section>
             <h3 className="font-semibold">Kommende sendinger</h3>
             {source.upcomingTransmissions.length === 0 ? (
-              <p className="text-sm text-default-600">Ingen bookede sendinger.</p>
+              <p className="text-sm text-default-600">Ingen ennå.</p>
             ) : (
               <ul className="text-sm">
                 {source.upcomingTransmissions.map((item) => (
@@ -173,8 +221,15 @@ export const LiveSourcePreview = ({
             )}
           </section>
         </div>
+        {/* Going on air again is what most come back for, so it sits above
+            the setup. Only while open: it asks for the airtime. */}
+        {organizationId != null && open && source.enabled ? (
+          <div className="border-t border-default-200 pt-4 md:col-span-2">
+            <AirtimeHandoff organizationId={organizationId} source={source} />
+          </div>
+        ) : null}
         {children}
-      </Card.Content>
-    </Card>
+      </div>
+    </section>
   );
 };

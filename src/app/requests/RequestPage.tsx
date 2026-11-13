@@ -14,7 +14,9 @@ import { useRequests } from "./useRequests";
 export const RequestPage = ({
   organizationId,
   blocked,
+  initialKind,
 }: {
+  initialKind?: "weekly" | "once";
   organizationId: number;
   /** Why the organization can't ask now; the form is left out. */
   blocked: string | null;
@@ -35,6 +37,7 @@ export const RequestPage = ({
             </p>
           ) : (
             <AirtimeRequestForm
+              initialKind={initialKind}
               organizationId={organizationId}
               shape={shape}
               onShapeChange={setShape}

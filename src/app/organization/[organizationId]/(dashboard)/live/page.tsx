@@ -7,10 +7,8 @@ import {
 import { getCookiesFromRequest } from "@/lib/getCookiesFromRequest";
 import { OrganizationParams, parseParamsOr404 } from "@/lib/routeParams";
 import { forbidden, notFound, redirect } from "next/navigation";
-import { EncoderKeys } from "./EncoderKeys";
-import { LiveSourcePreview } from "./LiveSourcePreview";
-import { NewLiveSource } from "./NewLiveSource";
-import { PullAddress } from "./PullAddress";
+import Link from "next/link";
+import { LiveSources } from "./LiveSources";
 
 export const dynamic = "force-dynamic";
 
@@ -32,39 +30,28 @@ export default async function Page({ params }: { params: Promise<{ organizationI
   const maySetUp = user.isStaff || (user.identityConfirmed && organization.fkmember);
 
   return (
-    <section className="flex flex-col gap-4">
+    <section className="flex flex-col gap-6">
       <header>
-        <h1 className="text-3xl font-bold tracking-tight">Direktesending</h1>
+        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Direktesending</h1>
         <p className="mt-2 max-w-3xl text-default-600">
-          Sett opp kildene {organization.name} sender direkte fra, gi koderne nøkler eller gi
-          Frikanalen en adresse å hente signalet fra, og se at signalet kommer fram før sendingen
-          starter. En direktesending settes opp i sendetiden som en video med en direktekilde.
+          En direktekilde er et sted {organization.name} sender direkte fra. Sett den opp én gang,
+          se at signalet kommer fram, og legg sendingen i sendetiden.
         </p>
       </header>
-      {maySetUp ? (
-        <NewLiveSource organizationId={organizationId} />
-      ) : (
-        <p className="text-default-600">
+      {maySetUp ? null : (
+        <p className="border-l-4 border-warning bg-background p-4" role="note">
           {organization.fkmember
-            ? "Du må bekrefte identiteten din for å sette opp direktesending."
-            : "Bare medlemsorganisasjoner kan sette opp direktesending selv. Ta kontakt med Frikanalen."}
+            ? "Du må få identiteten din bekreftet før du kan sette opp direktesending. "
+            : "Bare medlemsorganisasjoner kan sette opp direktesending. "}
+          <Link
+            className="font-semibold text-link hover:underline"
+            href={`/organization/${organizationId}/start`}
+          >
+            Se hva som gjenstår →
+          </Link>
         </p>
       )}
-      {sources.length === 0 ? (
-        <p>Organisasjonen har ingen direktekilder ennå.</p>
-      ) : (
-        // One source starts by itself; with several, each waits to be asked
-        // so the page does not open a connection per source at once.
-        sources.map((source) => (
-          <LiveSourcePreview key={source.id} source={source} autoStart={sources.length === 1}>
-            {source.isPulled ? (
-              <PullAddress maySetUp={maySetUp} source={source} />
-            ) : (
-              <EncoderKeys maySetUp={maySetUp} source={source} />
-            )}
-          </LiveSourcePreview>
-        ))
-      )}
+      <LiveSources maySetUp={maySetUp} organizationId={organizationId} sources={sources} />
     </section>
   );
 }

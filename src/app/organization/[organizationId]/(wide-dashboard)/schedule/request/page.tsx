@@ -9,8 +9,16 @@ import { RequestPage } from "@/app/requests/RequestPage";
 
 export const dynamic = "force-dynamic";
 
-export default async function Page({ params }: { params: Promise<{ organizationId: string }> }) {
+export default async function Page({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ organizationId: string }>;
+  searchParams: Promise<{ engang?: string }>;
+}) {
   const { organizationId } = await parseParamsOr404(OrganizationParams, params);
+  // The live setup sends people here to ask for airtime for one broadcast.
+  const once = (await searchParams).engang != null;
   const headers = await getCookiesFromRequest();
   const user = await getUserOrNull(headers);
   if (!user) redirect("/login");
@@ -45,7 +53,11 @@ export default async function Page({ params }: { params: Promise<{ organizationI
           allerede er tatt.
         </p>
       </header>
-      <RequestPage blocked={blocked} organizationId={organizationId} />
+      <RequestPage
+        blocked={blocked}
+        initialKind={once ? "once" : "weekly"}
+        organizationId={organizationId}
+      />
     </div>
   );
 }

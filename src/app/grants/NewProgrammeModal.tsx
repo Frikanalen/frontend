@@ -42,7 +42,9 @@ export const NewProgrammeModal = ({
   remaining,
   onClose,
   onCreated,
+  initialSourceId,
 }: {
+  initialSourceId?: number;
   /** Which to make; the modal is open while this is set. */
   kind: ProgrammeKind | undefined;
   organizationId: number;
@@ -57,7 +59,7 @@ export const NewProgrammeModal = ({
   const left = Math.floor(Math.max(0, remaining) / 60000);
   const [name, setName] = useState("");
   const [minutes, setMinutes] = useState<string>();
-  const [sourceId, setSourceId] = useState<number>();
+  const [sourceId, setSourceId] = useState(initialSourceId);
   const live = kind === "live";
   const source = sources.find(({ id }) => id === sourceId) ?? sources[0];
   const length = Number(minutes ?? left);

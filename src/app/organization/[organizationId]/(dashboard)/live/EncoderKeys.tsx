@@ -16,72 +16,21 @@ import { format } from "date-fns";
 import { nb } from "date-fns/locale/nb";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-
-const Copyable = ({ label, value, note }: { label: string; value: string; note?: string }) => {
-  const [copied, setCopied] = useState(false);
-  return (
-    <div className="space-y-1">
-      <div className="flex items-center justify-between gap-2">
-        <span className="text-sm font-medium">{label}</span>
-        <Button
-          size="sm"
-          variant="tertiary"
-          onPress={() =>
-            navigator.clipboard.writeText(value).then(
-              () => setCopied(true),
-              () => undefined,
-            )
-          }
-        >
-          {copied ? "Kopiert" : "Kopier"}
-        </Button>
-      </div>
-      <code className="block break-all rounded bg-default-100 p-2 text-xs">{value}</code>
-      {note ? <p className="text-xs text-default-500">{note}</p> : null}
-    </div>
-  );
-};
+import { EncoderSettings } from "./EncoderSettings";
 
 /** The one look at a new key: its settings, ready to paste into the encoder. */
-const IssuedKey = ({ issued, onDone }: { issued: IssuedEncoderKey; onDone: () => void }) => {
-  const blackmagic = issued.blackmagicConfig
-    ? `data:application/xml;charset=utf-8,${encodeURIComponent(issued.blackmagicConfig)}`
-    : undefined;
-  return (
-    <div
-      aria-label={`Ny nøkkel «${issued.label}»`}
-      className="space-y-3 border-l-4 border-warning bg-background p-3"
-      role="region"
-    >
-      <p className="text-sm font-medium">
-        Kopier innstillingene til koderen nå. Passordet vises bare denne ene gangen; mister du det,
-        lager du en ny nøkkel.
-      </p>
-      {issued.connections.map((connection) => (
-        <Copyable
-          key={connection.label}
-          label={connection.label}
-          note={connection.token ? `Token: ${connection.token}` : connection.note}
-          value={connection.url}
-        />
-      ))}
-      <div className="flex flex-wrap gap-2">
-        {blackmagic ? (
-          <a
-            className="text-sm underline"
-            download={`frikanalen-${issued.label}.xml`}
-            href={blackmagic}
-          >
-            Last ned oppsett for Blackmagic Web Presenter / ATEM Mini
-          </a>
-        ) : null}
-        <Button className="ms-auto" size="sm" onPress={onDone}>
-          Jeg har kopiert det
-        </Button>
-      </div>
-    </div>
-  );
-};
+const IssuedKey = ({ issued, onDone }: { issued: IssuedEncoderKey; onDone: () => void }) => (
+  <div
+    aria-label={`Ny nøkkel «${issued.label}»`}
+    className="space-y-3 border border-default-300 bg-background p-4"
+    role="region"
+  >
+    <EncoderSettings issued={issued} />
+    <Button size="sm" onPress={onDone}>
+      Jeg har kopiert det
+    </Button>
+  </div>
+);
 
 /**
  * A source's encoder keys: issue one per encoder, so each can be revoked on
@@ -184,6 +133,11 @@ export const EncoderKeys = ({ source, maySetUp }: { source: LiveSource; maySetUp
         >
           {source.enabled ? "Slå av kilden" : "Slå på kilden"}
         </Button>
+      ) : null}
+      {maySetUp ? (
+        <p className="text-xs text-default-600">
+          En kilde som er slått av, tar ikke imot signal og kan ikke settes i sendeplanen.
+        </p>
       ) : null}
       {error ? <p role="alert">{formatApiError(error)}</p> : null}
     </section>

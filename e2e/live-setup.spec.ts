@@ -32,22 +32,108 @@ test.beforeEach(async ({ page, baseURL }) => {
   );
 });
 
-test("a member sets up a source", async ({ page }) => {
+const created = {
+  id: 10,
+  name: "Kirkesal",
+  enabled: true,
+  isPulled: false,
+  pullTarget: "",
+  streamId: "aa1367cd-020e-456d-9d4c-b395eab6aa9c",
+  upcomingTransmissions: [],
+};
+const grant = {
+  id: 77,
+  organization: { id: 3, name: "Frikanalen" },
+  starttime: "2030-01-10T18:00:00Z",
+  endtime: "2030-01-10T19:00:00Z",
+  canEdit: true,
+  items: [],
+};
+
+test("a member sets up a source to send to, and is led to the schedule", async ({ page }) => {
   const posted: unknown[] = [];
+  const keys: unknown[] = [];
   await page.route("**/api/organization/3/live-sources", (route) => {
     posted.push(route.request().postDataJSON());
-    return route.fulfill({ status: 201, json: {} });
+    return route.fulfill({ status: 201, json: created });
   });
   await page.route("**/api/live-sources/9/encoder-keys", (route) =>
     route.fulfill({ status: 200, json: [] }),
   );
+  await page.route("**/api/live-sources/10/encoder-keys", (route) => {
+    keys.push(route.request().postDataJSON());
+    return route.fulfill({ status: 201, json: { ...issued, label: "OBS Studio" } });
+  });
+  await page.route("**/api/live-sources/10/preview-token", (route) =>
+    route.fulfill({ status: 404, json: {} }),
+  );
+  await page.route("**/api/grants?**", (route) =>
+    route.fulfill({
+      status: 200,
+      json: { count: 1, next: null, previous: null, results: [grant] },
+    }),
+  );
   await page.goto("/organization/3/live");
   await waitForHydration(page);
 
-  const form = page.getByRole("form", { name: "Ny direktekilde" });
-  await form.getByLabel("Ny direktekilde").fill("Kirkesal");
-  await form.getByRole("button", { name: "Opprett kilde" }).click();
+  await page.getByRole("button", { name: "Ny direktekilde" }).click();
+  await expect(page.getByText("Push · SRT · RTMP", { exact: true })).toBeVisible();
+  await expect(page.getByText("Pull · SRT · RTMP · RTSP · HLS")).toBeVisible();
+  await page.getByRole("button", { name: "Send til Frikanalen" }).click();
+
+  const form = page.getByRole("form", { name: "Koble til koderen" });
+  await form.getByLabel("Navn på kilden").fill("Kirkesal");
+  await form.getByRole("button", { name: "Opprett kilde og vis innstillinger" }).click();
   await expect.poll(() => posted).toEqual([{ name: "Kirkesal" }]);
+  await expect.poll(() => keys).toEqual([{ label: "OBS Studio" }]);
+
+  // OBS wants the address in two fields, the server without a trailing slash.
+  const settings = page.getByRole("region", { name: "Innstillinger for «Kirkesal»" });
+  await expect(settings).toContainText("rtmp://live.example.test:1935/contrib/live");
+  await expect(settings).toContainText("x?user=k&pass=s3cret");
+  await expect(settings).toContainText("1080p50");
+
+  await expect(page.getByRole("link", { name: "Legg direktesendingen her" })).toHaveAttribute(
+    "href",
+    "/organization/3/schedule/77?direkte=10",
+  );
+  await expect(
+    page.getByRole("link", { name: "Be om sendetid til en direktesending" }),
+  ).toHaveAttribute("href", "/organization/3/schedule/request?engang=1");
+});
+
+test("a member sets up a source for Frikanalen to fetch", async ({ page }) => {
+  const posted: unknown[] = [];
+  await page.route("**/api/organization/3/live-sources", (route) => {
+    posted.push(route.request().postDataJSON());
+    return route.fulfill({
+      status: 201,
+      json: { ...created, name: "Kamera", isPulled: true, pullTarget: "kamera.example.no" },
+    });
+  });
+  await page.route("**/api/live-sources/9/encoder-keys", (route) =>
+    route.fulfill({ status: 200, json: [] }),
+  );
+  await page.route("**/api/live-sources/10/preview-token", (route) =>
+    route.fulfill({ status: 404, json: {} }),
+  );
+  await page.route("**/api/grants?**", (route) =>
+    route.fulfill({ status: 200, json: { count: 0, next: null, previous: null, results: [] } }),
+  );
+  await page.goto("/organization/3/live");
+  await waitForHydration(page);
+
+  await page.getByRole("button", { name: "Ny direktekilde" }).click();
+  await page.getByRole("button", { name: "La Frikanalen hente" }).click();
+  const form = page.getByRole("form", { name: "Oppgi adressen" });
+  await form.getByLabel("Navn på kilden").fill("Kamera");
+  await form.getByText("RTSP", { exact: true }).click();
+  await form.getByLabel("Adressen vi skal hente fra").fill("rtsp://kamera.example.no/stream");
+  await form.getByRole("button", { name: "Opprett kilde og test" }).click();
+  await expect
+    .poll(() => posted)
+    .toEqual([{ name: "Kamera", pullUrl: "rtsp://kamera.example.no/stream" }]);
+  await expect(page.getByText("Dere har ingen kommende sendetid som kan endres.")).toBeVisible();
 });
 
 test("issues an encoder key once, then lists and revokes it", async ({ page }) => {
@@ -67,6 +153,12 @@ test("issues an encoder key once, then lists and revokes it", async ({ page }) =
     keys = [];
     return route.fulfill({ status: 204, body: "" });
   });
+  await page.route("**/api/grants?**", (route) =>
+    route.fulfill({
+      status: 200,
+      json: { count: 1, next: null, previous: null, results: [grant] },
+    }),
+  );
   await page.goto("/organization/3/live");
   await waitForHydration(page);
 
@@ -77,12 +169,19 @@ test("issues an encoder key once, then lists and revokes it", async ({ page }) =
 
   const shown = page.getByRole("region", { name: "Ny nøkkel «ATEM»" });
   await expect(shown).toContainText("vises bare denne ene gangen");
-  await expect(shown).toContainText(
-    "rtmp://live.example.test:1935/contrib/live/x?user=k&pass=s3cret",
-  );
+  await shown.getByRole("tab", { name: "Blackmagic" }).click();
   await expect(shown.getByRole("link", { name: /Blackmagic/ })).toHaveAttribute(
     "download",
     "frikanalen-ATEM.xml",
+  );
+  await shown.getByRole("tab", { name: "Annen koder" }).click();
+  await expect(shown).toContainText(
+    "rtmp://live.example.test:1935/contrib/live/x?user=k&pass=s3cret",
+  );
+  // A source that is already set up leads on to the airtime too.
+  await expect(page.getByRole("link", { name: "Legg direktesendingen her" })).toHaveAttribute(
+    "href",
+    "/organization/3/schedule/77?direkte=9",
   );
   await shown.getByRole("button", { name: "Jeg har kopiert det" }).click();
   await expect(shown).toHaveCount(0);

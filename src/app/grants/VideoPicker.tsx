@@ -50,8 +50,11 @@ export const VideoPicker = ({
   organizationId,
   remaining,
   onPick,
+  newLiveFrom,
 }: {
   organizationId: number;
+  /** Starts with "Ny direktesending" open and this source chosen. */
+  newLiveFrom?: number;
   /** Time left in the window, so each video can say whether it still fits. */
   remaining: number;
   onPick: (_video: GrantItemVideo) => void;
@@ -59,7 +62,9 @@ export const VideoPicker = ({
   const [scope, setScope] = useState<Scope>("own");
   const [search, setSearch] = useState("");
   const [onlyFitting, setOnlyFitting] = useState(false);
-  const [creating, setCreating] = useState<ProgrammeKind>();
+  const [creating, setCreating] = useState<ProgrammeKind | undefined>(
+    newLiveFrom ? "live" : undefined,
+  );
   const sourcesQuery = useOrganizationLiveSourcesList(organizationId);
   const sources = sourcesQuery.data?.data ?? [];
   const waiting = scope === "placeholder" || scope === "live";
@@ -105,6 +110,7 @@ export const VideoPicker = ({
         </HeroButton>
       </div>
       <NewProgrammeModal
+        initialSourceId={newLiveFrom}
         kind={creating}
         organizationId={organizationId}
         remaining={remaining}
