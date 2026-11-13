@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { profileIsAdminOrMember } from "@/app/organization/[organizationId]/admin/profileIsAdminOrMember";
 import { getUserOrNull } from "@/app/getUserOrNull";
 import { VideoCardForAdmin } from "@/app/video/[videoId]/VideoCardForAdmin";
-import { ssrVideosRetrieve } from "@/generated/ssr/videos/videos";
+import { loadVideo } from "@/app/video/[videoId]/loadVideo";
 import { Metadata } from "next";
 import { VideoParams, parseParamsOr404 } from "@/lib/routeParams";
 import { videoStartTimeFrom } from "@/app/video/[videoId]/videoStartTime";
@@ -24,10 +24,7 @@ export type VideoPageProps = {
 export async function generateMetadata({ params }: VideoPageProps): Promise<Metadata> {
   const { videoId } = await parseParamsOr404(VideoParams, params);
 
-  const { data: video, status } = await ssrVideosRetrieve(videoId, {
-    cache: "no-store",
-    next: { tags: [`video:${videoId}`] },
-  });
+  const { data: video, status } = await loadVideo(videoId);
   if (status === 403) {
     const suspended = suspendedOrganizationFrom(video);
     if (suspended) return { title: `${suspended.name} er suspendert - Frikanalen` };
@@ -58,11 +55,12 @@ export default async function VideoPage({ params, searchParams }: VideoPageProps
   const startTime = videoStartTimeFrom((await searchParams).t);
   const headers = await getCookiesFromRequest();
 
-  const { data: video, status } = await ssrVideosRetrieve(videoId, {
-    headers,
-    cache: "no-cache",
-    next: { tags: [`video:${videoId}`] },
-  });
+  // Both at once: the user only decides which card to show, so there is no
+  // reason to wait for the video before asking who is looking at it.
+  const [{ data: video, status }, user] = await Promise.all([
+    loadVideo(videoId),
+    getUserOrNull(headers),
+  ]);
 
   if (status === 404) return notFound();
   if (status === 403) {
@@ -79,7 +77,6 @@ export default async function VideoPage({ params, searchParams }: VideoPageProps
     throw new Error(
       `Unexpected status code ${status} when fetching video ${videoId} from ssrVideosRetrieve`,
     );
-  const user = await getUserOrNull(headers);
   const mayEdit = profileIsAdminOrMember(video.organization.id, user);
 
   return mayEdit ? (

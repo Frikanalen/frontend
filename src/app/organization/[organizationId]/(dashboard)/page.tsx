@@ -1,4 +1,3 @@
-import { organizationRetrieve } from "@/generated/organization/organization";
 import { notFound } from "next/navigation";
 import Markdown from "markdown-to-jsx";
 import { Fragment } from "react";
@@ -12,7 +11,7 @@ import { OrganizationSeries } from "@/app/organization/[organizationId]/Organiza
 import { EditorInfo } from "@/app/organization/[organizationId]/EditorInfo";
 import { ArchiveSearch } from "@/app/video/ArchiveSearch";
 import { Metadata } from "next";
-import { ssrOrganizationRetrieve } from "@/generated/ssr/organization/organization";
+import { loadOrganization } from "@/app/organization/[organizationId]/loadOrganization";
 import { OrganizationParams, parseParamsOr404 } from "@/lib/routeParams";
 import { SuspendedNotice } from "@/components/suspended/SuspendedNotice";
 
@@ -20,9 +19,7 @@ type OrgPageProps = { params: Promise<{ organizationId: string }> };
 export async function generateMetadata({ params }: OrgPageProps): Promise<Metadata> {
   const { organizationId } = await parseParamsOr404(OrganizationParams, params);
 
-  const { data: organization, status } = await ssrOrganizationRetrieve(organizationId, {
-    cache: "no-store",
-  });
+  const { data: organization, status } = await loadOrganization(organizationId);
   if (status !== 200)
     return {
       title: "Frikanalen",
@@ -50,10 +47,15 @@ export default async function Page({ params }: OrgPageProps) {
   const { organizationId } = await parseParamsOr404(OrganizationParams, params);
 
   const headers = await getCookiesFromRequest();
-  const { data: organization } = await organizationRetrieve(organizationId, {
-    headers,
-  });
-  const profile = await getUserOrNull(headers);
+  const [{ data: organization, status }, profile] = await Promise.all([
+    loadOrganization(organizationId),
+    getUserOrNull(headers),
+  ]);
+  if (status === 404) return notFound();
+  if (status !== 200)
+    throw new Error(
+      `Unexpected status code ${status} when fetching organization ${organizationId}`,
+    );
 
   const isAdmin = profileIsAdminOrMember(organizationId, profile);
 

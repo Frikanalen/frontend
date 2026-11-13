@@ -1,4 +1,4 @@
-import React, { ReactNode, useSyncExternalStore } from "react";
+import React, { MediaHTMLAttributes, ReactNode, useSyncExternalStore } from "react";
 import "@vidstack/react/player/styles/default/theme.css";
 import "@vidstack/react/player/styles/default/layouts/video.css";
 import {
@@ -9,7 +9,6 @@ import {
   MediaPlayer,
   MediaProvider,
   MediaProviderAdapter,
-  Poster,
   useMediaRemote,
   useMediaState,
   VideoSrc,
@@ -107,6 +106,32 @@ export const UnsupportedVideoMessage = ({ mediaPending = false }: { mediaPending
   );
 };
 
+// vidstack's own <Poster> renders its <img> without a src on the server and only fills it in
+// once the player has hydrated, so on a video page the largest image - the browser's LCP
+// candidate - couldn't start loading until all the player's JavaScript had run (about 2.7 s
+// of load delay on a mid-range phone). This one carries its src in the server HTML, so the
+// browser's preload scanner finds it straight away. Like vidstack's, it gives way once
+// playback starts.
+const ServerPoster = ({ src, blurred }: { src: string; blurred: boolean }) => {
+  const started = useMediaState("started");
+
+  if (started) return null;
+
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      alt=""
+      src={src}
+      fetchPriority="high"
+      decoding="async"
+      className={cx(
+        "pointer-events-none absolute inset-0 z-[1] size-full object-contain select-none",
+        { "blur-md": blurred },
+      )}
+    />
+  );
+};
+
 export const VideoPlayer = ({
   title,
   src,
@@ -114,6 +139,7 @@ export const VideoPlayer = ({
   mediaPending,
   overlay,
   startTime,
+  preload,
 }: {
   title: string;
   src: string | PlayerSource | PlayerSource[];
@@ -121,8 +147,19 @@ export const VideoPlayer = ({
   mediaPending?: boolean;
   overlay?: ReactNode;
   startTime?: number;
+  /**
+   * How much the browser may fetch before playback. vidstack's default, "metadata", is cheap
+   * for a file, but for a live HLS stream played natively (Safari, and Chromium since it gained
+   * native HLS) it means fetching the playlist and the first segments of every rendition: about
+   * 1 MB on each front-page visit, before anyone has pressed play.
+   */
+  preload?: "none" | "metadata" | "auto";
 }) => {
   const airPlay = useCanAirPlay();
+  // vidstack types mediaProps as plain HTMLAttributes but spreads it onto the <video>.
+  const mediaProps: MediaHTMLAttributes<HTMLMediaElement> | undefined = preload
+    ? { preload }
+    : undefined;
 
   return (
     <MediaPlayer
@@ -132,6 +169,7 @@ export const VideoPlayer = ({
       poster={poster}
       aspectRatio="16/9"
       load="play"
+      preload={preload}
       currentTime={startTime}
       onProviderChange={onProviderChange}
     >
@@ -145,8 +183,11 @@ export const VideoPlayer = ({
       <UnsupportedVideoMessage mediaPending={mediaPending} />
       <StartOnClick />
       {overlay && <BeforePlayback>{overlay}</BeforePlayback>}
-      <MediaProvider>
-        <Poster className={cx("vds-poster", { "blur-md": mediaPending })} src={poster} />
+      {/* vidstack's first client render puts the sources in the <video> as <source> children
+          (meant for server rendering). Without preload="none" on the element itself the
+          browser starts fetching them on its own the moment they appear, load="play" or not. */}
+      <MediaProvider mediaProps={mediaProps}>
+        {poster ? <ServerPoster src={poster} blurred={!!mediaPending} /> : null}
       </MediaProvider>
       <DefaultVideoLayout icons={defaultLayoutIcons} colorScheme={"system"} />
     </MediaPlayer>
