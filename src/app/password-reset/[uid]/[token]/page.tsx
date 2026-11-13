@@ -1,6 +1,8 @@
 "use client";
 import { AuthField } from "@/components/form/AuthField";
 import { FormError } from "@/components/form/FormError";
+import { MIN_SCORE, TOO_WEAK, usePasswordStrength } from "@/components/password/strength";
+import { PasswordStrengthMeter } from "@/components/password/PasswordStrengthMeter";
 import { useUserPasswordResetConfirmCreate } from "@/generated/user/user";
 import { useApiFormSubmit } from "@/lib/useApiFormSubmit";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -9,7 +11,7 @@ import { isAxiosError } from "axios";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import z from "zod";
 
 // Django checks the password properly (AUTH_PASSWORD_VALIDATORS); the length
@@ -17,7 +19,7 @@ import z from "zod";
 // before the round trip.
 const NewPasswordSchema = z
   .object({
-    newPassword: z.string().min(8, "Passordet må ha minst 8 tegn."),
+    newPassword: z.string().min(10, "Passordet må ha minst 10 tegn."),
     repeatPassword: z.string(),
   })
   .refine((data) => data.newPassword === data.repeatPassword, {
@@ -38,11 +40,16 @@ export default function PasswordResetConfirmPage() {
   const { uid, token } = useParams<{ uid: string; token: string }>();
   const router = useRouter();
   const form = useForm<NewPassword>({ resolver: zodResolver(NewPasswordSchema) });
-  const { register, formState } = form;
+  const { register, formState, setError } = form;
+  const score = usePasswordStrength(useWatch({ control: form.control, name: "newPassword" }) ?? "");
   const { mutateAsync } = useUserPasswordResetConfirmCreate();
   const [badLink, setBadLink] = useState(false);
 
   const { onSubmit, error, isSubmitting } = useApiFormSubmit(form, async (data) => {
+    if (score !== null && score < MIN_SCORE) {
+      setError("newPassword", { message: TOO_WEAK });
+      return;
+    }
     try {
       await mutateAsync({ data: { uid, token, newPassword: data.newPassword } });
     } catch (cause) {
@@ -86,6 +93,7 @@ export default function PasswordResetConfirmPage() {
           isInvalid={!!formState.errors.newPassword}
           errorMessage={formState.errors.newPassword?.message}
         />
+        <PasswordStrengthMeter score={score} />
         <AuthField
           {...register("repeatPassword")}
           id="repeat-password"

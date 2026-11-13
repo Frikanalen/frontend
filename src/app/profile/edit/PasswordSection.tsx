@@ -1,13 +1,15 @@
 "use client";
 import { AuthField } from "@/components/form/AuthField";
 import { FormError } from "@/components/form/FormError";
+import { MIN_SCORE, TOO_WEAK, usePasswordStrength } from "@/components/password/strength";
+import { PasswordStrengthMeter } from "@/components/password/PasswordStrengthMeter";
 import { useUserPasswordCreate, useUserPasswordResetCreate } from "@/generated/user/user";
 import { formatApiError } from "@/lib/formatApiError";
 import { useApiFormSubmit } from "@/lib/useApiFormSubmit";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button, Form } from "@heroui/react";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { GoCheck } from "react-icons/go";
 import z from "zod";
 import { ProfileCard } from "@/app/profile/edit/ProfileCard";
@@ -17,7 +19,7 @@ import { ProfileCard } from "@/app/profile/edit/ProfileCard";
 const PasswordChangeSchema = z
   .object({
     currentPassword: z.string().min(1, "Skriv inn passordet du har nå."),
-    newPassword: z.string().min(8, "Passordet må ha minst 8 tegn."),
+    newPassword: z.string().min(10, "Passordet må ha minst 10 tegn."),
     repeatPassword: z.string(),
   })
   .refine((data) => data.newPassword === data.repeatPassword, {
@@ -63,12 +65,20 @@ const SendResetLink = ({ email }: { email: string }) => {
 
 export const PasswordSection = ({ email }: { email: string }) => {
   const form = useForm<PasswordChange>({ resolver: zodResolver(PasswordChangeSchema) });
-  const { register, formState, reset } = form;
+  const { register, formState, reset, setError } = form;
+  const score = usePasswordStrength(
+    useWatch({ control: form.control, name: "newPassword" }) ?? "",
+    [email],
+  );
   const { mutateAsync } = useUserPasswordCreate({ request: { withCredentials: true } });
   const [changed, setChanged] = useState(false);
 
   const { onSubmit, error, isSubmitting } = useApiFormSubmit(form, async (data) => {
     setChanged(false);
+    if (score !== null && score < MIN_SCORE) {
+      setError("newPassword", { message: TOO_WEAK });
+      return;
+    }
     await mutateAsync({
       data: { currentPassword: data.currentPassword, newPassword: data.newPassword },
     });
@@ -112,6 +122,7 @@ export const PasswordSection = ({ email }: { email: string }) => {
           isInvalid={!!formState.errors.newPassword}
           errorMessage={formState.errors.newPassword?.message}
         />
+        <PasswordStrengthMeter score={score} />
         <AuthField
           {...register("repeatPassword")}
           id="repeat-password"
