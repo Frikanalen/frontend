@@ -11,8 +11,7 @@ import { FormError } from "@/components/form/FormError";
 import { isValidOrgnr, normalizeOrgnr } from "@/lib/orgnr";
 import { BrregLookup, useBrregLookup } from "@/app/organization/register/useBrregLookup";
 
-// The fields the register can fill in. A field the user has typed in
-// themselves is left alone.
+// The fields the register fills in.
 const PREFILLED = ["name", "homepage", "streetAddress", "postalAddress"] as const;
 
 const LookupStatus = ({ lookup }: { lookup: BrregLookup }) => {
@@ -46,7 +45,7 @@ const LookupStatus = ({ lookup }: { lookup: BrregLookup }) => {
       return (
         <div className="text-sm text-default-700">
           <p>
-            Fylt inn fra Enhetsregisteret: <strong>{entity.name}</strong>
+            Hentet fra Enhetsregisteret: <strong>{entity.name}</strong>
             {entity.organizationForm && <> ({entity.organizationForm.toLowerCase()})</>}. Se over
             feltene under og rett det som ikke stemmer.
           </p>
@@ -72,13 +71,15 @@ export const OrgCreateForm = ({ className }: { className?: string }) => {
     control: form.control,
     name: [...PREFILLED],
   });
-  const lookup = useBrregLookup(useWatch({ control: form.control, name: "orgnr" }), (entity) => {
-    for (const field of PREFILLED) {
-      if (form.getFieldState(field).isDirty || !entity[field]) continue;
-      // Not marked dirty, so correcting the number fills in again.
-      form.setValue(field, entity[field]);
-    }
-  });
+  const { lookup, canFetch, fetch } = useBrregLookup(
+    useWatch({ control: form.control, name: "orgnr" }),
+    (entity) => {
+      // Asked for with the button, so it replaces what is there.
+      for (const field of PREFILLED) {
+        form.setValue(field, entity[field], { shouldDirty: true });
+      }
+    },
+  );
   const router = useRouter();
   const { mutateAsync } = useOrganizationCreate();
 
@@ -94,24 +95,34 @@ export const OrgCreateForm = ({ className }: { className?: string }) => {
       <div className="flex flex-col gap-4">
         <FormError error={error} />
         <div className="flex flex-col gap-2">
-          <FormInput
-            label={"Organisasjonsnummer"}
-            labelPlacement={"outside-top"}
-            description={
-              "Fra Brønnøysundregistrene. Da fyller vi inn resten for deg. Har organisasjonen ikke et, lar du feltet stå tomt."
-            }
-            inputMode={"numeric"}
-            autoComplete={"off"}
-            id="org-orgnr"
-            className="max-w-xs"
-            isInvalid={!!form.formState.errors.orgnr}
-            errorMessage={form.formState.errors.orgnr?.message}
-            {...register("orgnr", {
-              setValueAs: (value: string) => normalizeOrgnr(value ?? ""),
-              validate: (value) =>
-                !value || isValidOrgnr(value) || "Organisasjonsnummeret er ikke gyldig.",
-            })}
-          />
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
+            <FormInput
+              label={"Organisasjonsnummer"}
+              labelPlacement={"outside-top"}
+              description={
+                "Fra Brønnøysundregistrene. Hent opplysningene derfra, eller la feltet stå tomt hvis organisasjonen ikke har et."
+              }
+              inputMode={"numeric"}
+              autoComplete={"off"}
+              id="org-orgnr"
+              className="w-full sm:max-w-xs"
+              isInvalid={!!form.formState.errors.orgnr}
+              errorMessage={form.formState.errors.orgnr?.message}
+              {...register("orgnr", {
+                setValueAs: (value: string) => normalizeOrgnr(value ?? ""),
+                validate: (value) =>
+                  !value || isValidOrgnr(value) || "Organisasjonsnummeret er ikke gyldig.",
+              })}
+            />
+            <Button
+              variant="secondary"
+              isDisabled={!canFetch}
+              isPending={lookup.state === "loading"}
+              onPress={fetch}
+            >
+              Hent fra Brønnøysund
+            </Button>
+          </div>
           <LookupStatus lookup={lookup} />
         </div>
         <FormInput

@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useRef, useState } from "react";
 import { isAxiosError } from "axios";
 import { organizationBrregRetrieve } from "@/generated/organization/organization";
 import { BrregEntity } from "@/generated/frikanalenDjangoAPI.schemas";
@@ -13,22 +13,28 @@ export type BrregLookup =
   | { state: "not-found" | "deleted" | "unavailable" };
 
 /**
- * Looks the number up in Enhetsregisteret once it is complete and valid,
- * and calls onFound with what the register knows. Typing on past a valid
- * number, or correcting it, starts over.
+ * Looks the number up in Enhetsregisteret when asked to (fetch), and calls
+ * onFound with what the register knows. Filling in replaces what is in the
+ * form, so it waits for the user's say-so rather than firing as they type.
+ * The status describes the number as it stands: editing it clears an
+ * earlier answer.
  */
 export const useBrregLookup = (
   value: string | undefined,
   onFound: (_entity: BrregEntity) => void,
-): BrregLookup => {
+) => {
   const orgnr = normalizeOrgnr(value ?? "");
   const complete = /^\d{9}$/.test(orgnr);
   const valid = complete && isValidOrgnr(orgnr);
   const [result, setResult] = useState<{ orgnr: string; lookup: BrregLookup }>();
+  const inFlight = useRef<AbortController>(undefined);
 
-  useEffect(() => {
+  const fetch = () => {
     if (!valid) return;
+    inFlight.current?.abort();
     const controller = new AbortController();
+    inFlight.current = controller;
+    setResult({ orgnr, lookup: { state: "loading" } });
     organizationBrregRetrieve(orgnr, undefined, controller.signal).then(
       ({ data }) => {
         setResult({ orgnr, lookup: { state: "found", entity: data } });
@@ -41,13 +47,11 @@ export const useBrregLookup = (
         setResult({ orgnr, lookup: { state } });
       },
     );
-    return () => controller.abort();
-    // onFound is a fresh closure every render; only a new number means a new lookup.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [orgnr, valid]);
+  };
 
-  if (!complete) return { state: "idle" };
-  if (!valid) return { state: "invalid" };
-  if (result?.orgnr !== orgnr) return { state: "loading" };
-  return result.lookup;
+  let lookup: BrregLookup = { state: "idle" };
+  if (complete && !valid) lookup = { state: "invalid" };
+  else if (valid && result?.orgnr === orgnr) lookup = result.lookup;
+
+  return { lookup, canFetch: valid && lookup.state !== "loading", fetch };
 };
