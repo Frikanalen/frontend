@@ -28,6 +28,7 @@
     "@mdxeditor/editor": "^4.5.0",
     "@react-aria/ssr": "^3.10.1",
     "@react-aria/utils": "^3.34.1",
+    "@simplewebauthn/browser": "14.0.0",
     "@tanstack/react-query": "^5.107.1",
     "@vidstack/react": "^1.15.7",
     "@zxcvbn-ts/core": "4.2.0",

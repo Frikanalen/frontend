@@ -13,7 +13,7 @@ test.beforeEach(async ({ page }) => {
 const email = (page: Page) => page.getByLabel("E-post");
 const password = (page: Page) => page.getByLabel("Passord");
 const formAlert = (page: Page) => page.locator("form").getByRole("alert");
-const submit = (page: Page) => page.getByRole("button", { name: "Logg inn" });
+const submit = (page: Page) => page.getByRole("button", { name: "Logg inn", exact: true });
 
 const fillInCredentials = async (page: Page) => {
   await fillAndConfirm(email(page), "someone@example.com");
@@ -24,7 +24,8 @@ test.describe("login form", () => {
   test("marks the credential fields up so password managers recognise them", async ({ page }) => {
     // Regression test for #10: `password` is not a valid autocomplete token,
     // and a section-* prefix hides the credential from the register form.
-    await expect(email(page)).toHaveAttribute("autocomplete", "username");
+    // `webauthn` lets the browser offer passkeys in the same autofill.
+    await expect(email(page)).toHaveAttribute("autocomplete", "username webauthn");
     await expect(password(page)).toHaveAttribute("autocomplete", "current-password");
     await expect(password(page)).toHaveAttribute("type", "password");
   });

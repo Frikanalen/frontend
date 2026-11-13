@@ -11535,7 +11535,9 @@ paths:
   /api/user/2fa:
     get:
       operationId: user_2fa_retrieve
-      description: Whether the account has an authenticator app, and recovery codes left.
+      description: 'The account''s apps and keys, recovery codes left, and whether this
+
+        session may change them.'
       tags:
         - user
       security:
@@ -11645,23 +11647,28 @@ paths:
               schema:
                 $ref: '#/components/schemas/TwoFactorStatus'
           description: ''
-  /api/user/2fa/confirm:
-    post:
-      operationId: user_2fa_confirm_create
-      description: 'Finish adding the app with a code from it. Returns the recovery codes.
+  /api/user/2fa/methods/{method}:
+    patch:
+      operationId: user_2fa_methods_partial_update
+      description: 'Rename or remove one app or key.
 
 
-        This is the only time the codes are returned; afterwards the API only
+        Removing the last one turns two-factor off and deletes the recovery
 
-        says how many are left.'
+        codes.'
+      parameters:
+        - in: path
+          name: method
+          schema:
+            type: string
+          required: true
       tags:
         - user
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CodeRequest'
-        required: true
+              $ref: '#/components/schemas/PatchedRenameRequest'
       security:
         - tokenAuth: []
         - cookieAuth: []
@@ -11670,7 +11677,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User2faConfirmCreateErrorResponse400'
+                $ref: '#/components/schemas/User2faMethodsPartialUpdateErrorResponse400'
           description: ''
         '401':
           content:
@@ -11781,20 +11788,24 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RecoveryCodes'
+                $ref: '#/components/schemas/Method'
           description: ''
-  /api/user/2fa/disable:
-    post:
-      operationId: user_2fa_disable_create
-      description: Turn two-factor off with a current app code or a recovery code.
+    delete:
+      operationId: user_2fa_methods_destroy
+      description: 'Rename or remove one app or key.
+
+
+        Removing the last one turns two-factor off and deletes the recovery
+
+        codes.'
+      parameters:
+        - in: path
+          name: method
+          schema:
+            type: string
+          required: true
       tags:
         - user
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CodeRequest'
-        required: true
       security:
         - tokenAuth: []
         - cookieAuth: []
@@ -11803,7 +11814,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User2faDisableCreateErrorResponse400'
+                $ref: '#/components/schemas/User2faMethodsDestroyErrorResponse400'
           description: ''
         '401':
           content:
@@ -11915,15 +11926,9 @@ paths:
   /api/user/2fa/recovery-codes:
     post:
       operationId: user_2fa_recovery_codes_create
-      description: Replace the recovery codes, given a current code. Old ones stop working.
+      description: Replace the recovery codes. Old ones stop working.
       tags:
         - user
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CodeRequest'
-        required: true
       security:
         - tokenAuth: []
         - cookieAuth: []
@@ -12045,19 +12050,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/RecoveryCodes'
           description: ''
-  /api/user/2fa/setup:
+  /api/user/2fa/totp/confirm:
     post:
-      operationId: user_2fa_setup_create
-      description: 'Start adding an authenticator app: a new secret, as text and QR code.
+      operationId: user_2fa_totp_confirm_create
+      description: 'Finish adding the app with a code from it.
 
 
-        It protects nothing until confirmed with a code from the app. Starting
+        With the account''s first method, this also returns the recovery codes,
 
-        over replaces an unconfirmed secret; an account that already has a
-
-        confirmed app has to turn it off first.'
+        the only time they are returned.'
       tags:
         - user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CodeRequest'
+        required: true
       security:
         - tokenAuth: []
         - cookieAuth: []
@@ -12066,7 +12075,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User2faSetupCreateErrorResponse400'
+                $ref: '#/components/schemas/User2faTotpConfirmCreateErrorResponse400'
           description: ''
         '401':
           content:
@@ -12145,6 +12154,157 @@ paths:
                         detail: Unsupported media type "application/json" in request.
                         attr: null
           description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse429'
+              examples:
+                Throttled:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: throttled
+                        detail: Request was throttled.
+                        attr: null
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+              examples:
+                APIException:
+                  value:
+                    type: server_error
+                    errors:
+                      - code: error
+                        detail: A server error occurred.
+                        attr: null
+          description: ''
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MethodAdded'
+          description: ''
+  /api/user/2fa/totp/setup:
+    post:
+      operationId: user_2fa_totp_setup_create
+      description: 'Start adding an authenticator app: a new secret, as text and QR code.
+
+
+        It protects nothing until confirmed with a code from the app. Starting
+
+        over replaces an unconfirmed secret.'
+      tags:
+        - user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppNameRequest'
+      security:
+        - tokenAuth: []
+        - cookieAuth: []
+      responses:
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User2faTotpSetupCreateErrorResponse400'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: authentication_failed
+                        detail: Incorrect authentication credentials.
+                        attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_authenticated
+                        detail: Authentication credentials were not provided.
+                        attr: null
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+              examples:
+                NotFound:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_found
+                        detail: Not found.
+                        attr: null
+          description: ''
+        '405':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse405'
+              examples:
+                MethodNotAllowed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: method_not_allowed
+                        detail: Method "get" not allowed.
+                        attr: null
+          description: ''
+        '406':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse406'
+              examples:
+                NotAcceptable:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_acceptable
+                        detail: Could not satisfy the request Accept header.
+                        attr: null
+          description: ''
+        '415':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse415'
+              examples:
+                UnsupportedMediaType:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: unsupported_media_type
+                        detail: Unsupported media type "application/json" in request.
+                        attr: null
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse429'
+              examples:
+                Throttled:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: throttled
+                        detail: Request was throttled.
+                        attr: null
+          description: ''
         '500':
           content:
             application/json:
@@ -12164,6 +12324,680 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TwoFactorSetup'
+          description: ''
+  /api/user/2fa/verify:
+    post:
+      operationId: user_2fa_verify_create
+      description: 'Pass the second step in this session with an app or recovery code,
+
+        so it may change the methods.'
+      tags:
+        - user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CodeRequest'
+        required: true
+      security:
+        - tokenAuth: []
+        - cookieAuth: []
+      responses:
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User2faVerifyCreateErrorResponse400'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: authentication_failed
+                        detail: Incorrect authentication credentials.
+                        attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_authenticated
+                        detail: Authentication credentials were not provided.
+                        attr: null
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+              examples:
+                NotFound:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_found
+                        detail: Not found.
+                        attr: null
+          description: ''
+        '405':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse405'
+              examples:
+                MethodNotAllowed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: method_not_allowed
+                        detail: Method "get" not allowed.
+                        attr: null
+          description: ''
+        '406':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse406'
+              examples:
+                NotAcceptable:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_acceptable
+                        detail: Could not satisfy the request Accept header.
+                        attr: null
+          description: ''
+        '415':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse415'
+              examples:
+                UnsupportedMediaType:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: unsupported_media_type
+                        detail: Unsupported media type "application/json" in request.
+                        attr: null
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse429'
+              examples:
+                Throttled:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: throttled
+                        detail: Request was throttled.
+                        attr: null
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+              examples:
+                APIException:
+                  value:
+                    type: server_error
+                    errors:
+                      - code: error
+                        detail: A server error occurred.
+                        attr: null
+          description: ''
+        '204':
+          description: No response body
+  /api/user/2fa/webauthn/begin:
+    post:
+      operationId: user_2fa_webauthn_begin_create
+      description: 'Start the second step with a security key: options for
+
+        navigator.credentials.get().
+
+
+        For a session whose password was just found right (the login or a reset
+
+        link answered `otp_required`), or a logged-in session that wants to
+
+        change its methods. 400 `no_security_key` when the account has none,
+
+        so the client asks for a code instead.'
+      tags:
+        - user
+      security:
+        - tokenAuth: []
+        - cookieAuth: []
+        - {}
+      responses:
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User2faWebauthnBeginCreateErrorResponse400'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: authentication_failed
+                        detail: Incorrect authentication credentials.
+                        attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_authenticated
+                        detail: Authentication credentials were not provided.
+                        attr: null
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+              examples:
+                NotFound:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_found
+                        detail: Not found.
+                        attr: null
+          description: ''
+        '405':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse405'
+              examples:
+                MethodNotAllowed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: method_not_allowed
+                        detail: Method "get" not allowed.
+                        attr: null
+          description: ''
+        '406':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse406'
+              examples:
+                NotAcceptable:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_acceptable
+                        detail: Could not satisfy the request Accept header.
+                        attr: null
+          description: ''
+        '415':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse415'
+              examples:
+                UnsupportedMediaType:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: unsupported_media_type
+                        detail: Unsupported media type "application/json" in request.
+                        attr: null
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse429'
+              examples:
+                Throttled:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: throttled
+                        detail: Request was throttled.
+                        attr: null
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+              examples:
+                APIException:
+                  value:
+                    type: server_error
+                    errors:
+                      - code: error
+                        detail: A server error occurred.
+                        attr: null
+          description: ''
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/user/2fa/webauthn/complete:
+    post:
+      operationId: user_2fa_webauthn_complete_create
+      description: 'Finish the second step with the browser''s answer.
+
+
+        After a password, send the login (or reset) again: it passes without a
+
+        code. A logged-in session may now change its methods.'
+      tags:
+        - user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CredentialRequest'
+        required: true
+      security:
+        - tokenAuth: []
+        - cookieAuth: []
+        - {}
+      responses:
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User2faWebauthnCompleteCreateErrorResponse400'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: authentication_failed
+                        detail: Incorrect authentication credentials.
+                        attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_authenticated
+                        detail: Authentication credentials were not provided.
+                        attr: null
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+              examples:
+                NotFound:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_found
+                        detail: Not found.
+                        attr: null
+          description: ''
+        '405':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse405'
+              examples:
+                MethodNotAllowed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: method_not_allowed
+                        detail: Method "get" not allowed.
+                        attr: null
+          description: ''
+        '406':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse406'
+              examples:
+                NotAcceptable:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_acceptable
+                        detail: Could not satisfy the request Accept header.
+                        attr: null
+          description: ''
+        '415':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse415'
+              examples:
+                UnsupportedMediaType:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: unsupported_media_type
+                        detail: Unsupported media type "application/json" in request.
+                        attr: null
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse429'
+              examples:
+                Throttled:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: throttled
+                        detail: Request was throttled.
+                        attr: null
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+              examples:
+                APIException:
+                  value:
+                    type: server_error
+                    errors:
+                      - code: error
+                        detail: A server error occurred.
+                        attr: null
+          description: ''
+        '204':
+          description: No response body
+  /api/user/2fa/webauthn/register/begin:
+    post:
+      operationId: user_2fa_webauthn_register_begin_create
+      description: 'Start adding a passkey or security key: options for
+
+        navigator.credentials.create().'
+      tags:
+        - user
+      security:
+        - tokenAuth: []
+        - cookieAuth: []
+      responses:
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User2faWebauthnRegisterBeginCreateErrorResponse400'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: authentication_failed
+                        detail: Incorrect authentication credentials.
+                        attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_authenticated
+                        detail: Authentication credentials were not provided.
+                        attr: null
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+              examples:
+                NotFound:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_found
+                        detail: Not found.
+                        attr: null
+          description: ''
+        '405':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse405'
+              examples:
+                MethodNotAllowed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: method_not_allowed
+                        detail: Method "get" not allowed.
+                        attr: null
+          description: ''
+        '406':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse406'
+              examples:
+                NotAcceptable:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_acceptable
+                        detail: Could not satisfy the request Accept header.
+                        attr: null
+          description: ''
+        '415':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse415'
+              examples:
+                UnsupportedMediaType:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: unsupported_media_type
+                        detail: Unsupported media type "application/json" in request.
+                        attr: null
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse429'
+              examples:
+                Throttled:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: throttled
+                        detail: Request was throttled.
+                        attr: null
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+              examples:
+                APIException:
+                  value:
+                    type: server_error
+                    errors:
+                      - code: error
+                        detail: A server error occurred.
+                        attr: null
+          description: ''
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/user/2fa/webauthn/register/complete:
+    post:
+      operationId: user_2fa_webauthn_register_complete_create
+      description: 'Finish adding the key with the browser''s answer.
+
+
+        With the account''s first method, this also returns the recovery codes,
+
+        the only time they are returned.'
+      tags:
+        - user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterCompleteRequest'
+        required: true
+      security:
+        - tokenAuth: []
+        - cookieAuth: []
+      responses:
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User2faWebauthnRegisterCompleteCreateErrorResponse400'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: authentication_failed
+                        detail: Incorrect authentication credentials.
+                        attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_authenticated
+                        detail: Authentication credentials were not provided.
+                        attr: null
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+              examples:
+                NotFound:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_found
+                        detail: Not found.
+                        attr: null
+          description: ''
+        '405':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse405'
+              examples:
+                MethodNotAllowed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: method_not_allowed
+                        detail: Method "get" not allowed.
+                        attr: null
+          description: ''
+        '406':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse406'
+              examples:
+                NotAcceptable:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_acceptable
+                        detail: Could not satisfy the request Accept header.
+                        attr: null
+          description: ''
+        '415':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse415'
+              examples:
+                UnsupportedMediaType:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: unsupported_media_type
+                        detail: Unsupported media type "application/json" in request.
+                        attr: null
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse429'
+              examples:
+                Throttled:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: throttled
+                        detail: Request was throttled.
+                        attr: null
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+              examples:
+                APIException:
+                  value:
+                    type: server_error
+                    errors:
+                      - code: error
+                        detail: A server error occurred.
+                        attr: null
+          description: ''
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MethodAdded'
           description: ''
   /api/user/login:
     post:
@@ -12285,6 +13119,273 @@ paths:
         - {}
       tags:
         - user
+  /api/user/login/passkey/begin:
+    post:
+      operationId: user_login_passkey_begin_create
+      description: 'Start logging in with a passkey: options for
+
+        navigator.credentials.get(), with no account named.'
+      tags:
+        - user
+      security:
+        - tokenAuth: []
+        - cookieAuth: []
+        - {}
+      responses:
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserLoginPasskeyBeginCreateErrorResponse400'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: authentication_failed
+                        detail: Incorrect authentication credentials.
+                        attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_authenticated
+                        detail: Authentication credentials were not provided.
+                        attr: null
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+              examples:
+                NotFound:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_found
+                        detail: Not found.
+                        attr: null
+          description: ''
+        '405':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse405'
+              examples:
+                MethodNotAllowed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: method_not_allowed
+                        detail: Method "get" not allowed.
+                        attr: null
+          description: ''
+        '406':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse406'
+              examples:
+                NotAcceptable:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_acceptable
+                        detail: Could not satisfy the request Accept header.
+                        attr: null
+          description: ''
+        '415':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse415'
+              examples:
+                UnsupportedMediaType:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: unsupported_media_type
+                        detail: Unsupported media type "application/json" in request.
+                        attr: null
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse429'
+              examples:
+                Throttled:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: throttled
+                        detail: Request was throttled.
+                        attr: null
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+              examples:
+                APIException:
+                  value:
+                    type: server_error
+                    errors:
+                      - code: error
+                        detail: A server error occurred.
+                        attr: null
+          description: ''
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/user/login/passkey/complete:
+    post:
+      operationId: user_login_passkey_complete_create
+      description: 'Log in with the browser''s answer. Returns the profile, as the
+
+        password login does.'
+      tags:
+        - user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CredentialRequest'
+        required: true
+      security:
+        - tokenAuth: []
+        - cookieAuth: []
+        - {}
+      responses:
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserLoginPasskeyCompleteCreateErrorResponse400'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: authentication_failed
+                        detail: Incorrect authentication credentials.
+                        attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_authenticated
+                        detail: Authentication credentials were not provided.
+                        attr: null
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+              examples:
+                NotFound:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_found
+                        detail: Not found.
+                        attr: null
+          description: ''
+        '405':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse405'
+              examples:
+                MethodNotAllowed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: method_not_allowed
+                        detail: Method "get" not allowed.
+                        attr: null
+          description: ''
+        '406':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse406'
+              examples:
+                NotAcceptable:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_acceptable
+                        detail: Could not satisfy the request Accept header.
+                        attr: null
+          description: ''
+        '415':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse415'
+              examples:
+                UnsupportedMediaType:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: unsupported_media_type
+                        detail: Unsupported media type "application/json" in request.
+                        attr: null
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse429'
+              examples:
+                Throttled:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: throttled
+                        detail: Request was throttled.
+                        attr: null
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+              examples:
+                APIException:
+                  value:
+                    type: server_error
+                    errors:
+                      - code: error
+                        detail: A server error occurred.
+                        attr: null
+          description: ''
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
   /api/user/logout:
     post:
       operationId: user_logout_create
@@ -16530,6 +17631,12 @@ components:
       type: string
       enum:
         - cancelled
+    AppNameRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 64
     AsRun:
       description: |-
         One entry in the playout log: a video or a named programme, and
@@ -17312,7 +18419,12 @@ components:
         - username
     AuthTokenWithSecondFactor:
       type: object
-      description: DRF's token login (username/password), plus `otp` for accounts with 2FA.
+      description: 'DRF''s token login (username/password), plus `otp` for accounts with 2FA.
+
+
+        Codes only: an account with nothing but security keys uses a recovery
+
+        code here.'
       properties:
         token:
           type: string
@@ -17321,7 +18433,12 @@ components:
         - token
     AuthTokenWithSecondFactorRequest:
       type: object
-      description: DRF's token login (username/password), plus `otp` for accounts with 2FA.
+      description: 'DRF''s token login (username/password), plus `otp` for accounts with 2FA.
+
+
+        Codes only: an account with nothing but security keys uses a recovery
+
+        code here.'
       properties:
         username:
           type: string
@@ -17937,6 +19054,13 @@ components:
       required:
         - label
         - url
+    CredentialRequest:
+      type: object
+      properties:
+        credential:
+          description: The browser's PublicKeyCredential, as JSON (toJSON(), or @simplewebauthn/browser).
+      required:
+        - credential
     Csrf:
       type: object
       properties:
@@ -20438,6 +21562,67 @@ components:
         - image/jpeg
         - image/png
         - image/webp
+    Method:
+      type: object
+      properties:
+        id:
+          type: string
+          readOnly: true
+          description: '`totp-<n>` or `webauthn-<n>`'
+        kind:
+          allOf:
+            - $ref: '#/components/schemas/MethodKindEnum'
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+        passkey:
+          type: boolean
+          readOnly: true
+          nullable: true
+          description: A key that can log in on its own. Null when the browser did not say.
+        createdAt:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        lastUsedAt:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+      required:
+        - createdAt
+        - id
+        - kind
+        - lastUsedAt
+        - name
+        - passkey
+    MethodAdded:
+      type: object
+      properties:
+        method:
+          allOf:
+            - $ref: '#/components/schemas/Method'
+          readOnly: true
+        recoveryCodes:
+          type: array
+          items:
+            type: string
+          readOnly: true
+          nullable: true
+          description: Only with the account's first method; shown once.
+      required:
+        - method
+        - recoveryCodes
+    MethodKindEnum:
+      enum:
+        - totp
+        - webauthn
+      type: string
+      description: '* `totp` - totp
+
+        * `webauthn` - webauthn'
     MinimumAgeEnum:
       description: |-
         * `0` - All ages
@@ -22530,6 +23715,13 @@ components:
           description: "True makes this a jukebox slot: the station's airtime, filled from the filler pool. Takes the place of an owner and a fill rule. Read it back as a slot with no organization whose rule's pool is 'filler'."
           type: boolean
           writeOnly: true
+    PatchedRenameRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 64
     PatchedScheduleitemModifyRequest:
       description: |-
         Staff corrections to the compiled schedule.
@@ -24922,6 +26114,16 @@ components:
         - attr
         - code
         - detail
+    RegisterCompleteRequest:
+      type: object
+      properties:
+        credential:
+          description: The browser's PublicKeyCredential, as JSON (toJSON(), or @simplewebauthn/browser).
+        name:
+          type: string
+          maxLength: 64
+      required:
+        - credential
     ReviewStatusEnum:
       description: |-
         * `pending` - Pending
@@ -26515,9 +27717,20 @@ components:
         recoveryCodesLeft:
           type: integer
           readOnly: true
+        verified:
+          type: boolean
+          readOnly: true
+          description: This session has passed the second step, so it may change the methods.
+        methods:
+          type: array
+          items:
+            $ref: '#/components/schemas/Method'
+          readOnly: true
       required:
         - enabled
+        - methods
         - recoveryCodesLeft
+        - verified
     UpcomingTransmission:
       type: object
       properties:
@@ -26776,6 +27989,102 @@ components:
       required:
         - errors
         - type
+    User2faMethodsDestroyErrorResponse400:
+      oneOf:
+        - $ref: '#/components/schemas/ParseErrorResponse'
+      discriminator:
+        propertyName: type
+        mapping:
+          client_error: '#/components/schemas/ParseErrorResponse'
+    User2faMethodsPartialUpdateError:
+      oneOf:
+        - $ref: '#/components/schemas/User2faMethodsPartialUpdateNonFieldErrorsErrorComponent'
+        - $ref: '#/components/schemas/User2faMethodsPartialUpdateNameErrorComponent'
+      discriminator:
+        propertyName: attr
+        mapping:
+          non_field_errors: '#/components/schemas/User2faMethodsPartialUpdateNonFieldErrorsErrorComponent'
+          name: '#/components/schemas/User2faMethodsPartialUpdateNameErrorComponent'
+    User2faMethodsPartialUpdateErrorResponse400:
+      oneOf:
+        - $ref: '#/components/schemas/User2faMethodsPartialUpdateValidationError'
+        - $ref: '#/components/schemas/ParseErrorResponse'
+      discriminator:
+        propertyName: type
+        mapping:
+          validation_error: '#/components/schemas/User2faMethodsPartialUpdateValidationError'
+          client_error: '#/components/schemas/ParseErrorResponse'
+    User2faMethodsPartialUpdateNameErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+            - name
+          type: string
+          description: '* `name` - name'
+        code:
+          enum:
+            - blank
+            - invalid
+            - max_length
+            - 'null'
+            - null_characters_not_allowed
+            - required
+            - surrogate_characters_not_allowed
+          type: string
+          description: '* `blank` - blank
+
+            * `invalid` - invalid
+
+            * `max_length` - max_length
+
+            * `null` - null
+
+            * `null_characters_not_allowed` - null_characters_not_allowed
+
+            * `required` - required
+
+            * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    User2faMethodsPartialUpdateNonFieldErrorsErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+            - non_field_errors
+          type: string
+          description: '* `non_field_errors` - non_field_errors'
+        code:
+          enum:
+            - invalid
+            - 'null'
+          type: string
+          description: '* `invalid` - invalid
+
+            * `null` - null'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    User2faMethodsPartialUpdateValidationError:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/ValidationErrorEnum'
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/User2faMethodsPartialUpdateError'
+      required:
+        - errors
+        - type
     User2faRecoveryCodesCreateCodeErrorComponent:
       type: object
       properties:
@@ -26821,12 +28130,10 @@ components:
           code: '#/components/schemas/User2faRecoveryCodesCreateCodeErrorComponent'
     User2faRecoveryCodesCreateErrorResponse400:
       oneOf:
-        - $ref: '#/components/schemas/User2faRecoveryCodesCreateValidationError'
         - $ref: '#/components/schemas/ParseErrorResponse'
       discriminator:
         propertyName: type
         mapping:
-          validation_error: '#/components/schemas/User2faRecoveryCodesCreateValidationError'
           client_error: '#/components/schemas/ParseErrorResponse'
     User2faRecoveryCodesCreateNonFieldErrorsErrorComponent:
       type: object
@@ -26876,6 +28183,462 @@ components:
         propertyName: type
         mapping:
           client_error: '#/components/schemas/ParseErrorResponse'
+    User2faTotpConfirmCreateCodeErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+            - code
+          type: string
+          description: '* `code` - code'
+        code:
+          enum:
+            - blank
+            - invalid
+            - 'null'
+            - null_characters_not_allowed
+            - required
+            - surrogate_characters_not_allowed
+          type: string
+          description: '* `blank` - blank
+
+            * `invalid` - invalid
+
+            * `null` - null
+
+            * `null_characters_not_allowed` - null_characters_not_allowed
+
+            * `required` - required
+
+            * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    User2faTotpConfirmCreateError:
+      oneOf:
+        - $ref: '#/components/schemas/User2faTotpConfirmCreateNonFieldErrorsErrorComponent'
+        - $ref: '#/components/schemas/User2faTotpConfirmCreateCodeErrorComponent'
+      discriminator:
+        propertyName: attr
+        mapping:
+          non_field_errors: '#/components/schemas/User2faTotpConfirmCreateNonFieldErrorsErrorComponent'
+          code: '#/components/schemas/User2faTotpConfirmCreateCodeErrorComponent'
+    User2faTotpConfirmCreateErrorResponse400:
+      oneOf:
+        - $ref: '#/components/schemas/User2faTotpConfirmCreateValidationError'
+        - $ref: '#/components/schemas/ParseErrorResponse'
+      discriminator:
+        propertyName: type
+        mapping:
+          validation_error: '#/components/schemas/User2faTotpConfirmCreateValidationError'
+          client_error: '#/components/schemas/ParseErrorResponse'
+    User2faTotpConfirmCreateNonFieldErrorsErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+            - non_field_errors
+          type: string
+          description: '* `non_field_errors` - non_field_errors'
+        code:
+          enum:
+            - invalid
+            - 'null'
+          type: string
+          description: '* `invalid` - invalid
+
+            * `null` - null'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    User2faTotpConfirmCreateValidationError:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/ValidationErrorEnum'
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/User2faTotpConfirmCreateError'
+      required:
+        - errors
+        - type
+    User2faTotpSetupCreateError:
+      oneOf:
+        - $ref: '#/components/schemas/User2faTotpSetupCreateNonFieldErrorsErrorComponent'
+        - $ref: '#/components/schemas/User2faTotpSetupCreateNameErrorComponent'
+      discriminator:
+        propertyName: attr
+        mapping:
+          non_field_errors: '#/components/schemas/User2faTotpSetupCreateNonFieldErrorsErrorComponent'
+          name: '#/components/schemas/User2faTotpSetupCreateNameErrorComponent'
+    User2faTotpSetupCreateErrorResponse400:
+      oneOf:
+        - $ref: '#/components/schemas/User2faTotpSetupCreateValidationError'
+        - $ref: '#/components/schemas/ParseErrorResponse'
+      discriminator:
+        propertyName: type
+        mapping:
+          validation_error: '#/components/schemas/User2faTotpSetupCreateValidationError'
+          client_error: '#/components/schemas/ParseErrorResponse'
+    User2faTotpSetupCreateNameErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+            - name
+          type: string
+          description: '* `name` - name'
+        code:
+          enum:
+            - invalid
+            - max_length
+            - 'null'
+            - null_characters_not_allowed
+            - surrogate_characters_not_allowed
+          type: string
+          description: '* `invalid` - invalid
+
+            * `max_length` - max_length
+
+            * `null` - null
+
+            * `null_characters_not_allowed` - null_characters_not_allowed
+
+            * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    User2faTotpSetupCreateNonFieldErrorsErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+            - non_field_errors
+          type: string
+          description: '* `non_field_errors` - non_field_errors'
+        code:
+          enum:
+            - invalid
+            - 'null'
+          type: string
+          description: '* `invalid` - invalid
+
+            * `null` - null'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    User2faTotpSetupCreateValidationError:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/ValidationErrorEnum'
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/User2faTotpSetupCreateError'
+      required:
+        - errors
+        - type
+    User2faVerifyCreateCodeErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+            - code
+          type: string
+          description: '* `code` - code'
+        code:
+          enum:
+            - blank
+            - invalid
+            - 'null'
+            - null_characters_not_allowed
+            - required
+            - surrogate_characters_not_allowed
+          type: string
+          description: '* `blank` - blank
+
+            * `invalid` - invalid
+
+            * `null` - null
+
+            * `null_characters_not_allowed` - null_characters_not_allowed
+
+            * `required` - required
+
+            * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    User2faVerifyCreateError:
+      oneOf:
+        - $ref: '#/components/schemas/User2faVerifyCreateNonFieldErrorsErrorComponent'
+        - $ref: '#/components/schemas/User2faVerifyCreateCodeErrorComponent'
+      discriminator:
+        propertyName: attr
+        mapping:
+          non_field_errors: '#/components/schemas/User2faVerifyCreateNonFieldErrorsErrorComponent'
+          code: '#/components/schemas/User2faVerifyCreateCodeErrorComponent'
+    User2faVerifyCreateErrorResponse400:
+      oneOf:
+        - $ref: '#/components/schemas/User2faVerifyCreateValidationError'
+        - $ref: '#/components/schemas/ParseErrorResponse'
+      discriminator:
+        propertyName: type
+        mapping:
+          validation_error: '#/components/schemas/User2faVerifyCreateValidationError'
+          client_error: '#/components/schemas/ParseErrorResponse'
+    User2faVerifyCreateNonFieldErrorsErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+            - non_field_errors
+          type: string
+          description: '* `non_field_errors` - non_field_errors'
+        code:
+          enum:
+            - invalid
+            - 'null'
+          type: string
+          description: '* `invalid` - invalid
+
+            * `null` - null'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    User2faVerifyCreateValidationError:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/ValidationErrorEnum'
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/User2faVerifyCreateError'
+      required:
+        - errors
+        - type
+    User2faWebauthnBeginCreateErrorResponse400:
+      oneOf:
+        - $ref: '#/components/schemas/ParseErrorResponse'
+      discriminator:
+        propertyName: type
+        mapping:
+          client_error: '#/components/schemas/ParseErrorResponse'
+    User2faWebauthnCompleteCreateCredentialErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+            - credential
+          type: string
+          description: '* `credential` - credential'
+        code:
+          enum:
+            - invalid
+            - 'null'
+            - required
+          type: string
+          description: '* `invalid` - invalid
+
+            * `null` - null
+
+            * `required` - required'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    User2faWebauthnCompleteCreateError:
+      oneOf:
+        - $ref: '#/components/schemas/User2faWebauthnCompleteCreateNonFieldErrorsErrorComponent'
+        - $ref: '#/components/schemas/User2faWebauthnCompleteCreateCredentialErrorComponent'
+      discriminator:
+        propertyName: attr
+        mapping:
+          non_field_errors: '#/components/schemas/User2faWebauthnCompleteCreateNonFieldErrorsErrorComponent'
+          credential: '#/components/schemas/User2faWebauthnCompleteCreateCredentialErrorComponent'
+    User2faWebauthnCompleteCreateErrorResponse400:
+      oneOf:
+        - $ref: '#/components/schemas/User2faWebauthnCompleteCreateValidationError'
+        - $ref: '#/components/schemas/ParseErrorResponse'
+      discriminator:
+        propertyName: type
+        mapping:
+          validation_error: '#/components/schemas/User2faWebauthnCompleteCreateValidationError'
+          client_error: '#/components/schemas/ParseErrorResponse'
+    User2faWebauthnCompleteCreateNonFieldErrorsErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+            - non_field_errors
+          type: string
+          description: '* `non_field_errors` - non_field_errors'
+        code:
+          enum:
+            - invalid
+            - 'null'
+          type: string
+          description: '* `invalid` - invalid
+
+            * `null` - null'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    User2faWebauthnCompleteCreateValidationError:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/ValidationErrorEnum'
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/User2faWebauthnCompleteCreateError'
+      required:
+        - errors
+        - type
+    User2faWebauthnRegisterBeginCreateErrorResponse400:
+      oneOf:
+        - $ref: '#/components/schemas/ParseErrorResponse'
+      discriminator:
+        propertyName: type
+        mapping:
+          client_error: '#/components/schemas/ParseErrorResponse'
+    User2faWebauthnRegisterCompleteCreateCredentialErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+            - credential
+          type: string
+          description: '* `credential` - credential'
+        code:
+          enum:
+            - invalid
+            - 'null'
+            - required
+          type: string
+          description: '* `invalid` - invalid
+
+            * `null` - null
+
+            * `required` - required'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    User2faWebauthnRegisterCompleteCreateError:
+      oneOf:
+        - $ref: '#/components/schemas/User2faWebauthnRegisterCompleteCreateNonFieldErrorsErrorComponent'
+        - $ref: '#/components/schemas/User2faWebauthnRegisterCompleteCreateCredentialErrorComponent'
+        - $ref: '#/components/schemas/User2faWebauthnRegisterCompleteCreateNameErrorComponent'
+      discriminator:
+        propertyName: attr
+        mapping:
+          non_field_errors: '#/components/schemas/User2faWebauthnRegisterCompleteCreateNonFieldErrorsErrorComponent'
+          credential: '#/components/schemas/User2faWebauthnRegisterCompleteCreateCredentialErrorComponent'
+          name: '#/components/schemas/User2faWebauthnRegisterCompleteCreateNameErrorComponent'
+    User2faWebauthnRegisterCompleteCreateErrorResponse400:
+      oneOf:
+        - $ref: '#/components/schemas/User2faWebauthnRegisterCompleteCreateValidationError'
+        - $ref: '#/components/schemas/ParseErrorResponse'
+      discriminator:
+        propertyName: type
+        mapping:
+          validation_error: '#/components/schemas/User2faWebauthnRegisterCompleteCreateValidationError'
+          client_error: '#/components/schemas/ParseErrorResponse'
+    User2faWebauthnRegisterCompleteCreateNameErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+            - name
+          type: string
+          description: '* `name` - name'
+        code:
+          enum:
+            - invalid
+            - max_length
+            - 'null'
+            - null_characters_not_allowed
+            - surrogate_characters_not_allowed
+          type: string
+          description: '* `invalid` - invalid
+
+            * `max_length` - max_length
+
+            * `null` - null
+
+            * `null_characters_not_allowed` - null_characters_not_allowed
+
+            * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    User2faWebauthnRegisterCompleteCreateNonFieldErrorsErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+            - non_field_errors
+          type: string
+          description: '* `non_field_errors` - non_field_errors'
+        code:
+          enum:
+            - invalid
+            - 'null'
+          type: string
+          description: '* `invalid` - invalid
+
+            * `null` - null'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    User2faWebauthnRegisterCompleteCreateValidationError:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/ValidationErrorEnum'
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/User2faWebauthnRegisterCompleteCreateError'
+      required:
+        - errors
+        - type
     UserDestroyErrorResponse400:
       discriminator:
         propertyName: type
@@ -27024,6 +28787,90 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/UserLoginCreateError'
+      required:
+        - errors
+        - type
+    UserLoginPasskeyBeginCreateErrorResponse400:
+      oneOf:
+        - $ref: '#/components/schemas/ParseErrorResponse'
+      discriminator:
+        propertyName: type
+        mapping:
+          client_error: '#/components/schemas/ParseErrorResponse'
+    UserLoginPasskeyCompleteCreateCredentialErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+            - credential
+          type: string
+          description: '* `credential` - credential'
+        code:
+          enum:
+            - invalid
+            - 'null'
+            - required
+          type: string
+          description: '* `invalid` - invalid
+
+            * `null` - null
+
+            * `required` - required'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    UserLoginPasskeyCompleteCreateError:
+      oneOf:
+        - $ref: '#/components/schemas/UserLoginPasskeyCompleteCreateNonFieldErrorsErrorComponent'
+        - $ref: '#/components/schemas/UserLoginPasskeyCompleteCreateCredentialErrorComponent'
+      discriminator:
+        propertyName: attr
+        mapping:
+          non_field_errors: '#/components/schemas/UserLoginPasskeyCompleteCreateNonFieldErrorsErrorComponent'
+          credential: '#/components/schemas/UserLoginPasskeyCompleteCreateCredentialErrorComponent'
+    UserLoginPasskeyCompleteCreateErrorResponse400:
+      oneOf:
+        - $ref: '#/components/schemas/UserLoginPasskeyCompleteCreateValidationError'
+        - $ref: '#/components/schemas/ParseErrorResponse'
+      discriminator:
+        propertyName: type
+        mapping:
+          validation_error: '#/components/schemas/UserLoginPasskeyCompleteCreateValidationError'
+          client_error: '#/components/schemas/ParseErrorResponse'
+    UserLoginPasskeyCompleteCreateNonFieldErrorsErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+            - non_field_errors
+          type: string
+          description: '* `non_field_errors` - non_field_errors'
+        code:
+          enum:
+            - invalid
+            - 'null'
+          type: string
+          description: '* `invalid` - invalid
+
+            * `null` - null'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    UserLoginPasskeyCompleteCreateValidationError:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/ValidationErrorEnum'
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserLoginPasskeyCompleteCreateError'
       required:
         - errors
         - type
