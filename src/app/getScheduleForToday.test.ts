@@ -5,7 +5,7 @@ const { listSchedule } = vi.hoisted(() => ({ listSchedule: vi.fn() }));
 
 vi.mock("next/server", () => ({ connection: async () => {} }));
 vi.mock("next/cache", () => ({ cacheLife: () => {}, cacheTag: () => {} }));
-vi.mock("@/lib/scheduleVersion", () => ({ getScheduleVersion: async () => "v1" }));
+vi.mock("@/lib/scheduleChanges", () => ({ scheduleGeneration: () => "0" }));
 
 vi.mock("@/generated/ssr/scheduleitems/scheduleitems", () => ({
   ssrScheduleitemsList: listSchedule,

@@ -8,20 +8,20 @@ import { ScheduleItemList } from "@/app/schedule/ScheduleItemView";
 import { ScheduleWeek } from "@/app/schedule/ScheduleWeek";
 import { ScheduleDateParams, parseParamsOr404 } from "@/lib/routeParams";
 import { formatOsloDateISO } from "@/lib/formatOsloDateISO";
-import { getScheduleVersion } from "@/lib/scheduleVersion";
+import { scheduleGeneration } from "@/lib/scheduleChanges";
 
 type ScheduleParams = Promise<{ year: string; month: string; date: string }>;
 
 /**
- * One day's schedule, shared by every visitor until the schedule version
- * moves (or a minute passes): the same day is asked for by everyone who opens
- * the schedule today, and it rarely changes. Passing `version` makes it part
- * of the cache key.
+ * One day's schedule, shared by every visitor until Django says the schedule
+ * changed (see scheduleChanges) or a minute passes: the same day is asked for
+ * by everyone who opens the schedule today. Passing `generation` makes it
+ * part of the cache key.
  */
-const fetchScheduleDay = async (date: string, version: string): Promise<ScheduleitemRead[]> => {
+const fetchScheduleDay = async (date: string, generation: string): Promise<ScheduleitemRead[]> => {
   "use cache";
   cacheLife("minutes");
-  cacheTag("schedule", `schedule-version:${version}`);
+  cacheTag("schedule", `schedule-generation:${generation}`);
 
   const { data, status } = await ssrScheduleitemsList({ date });
   if (status !== 200) throw new Error(`Schedule for ${date}: the API answered ${status}`);
@@ -53,7 +53,7 @@ const DayNavigation = async ({ params }: { params: ScheduleParams }) => {
 
 const DayItems = async ({ params }: { params: ScheduleParams }) => {
   const { year, month, date } = await parseParamsOr404(ScheduleDateParams, params);
-  const items = await fetchScheduleDay(`${year}-${month}-${date}`, await getScheduleVersion());
+  const items = await fetchScheduleDay(`${year}-${month}-${date}`, scheduleGeneration());
   return <ScheduleItemList items={items} />;
 };
 
