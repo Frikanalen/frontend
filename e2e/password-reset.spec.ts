@@ -106,12 +106,28 @@ test.describe("choosing a new password", () => {
       errors: [{ code: "invalid", detail: "Dette passordet er for vanlig.", attr: "new_password" }],
     });
 
-    await fillAndConfirm(newPassword(page), "password123");
-    await fillAndConfirm(repeat(page), "password123");
+    // Strong enough for the meter; the API (HIBP) has the last word.
+    await fillAndConfirm(newPassword(page), "kaffekopp på brygga i regnet");
+    await fillAndConfirm(repeat(page), "kaffekopp på brygga i regnet");
     await submit(page).click();
 
     await expect(page.locator("form").getByRole("alert")).toHaveText(
       "Dette passordet er for vanlig.",
     );
+  });
+
+  test("rates the password as it is typed and refuses a guessable one", async ({ page }) => {
+    const attempts = await hangOn(page, CONFIRM);
+
+    await fillAndConfirm(newPassword(page), "password123");
+    await expect(page.getByText("Styrke: Veldig svakt")).toBeVisible();
+    await fillAndConfirm(repeat(page), "password123");
+    await submit(page).click();
+
+    await expect(page.getByText("Passordet er for lett å gjette.", { exact: false })).toBeVisible();
+    expect(attempts()).toBe(0);
+
+    await fillAndConfirm(newPassword(page), "kaffekopp på brygga i regnet");
+    await expect(page.getByText(/Styrke: (Sterkt|Veldig sterkt)/)).toBeVisible();
   });
 });

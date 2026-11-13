@@ -87,7 +87,7 @@ test.describe("register form", () => {
     await fillAndConfirm(page.getByLabel("Passord"), "kort");
     await page.getByRole("button", { name: "Registrer deg" }).click();
 
-    await expect(page.getByText("Passordet må ha minst 8 tegn.")).toBeVisible();
+    await expect(page.getByText("Passordet må ha minst 10 tegn.")).toBeVisible();
     expect(attempts()).toBe(0);
   });
 
