@@ -1,6 +1,29 @@
 2025-05-31 
 # Changelog
 
+## [3.7.0](https://github.com/Frikanalen/frontend/compare/v3.6.0...v3.7.0) (2026-11-13)
+
+
+### Features
+
+* **auth:** offer passkeys only where the API has them on; authenticator icon ([#124](https://github.com/Frikanalen/frontend/issues/124)) ([810d7dd](https://github.com/Frikanalen/frontend/commit/810d7ddc3d4b818fe1b999aeb1452496c7c23277))
+* **auth:** passkeys, security keys and several sign-in methods ([#123](https://github.com/Frikanalen/frontend/issues/123)) ([0ebac88](https://github.com/Frikanalen/frontend/commit/0ebac88aebffbce440493ee0b1101bdf26e4272d))
+* **auth:** password reset pages ([#112](https://github.com/Frikanalen/frontend/issues/112)) ([12b3366](https://github.com/Frikanalen/frontend/commit/12b3366d2195ed6f67ee36b3c4cb3fa9023bb10b))
+* **auth:** password strength meter, 10-character minimum ([#119](https://github.com/Frikanalen/frontend/issues/119)) ([5deb8fd](https://github.com/Frikanalen/frontend/commit/5deb8fd41d86566254143570fd7b229aba87e63e))
+* **auth:** two-factor authentication: setup, login and reset code step ([#121](https://github.com/Frikanalen/frontend/issues/121)) ([3217646](https://github.com/Frikanalen/frontend/commit/3217646d88e594f0c29896299782afeef986e241))
+* **live:** signal report, a check page and a broadcast monitor for live sources ([#109](https://github.com/Frikanalen/frontend/issues/109)) ([978d7de](https://github.com/Frikanalen/frontend/commit/978d7de3532a1f58ba0ac12c0fa9d3f6133dbf93))
+* **organization:** fetch the description from Brreg, wider address fields ([#122](https://github.com/Frikanalen/frontend/issues/122)) ([4f5c11b](https://github.com/Frikanalen/frontend/commit/4f5c11b8b9e70fa68b1eb47c3b37dda5542e9e99))
+* **organization:** fill in the signup form from Brønnøysundregistrene ([#118](https://github.com/Frikanalen/frontend/issues/118)) ([b612520](https://github.com/Frikanalen/frontend/commit/b612520701c8c6795ee42b9ac5991150ece8f5cd))
+* **player:** play HLS natively on browsers that can AirPlay ([#120](https://github.com/Frikanalen/frontend/issues/120)) ([40e5732](https://github.com/Frikanalen/frontend/commit/40e5732d53ee08edec722a8e026f56d5ff44efa7))
+* **profile:** redesign Endre profil, add password change ([#116](https://github.com/Frikanalen/frontend/issues/116)) ([b2667a1](https://github.com/Frikanalen/frontend/commit/b2667a10646f9916b48575692a719f51aab65558))
+* **register:** ask for at least 8 password characters up front ([#115](https://github.com/Frikanalen/frontend/issues/115)) ([55879d9](https://github.com/Frikanalen/frontend/commit/55879d9c06fb115e12c9d2df0f3b2b45427a411f))
+
+
+### Bug Fixes
+
+* **live:** a slow preview is not the browser's fault ([#113](https://github.com/Frikanalen/frontend/issues/113)) ([2e5e8e2](https://github.com/Frikanalen/frontend/commit/2e5e8e216d65d66230d59f2fa708b05e0400c5b0))
+* **live:** keep the signal report through a missed answer ([#111](https://github.com/Frikanalen/frontend/issues/111)) ([ff56b84](https://github.com/Frikanalen/frontend/commit/ff56b84b4190d80a857f0538810398820d8e799c))
+
 ## [3.6.0](https://github.com/Frikanalen/frontend/compare/v3.5.0...v3.6.0) (2026-11-13)
 
 
