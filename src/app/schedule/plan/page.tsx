@@ -35,10 +35,20 @@ export default async function Page({
       <header>
         <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">Sendetid</h1>
         <p className="mt-2 text-default-600">
-          Tildelt sendetid for alle organisasjoner. Ny sendetid, avlysning og unntak fra låsing
-          gjøres foreløpig i administrasjonen.
+          Tildelt sendetid for alle organisasjoner. Avlysning og unntak fra låsing gjøres foreløpig
+          i administrasjonen.
         </p>
         <div className="mt-2 flex flex-wrap gap-x-5 gap-y-1">
+          <Link
+            className="font-semibold text-link hover:underline"
+            href={
+              Number.isFinite(requestedId)
+                ? `/schedule/plan/give?organization=${requestedId}`
+                : "/schedule/plan/give"
+            }
+          >
+            Gi sendetid
+          </Link>
           <Link className="font-semibold text-link hover:underline" href="/schedule/plan/requests">
             Forespørsler
           </Link>
