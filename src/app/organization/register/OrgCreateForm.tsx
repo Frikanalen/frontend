@@ -1,6 +1,6 @@
 "use client";
 import { FormInput, FormTextArea } from "@/components/FormField";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { OrganizationRequest } from "@/generated/frikanalenDjangoAPI.schemas";
 import { Button, Form } from "@heroui/react";
 import { useOrganizationCreate } from "@/generated/organization/organization";
@@ -8,9 +8,77 @@ import { useRouter } from "next/navigation";
 import cx from "classnames";
 import { useApiFormSubmit } from "@/lib/useApiFormSubmit";
 import { FormError } from "@/components/form/FormError";
+import { isValidOrgnr, normalizeOrgnr } from "@/lib/orgnr";
+import { BrregLookup, useBrregLookup } from "@/app/organization/register/useBrregLookup";
+
+// The fields the register can fill in. A field the user has typed in
+// themselves is left alone.
+const PREFILLED = ["name", "homepage", "streetAddress", "postalAddress"] as const;
+
+const LookupStatus = ({ lookup }: { lookup: BrregLookup }) => {
+  switch (lookup.state) {
+    case "idle":
+      return null;
+    case "invalid":
+      return (
+        <p className="text-sm text-danger">
+          Nummeret stemmer ikke. Sjekk at du har skrevet det riktig.
+        </p>
+      );
+    case "loading":
+      return <p className="text-sm text-default-600">Henter fra Brønnøysundregistrene …</p>;
+    case "not-found":
+      return (
+        <p className="text-sm text-danger">
+          Fant ingen organisasjon med dette nummeret i Enhetsregisteret.
+        </p>
+      );
+    case "deleted":
+      return <p className="text-sm text-danger">Organisasjonen er slettet fra Enhetsregisteret.</p>;
+    case "unavailable":
+      return (
+        <p className="text-sm text-default-600">
+          Fikk ikke svar fra Brønnøysundregistrene. Fyll inn feltene under selv.
+        </p>
+      );
+    case "found": {
+      const { entity } = lookup;
+      return (
+        <div className="text-sm text-default-700">
+          <p>
+            Fylt inn fra Enhetsregisteret: <strong>{entity.name}</strong>
+            {entity.organizationForm && <> ({entity.organizationForm.toLowerCase()})</>}. Se over
+            feltene under og rett det som ikke stemmer.
+          </p>
+          {entity.bankrupt && (
+            <p className="mt-1 text-danger">Registeret oppgir at organisasjonen er konkurs.</p>
+          )}
+          {entity.beingDissolved && (
+            <p className="mt-1 text-danger">
+              Registeret oppgir at organisasjonen er under avvikling.
+            </p>
+          )}
+        </div>
+      );
+    }
+  }
+};
+
 export const OrgCreateForm = ({ className }: { className?: string }) => {
   const form = useForm<OrganizationRequest>();
   const { register } = form;
+  // Controlled, so what the register fills in shows up in the fields.
+  const [name, homepage, streetAddress, postalAddress] = useWatch({
+    control: form.control,
+    name: [...PREFILLED],
+  });
+  const lookup = useBrregLookup(useWatch({ control: form.control, name: "orgnr" }), (entity) => {
+    for (const field of PREFILLED) {
+      if (form.getFieldState(field).isDirty || !entity[field]) continue;
+      // Not marked dirty, so correcting the number fills in again.
+      form.setValue(field, entity[field]);
+    }
+  });
   const router = useRouter();
   const { mutateAsync } = useOrganizationCreate();
 
@@ -25,12 +93,34 @@ export const OrgCreateForm = ({ className }: { className?: string }) => {
     <Form onSubmit={onSubmit} className={cx("block", className)} autoComplete={"off"}>
       <div className="flex flex-col gap-4">
         <FormError error={error} />
+        <div className="flex flex-col gap-2">
+          <FormInput
+            label={"Organisasjonsnummer"}
+            labelPlacement={"outside-top"}
+            description={
+              "Fra Brønnøysundregistrene. Da fyller vi inn resten for deg. Har organisasjonen ikke et, lar du feltet stå tomt."
+            }
+            inputMode={"numeric"}
+            autoComplete={"off"}
+            id="org-orgnr"
+            className="max-w-xs"
+            isInvalid={!!form.formState.errors.orgnr}
+            errorMessage={form.formState.errors.orgnr?.message}
+            {...register("orgnr", {
+              setValueAs: (value: string) => normalizeOrgnr(value ?? ""),
+              validate: (value) =>
+                !value || isValidOrgnr(value) || "Organisasjonsnummeret er ikke gyldig.",
+            })}
+          />
+          <LookupStatus lookup={lookup} />
+        </div>
         <FormInput
           label={"Organisasjonens navn"}
           labelPlacement={"outside-top"}
           isRequired
           id="org-name"
           {...register("name")}
+          value={name ?? ""}
         />
         <FormInput
           label={"Organisasjonens nettside"}
@@ -38,6 +128,7 @@ export const OrgCreateForm = ({ className }: { className?: string }) => {
           type={"url"}
           id="org-homepage"
           {...register("homepage")}
+          value={homepage ?? ""}
         />
         <FormTextArea
           label={"En kort beskrivelse av organisasjonen"}
@@ -54,6 +145,7 @@ export const OrgCreateForm = ({ className }: { className?: string }) => {
             isRequired
             id="org-streetAddress"
             {...register("streetAddress")}
+            value={streetAddress ?? ""}
             classNames={{ input: "py-2" }} // heroui bug? margins very stingy
           />
           <FormTextArea
@@ -62,6 +154,7 @@ export const OrgCreateForm = ({ className }: { className?: string }) => {
             isRequired
             id="org-postalAddress"
             {...register("postalAddress")}
+            value={postalAddress ?? ""}
             classNames={{ input: "py-2" }} // heroui bug? margins very stingy
           />
         </div>

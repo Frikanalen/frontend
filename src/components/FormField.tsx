@@ -19,6 +19,12 @@ type SharedProps = {
   errorMessage?: ReactNode;
   classNames?: { input?: string };
   onValueChange?: (_value: string) => void;
+  /**
+   * Makes the field controlled. React Aria's TextField otherwise keeps its
+   * own copy of the value, so a value set from code (react-hook-form's
+   * setValue) is overwritten on the next render.
+   */
+  value?: string;
 };
 
 type InputProps = Omit<InputHTMLAttributes<HTMLInputElement>, "onChange" | "defaultValue"> &
@@ -39,6 +45,7 @@ export const FormInput = forwardRef<HTMLInputElement, InputProps>(
       classNames,
       className,
       defaultValue,
+      value,
       onChange,
       onValueChange,
       ...inputProps
@@ -58,6 +65,7 @@ export const FormInput = forwardRef<HTMLInputElement, InputProps>(
         isInvalid={isInvalid}
         className={className}
         defaultValue={defaultValue}
+        value={value}
       >
         {label && <Label>{label}</Label>}
         {description && <Description>{description}</Description>}
@@ -90,6 +98,7 @@ export const FormTextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
       errorMessage,
       classNames,
       className,
+      value,
       onChange,
       onValueChange,
       ...textAreaProps
@@ -98,7 +107,7 @@ export const FormTextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
   ) => {
     void labelPlacement;
     return (
-      <TextField isRequired={isRequired} isInvalid={isInvalid} className={className}>
+      <TextField isRequired={isRequired} isInvalid={isInvalid} className={className} value={value}>
         {label && <Label>{label}</Label>}
         {description && <Description>{description}</Description>}
         <HeroTextArea
