@@ -8,7 +8,6 @@ const STATE_LABELS: Record<StepState, string | null> = {
   todo: "Deres tur",
   waiting: "Venter på Frikanalen",
   blocked: "Senere",
-  self: "Gjør dere selv",
 };
 
 const STATE_BADGES: Record<StepState, string> = {
@@ -16,7 +15,6 @@ const STATE_BADGES: Record<StepState, string> = {
   todo: "bg-accent text-accent-foreground",
   waiting: "bg-warning-50 text-warning-800",
   blocked: "bg-default-100 text-default-600",
-  self: "bg-secondary-50 text-secondary-800",
 };
 
 /**
