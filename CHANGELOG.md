@@ -1,6 +1,25 @@
 2025-05-31 
 # Changelog
 
+## [3.9.0](https://github.com/Frikanalen/frontend/compare/v3.8.0...v3.9.0) (2026-11-14)
+
+
+### Features
+
+* **schedule:** staff week page of real grants, with tabs between the staff tools ([#133](https://github.com/Frikanalen/frontend/issues/133)) ([4d10a01](https://github.com/Frikanalen/frontend/commit/4d10a01f6c50166792f3ad90727d957cac191f5c))
+
+
+### Bug Fixes
+
+* **player:** rebuild the player when a hidden page comes back ([#132](https://github.com/Frikanalen/frontend/issues/132)) ([4d5d839](https://github.com/Frikanalen/frontend/commit/4d5d8393ef11c85ed63fc9c73a0ef7d34f4028b8))
+* **theme:** own storage key, so Django admin's "auto" doesn't turn off dark mode ([#131](https://github.com/Frikanalen/frontend/issues/131)) ([c957c17](https://github.com/Frikanalen/frontend/commit/c957c1736452fea582d52216eb46469ae9b95d22))
+
+
+### Performance Improvements
+
+* server-rendered video poster, no live preload, one Django call per lookup ([#127](https://github.com/Frikanalen/frontend/issues/127)) ([a174eef](https://github.com/Frikanalen/frontend/commit/a174eefe6a084fb5ab080a82befd969e6dd21406))
+* turn on Cache Components so public pages share a static shell ([#128](https://github.com/Frikanalen/frontend/issues/128)) ([64d6655](https://github.com/Frikanalen/frontend/commit/64d665569c7f9d99c6bca716953d0fd07f4773f7))
+
 ## [3.8.0](https://github.com/Frikanalen/frontend/compare/v3.7.0...v3.8.0) (2026-11-13)
 
 
