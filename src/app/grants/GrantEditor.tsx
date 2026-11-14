@@ -1,5 +1,9 @@
 "use client";
-import type { AirtimeGrant, GrantItemVideo } from "@/generated/frikanalenDjangoAPI.schemas";
+import type {
+  AirtimeGrant,
+  GrantItemPoster,
+  GrantItemVideo,
+} from "@/generated/frikanalenDjangoAPI.schemas";
 import {
   getGrantsRetrieveQueryKey,
   useGrantsItemsUpdate,
@@ -24,8 +28,8 @@ import {
   useDragAndDrop,
   type DropItem,
 } from "react-aria-components";
-import { GoBroadcast, GoGrabber, GoPin, GoSync, GoX } from "react-icons/go";
-import { durationMilliseconds, formatDuration } from "./duration";
+import { GoBroadcast, GoGrabber, GoNote, GoPin, GoSync, GoX } from "react-icons/go";
+import { formatDuration } from "./duration";
 import { HourBar } from "./HourBar";
 import { ExemptionRequest } from "@/app/requests/ExemptionRequest";
 import { mondayOf, osloPlace } from "@/app/schedule/plan/week/week";
@@ -39,18 +43,24 @@ import {
   itemName,
   itemStatus,
   liveSourceName,
+  itemMilliseconds,
   itemsPayload,
+  type DraftItem,
   type KeyedItem,
   listMilliseconds,
   placeItems,
+  posterItem,
+  roomForPoster,
+  roomForProgramme,
   sameList,
   splitItems,
   STATE_LABELS,
   timeline,
-  windowMilliseconds,
+  videoItem,
 } from "./grants";
 import { LockBadge } from "./LockBadge";
 import { ModeBadge } from "./ModeBadge";
+import { POSTER_DRAG_TYPE, PosterPicker, TEMPLATE_LABELS } from "./PosterPicker";
 import { VIDEO_DRAG_TYPE, VideoPicker } from "./VideoPicker";
 
 /** The source choice that is no series: everything the organization uploads. */
@@ -64,21 +74,34 @@ const sourceOf = ({ recipe }: Pick<AirtimeGrant, "recipe">) =>
 const ITEM_DRAG_TYPE = "application/x-frikanalen-grant-item";
 
 let nextKey = 0;
-const keyed = (video: GrantItemVideo): KeyedItem => ({
+const keyed = ({ video, poster }: DraftItem): KeyedItem => ({
   key: `item-${nextKey++}`,
   video,
+  poster,
 });
 /** What the editor edits: the pinned items of a self-filling grant, or all of a hand-made one. */
 const keyedItems = (grant: AirtimeGrant) =>
-  splitItems(grant, grant.items).chosen.map((item) => keyed(item.video));
+  splitItems(grant, grant.items).chosen.map((item) => keyed(item));
 
-const droppedVideos = async (items: DropItem[]) =>
+/** Videos and posters dropped from the library. */
+const droppedEntries = async (items: DropItem[]) =>
   Promise.all(
     items
       .filter(isTextDropItem)
-      .filter((item) => item.types.has(VIDEO_DRAG_TYPE))
-      .map(async (item) => keyed(JSON.parse(await item.getText(VIDEO_DRAG_TYPE)))),
+      .filter((item) => item.types.has(VIDEO_DRAG_TYPE) || item.types.has(POSTER_DRAG_TYPE))
+      .map(async (item) =>
+        item.types.has(POSTER_DRAG_TYPE)
+          ? keyed(posterItem(JSON.parse(await item.getText(POSTER_DRAG_TYPE)) as GrantItemPoster))
+          : keyed(videoItem(JSON.parse(await item.getText(VIDEO_DRAG_TYPE)) as GrantItemVideo)),
+      ),
   );
+
+/** The graphics between a programme and the next, shown above the next. */
+const GapLine = ({ gap }: { gap: { start: Date; end: Date } }) => (
+  <span className="sr-only">
+    Grafikk {formatOsloTime(gap.start)}–{formatOsloTime(gap.end)}.
+  </span>
+);
 
 const osloDateTime = (instant: string) =>
   format(inOsloTime(instant), "EEEE d. MMMM 'kl.' HH:mm", { locale: nb });
@@ -131,12 +154,12 @@ const Editor = ({
   const dirty = !sameList(items, stored.chosen) || fillRest !== isAutomatic(grant) || sourceChanged;
   // The rule's own picks are only known for the list as saved.
   const filled = fillRest && !dirty ? stored.filled : [];
-  const windowLength = windowMilliseconds(grant);
-  const used = listMilliseconds(items);
-  const { rows: allRows, graphics } = timeline(
-    [...items, ...filled.map((item, index) => ({ key: `filled-${index}`, video: item.video }))],
-    grant,
-  );
+  const shown = [
+    ...items,
+    ...filled.map((item, index) => ({ ...keyed(item), key: `filled-${index}` })),
+  ];
+  const { rows: allRows, graphics } = timeline(shown, grant);
+  const overruns = allRows.some((row) => row.overruns);
   const rows = allRows.slice(0, items.length);
   const filledRows = allRows.slice(items.length);
   const [now] = useState(Date.now);
@@ -158,7 +181,7 @@ const Editor = ({
     isDisabled: !editable,
     // A drag starts from the list itself (a reorder) or from the library (an
     // insert); anything else dragged over the list is refused.
-    acceptedDragTypes: [ITEM_DRAG_TYPE, VIDEO_DRAG_TYPE],
+    acceptedDragTypes: [ITEM_DRAG_TYPE, VIDEO_DRAG_TYPE, POSTER_DRAG_TYPE],
     getItems: (keys) =>
       items
         .filter(({ key }) => keys.has(key))
@@ -178,14 +201,14 @@ const Editor = ({
       change(
         placeItems(
           items,
-          await droppedVideos(dropped),
+          await droppedEntries(dropped),
           String(target.key),
           target.dropPosition === "before" ? "before" : "after",
         ),
       );
     },
     onRootDrop: async ({ items: dropped }) => {
-      change([...items, ...(await droppedVideos(dropped))]);
+      change([...items, ...(await droppedEntries(dropped))]);
     },
     renderDropIndicator: (target) => (
       <DropIndicator
@@ -236,7 +259,7 @@ const Editor = ({
 
   const toggleFillRest = (on: boolean) => {
     // Turning it off keeps what the rule had picked, as a list of one's own.
-    if (!on) setItems([...items, ...filled.map((item) => keyed(item.video))]);
+    if (!on) setItems([...items, ...filled.map((item) => keyed(item))]);
     setFillRest(on);
     setSaved(false);
     setError(undefined);
@@ -311,11 +334,13 @@ const Editor = ({
             end={grant.endtime}
             rows={allRows}
             start={grant.starttime}
-            used={used + listMilliseconds(filled)}
+            used={listMilliseconds(shown, grant)}
           />
           {editable ? (
             <p className="text-sm text-default-600">
-              Dra videoer hit fra videolisten, og dra i håndtaket for å endre rekkefølgen.
+              Dra videoer og plakater hit, og dra i håndtaket for å endre rekkefølgen. Hvert program
+              begynner på et helt femminutt, med litt grafikk imellom; en plakat går rett etter det
+              som er foran den.
             </p>
           ) : null}
           <GridList
@@ -347,6 +372,7 @@ const Editor = ({
                 id={row.id}
                 textValue={itemName(row.item)}
               >
+                {row.gapBefore ? <GapLine gap={row.gapBefore} /> : null}
                 {editable ? (
                   <Button
                     aria-label={`Flytt «${itemName(row.item)}»`}
@@ -371,12 +397,20 @@ const Editor = ({
                         className="shrink-0 text-danger-600"
                       />
                     ) : null}
+                    {row.item.poster ? (
+                      <GoNote aria-label="Tekstplakat" className="shrink-0 text-default-600" />
+                    ) : null}
                     <span className="truncate">{itemName(row.item)}</span>
                   </span>
                   <span className="text-sm text-default-600">
-                    {formatDuration(durationMilliseconds(row.item.video.duration) ?? 0)}
-                    {itemStatus(row.item.video) ? ` · ${itemStatus(row.item.video)}` : ""}
-                    {row.item.video.organization.id !== grant.organization.id
+                    {formatDuration(itemMilliseconds(row.item))}
+                    {row.item.poster
+                      ? ` · tekstplakat, ${TEMPLATE_LABELS[row.item.poster.template].toLowerCase()}`
+                      : ""}
+                    {itemStatus(row.item.video) && row.item.video
+                      ? ` · ${itemStatus(row.item.video)}`
+                      : ""}
+                    {row.item.video && row.item.video.organization.id !== grant.organization.id
                       ? ` · ${row.item.video.organization.name}`
                       : ""}
                     {row.overruns ? (
@@ -415,7 +449,7 @@ const Editor = ({
                     </span>
                     <span className="block truncate font-semibold">{itemName(row.item)}</span>
                     <span className="text-sm text-default-600">
-                      {formatDuration(durationMilliseconds(row.item.video.duration) ?? 0)}
+                      {formatDuration(itemMilliseconds(row.item))}
                       {itemStatus(row.item.video) ? ` · ${itemStatus(row.item.video)}` : ""}
                     </span>
                   </span>
@@ -423,7 +457,7 @@ const Editor = ({
                     <HeroButton
                       size="sm"
                       variant="tertiary"
-                      onPress={() => change([...items, keyed(row.item.video)])}
+                      onPress={() => change([...items, keyed(row.item)])}
                     >
                       <GoPin aria-hidden /> Behold
                     </HeroButton>
@@ -510,7 +544,7 @@ const Editor = ({
           {editable ? (
             <div className="flex flex-wrap items-center gap-2 border-t border-default-200 pt-3">
               <HeroButton
-                isDisabled={!dirty || used > windowLength}
+                isDisabled={!dirty || overruns}
                 isPending={saveItems.isPending}
                 variant="primary"
                 onPress={save}
@@ -542,12 +576,28 @@ const Editor = ({
         </section>
 
         {editable ? (
-          <aside className="bg-background p-4 sm:p-6">
+          <aside className="space-y-8 bg-background p-4 sm:p-6">
             <VideoPicker
               newLiveFrom={newLiveFrom}
               organizationId={grant.organization.id}
-              remaining={windowLength - used}
-              onPick={(video) => change([...items, keyed(video)])}
+              remaining={roomForProgramme(items, grant)}
+              onPick={(video) => change([...items, keyed(videoItem(video))])}
+            />
+            <PosterPicker
+              organization={grant.organization}
+              remaining={roomForPoster(items, grant)}
+              onEdited={(poster) => {
+                // Show the corrected poster wherever it is listed.
+                setItems((current) =>
+                  current.map((item) =>
+                    item.poster?.id === poster.id ? { ...item, poster } : item,
+                  ),
+                );
+                void queryClient.invalidateQueries({
+                  queryKey: getGrantsRetrieveQueryKey(grant.id),
+                });
+              }}
+              onPick={(poster) => change([...items, keyed(posterItem(poster))])}
             />
           </aside>
         ) : null}

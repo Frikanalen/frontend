@@ -84,6 +84,16 @@ const nextConfig: NextConfig = {
         source: "/api/:path*",
         destination: `${process.env.DJANGO_URL ?? "http://localhost:8000/"}api/:path*`,
       },
+      // The on-air graphics, which the poster editor previews. The ingress
+      // routes /graphics/ to the graphics service in deployed environments.
+      {
+        source: "/graphics",
+        destination: process.env.GRAPHICS_URL ?? "http://localhost:4175/graphics/",
+      },
+      {
+        source: "/graphics/:path+",
+        destination: `${process.env.GRAPHICS_URL ?? "http://localhost:4175/graphics/"}:path+`,
+      },
       // MediaMTX's WebRTC (WHEP) endpoints, which the ingress likewise
       // routes straight to MediaMTX in deployed environments.
       {

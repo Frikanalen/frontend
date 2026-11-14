@@ -123,7 +123,7 @@ test.describe("airtime grants", () => {
     await expect(cards.nth(0).getByText("Automatisk fylt")).toBeVisible();
     await expect(cards.nth(1).getByText("Satt opp manuelt")).toBeVisible();
     await expect(cards.nth(0).getByText(/Åpen til man 7\. jan\. kl\. 00:00/)).toBeVisible();
-    await expect(cards.nth(0).getByText("35:00 av 1:00:00 brukt, 25:00 grafikk")).toBeVisible();
+    await expect(cards.nth(0).getByText("40:00 av 1:00:00 brukt, 20:00 grafikk")).toBeVisible();
     await expect(cards.nth(0).getByRole("link", { name: "Sett opp programmet" })).toHaveAttribute(
       "href",
       "/organization/3/schedule/700",
@@ -172,8 +172,9 @@ test.describe("airtime grants", () => {
 
     await expect(listRows(page)).toHaveCount(2);
     await expect(listRows(page).nth(0)).toContainText("18:00–18:20");
-    await expect(listRows(page).nth(1)).toContainText("18:20–18:35");
-    await expect(page.getByText("18:35–19:00")).toBeVisible();
+    // The second programme starts on the next five minutes after a breather.
+    await expect(listRows(page).nth(1)).toContainText("18:25–18:40");
+    await expect(page.getByText("18:40–19:00")).toBeVisible();
     await expect(page.getByText("Automatisk fylt")).toBeVisible();
   });
 
@@ -225,7 +226,8 @@ test.describe("airtime grants", () => {
     await editor(page, grant());
     await page.getByRole("button", { name: "Legg til" }).click();
 
-    await expect(page.getByText("1:05:00 av 1:00:00: 5:00 for mye")).toBeVisible();
+    // 20 minutes, 15 from 18:25 and 30 from 18:45: a quarter of an hour too long.
+    await expect(page.getByText("1:15:00 av 1:00:00: 15:00 for mye")).toBeVisible();
     await expect(listRows(page).nth(2)).toContainText("går over sendetiden");
     await expect(page.getByRole("button", { name: "Lagre listen" })).toBeDisabled();
 
@@ -288,7 +290,7 @@ test.describe("airtime grants", () => {
       ...libraryVideo,
       id: 50,
       name: "Valgvake",
-      duration: "00:25:00",
+      duration: "00:15:00",
       properImport: false,
       liveSource: studio.id,
     };
@@ -305,8 +307,9 @@ test.describe("airtime grants", () => {
     await page.getByRole("button", { name: "Ny direktesending" }).click();
     const form = page.getByRole("form", { name: "Ny direktesending" });
     await form.getByLabel("Tittel").fill("Valgvake");
-    // The length starts out as the 25 minutes left.
-    await expect(form.getByLabel("Lengde (min)")).toHaveValue("25");
+    // The length starts out as the 15 minutes left: the list ends at 18:40,
+    // and the next programme would start at 18:45.
+    await expect(form.getByLabel("Lengde (min)")).toHaveValue("15");
     await form.getByRole("button", { name: "Opprett og legg til" }).click();
 
     await expect
@@ -314,7 +317,7 @@ test.describe("airtime grants", () => {
       .toEqual([
         {
           name: "Valgvake",
-          duration: "00:25:00",
+          duration: "00:15:00",
           organization: 3,
           categories: [],
           liveSource: studio.id,
@@ -496,7 +499,7 @@ test.describe("airtime grants", () => {
     // Nothing is chosen by hand; the rule's picks are listed apart.
     const filled = page.getByRole("list", { name: "Fylt automatisk" }).getByRole("listitem");
     await expect(filled).toHaveCount(2);
-    await expect(filled.nth(1)).toContainText("18:20–18:35");
+    await expect(filled.nth(1)).toContainText("18:25–18:40");
 
     await filled.nth(1).getByRole("button", { name: "Behold" }).click();
     await expect(listRows(page)).toHaveCount(1);
@@ -570,5 +573,109 @@ test.describe("on a phone", () => {
 
     await expect(listRows(page)).toHaveCount(1);
     await fitsTheScreen(page);
+  });
+});
+
+test.describe("text posters", () => {
+  test("makes a text poster and puts it in the gap after a programme", async ({ page }) => {
+    const created: unknown[] = [];
+    const puts: unknown[] = [];
+    const notice = {
+      id: 40,
+      organization,
+      template: "notice",
+      heading: "Neste: Båtliv",
+      text: "Om fem minutter.",
+      duration: "00:00:30",
+      minimumDuration: "00:00:09",
+      createdAt: "2030-01-01T10:00:00Z",
+      updatedAt: "2030-01-01T10:00:00Z",
+    };
+    let posters: unknown[] = [];
+    await page.route("**/api/posters?**", (route) =>
+      route.fulfill({ status: 200, json: page_(posters) }),
+    );
+    await page.route("**/api/posters", (route) => {
+      created.push(route.request().postDataJSON());
+      posters = [notice];
+      return route.fulfill({ status: 201, json: notice });
+    });
+    await page.route("**/api/grants/700/items", (route) => {
+      puts.push(route.request().postDataJSON());
+      return route.fulfill({ status: 200, json: grant({ recipe: null }) });
+    });
+    await editor(page, grant({ recipe: null }));
+
+    await page.getByRole("button", { name: "Ny tekstplakat" }).click();
+    const form = page.getByRole("form", { name: "Ny tekstplakat" });
+    await form.getByText("Viktig melding").click();
+    await form.getByLabel("Overskrift").fill("Neste: Båtliv");
+    await form.getByLabel("Tekst").fill("Om fem minutter.\n\nVi ses.");
+    // The preview is the on-air template itself, with what was typed: a
+    // frame for each slide, by day or by night.
+    const frames = form.locator("iframe");
+    await expect(frames).toHaveCount(2);
+    await expect(frames.first()).toHaveAttribute(
+      "src",
+      /poster=notice&heading=Neste.*&look=day&slide=0/,
+    );
+    await expect(frames.nth(1)).toHaveAttribute("src", /look=day&slide=1/);
+    await form.getByRole("button", { name: "Kveld" }).click();
+    await expect(frames.nth(1)).toHaveAttribute("src", /look=night&slide=1/);
+    // Both slides read once take 9 s, so nothing shorter is offered.
+    const length = form.getByLabel("Hvor lenge den vises");
+    await expect(length.locator("option").first()).toHaveAttribute("value", "9");
+    await expect(length).toHaveValue("30");
+    await form.getByRole("button", { name: "Lag og legg til" }).click();
+
+    await expect
+      .poll(() => created)
+      .toEqual([
+        {
+          template: "notice",
+          heading: "Neste: Båtliv",
+          text: "Om fem minutter.\n\nVi ses.",
+          duration: "00:00:30",
+          organizationId: 3,
+        },
+      ]);
+    await expect(listRows(page)).toHaveCount(3);
+    await expect(listRows(page).nth(2)).toContainText("tekstplakat");
+
+    await page.getByRole("button", { name: "Lagre listen" }).click();
+    await expect
+      .poll(() => puts)
+      .toEqual([{ items: [{ video: 1 }, { video: 2 }, { poster: 40 }], automatic: false }]);
+  });
+
+  test("a poster between two programmes plays right after the first", async ({ page }) => {
+    const poster = {
+      id: 40,
+      template: "notice",
+      heading: "Neste: Båtliv",
+      text: "Om fem minutter.",
+      duration: "00:00:30",
+    };
+    await editor(
+      page,
+      grant({
+        recipe: null,
+        items: [
+          {
+            position: 0,
+            pinned: true,
+            video: grantVideo(1, "Kaia i dag", "00:20:00"),
+            poster: null,
+          },
+          { position: 1, pinned: true, video: null, poster },
+          { position: 2, pinned: true, video: grantVideo(2, "Båtliv", "00:15:00"), poster: null },
+        ],
+      }),
+    );
+
+    // The second programme still starts on the next five-minute mark.
+    await expect(listRows(page).nth(1)).toContainText("18:20–18:20");
+    await expect(listRows(page).nth(1)).toContainText("Neste: Båtliv");
+    await expect(listRows(page).nth(2)).toContainText("18:25–18:40");
   });
 });
