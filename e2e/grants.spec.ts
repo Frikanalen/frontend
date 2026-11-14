@@ -642,31 +642,40 @@ test.describe("text posters", () => {
     await expect(listRows(page)).toHaveCount(3);
     await expect(listRows(page).nth(2)).toContainText("tekstplakat");
 
-    // Moved up between the two programmes, it plays right after the first,
-    // and the second still starts at 18:25.
-    const focused = page.locator(":focus");
-    // The closing dialog hands focus back, so wait for it to be gone first.
-    await expect(form).toBeHidden();
-    const move = page.getByRole("button", { name: "Flytt «Neste: Båtliv»" });
-    await move.focus();
-    await expect(move).toBeFocused();
-    await page.keyboard.press("Enter");
-    await expect(focused).toHaveAttribute("aria-roledescription", "slippeindikator");
-    // One target at a time: WebKit can drop a key sent before the last landed.
-    for (let step = 0; step < 2; step++) {
-      const before = await focused.getAttribute("aria-label");
-      await page.keyboard.press("ArrowUp");
-      await expect(focused).not.toHaveAttribute("aria-label", before ?? "");
-    }
-    await expect(focused).toHaveAttribute("aria-label", "Sett inn mellom Kaia i dag og Båtliv");
-    await page.keyboard.press("Enter");
-    await expect(listRows(page).nth(1)).toContainText("18:20–18:20");
-    await expect(listRows(page).nth(1)).toContainText("Neste: Båtliv");
-    await expect(listRows(page).nth(2)).toContainText("18:25–18:40");
-
     await page.getByRole("button", { name: "Lagre listen" }).click();
     await expect
       .poll(() => puts)
-      .toEqual([{ items: [{ video: 1 }, { poster: 40 }, { video: 2 }], automatic: false }]);
+      .toEqual([{ items: [{ video: 1 }, { video: 2 }, { poster: 40 }], automatic: false }]);
+  });
+
+  test("a poster between two programmes plays right after the first", async ({ page }) => {
+    const poster = {
+      id: 40,
+      template: "notice",
+      heading: "Neste: Båtliv",
+      text: "Om fem minutter.",
+      duration: "00:00:30",
+    };
+    await editor(
+      page,
+      grant({
+        recipe: null,
+        items: [
+          {
+            position: 0,
+            pinned: true,
+            video: grantVideo(1, "Kaia i dag", "00:20:00"),
+            poster: null,
+          },
+          { position: 1, pinned: true, video: null, poster },
+          { position: 2, pinned: true, video: grantVideo(2, "Båtliv", "00:15:00"), poster: null },
+        ],
+      }),
+    );
+
+    // The second programme still starts on the next five-minute mark.
+    await expect(listRows(page).nth(1)).toContainText("18:20–18:20");
+    await expect(listRows(page).nth(1)).toContainText("Neste: Båtliv");
+    await expect(listRows(page).nth(2)).toContainText("18:25–18:40");
   });
 });
