@@ -1,6 +1,13 @@
 2025-05-31 
 # Changelog
 
+## [3.10.0](https://github.com/Frikanalen/frontend/compare/v3.9.0...v3.10.0) (2026-11-14)
+
+
+### Features
+
+* send a report-only Content-Security-Policy ([#130](https://github.com/Frikanalen/frontend/issues/130)) ([a11e834](https://github.com/Frikanalen/frontend/commit/a11e834a5032ab19886767bbadedd58afb590170))
+
 ## [3.9.0](https://github.com/Frikanalen/frontend/compare/v3.8.0...v3.9.0) (2026-11-14)
 
 
