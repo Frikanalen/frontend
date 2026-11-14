@@ -2,6 +2,7 @@ import React, {
   MediaHTMLAttributes,
   ReactNode,
   useLayoutEffect,
+  useState,
   useSyncExternalStore,
 } from "react";
 import "@vidstack/react/player/styles/default/theme.css";
@@ -152,15 +153,7 @@ const ServerPoster = ({ src, blurred }: { src: string; blurred: boolean }) => {
   );
 };
 
-export const VideoPlayer = ({
-  title,
-  src,
-  poster,
-  mediaPending,
-  overlay,
-  startTime,
-  preload,
-}: {
+type VideoPlayerProps = {
   title: string;
   src: string | PlayerSource | PlayerSource[];
   poster?: string;
@@ -174,7 +167,36 @@ export const VideoPlayer = ({
    * 1 MB on each front-page visit, before anyone has pressed play.
    */
   preload?: "none" | "metadata" | "auto";
-}) => {
+};
+
+// vidstack's React components destroy their player when React runs their effect cleanups, and
+// crash ("can't access property set") if React renders them again afterwards. Next keeps the
+// last few pages hidden in the document (React Activity), and hiding a page runs exactly those
+// cleanups, so going from the front page to the archive and back crashed the page. Take the
+// player out while its page is hidden and build a fresh one when the page comes back.
+export const VideoPlayer = (props: VideoPlayerProps) => {
+  const [shown, setShown] = useState(true);
+  useLayoutEffect(() => {
+    // Runs again when a hidden page is shown; the one extra render is the point.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setShown(true);
+    return () => setShown(false);
+  }, []);
+
+  if (!shown) return <div className="aspect-video w-full bg-black" />;
+
+  return <Player {...props} />;
+};
+
+const Player = ({
+  title,
+  src,
+  poster,
+  mediaPending,
+  overlay,
+  startTime,
+  preload,
+}: VideoPlayerProps) => {
   const airPlay = useCanAirPlay();
   // vidstack types mediaProps as plain HTMLAttributes but spreads it onto the <video>.
   const mediaProps: MediaHTMLAttributes<HTMLMediaElement> | undefined = preload
