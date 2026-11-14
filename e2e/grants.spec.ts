@@ -587,6 +587,7 @@ test.describe("text posters", () => {
       heading: "Neste: Båtliv",
       text: "Om fem minutter.",
       duration: "00:00:30",
+      minimumDuration: "00:00:09",
       createdAt: "2030-01-01T10:00:00Z",
       updatedAt: "2030-01-01T10:00:00Z",
     };
@@ -609,9 +610,22 @@ test.describe("text posters", () => {
     const form = page.getByRole("form", { name: "Ny tekstplakat" });
     await form.getByText("Viktig melding").click();
     await form.getByLabel("Overskrift").fill("Neste: Båtliv");
-    await form.getByLabel("Tekst").fill("Om fem minutter.");
-    // The preview is the on-air template itself, with what was typed.
-    await expect(form.locator("iframe")).toHaveAttribute("src", /poster=notice&heading=Neste/);
+    await form.getByLabel("Tekst").fill("Om fem minutter.\n\nVi ses.");
+    // The preview is the on-air template itself, with what was typed: a
+    // frame for each slide, by day or by night.
+    const frames = form.locator("iframe");
+    await expect(frames).toHaveCount(2);
+    await expect(frames.first()).toHaveAttribute(
+      "src",
+      /poster=notice&heading=Neste.*&look=day&slide=0/,
+    );
+    await expect(frames.nth(1)).toHaveAttribute("src", /look=day&slide=1/);
+    await form.getByRole("button", { name: "Kveld" }).click();
+    await expect(frames.nth(1)).toHaveAttribute("src", /look=night&slide=1/);
+    // Both slides read once take 9 s, so nothing shorter is offered.
+    const length = form.getByLabel("Hvor lenge den vises");
+    await expect(length.locator("option").first()).toHaveAttribute("value", "9");
+    await expect(length).toHaveValue("30");
     await form.getByRole("button", { name: "Lag og legg til" }).click();
 
     await expect
@@ -620,7 +634,7 @@ test.describe("text posters", () => {
         {
           template: "notice",
           heading: "Neste: Båtliv",
-          text: "Om fem minutter.",
+          text: "Om fem minutter.\n\nVi ses.",
           duration: "00:00:30",
           organizationId: 3,
         },

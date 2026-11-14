@@ -24969,7 +24969,7 @@ components:
           minLength: 1
         text:
           type: string
-          maxLength: 400
+          maxLength: 2412
         duration:
           description: How long it is on screen each time it airs.
           type: string
@@ -25208,10 +25208,14 @@ components:
           maxLength: 80
         text:
           type: string
-          maxLength: 400
+          maxLength: 2412
         duration:
           description: How long it is on screen each time it airs.
           type: string
+        minimumDuration:
+          description: 'The time it takes to read every slide once: the shortest `duration` allowed. A blank line in `text` starts a new slide.'
+          type: string
+          readOnly: true
         createdAt:
           type: string
           format: date-time
@@ -25224,6 +25228,7 @@ components:
         - createdAt
         - heading
         - id
+        - minimumDuration
         - organization
         - updatedAt
     PosterRequest:
@@ -25242,7 +25247,7 @@ components:
           minLength: 1
         text:
           type: string
-          maxLength: 400
+          maxLength: 2412
         duration:
           description: How long it is on screen each time it airs.
           type: string
@@ -28671,7 +28676,7 @@ components:
           type: integer
           readOnly: true
         template:
-          description: 'The on-air graphics template it is shown with: paper, stage or notice, or one added since. Anything unknown is shown as paper.'
+          description: 'The on-air graphics template it is shown with: standard or notice, or one added since. Anything unknown is shown as standard.'
           type: string
           readOnly: true
         heading:
@@ -30125,13 +30130,11 @@ components:
         - name
     TemplateEnum:
       description: |-
-        * `paper` - Lys
-        * `stage` - Mørk
-        * `notice` - Viktig
+        * `standard` - Vanlig
+        * `notice` - Viktig melding
       type: string
       enum:
-        - paper
-        - stage
+        - standard
         - notice
     TvanytimeDateRetrieveErrorResponse400:
       discriminator:

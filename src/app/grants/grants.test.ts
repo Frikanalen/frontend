@@ -33,7 +33,7 @@ const poster = (id: number, duration: string): DraftItem => ({
   video: null,
   poster: {
     id,
-    template: "paper",
+    template: "standard",
     heading: `Plakat ${id}`,
     text: "",
     duration,
