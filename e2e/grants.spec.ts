@@ -558,7 +558,7 @@ test.describe("on a phone", () => {
         json: page_([grant({ items: [{ position: 0, video: longTitle }] })]),
       }),
     );
-    await page.goto("/schedule/plan");
+    await page.goto("/schedule/plan?visning=liste");
     await waitForHydration(page);
 
     await expect(page.getByRole("article")).toHaveCount(1);

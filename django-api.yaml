@@ -12981,23 +12981,24 @@ paths:
   /api/user/login/passkey:
     get:
       operationId: user_login_passkey_retrieve
-      description: 'Whether passkeys are switched on here, so the login page knows
-
-        whether to offer them.'
-      tags:
-        - user
-      security:
-        - tokenAuth: []
-        - cookieAuth: []
-        - {}
+      description: |-
+        Whether passkeys are switched on here, so the login page knows
+        whether to offer them.
       responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasskeysAvailable'
         '400':
+          description: ''
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/UserLoginPasskeyRetrieveErrorResponse400'
-          description: ''
         '401':
+          description: ''
           content:
             application/json:
               schema:
@@ -13017,8 +13018,8 @@ paths:
                       - code: not_authenticated
                         detail: Authentication credentials were not provided.
                         attr: null
-          description: ''
         '404':
+          description: ''
           content:
             application/json:
               schema:
@@ -13031,8 +13032,8 @@ paths:
                       - code: not_found
                         detail: Not found.
                         attr: null
-          description: ''
         '405':
+          description: ''
           content:
             application/json:
               schema:
@@ -13045,8 +13046,8 @@ paths:
                       - code: method_not_allowed
                         detail: Method "get" not allowed.
                         attr: null
-          description: ''
         '406':
+          description: ''
           content:
             application/json:
               schema:
@@ -13059,8 +13060,8 @@ paths:
                       - code: not_acceptable
                         detail: Could not satisfy the request Accept header.
                         attr: null
-          description: ''
         '415':
+          description: ''
           content:
             application/json:
               schema:
@@ -13073,8 +13074,8 @@ paths:
                       - code: unsupported_media_type
                         detail: Unsupported media type "application/json" in request.
                         attr: null
-          description: ''
         '500':
+          description: ''
           content:
             application/json:
               schema:
@@ -13087,13 +13088,12 @@ paths:
                       - code: error
                         detail: A server error occurred.
                         attr: null
-          description: ''
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PasskeysAvailable'
-          description: ''
+      security:
+        - tokenAuth: []
+        - cookieAuth: []
+        - {}
+      tags:
+        - user
   /api/user/login/passkey/begin:
     post:
       operationId: user_login_passkey_begin_create
@@ -17467,6 +17467,11 @@ components:
           allOf:
             - $ref: '#/components/schemas/RecipeRequest'
           nullable: true
+        items:
+          description: Videos already in the grant, pinned, in playing order. They must fit the window; otherwise no grant is made.
+          type: array
+          items:
+            $ref: '#/components/schemas/GrantItemWriteRequest'
       required:
         - endtime
         - organization
@@ -20133,6 +20138,9 @@ components:
           recipe.longest: '#/components/schemas/GrantsCreateRecipeLongestErrorComponent'
           recipe.newer_than_days: '#/components/schemas/GrantsCreateRecipeNewerThanDaysErrorComponent'
           recipe.older_than_days: '#/components/schemas/GrantsCreateRecipeOlderThanDaysErrorComponent'
+          items.non_field_errors: '#/components/schemas/GrantsCreateItemsNonFieldErrorsErrorComponent'
+          items.INDEX.non_field_errors: '#/components/schemas/GrantsCreateItemsINDEXNonFieldErrorsErrorComponent'
+          items.INDEX.video: '#/components/schemas/GrantsCreateItemsINDEXVideoErrorComponent'
       oneOf:
         - $ref: '#/components/schemas/GrantsCreateNonFieldErrorsErrorComponent'
         - $ref: '#/components/schemas/GrantsCreateOrganizationErrorComponent'
@@ -20149,6 +20157,9 @@ components:
         - $ref: '#/components/schemas/GrantsCreateRecipeLongestErrorComponent'
         - $ref: '#/components/schemas/GrantsCreateRecipeNewerThanDaysErrorComponent'
         - $ref: '#/components/schemas/GrantsCreateRecipeOlderThanDaysErrorComponent'
+        - $ref: '#/components/schemas/GrantsCreateItemsNonFieldErrorsErrorComponent'
+        - $ref: '#/components/schemas/GrantsCreateItemsINDEXNonFieldErrorsErrorComponent'
+        - $ref: '#/components/schemas/GrantsCreateItemsINDEXVideoErrorComponent'
     GrantsCreateErrorResponse400:
       discriminator:
         propertyName: type
@@ -20158,6 +20169,76 @@ components:
       oneOf:
         - $ref: '#/components/schemas/GrantsCreateValidationError'
         - $ref: '#/components/schemas/ParseErrorResponse'
+    GrantsCreateItemsINDEXNonFieldErrorsErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `items.INDEX.non_field_errors` - items.INDEX.non_field_errors'
+          type: string
+          enum:
+            - items.INDEX.non_field_errors
+        code:
+          description: |-
+            * `invalid` - invalid
+            * `null` - null
+          type: string
+          enum:
+            - invalid
+            - 'null'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    GrantsCreateItemsINDEXVideoErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `items.INDEX.video` - items.INDEX.video'
+          type: string
+          enum:
+            - items.INDEX.video
+        code:
+          description: |-
+            * `does_not_exist` - does_not_exist
+            * `incorrect_type` - incorrect_type
+            * `null` - null
+            * `required` - required
+          type: string
+          enum:
+            - does_not_exist
+            - incorrect_type
+            - 'null'
+            - required
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    GrantsCreateItemsNonFieldErrorsErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `items.non_field_errors` - items.non_field_errors'
+          type: string
+          enum:
+            - items.non_field_errors
+        code:
+          description: |-
+            * `not_a_list` - not_a_list
+            * `null` - null
+          type: string
+          enum:
+            - not_a_list
+            - 'null'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
     GrantsCreateLockExemptErrorComponent:
       type: object
       properties:
@@ -28793,18 +28874,18 @@ components:
           type: integer
           readOnly: true
         verified:
+          description: This session has passed the second step, so it may change the methods.
           type: boolean
           readOnly: true
-          description: This session has passed the second step, so it may change the methods.
         methods:
           type: array
           items:
             $ref: '#/components/schemas/Method'
           readOnly: true
         passkeys:
+          description: Passkeys and security keys can be added here.
           type: boolean
           readOnly: true
-          description: Passkeys and security keys can be added here.
       required:
         - enabled
         - methods
@@ -29675,12 +29756,12 @@ components:
         - errors
         - type
     UserLoginPasskeyRetrieveErrorResponse400:
-      oneOf:
-        - $ref: '#/components/schemas/ParseErrorResponse'
       discriminator:
         propertyName: type
         mapping:
           client_error: '#/components/schemas/ParseErrorResponse'
+      oneOf:
+        - $ref: '#/components/schemas/ParseErrorResponse'
     UserLogoutCreateError:
       discriminator:
         propertyName: attr
