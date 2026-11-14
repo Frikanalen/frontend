@@ -1,32 +1,39 @@
 import type {
   AirtimeGrant,
   GrantItem,
+  GrantItemPoster,
   GrantItemVideo,
   GrantItemWriteRequest,
 } from "@/generated/frikanalenDjangoAPI.schemas";
 import { durationMilliseconds } from "./duration";
 
-/** An item in a list being edited: what a GrantItem is before the server numbers it. */
-export type DraftItem = Pick<GrantItem, "video">;
+/**
+ * An item in a list being edited: what a GrantItem is before the server
+ * numbers it. A video or a text poster; the other is null.
+ */
+export type DraftItem = Pick<GrantItem, "video" | "poster">;
+
+export const videoItem = (video: GrantItemVideo): DraftItem => ({ video, poster: null });
+export const posterItem = (poster: GrantItemPoster): DraftItem => ({ video: null, poster });
 
 export const windowMilliseconds = (grant: Pick<AirtimeGrant, "starttime" | "endtime">) =>
   new Date(grant.endtime).getTime() - new Date(grant.starttime).getTime();
 
-/**
- * How long a list plays, back to back. A video with no usable length counts as
- * zero here; the server refuses to save it, and the editor flags it.
- */
-export const listMilliseconds = (items: readonly DraftItem[]) =>
-  items.reduce((total, item) => total + (durationMilliseconds(item.video.duration) ?? 0), 0);
+/** How long one entry is on air. No usable length counts as zero; the editor flags it. */
+export const itemMilliseconds = (item: DraftItem) =>
+  durationMilliseconds(item.video?.duration ?? item.poster?.duration ?? "") ?? 0;
 
-export const itemName = (item: DraftItem) => item.video.name;
+export const itemName = (item: DraftItem) => item.video?.name ?? item.poster?.heading ?? "";
+
+const sameEntry = (a: DraftItem, b: DraftItem) =>
+  a.video ? a.video.id === b.video?.id : a.poster?.id === b.poster?.id;
 
 /**
  * The body PUT /grants/{id}/items takes: the whole list, in order, no
  * positions.
  */
 export const itemsPayload = (items: readonly DraftItem[]): GrantItemWriteRequest[] =>
-  items.map((item) => ({ video: item.video.id }));
+  items.map((item) => (item.video ? { video: item.video.id } : { poster: item.poster!.id }));
 
 /**
  * A grant's list as the editor holds it. While the grant fills itself, the
@@ -63,33 +70,84 @@ export const placeItems = (
   return [...rest.slice(0, at), ...incoming, ...rest.slice(at)];
 };
 
+// Programmes start on the five-minute grid, at least BREATHER after the
+// programme before; a poster plays right after whatever is before it. The
+// first entry starts with the grant. Jukebox grants are not padded. The
+// server lays lists out the same way (scheduling/layout.py in django-api).
+export const GRID_MILLISECONDS = 5 * 60 * 1000;
+export const BREATHER_MILLISECONDS = 30 * 1000;
+
+// Epoch milliseconds: Oslo is a whole number of hours off UTC, so the UTC
+// grid is Oslo's too.
+const upToGrid = (instant: number) => Math.ceil(instant / GRID_MILLISECONDS) * GRID_MILLISECONDS;
+
+/** Where an entry starts when what came before it ended at `cursor`. */
+const nextStart = (
+  cursor: number,
+  previous: DraftItem | undefined,
+  entry: Pick<DraftItem, "poster">,
+  padded: boolean,
+) => {
+  if (!padded || previous === undefined || entry.poster) return cursor;
+  return upToGrid(previous.poster ? cursor : cursor + BREATHER_MILLISECONDS);
+};
+
 export type TimelineRow<T extends DraftItem> = {
   item: T;
   start: Date;
   end: Date;
+  /** Graphics before this entry: the gap after the programme before it. */
+  gapBefore: { start: Date; end: Date } | null;
   /** Runs past the end of the window, so the list can't be saved as it is. */
   overruns: boolean;
 };
 
+type Layout = Pick<AirtimeGrant, "starttime" | "endtime"> & { padded?: boolean };
+
 /**
- * When each entry would play: back to back from the grant's start, as the
- * compiler lays them out, plus whatever is left over, which airs graphics.
+ * When each entry would play, as the compiler lays them out, plus whatever is
+ * left over at the end, which airs graphics. `end` is when the list ends.
  */
-export const timeline = <T extends DraftItem>(
-  items: readonly T[],
-  grant: Pick<AirtimeGrant, "starttime" | "endtime">,
-) => {
+export const timeline = <T extends DraftItem>(items: readonly T[], grant: Layout) => {
   const windowEnd = new Date(grant.endtime).getTime();
+  const padded = grant.padded ?? true;
   let cursor = new Date(grant.starttime).getTime();
+  let previous: T | undefined;
   const rows: TimelineRow<T>[] = items.map((item) => {
-    const start = cursor;
-    cursor += durationMilliseconds(item.video.duration) ?? 0;
-    return { item, start: new Date(start), end: new Date(cursor), overruns: cursor > windowEnd };
+    const start = nextStart(cursor, previous, item, padded);
+    const gapBefore = start > cursor ? { start: new Date(cursor), end: new Date(start) } : null;
+    cursor = start + itemMilliseconds(item);
+    previous = item;
+    return {
+      item,
+      start: new Date(start),
+      end: new Date(cursor),
+      gapBefore,
+      overruns: cursor > windowEnd,
+    };
   });
   const graphics =
     cursor < windowEnd ? { start: new Date(cursor), end: new Date(windowEnd) } : null;
-  return { rows, graphics };
+  return { rows, graphics, end: new Date(cursor) };
 };
+
+/** How much of the window the list takes, gaps between programmes included. */
+export const listMilliseconds = (items: readonly DraftItem[], grant: Layout) =>
+  timeline(items, grant).end.getTime() - new Date(grant.starttime).getTime();
+
+/**
+ * How long a programme added after `items` could be: from where it would
+ * start to the end of the window.
+ */
+export const roomForProgramme = (items: readonly DraftItem[], grant: Layout) => {
+  const end = timeline(items, grant).end.getTime();
+  const start = nextStart(end, items.at(-1), { poster: null }, grant.padded ?? true);
+  return new Date(grant.endtime).getTime() - start;
+};
+
+/** How long a poster added after `items` could be. */
+export const roomForPoster = (items: readonly DraftItem[], grant: Layout) =>
+  new Date(grant.endtime).getTime() - timeline(items, grant).end.getTime();
 
 /** What a self-filling grant draws on, in words. */
 export const fillSourceLabel = ({ recipe }: Pick<AirtimeGrant, "recipe">) => {
@@ -175,16 +233,17 @@ export const lockedByDeadline = (
   now: number = Date.now(),
 ) => readOnlyReason(grant, now) === LOCKED;
 
-/** Whether two lists play the same videos in the same order. */
+/** Whether two lists play the same entries in the same order. */
 export const sameList = (a: readonly DraftItem[], b: readonly DraftItem[]) =>
-  a.length === b.length && a.every((item, index) => item.video.id === b[index].video.id);
+  a.length === b.length && a.every((item, index) => sameEntry(item, b[index]));
 
 /** The source a listed video airs from live, while it has no file. */
-export const liveSourceName = (video: GrantItemVideo) =>
-  video.liveSource != null && video.pendingUpload ? video.liveSource.name : undefined;
+export const liveSourceName = (video: GrantItemVideo | null) =>
+  video?.liveSource != null && video.pendingUpload ? video.liveSource.name : undefined;
 
-/** What a listed video is still waiting for, or where it airs from. */
-export const itemStatus = (video: GrantItemVideo) => {
+/** What a listed entry is still waiting for, or where it airs from. */
+export const itemStatus = (video: GrantItemVideo | null) => {
+  if (!video) return "tekstplakat";
   const source = liveSourceName(video);
   if (source) return `direkte fra ${source}`;
   return video.pendingUpload ? "venter på fil" : undefined;

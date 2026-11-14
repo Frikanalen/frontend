@@ -1,11 +1,13 @@
 import { describe, expect, it } from "vitest";
-import type { GrantItemVideo } from "@/generated/frikanalenDjangoAPI.schemas";
+import type { GrantItemPoster, GrantItemVideo } from "@/generated/frikanalenDjangoAPI.schemas";
 import {
   deadlineText,
   readOnlyReason,
   itemsPayload,
   listMilliseconds,
   placeItems,
+  roomForPoster,
+  roomForProgramme,
   sameList,
   fillSourceLabel,
   ownerChoosesSource,
@@ -24,7 +26,23 @@ const video = (id: number, duration: string): DraftItem => ({
     pendingUpload: false,
     liveSource: null,
   } satisfies GrantItemVideo,
+  poster: null,
 });
+
+const poster = (id: number, duration: string): DraftItem => ({
+  video: null,
+  poster: {
+    id,
+    template: "paper",
+    heading: `Plakat ${id}`,
+    text: "",
+    duration,
+  } satisfies GrantItemPoster,
+});
+
+const hour = { starttime: "2026-11-16T18:00:00Z", endtime: "2026-11-16T19:00:00Z" };
+const starts = (items: DraftItem[], window: typeof hour & { padded?: boolean } = hour) =>
+  timeline(items, window).rows.map(({ start }) => start.toISOString().slice(11, 19));
 
 describe("grant lists", () => {
   it("measures the window", () => {
@@ -33,16 +51,54 @@ describe("grant lists", () => {
     ).toBe(3_600_000);
   });
 
-  it("adds up the list back to back, counting unknown lengths as zero", () => {
+  it("adds up a jukebox list back to back, counting unknown lengths as zero", () => {
     expect(
-      listMilliseconds([video(1, "00:10:00.500000"), video(2, ""), video(3, "00:20:00")]),
+      listMilliseconds([video(1, "00:10:00.500000"), video(2, ""), video(3, "00:20:00")], {
+        ...hour,
+        padded: false,
+      }),
     ).toBe(1_800_500);
   });
 
+  it("starts each programme on the five-minute grid, with a breather", () => {
+    // 18:04:31 + 30 s rounds to 18:10; 18:14 + 30 s to 18:15; 18:20 exactly
+    // still gets a gap, to 18:25.
+    expect(
+      starts([
+        video(1, "00:04:31"),
+        video(2, "00:04:00"),
+        video(3, "00:05:00"),
+        video(4, "00:01:00"),
+      ]),
+    ).toEqual(["18:00:00", "18:10:00", "18:15:00", "18:25:00"]);
+  });
+
+  it("plays a poster right after what is before it", () => {
+    expect(starts([video(1, "00:12:00"), poster(1, "00:00:30"), video(2, "00:01:00")])).toEqual([
+      "18:00:00",
+      "18:12:00",
+      "18:15:00",
+    ]);
+  });
+
+  it("says where the graphics go between programmes", () => {
+    const { rows } = timeline([video(1, "00:12:00"), video(2, "00:01:00")], hour);
+    expect(rows[0].gapBefore).toBeNull();
+    expect(rows[1].gapBefore?.start.toISOString()).toBe("2026-11-16T18:12:00.000Z");
+    expect(rows[1].gapBefore?.end.toISOString()).toBe("2026-11-16T18:15:00.000Z");
+  });
+
+  it("knows how much room is left for a programme and for a poster", () => {
+    const list = [video(1, "00:12:00")];
+    expect(roomForProgramme(list, hour)).toBe(45 * 60_000);
+    expect(roomForPoster(list, hour)).toBe(48 * 60_000);
+    expect(roomForProgramme([], hour)).toBe(60 * 60_000);
+  });
+
   it("sends the whole list in order without positions", () => {
-    expect(itemsPayload([video(5, "00:01:00"), video(2, "00:01:00")])).toEqual([
+    expect(itemsPayload([video(5, "00:01:00"), poster(3, "00:00:30")])).toEqual([
       { video: 5 },
-      { video: 2 },
+      { poster: 3 },
     ]);
   });
 
@@ -54,6 +110,7 @@ describe("grant lists", () => {
       sameList([video(1, "00:01:00"), video(2, "00:01:00")], [video(2, "x"), video(1, "y")]),
     ).toBe(false);
     expect(sameList([video(1, "00:01:00")], [])).toBe(false);
+    expect(sameList([video(1, "00:01:00")], [poster(1, "00:01:00")])).toBe(false);
   });
 
   it("places entries before or after a target, moving ones already listed", () => {
@@ -67,15 +124,14 @@ describe("grant lists", () => {
     expect(keys(placeItems([a], [keyed("new")], null, "after"))).toEqual(["a", "new"]);
   });
 
-  it("lays the list out back to back and leaves the rest to graphics", () => {
-    const window = { starttime: "2026-11-16T18:00:00Z", endtime: "2026-11-16T19:00:00Z" };
-    const { rows, graphics } = timeline([video(1, "00:20:00"), video(2, "00:15:00")], window);
+  it("lays the list out and leaves the rest to graphics", () => {
+    const { rows, graphics } = timeline([video(1, "00:20:00"), video(2, "00:15:00")], hour);
 
     expect(rows.map(({ start, end }) => [start.toISOString(), end.toISOString()])).toEqual([
       ["2026-11-16T18:00:00.000Z", "2026-11-16T18:20:00.000Z"],
-      ["2026-11-16T18:20:00.000Z", "2026-11-16T18:35:00.000Z"],
+      ["2026-11-16T18:25:00.000Z", "2026-11-16T18:40:00.000Z"],
     ]);
-    expect(graphics?.start.toISOString()).toBe("2026-11-16T18:35:00.000Z");
+    expect(graphics?.start.toISOString()).toBe("2026-11-16T18:40:00.000Z");
   });
 
   it("flags entries that run past the window and leaves no graphics", () => {
@@ -154,8 +210,8 @@ describe("splitItems", () => {
 
   it("separates what the owner pinned from what the rule filled", () => {
     const { chosen, filled } = splitItems({ recipe: uploads }, items);
-    expect(chosen.map((item) => item.video.id)).toEqual([1]);
-    expect(filled.map((item) => item.video.id)).toEqual([2]);
+    expect(chosen.map((item) => item.video?.id)).toEqual([1]);
+    expect(filled.map((item) => item.video?.id)).toEqual([2]);
   });
 
   it("treats a hand-made list as all the owner's", () => {
