@@ -645,11 +645,19 @@ test.describe("text posters", () => {
     // Moved up between the two programmes, it plays right after the first,
     // and the second still starts at 18:25.
     const focused = page.locator(":focus");
-    await page.getByRole("button", { name: "Flytt «Neste: Båtliv»" }).focus();
+    // The closing dialog hands focus back, so wait for it to be gone first.
+    await expect(form).toBeHidden();
+    const move = page.getByRole("button", { name: "Flytt «Neste: Båtliv»" });
+    await move.focus();
+    await expect(move).toBeFocused();
     await page.keyboard.press("Enter");
     await expect(focused).toHaveAttribute("aria-roledescription", "slippeindikator");
-    await page.keyboard.press("ArrowUp");
-    await page.keyboard.press("ArrowUp");
+    // One target at a time: WebKit can drop a key sent before the last landed.
+    for (let step = 0; step < 2; step++) {
+      const before = await focused.getAttribute("aria-label");
+      await page.keyboard.press("ArrowUp");
+      await expect(focused).not.toHaveAttribute("aria-label", before ?? "");
+    }
     await expect(focused).toHaveAttribute("aria-label", "Sett inn mellom Kaia i dag og Båtliv");
     await page.keyboard.press("Enter");
     await expect(listRows(page).nth(1)).toContainText("18:20–18:20");
