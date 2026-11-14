@@ -11,6 +11,7 @@ import {
   DASHSrc,
   HLSSrc,
   isDASHProvider,
+  isHLSProvider,
   isHLSSrc,
   MediaPlayer,
   MediaProvider,
@@ -30,8 +31,9 @@ declare global {
   }
 }
 
-// Vidstack loads dash.js off jsDelivr by default; serve it from our own bundle instead.
-// It only ends up in a chunk the browser fetches once a DASH source is actually selected.
+// Vidstack loads dash.js and hls.js off jsDelivr by default; serve them from our own bundle
+// instead, so the Content-Security-Policy can keep scripts to our own origin.
+// Each only ends up in a chunk the browser fetches once a source of its kind is selected.
 const loadDashjs = async () => {
   const dashjs = (await import("dashjs")).default;
   // The UMD build only assigns `window.dashjs` when loaded through a <script> tag,
@@ -40,8 +42,11 @@ const loadDashjs = async () => {
   return { default: dashjs };
 };
 
+const loadHlsjs = () => import("hls.js");
+
 const onProviderChange = (provider: MediaProviderAdapter | null) => {
   if (isDASHProvider(provider)) provider.library = loadDashjs;
+  if (isHLSProvider(provider)) provider.library = loadHlsjs;
 };
 
 // Safari is the only browser that can AirPlay, and only a stream it plays itself: through
