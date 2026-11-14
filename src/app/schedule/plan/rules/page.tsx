@@ -1,4 +1,7 @@
+import { getUserOrNull } from "@/app/getUserOrNull";
+import { getCookiesFromRequest } from "@/lib/getCookiesFromRequest";
 import type { Metadata } from "next";
+import { PlanNav } from "../PlanNav";
 
 // Per-visitor: rendered on request, without a static shell of its own.
 export const instant = false;
@@ -8,9 +11,16 @@ export const metadata: Metadata = {
   description: "Hvordan organisasjoner får sendetid på Frikanalen og setter opp hva som sendes.",
 };
 
-export default function Page() {
+export default async function Page() {
+  // Members read this too; only staff get the tabs to their other tools.
+  const user = await getUserOrNull(await getCookiesFromRequest());
   return (
     <main className="w-full max-w-3xl grow px-4 pb-10">
+      {user?.isStaff ? (
+        <div className="mt-10">
+          <PlanNav />
+        </div>
+      ) : null}
       <article className="prose mt-10 max-w-none bg-background p-6 sm:p-8 dark:prose-invert">
         <h1>Slik virker sendetid</h1>
 

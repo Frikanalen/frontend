@@ -29,7 +29,7 @@ export default async function Page({
     <div className="grow">
       <GrantEditor
         newLiveFrom={Number.isInteger(liveSourceId) && liveSourceId > 0 ? liveSourceId : undefined}
-        backHref={user.isStaff ? "/schedule/plan" : `/organization/${organizationId}/schedule`}
+        backHref={user.isStaff ? "/schedule/plan?uke=" : `/organization/${organizationId}/schedule`}
         grantId={grantId}
       />
     </div>

@@ -28,6 +28,7 @@ import { GoBroadcast, GoGrabber, GoPin, GoSync, GoX } from "react-icons/go";
 import { durationMilliseconds, formatDuration } from "./duration";
 import { HourBar } from "./HourBar";
 import { ExemptionRequest } from "@/app/requests/ExemptionRequest";
+import { mondayOf, osloPlace } from "@/app/schedule/plan/week/week";
 import {
   deadlineText,
   fillSourceLabel,
@@ -243,9 +244,19 @@ const Editor = ({
 
   return (
     <div className="space-y-5">
-      <Link className="text-sm font-semibold text-link hover:underline" href={backHref}>
-        ← All sendetid
-      </Link>
+      {/* Staff come from the week page, and go back to the week this grant is in. */}
+      {backHref.endsWith("?uke=") ? (
+        <Link
+          className="text-sm font-semibold text-link hover:underline"
+          href={`${backHref}${mondayOf(osloPlace(grant.starttime).date)}`}
+        >
+          ← Tilbake til uken
+        </Link>
+      ) : (
+        <Link className="text-sm font-semibold text-link hover:underline" href={backHref}>
+          ← All sendetid
+        </Link>
+      )}
       <header className="flex flex-wrap items-start gap-3">
         <div>
           <h1 className="text-3xl font-bold tracking-tight first-letter:uppercase sm:text-4xl">
