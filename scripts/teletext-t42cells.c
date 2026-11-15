@@ -5,7 +5,6 @@
  *   cc -O2 -o t42cells scripts/teletext-t42cells.c -lzvbi    (apt install libzvbi-dev)
  *   nc <ttxd> 4242 > dump.t42      # ttxd's T42 debug stream, a few seconds
  *   t42cells dump.t42 100 2.5 > cells.json */
- *   t42cells dump.t42 100 2.5 > cells.json */
 #include <libzvbi.h>
 #include <stdio.h>
 #include <stdlib.h>
