@@ -51,7 +51,17 @@ export type Page = {
   x27links: number[];
   /** X/28 packets by designation, 13 triplets each. */
   x28: Map<number, number[]>;
+  /** M/29 packets by designation (magazine defaults, sent with the MOT page). */
+  x29: Map<number, number[]>;
+  /**
+   * Packets 1-25 and 26 as received (40 bytes after the address, parity and Hamming
+   * intact), keyed by `packetKey`: MOT and object pages carry Hamming coded data in them.
+   */
+  packets: Map<number, Uint8Array>;
 };
+
+/** Key into `Page.packets`: packets 1-25 by number, X/26 by designation too. */
+export const packetKey = (packet: number, designation = 0) => (packet << 4) | designation;
 
 const stripParity = (src: Uint8Array, from: number, to: number) => {
   const out = new Uint8Array(to - from);
@@ -107,18 +117,24 @@ export const decodePage = (bytes: Uint8Array): Page | null => {
     fastext: [],
     x27links: [],
     x28: new Map(),
+    x29: new Map(),
+    packets: new Map(),
   };
   for (let off = 42; off + 42 <= bytes.length; off += 42) {
     const p = bytes.subarray(off, off + 42);
     const [, row] = address(p);
     if (row >= 1 && row <= 24) page.rows[row] = stripParity(p, 2, 42);
-    else if (row === 26 || row === 27 || row === 28) {
+    if (row >= 1 && row <= 25) page.packets.set(packetKey(row), p.slice(2));
+    else if (row >= 26 && row <= 29) {
       const designation = unham84(p[2]);
-      if (row === 26) page.x26.push(...words(p).map(triplet));
-      else if (row === 27 && designation === 0) page.fastext = fastextLinks(p, magazine);
+      if (row === 26) {
+        page.x26.push(...words(p).map(triplet));
+        if (designation >= 0) page.packets.set(packetKey(26, designation), p.slice(2));
+      } else if (row === 27 && designation === 0) page.fastext = fastextLinks(p, magazine);
       else if (row === 27 && (designation === 4 || designation === 5)) {
         page.x27links.push(...words(p));
       } else if (row === 28) page.x28.set(designation, words(p));
+      else if (row === 29) page.x29.set(designation, words(p));
     }
   }
   return page;
@@ -135,6 +151,8 @@ export const mergePage = (old: Page, update: Page): Page => {
     fastext: update.fastext.length ? update.fastext : old.fastext,
     x27links: update.x27links.length ? update.x27links : old.x27links,
     x28: update.x28.size ? update.x28 : old.x28,
+    x29: update.x29.size ? update.x29 : old.x29,
+    packets: new Map([...old.packets, ...update.packets]),
   };
 };
 

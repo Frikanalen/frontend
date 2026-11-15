@@ -27,6 +27,8 @@ const emptyPage = (no: number): Page => ({
   fastext: [],
   x27links: [],
   x28: new Map(),
+  x29: new Map(),
+  packets: new Map(),
 });
 
 const FASTEXT = [

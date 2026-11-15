@@ -113,12 +113,15 @@ export class TeletextStore {
     return p;
   }
 
-  /** Character data of a normal DRCS page (by number and subcode). */
-  drcs(no: number, subcode: number) {
+  /**
+   * A data page (DRCS, objects, MOT) by number and subpage, which is the low digit of
+   * the subcode; a page with one subpage serves any.
+   */
+  dataPage(no: number, s1 = 0) {
     const p = this.pages.get(no);
     if (!p) return null;
     return (
-      p.subpages.find((s) => s.subcode === subcode) ??
+      p.subpages.find((s) => (s.subcode & 15) === s1) ??
       (p.subpages.length === 1 ? p.subpages[0] : null)
     );
   }
