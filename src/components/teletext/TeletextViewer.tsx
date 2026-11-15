@@ -177,10 +177,44 @@ export default function TeletextViewer({ onClose }: { onClose: () => void }) {
       onClick={(e) => e.stopPropagation()}
       className={`absolute inset-0 z-[60] flex items-stretch justify-center outline-none ${mix ? "bg-transparent" : "bg-black"}`}
     >
-      {/* Laid out like a remote: number pad with the coloured keys under it on the left,
-          the teletext keys on the right. */}
-      <div className="flex shrink-0 flex-col items-center justify-center gap-1 px-2 py-1">
+      {/* The page keeps 4:3 in whatever room the keys leave. */}
+      <div
+        className="flex h-full min-w-0 flex-1 items-center justify-center"
+        style={{ containerType: "size" }}
+      >
+        <div
+          className="relative aspect-[4/3]"
+          style={{ width: "min(100cqw, calc(100cqh * 4 / 3))" }}
+        >
+          <canvas
+            ref={canvas}
+            width={WIDTH}
+            height={HEIGHT}
+            className="size-full"
+            aria-label={`Tekst-TV side ${pageName(pageNo)}`}
+          />
+          {!store.connected && !store.pages.size && (
+            <p className="absolute inset-x-0 bottom-2 text-center font-mono text-xs text-white/70">
+              Kobler til …
+            </p>
+          )}
+        </div>
+      </div>
+      {/* All the keys in one column at the right, like a remote: the teletext keys,
+          the number pad, and the coloured keys under it. */}
+      <div className="flex shrink-0 flex-col items-center justify-center px-2 py-1">
         <div className="flex flex-col gap-2">
+          <div className="grid grid-cols-3 gap-1" role="group" aria-label="Tekst-TV">
+            <Key label="Tilbake til TV" onPress={onClose}>
+              <TvIcon className={ICON} />
+            </Key>
+            <Key label="Vis skjult tekst" pressed={reveal} onPress={() => setReveal((v) => !v)}>
+              <RevealIcon className={ICON} />
+            </Key>
+            <Key label="Bilde bak teksten" pressed={mix} onPress={() => setMix((v) => !v)}>
+              <MixIcon className={ICON} />
+            </Key>
+          </div>
           <div
             className="grid grid-cols-[repeat(3,auto)] gap-1"
             role="group"
@@ -213,44 +247,6 @@ export default function TeletextViewer({ onClose }: { onClose: () => void }) {
             ))}
           </div>
         </div>
-      </div>
-      {/* The page keeps 4:3 in whatever room the keys leave. */}
-      <div
-        className="flex h-full min-w-0 flex-1 items-center justify-center"
-        style={{ containerType: "size" }}
-      >
-        <div
-          className="relative aspect-[4/3]"
-          style={{ width: "min(100cqw, calc(100cqh * 4 / 3))" }}
-        >
-          <canvas
-            ref={canvas}
-            width={WIDTH}
-            height={HEIGHT}
-            className="size-full"
-            aria-label={`Tekst-TV side ${pageName(pageNo)}`}
-          />
-          {!store.connected && !store.pages.size && (
-            <p className="absolute inset-x-0 bottom-2 text-center font-mono text-xs text-white/70">
-              Kobler til …
-            </p>
-          )}
-        </div>
-      </div>
-      <div
-        className="flex shrink-0 flex-col items-center justify-center gap-1 px-2 py-1"
-        role="group"
-        aria-label="Tekst-TV"
-      >
-        <Key label="Tilbake til TV" onPress={onClose}>
-          <TvIcon className={ICON} />
-        </Key>
-        <Key label="Vis skjult tekst" pressed={reveal} onPress={() => setReveal((v) => !v)}>
-          <RevealIcon className={ICON} />
-        </Key>
-        <Key label="Bilde bak teksten" pressed={mix} onPress={() => setMix((v) => !v)}>
-          <MixIcon className={ICON} />
-        </Key>
       </div>
     </div>
   );
