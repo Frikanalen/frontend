@@ -4880,6 +4880,18 @@ paths:
           required: false
           schema:
             type: string
+        - in: query
+          name: placement
+          schema:
+            type: string
+            enum:
+              - air
+              - infographics
+          description: |-
+            Only the bulletins that are showing there now: `air` for the on-air graphics, `infographics` for the infographics rotation.
+
+            * `air` - air
+            * `infographics` - infographics
       responses:
         '200':
           description: ''
@@ -5003,6 +5015,11 @@ paths:
         - cookieAuth: []
       tags:
         - news
+      description: |-
+        Messages from the channel, shown between programmes by the on-air
+        graphics and in the infographics rotation. Anyone can read the
+        published ones; staff see every one and edit them. Highest priority
+        first, then newest.
     post:
       operationId: news_bulletins_create
       requestBody:
@@ -5134,6 +5151,11 @@ paths:
         - cookieAuth: []
       tags:
         - news
+      description: |-
+        Messages from the channel, shown between programmes by the on-air
+        graphics and in the infographics rotation. Anyone can read the
+        published ones; staff see every one and edit them. Highest priority
+        first, then newest.
   /api/news/bulletins/{id}:
     get:
       operationId: news_bulletins_retrieve
@@ -5267,144 +5289,11 @@ paths:
         - cookieAuth: []
       tags:
         - news
-    put:
-      operationId: news_bulletins_update
-      parameters:
-        - name: id
-          in: path
-          description: A unique integer value identifying this bulletin.
-          required: true
-          schema:
-            type: integer
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/BulletinRequest'
-      responses:
-        '200':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Bulletin'
-        '400':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/NewsBulletinsUpdateErrorResponse400'
-        '401':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse401'
-              examples:
-                AuthenticationFailed:
-                  value:
-                    type: client_error
-                    errors:
-                      - code: authentication_failed
-                        detail: Incorrect authentication credentials.
-                        attr: null
-                NotAuthenticated:
-                  value:
-                    type: client_error
-                    errors:
-                      - code: not_authenticated
-                        detail: Authentication credentials were not provided.
-                        attr: null
-        '403':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse403'
-              examples:
-                PermissionDenied:
-                  value:
-                    type: client_error
-                    errors:
-                      - code: permission_denied
-                        detail: You do not have permission to perform this action.
-                        attr: null
-        '404':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse404'
-              examples:
-                NotFound:
-                  value:
-                    type: client_error
-                    errors:
-                      - code: not_found
-                        detail: Not found.
-                        attr: null
-        '405':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse405'
-              examples:
-                MethodNotAllowed:
-                  value:
-                    type: client_error
-                    errors:
-                      - code: method_not_allowed
-                        detail: Method "get" not allowed.
-                        attr: null
-        '406':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse406'
-              examples:
-                NotAcceptable:
-                  value:
-                    type: client_error
-                    errors:
-                      - code: not_acceptable
-                        detail: Could not satisfy the request Accept header.
-                        attr: null
-        '415':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse415'
-              examples:
-                UnsupportedMediaType:
-                  value:
-                    type: client_error
-                    errors:
-                      - code: unsupported_media_type
-                        detail: Unsupported media type "application/json" in request.
-                        attr: null
-        '500':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse500'
-              examples:
-                APIException:
-                  value:
-                    type: server_error
-                    errors:
-                      - code: error
-                        detail: A server error occurred.
-                        attr: null
-      security:
-        - tokenAuth: []
-        - cookieAuth: []
-      tags:
-        - news
+      description: |-
+        Messages from the channel, shown between programmes by the on-air
+        graphics and in the infographics rotation. Anyone can read the
+        published ones; staff see every one and edit them. Highest priority
+        first, then newest.
     patch:
       operationId: news_bulletins_partial_update
       parameters:
@@ -5542,6 +5431,11 @@ paths:
         - cookieAuth: []
       tags:
         - news
+      description: |-
+        Messages from the channel, shown between programmes by the on-air
+        graphics and in the infographics rotation. Anyone can read the
+        published ones; staff see every one and edit them. Highest priority
+        first, then newest.
     delete:
       operationId: news_bulletins_destroy
       parameters:
@@ -5670,6 +5564,11 @@ paths:
         - cookieAuth: []
       tags:
         - news
+      description: |-
+        Messages from the channel, shown between programmes by the on-air
+        graphics and in the infographics rotation. Anyone can read the
+        published ones; staff see every one and edit them. Highest priority
+        first, then newest.
   /api/obtain-token:
     post:
       operationId: obtain_token_create
@@ -19109,17 +19008,71 @@ components:
           maxLength: 80
         text:
           type: string
+          maxLength: 1692
         createdTime:
           type: string
           format: date-time
           readOnly: true
         isPublished:
           type: boolean
+        template:
+          $ref: '#/components/schemas/TemplateEnum'
+        pages:
+          type: array
+          items:
+            type: string
+          readOnly: true
+          description: 'The text as the screen pages it: a blank line starts a page, and a long block is paged by itself. The heading is on every page.'
+        pageSeconds:
+          type: array
+          items:
+            type: number
+            format: double
+          readOnly: true
+          description: How long each page takes to read.
+        readingSeconds:
+          type: integer
+          readOnly: true
+          description: The time it takes to read every page once.
+        updatedTime:
+          type: string
+          format: date-time
+          readOnly: true
+        isCurrent:
+          type: boolean
+          readOnly: true
+          description: Published, and inside the dates it runs between.
+        startsAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: 'Shown from this time. Empty: as soon as it is published.'
+        endsAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: 'Shown until this time. Empty: until it is unpublished.'
+        priority:
+          type: integer
+          maximum: 32767
+          minimum: -32768
+          description: Higher is shown first, and more often when there is little time.
+        onAir:
+          type: boolean
+          description: Shown by the on-air graphics between programmes.
+        onInfographics:
+          type: boolean
+          description: Shown in the infographics rotation.
       required:
         - createdTime
         - heading
         - id
+        - isCurrent
+        - pageSeconds
+        - pages
+        - readingSeconds
         - text
+        - updatedTime
     BulletinRequest:
       type: object
       properties:
@@ -19130,8 +19083,32 @@ components:
         text:
           type: string
           minLength: 1
+          maxLength: 1692
         isPublished:
           type: boolean
+        template:
+          $ref: '#/components/schemas/TemplateEnum'
+        startsAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: 'Shown from this time. Empty: as soon as it is published.'
+        endsAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: 'Shown until this time. Empty: until it is unpublished.'
+        priority:
+          type: integer
+          maximum: 32767
+          minimum: -32768
+          description: Higher is shown first, and more often when there is little time.
+        onAir:
+          type: boolean
+          description: Shown by the on-air graphics between programmes.
+        onInfographics:
+          type: boolean
+          description: Shown in the infographics rotation.
       required:
         - heading
         - text
@@ -22910,6 +22887,32 @@ components:
         - firstName
         - lastName
         - password
+    NewsBulletinsCreateEndsAtErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+            - ends_at
+          type: string
+          description: '* `ends_at` - ends_at'
+        code:
+          enum:
+            - date
+            - invalid
+            - make_aware
+            - overflow
+          type: string
+          description: |-
+            * `date` - date
+            * `invalid` - invalid
+            * `make_aware` - make_aware
+            * `overflow` - overflow
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
     NewsBulletinsCreateError:
       discriminator:
         propertyName: attr
@@ -22918,11 +22921,23 @@ components:
           heading: '#/components/schemas/NewsBulletinsCreateHeadingErrorComponent'
           text: '#/components/schemas/NewsBulletinsCreateTextErrorComponent'
           is_published: '#/components/schemas/NewsBulletinsCreateIsPublishedErrorComponent'
+          template: '#/components/schemas/NewsBulletinsCreateTemplateErrorComponent'
+          starts_at: '#/components/schemas/NewsBulletinsCreateStartsAtErrorComponent'
+          ends_at: '#/components/schemas/NewsBulletinsCreateEndsAtErrorComponent'
+          priority: '#/components/schemas/NewsBulletinsCreatePriorityErrorComponent'
+          on_air: '#/components/schemas/NewsBulletinsCreateOnAirErrorComponent'
+          on_infographics: '#/components/schemas/NewsBulletinsCreateOnInfographicsErrorComponent'
       oneOf:
         - $ref: '#/components/schemas/NewsBulletinsCreateNonFieldErrorsErrorComponent'
         - $ref: '#/components/schemas/NewsBulletinsCreateHeadingErrorComponent'
         - $ref: '#/components/schemas/NewsBulletinsCreateTextErrorComponent'
+        - $ref: '#/components/schemas/NewsBulletinsCreateTemplateErrorComponent'
         - $ref: '#/components/schemas/NewsBulletinsCreateIsPublishedErrorComponent'
+        - $ref: '#/components/schemas/NewsBulletinsCreateStartsAtErrorComponent'
+        - $ref: '#/components/schemas/NewsBulletinsCreateEndsAtErrorComponent'
+        - $ref: '#/components/schemas/NewsBulletinsCreatePriorityErrorComponent'
+        - $ref: '#/components/schemas/NewsBulletinsCreateOnAirErrorComponent'
+        - $ref: '#/components/schemas/NewsBulletinsCreateOnInfographicsErrorComponent'
     NewsBulletinsCreateErrorResponse400:
       discriminator:
         propertyName: type
@@ -23008,6 +23023,126 @@ components:
         - attr
         - code
         - detail
+    NewsBulletinsCreateOnAirErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+            - on_air
+          type: string
+          description: '* `on_air` - on_air'
+        code:
+          enum:
+            - invalid
+            - 'null'
+          type: string
+          description: |-
+            * `invalid` - invalid
+            * `null` - null
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    NewsBulletinsCreateOnInfographicsErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+            - on_infographics
+          type: string
+          description: '* `on_infographics` - on_infographics'
+        code:
+          enum:
+            - invalid
+            - 'null'
+          type: string
+          description: |-
+            * `invalid` - invalid
+            * `null` - null
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    NewsBulletinsCreatePriorityErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+            - priority
+          type: string
+          description: '* `priority` - priority'
+        code:
+          enum:
+            - invalid
+            - max_string_length
+            - max_value
+            - min_value
+            - 'null'
+          type: string
+          description: |-
+            * `invalid` - invalid
+            * `max_string_length` - max_string_length
+            * `max_value` - max_value
+            * `min_value` - min_value
+            * `null` - null
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    NewsBulletinsCreateStartsAtErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+            - starts_at
+          type: string
+          description: '* `starts_at` - starts_at'
+        code:
+          enum:
+            - date
+            - invalid
+            - make_aware
+            - overflow
+          type: string
+          description: |-
+            * `date` - date
+            * `invalid` - invalid
+            * `make_aware` - make_aware
+            * `overflow` - overflow
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    NewsBulletinsCreateTemplateErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+            - template
+          type: string
+          description: '* `template` - template'
+        code:
+          enum:
+            - invalid_choice
+            - 'null'
+          type: string
+          description: |-
+            * `invalid_choice` - invalid_choice
+            * `null` - null
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
     NewsBulletinsCreateTextErrorComponent:
       type: object
       properties:
@@ -23020,6 +23155,7 @@ components:
           description: |-
             * `blank` - blank
             * `invalid` - invalid
+            * `max_length` - max_length
             * `null` - null
             * `null_characters_not_allowed` - null_characters_not_allowed
             * `required` - required
@@ -23028,6 +23164,7 @@ components:
           enum:
             - blank
             - invalid
+            - max_length
             - 'null'
             - null_characters_not_allowed
             - required
@@ -23057,13 +23194,79 @@ components:
           client_error: '#/components/schemas/ParseErrorResponse'
       oneOf:
         - $ref: '#/components/schemas/ParseErrorResponse'
+    NewsBulletinsListError:
+      oneOf:
+        - $ref: '#/components/schemas/NewsBulletinsListPlacementErrorComponent'
+      discriminator:
+        propertyName: attr
+        mapping:
+          placement: '#/components/schemas/NewsBulletinsListPlacementErrorComponent'
     NewsBulletinsListErrorResponse400:
       discriminator:
         propertyName: type
         mapping:
           client_error: '#/components/schemas/ParseErrorResponse'
+          validation_error: '#/components/schemas/NewsBulletinsListValidationError'
       oneOf:
+        - $ref: '#/components/schemas/NewsBulletinsListValidationError'
         - $ref: '#/components/schemas/ParseErrorResponse'
+    NewsBulletinsListPlacementErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+            - placement
+          type: string
+          description: '* `placement` - placement'
+        code:
+          enum:
+            - invalid_choice
+          type: string
+          description: '* `invalid_choice` - invalid_choice'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    NewsBulletinsListValidationError:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/ValidationErrorEnum'
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/NewsBulletinsListError'
+      required:
+        - errors
+        - type
+    NewsBulletinsPartialUpdateEndsAtErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+            - ends_at
+          type: string
+          description: '* `ends_at` - ends_at'
+        code:
+          enum:
+            - date
+            - invalid
+            - make_aware
+            - overflow
+          type: string
+          description: |-
+            * `date` - date
+            * `invalid` - invalid
+            * `make_aware` - make_aware
+            * `overflow` - overflow
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
     NewsBulletinsPartialUpdateError:
       discriminator:
         propertyName: attr
@@ -23072,11 +23275,23 @@ components:
           heading: '#/components/schemas/NewsBulletinsPartialUpdateHeadingErrorComponent'
           text: '#/components/schemas/NewsBulletinsPartialUpdateTextErrorComponent'
           is_published: '#/components/schemas/NewsBulletinsPartialUpdateIsPublishedErrorComponent'
+          template: '#/components/schemas/NewsBulletinsPartialUpdateTemplateErrorComponent'
+          starts_at: '#/components/schemas/NewsBulletinsPartialUpdateStartsAtErrorComponent'
+          ends_at: '#/components/schemas/NewsBulletinsPartialUpdateEndsAtErrorComponent'
+          priority: '#/components/schemas/NewsBulletinsPartialUpdatePriorityErrorComponent'
+          on_air: '#/components/schemas/NewsBulletinsPartialUpdateOnAirErrorComponent'
+          on_infographics: '#/components/schemas/NewsBulletinsPartialUpdateOnInfographicsErrorComponent'
       oneOf:
         - $ref: '#/components/schemas/NewsBulletinsPartialUpdateNonFieldErrorsErrorComponent'
         - $ref: '#/components/schemas/NewsBulletinsPartialUpdateHeadingErrorComponent'
         - $ref: '#/components/schemas/NewsBulletinsPartialUpdateTextErrorComponent'
+        - $ref: '#/components/schemas/NewsBulletinsPartialUpdateTemplateErrorComponent'
         - $ref: '#/components/schemas/NewsBulletinsPartialUpdateIsPublishedErrorComponent'
+        - $ref: '#/components/schemas/NewsBulletinsPartialUpdateStartsAtErrorComponent'
+        - $ref: '#/components/schemas/NewsBulletinsPartialUpdateEndsAtErrorComponent'
+        - $ref: '#/components/schemas/NewsBulletinsPartialUpdatePriorityErrorComponent'
+        - $ref: '#/components/schemas/NewsBulletinsPartialUpdateOnAirErrorComponent'
+        - $ref: '#/components/schemas/NewsBulletinsPartialUpdateOnInfographicsErrorComponent'
     NewsBulletinsPartialUpdateErrorResponse400:
       discriminator:
         propertyName: type
@@ -23162,6 +23377,126 @@ components:
         - attr
         - code
         - detail
+    NewsBulletinsPartialUpdateOnAirErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+            - on_air
+          type: string
+          description: '* `on_air` - on_air'
+        code:
+          enum:
+            - invalid
+            - 'null'
+          type: string
+          description: |-
+            * `invalid` - invalid
+            * `null` - null
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    NewsBulletinsPartialUpdateOnInfographicsErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+            - on_infographics
+          type: string
+          description: '* `on_infographics` - on_infographics'
+        code:
+          enum:
+            - invalid
+            - 'null'
+          type: string
+          description: |-
+            * `invalid` - invalid
+            * `null` - null
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    NewsBulletinsPartialUpdatePriorityErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+            - priority
+          type: string
+          description: '* `priority` - priority'
+        code:
+          enum:
+            - invalid
+            - max_string_length
+            - max_value
+            - min_value
+            - 'null'
+          type: string
+          description: |-
+            * `invalid` - invalid
+            * `max_string_length` - max_string_length
+            * `max_value` - max_value
+            * `min_value` - min_value
+            * `null` - null
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    NewsBulletinsPartialUpdateStartsAtErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+            - starts_at
+          type: string
+          description: '* `starts_at` - starts_at'
+        code:
+          enum:
+            - date
+            - invalid
+            - make_aware
+            - overflow
+          type: string
+          description: |-
+            * `date` - date
+            * `invalid` - invalid
+            * `make_aware` - make_aware
+            * `overflow` - overflow
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    NewsBulletinsPartialUpdateTemplateErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+            - template
+          type: string
+          description: '* `template` - template'
+        code:
+          enum:
+            - invalid_choice
+            - 'null'
+          type: string
+          description: |-
+            * `invalid_choice` - invalid_choice
+            * `null` - null
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
     NewsBulletinsPartialUpdateTextErrorComponent:
       type: object
       properties:
@@ -23174,6 +23509,7 @@ components:
           description: |-
             * `blank` - blank
             * `invalid` - invalid
+            * `max_length` - max_length
             * `null` - null
             * `null_characters_not_allowed` - null_characters_not_allowed
             * `required` - required
@@ -23182,6 +23518,7 @@ components:
           enum:
             - blank
             - invalid
+            - max_length
             - 'null'
             - null_characters_not_allowed
             - required
@@ -23211,146 +23548,6 @@ components:
           client_error: '#/components/schemas/ParseErrorResponse'
       oneOf:
         - $ref: '#/components/schemas/ParseErrorResponse'
-    NewsBulletinsUpdateError:
-      discriminator:
-        propertyName: attr
-        mapping:
-          non_field_errors: '#/components/schemas/NewsBulletinsUpdateNonFieldErrorsErrorComponent'
-          heading: '#/components/schemas/NewsBulletinsUpdateHeadingErrorComponent'
-          text: '#/components/schemas/NewsBulletinsUpdateTextErrorComponent'
-          is_published: '#/components/schemas/NewsBulletinsUpdateIsPublishedErrorComponent'
-      oneOf:
-        - $ref: '#/components/schemas/NewsBulletinsUpdateNonFieldErrorsErrorComponent'
-        - $ref: '#/components/schemas/NewsBulletinsUpdateHeadingErrorComponent'
-        - $ref: '#/components/schemas/NewsBulletinsUpdateTextErrorComponent'
-        - $ref: '#/components/schemas/NewsBulletinsUpdateIsPublishedErrorComponent'
-    NewsBulletinsUpdateErrorResponse400:
-      discriminator:
-        propertyName: type
-        mapping:
-          validation_error: '#/components/schemas/NewsBulletinsUpdateValidationError'
-          client_error: '#/components/schemas/ParseErrorResponse'
-      oneOf:
-        - $ref: '#/components/schemas/NewsBulletinsUpdateValidationError'
-        - $ref: '#/components/schemas/ParseErrorResponse'
-    NewsBulletinsUpdateHeadingErrorComponent:
-      type: object
-      properties:
-        attr:
-          description: '* `heading` - heading'
-          type: string
-          enum:
-            - heading
-        code:
-          description: |-
-            * `blank` - blank
-            * `invalid` - invalid
-            * `max_length` - max_length
-            * `null` - null
-            * `null_characters_not_allowed` - null_characters_not_allowed
-            * `required` - required
-            * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed
-          type: string
-          enum:
-            - blank
-            - invalid
-            - max_length
-            - 'null'
-            - null_characters_not_allowed
-            - required
-            - surrogate_characters_not_allowed
-        detail:
-          type: string
-      required:
-        - attr
-        - code
-        - detail
-    NewsBulletinsUpdateIsPublishedErrorComponent:
-      type: object
-      properties:
-        attr:
-          description: '* `is_published` - is_published'
-          type: string
-          enum:
-            - is_published
-        code:
-          description: |-
-            * `invalid` - invalid
-            * `null` - null
-          type: string
-          enum:
-            - invalid
-            - 'null'
-        detail:
-          type: string
-      required:
-        - attr
-        - code
-        - detail
-    NewsBulletinsUpdateNonFieldErrorsErrorComponent:
-      type: object
-      properties:
-        attr:
-          description: '* `non_field_errors` - non_field_errors'
-          type: string
-          enum:
-            - non_field_errors
-        code:
-          description: |-
-            * `invalid` - invalid
-            * `null` - null
-          type: string
-          enum:
-            - invalid
-            - 'null'
-        detail:
-          type: string
-      required:
-        - attr
-        - code
-        - detail
-    NewsBulletinsUpdateTextErrorComponent:
-      type: object
-      properties:
-        attr:
-          description: '* `text` - text'
-          type: string
-          enum:
-            - text
-        code:
-          description: |-
-            * `blank` - blank
-            * `invalid` - invalid
-            * `null` - null
-            * `null_characters_not_allowed` - null_characters_not_allowed
-            * `required` - required
-            * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed
-          type: string
-          enum:
-            - blank
-            - invalid
-            - 'null'
-            - null_characters_not_allowed
-            - required
-            - surrogate_characters_not_allowed
-        detail:
-          type: string
-      required:
-        - attr
-        - code
-        - detail
-    NewsBulletinsUpdateValidationError:
-      type: object
-      properties:
-        type:
-          $ref: '#/components/schemas/ValidationErrorEnum'
-        errors:
-          type: array
-          items:
-            $ref: '#/components/schemas/NewsBulletinsUpdateError'
-      required:
-        - errors
-        - type
     NullEnum:
       enum:
         - null
@@ -24900,8 +25097,32 @@ components:
         text:
           type: string
           minLength: 1
+          maxLength: 1692
         isPublished:
           type: boolean
+        template:
+          $ref: '#/components/schemas/TemplateEnum'
+        startsAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: 'Shown from this time. Empty: as soon as it is published.'
+        endsAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: 'Shown until this time. Empty: until it is unpublished.'
+        priority:
+          type: integer
+          maximum: 32767
+          minimum: -32768
+          description: Higher is shown first, and more often when there is little time.
+        onAir:
+          type: boolean
+          description: Shown by the on-air graphics between programmes.
+        onInfographics:
+          type: boolean
+          description: Shown in the infographics rotation.
     PatchedCategoryRequest:
       type: object
       properties:
@@ -24969,7 +25190,7 @@ components:
           minLength: 1
         text:
           type: string
-          maxLength: 2412
+          maxLength: 1692
         duration:
           description: How long it is on screen each time it airs.
           type: string
@@ -25208,7 +25429,7 @@ components:
           maxLength: 80
         text:
           type: string
-          maxLength: 2412
+          maxLength: 1692
         duration:
           description: How long it is on screen each time it airs.
           type: string
@@ -25247,7 +25468,7 @@ components:
           minLength: 1
         text:
           type: string
-          maxLength: 2412
+          maxLength: 1692
         duration:
           description: How long it is on screen each time it airs.
           type: string

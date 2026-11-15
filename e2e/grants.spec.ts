@@ -611,17 +611,21 @@ test.describe("text posters", () => {
     await form.getByText("Viktig melding").click();
     await form.getByLabel("Overskrift").fill("Neste: Båtliv");
     await form.getByLabel("Tekst").fill("Om fem minutter.\n\nVi ses.");
-    // The preview is the on-air template itself, with what was typed: a
-    // frame for each slide, by day or by night.
-    const frames = form.locator("iframe");
-    await expect(frames).toHaveCount(2);
-    await expect(frames.first()).toHaveAttribute(
-      "src",
-      /poster=notice&heading=Neste.*&look=day&slide=0/,
-    );
-    await expect(frames.nth(1)).toHaveAttribute("src", /look=day&slide=1/);
+    // The preview is the on-air template itself, in one frame that is told
+    // what was typed; the pages are listed beside it.
+    const frame = form.locator("iframe");
+    await expect(frame).toHaveCount(1);
+    await expect(frame).toHaveAttribute("src", /\/graphics\/\?.*poster=/);
+    await expect(frame).toHaveAttribute("data-template", "notice");
+    const pages = form.getByRole("list", { name: "Sidene" }).getByRole("listitem");
+    await expect(pages).toHaveCount(2);
+    await expect(pages.nth(1)).toContainText("Vi ses.");
+    // The cursor is at the end of the text, so the second page shows.
+    await expect(frame).toHaveAttribute("data-page", "1");
+    await form.getByRole("button", { name: "Vis side 1" }).click();
+    await expect(frame).toHaveAttribute("data-page", "0");
     await form.getByRole("button", { name: "Kveld" }).click();
-    await expect(frames.nth(1)).toHaveAttribute("src", /look=night&slide=1/);
+    await expect(frame).toHaveAttribute("data-look", "night");
     // Both slides read once take 9 s, so nothing shorter is offered.
     const length = form.getByLabel("Hvor lenge den vises");
     await expect(length.locator("option").first()).toHaveAttribute("value", "9");
