@@ -4,6 +4,7 @@
 
 import { COLS, ROWS, TRANSPARENT, type Cell, type Screen } from "./compose";
 import { GLYPH_CHARS, GLYPH_DATA } from "./font";
+import { g3Mask } from "./g3";
 
 export const CELL_W = 12;
 export const CELL_H = 20;
@@ -85,7 +86,8 @@ const drawCell = (
   const bg = hidden || (opt.mix && !cell.boxed) ? 0 : colour(cell.bg);
   const fg = hidden ? 0 : colour(cell.fg);
   const showFg = !hidden && !(cell.flash && !opt.flashOn) && !(cell.conceal && !opt.reveal);
-  const g = showFg && cell.mosaic < 0 && !cell.drcs && cell.ch !== " " ? glyph(cell.ch) : -1;
+  const g3 = showFg && cell.g3 >= 0 ? g3Mask(cell.g3) : null;
+  const g = showFg && cell.mosaic < 0 && !g3 && !cell.drcs && cell.ch !== " " ? glyph(cell.ch) : -1;
 
   const x0 = c * CELL_W;
   const y0 = r * CELL_H;
@@ -100,6 +102,7 @@ const drawCell = (
       let on = false;
       if (showFg) {
         if (cell.mosaic >= 0) on = mosaicOn(cell.mosaic, cell.separated, gx, gy);
+        else if (g3) on = g3[gy * CELL_W + gx] === 1;
         else if (cell.drcs) on = !!((cell.drcs[gy >> 1] >> (11 - gx)) & 1);
         else if (g >= 0) on = !!pixelOn(g, gx, gy);
       }

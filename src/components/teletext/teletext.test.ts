@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import snapshot from "./__fixtures__/snapshot.json";
 import libzvbi from "./__fixtures__/libzvbi-cells.json";
+import assetsSnapshot from "./__fixtures__/snapshot-assets.json";
+import assetsLibzvbi from "./__fixtures__/libzvbi-assets-cells.json";
 import { g2 } from "./charset";
 import { decodeBase64, decodePage, unham84 } from "./decode";
 import { render, WIDTH, HEIGHT } from "./render";
@@ -9,27 +11,43 @@ import { TeletextStore } from "./store";
 
 // The fixtures are real ttxd output: snapshot.json is its public feed with page 100 from
 // the page generator (Level 2.5 palette, DRCS logo on page 10F, fastext) and test pages
-// 200 (Level 1 attributes) and 201 (X/26 enhancements). libzvbi-cells.json is what
-// libzvbi, an independent decoder, makes of the same pages, dumped with
+// 200 (Level 1 attributes) and 201 (X/26 enhancements). snapshot-assets.json has ttxd's
+// shared assets (PUT /v1/assets: MOT page 2FE with the M/29/0 palette, global objects on
+// 8E8, global DRCS on 8E9) and test pages 202 (every G3 character) and 203 (magazine
+// palette, global DRCS, active, adaptive and passive objects). libzvbi-*cells.json is
+// what libzvbi, an independent decoder, makes of the same pages, dumped with
 // scripts/teletext-t42cells.c from ttxd's T42 debug stream. Each row is a list of runs
 // [unicode, foreground, background, size, count].
 
-const store = new TeletextStore("unused");
-for (const p of snapshot.pages) {
-  store.pages.set(parseInt(p.page, 16), {
-    cycleSecs: p.cycle_secs,
-    expires: null,
-    subpages: p.subpages.map((s) => decodePage(decodeBase64(s))!),
-  });
-}
+type Snapshot = { pages: { page: string; cycle_secs: number; subpages: string[] }[] };
+const storeOf = (snap: Snapshot) => {
+  const s = new TeletextStore("unused");
+  for (const p of snap.pages) {
+    s.pages.set(parseInt(p.page, 16), {
+      cycleSecs: p.cycle_secs,
+      expires: null,
+      subpages: p.subpages.map((x) => decodePage(decodeBase64(x))!),
+    });
+  }
+  return s;
+};
+// Where libzvbi 0.2.42 (the version the fixtures come from) is wrong: it applies a
+// passive object's "contiguous" attribute to G3 characters too, turning 0x4D into 0x6D.
+// libzvbi 0.2.46 checks for block mosaics first.
+const LIBZVBI_BUGS: Record<string, string> = { "203:7,30": "G3:4d" };
 
-// libzvbi puts block mosaics at U+EE20-EE7F (contiguous) and U+EF20 (separated), as the
-// character code; DRCS characters at U+F000 and up.
+const store = storeOf(snapshot);
+const assetsStore = storeOf(assetsSnapshot);
+
+// libzvbi puts block mosaics at U+EE00 + the character code (U+EE20-EE3F and EE60-EE7F
+// contiguous, the same less 0x20 separated), G3 characters at U+EF00 + the code and DRCS
+// characters at U+F000 and up.
 const libzvbiChar = (u: number) => {
   if (u >= 0xf000) return "DRCS";
-  if (u >= 0xee00 && u < 0xf000) {
+  if (u >= 0xef00) return `G3:${(u & 0x7f).toString(16)}`;
+  if (u >= 0xee00) {
     const pattern = (u & 0x1f) | ((u & 0x40) >> 1);
-    return pattern ? `M${pattern}` : " ";
+    return pattern ? `M${pattern}${u & 0x20 ? "" : "s"}` : " ";
   }
   return String.fromCodePoint(u);
 };
@@ -60,28 +78,43 @@ describe("teletext decoder", () => {
     expect(store.page(0x10f)).toBeNull();
   });
 
-  for (const [name, rows] of Object.entries(libzvbi)) {
-    it(`draws page ${name} as libzvbi does`, () => {
-      const page = store.page(parseInt(name, 16))!.subpages[0];
-      const screen = buildScreen(store, page, headerRow(page.header, "P" + name, new Date()));
-      const diffs: string[] = [];
-      rows.forEach((runs, i) => {
-        const r = i + 1;
-        let c = 0;
-        for (const [u, fg, bg, , count] of runs) {
-          for (let k = 0; k < count; k++, c++) {
-            const cell = screen.cells[r][c];
-            if (cell.covered) continue; // the lower half of a double-height character
-            const ch = cell.drcs ? "DRCS" : cell.mosaic > 0 ? `M${cell.mosaic}` : cell.ch;
-            const want = libzvbiChar(u);
-            if (ch !== want) diffs.push(`${r},${c}: ${ch} != ${want}`);
-            if (screen.palette[cell.bg] !== bg) diffs.push(`${r},${c}: background`);
-            if (ch !== " " && screen.palette[cell.fg] !== fg) diffs.push(`${r},${c}: foreground`);
+  const cases: [TeletextStore, Record<string, number[][][]>][] = [
+    [store, libzvbi],
+    [assetsStore, assetsLibzvbi],
+  ];
+  for (const [st, fixture] of cases) {
+    for (const [name, rows] of Object.entries(fixture)) {
+      it(`draws page ${name} as libzvbi does`, () => {
+        const page = st.page(parseInt(name, 16))!.subpages[0];
+        const screen = buildScreen(st, page, headerRow(page.header, "P" + name, new Date()));
+        const diffs: string[] = [];
+        rows.forEach((runs, i) => {
+          const r = i + 1;
+          let c = 0;
+          for (const [u, fg, bg, size, count] of runs) {
+            for (let k = 0; k < count; k++, c++) {
+              const cell = screen.cells[r][c];
+              if (cell.covered) continue; // the lower half of a double-height character
+              const ch = cell.drcs
+                ? "DRCS"
+                : cell.g3 >= 0
+                  ? `G3:${cell.g3.toString(16)}`
+                  : cell.mosaic > 0
+                    ? `M${cell.mosaic}${cell.separated ? "s" : ""}`
+                    : cell.ch;
+              const want = LIBZVBI_BUGS[`${name}:${r},${c}`] ?? libzvbiChar(u);
+              if (ch !== want) diffs.push(`${r},${c}: ${ch} != ${want}`);
+              if (screen.palette[cell.bg] !== bg) diffs.push(`${r},${c}: background`);
+              if (ch !== " " && screen.palette[cell.fg] !== fg) diffs.push(`${r},${c}: foreground`);
+              // libzvbi sizes: 1 double width, 2 double height, 3 double size.
+              const ours = (cell.doubleWidth ? 1 : 0) | (cell.doubleHeight ? 2 : 0);
+              if (size <= 3 && ours !== size) diffs.push(`${r},${c}: size ${ours} != ${size}`);
+            }
           }
-        }
+        });
+        expect(diffs).toEqual([]);
       });
-      expect(diffs).toEqual([]);
-    });
+    }
   }
 
   it("renders the logo's DRCS characters", () => {

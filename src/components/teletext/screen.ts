@@ -1,25 +1,61 @@
-import { compose, drcsFromRows, type Screen } from "./compose";
-import type { Page } from "./decode";
+import { ACTIVE, compose, drcsFromRows, type Enhancements, type Screen } from "./compose";
+import type { Page, Triplet } from "./decode";
+import { pageLinks, parseMot, parsePop, resolveObject, type Mot, type PopPage } from "./magazine";
 import type { TeletextStore } from "./store";
 
+// Parsed data pages, kept for as long as the page object lives.
+const mots = new WeakMap<Page, Mot>();
+const pops = new WeakMap<Page, PopPage>();
+const cached = <T>(map: WeakMap<Page, T>, page: Page, parse: (_p: Page) => T) => {
+  let v = map.get(page);
+  if (!v) map.set(page, (v = parse(page)));
+  return v;
+};
+
 /**
- * The normal DRCS page an X/27/4 packet links to. Each link is two words (page, subcode);
- * the page word holds the link function in bits 0-1 (3 = normal DRCS, 1 = POP, where
- * libzvbi also looks), page units in bits 7-10 and tens in bits 11-14, in the page's own
- * magazine. The generator only uses DRCS pages with tens digit 0, which every reading of
- * this field agrees on.
+ * What `page` may refer to on other pages: its DRCS and object pages, through its own
+ * X/27/4 links or else its magazine's MOT (page mFE), and the MOT's M/29 defaults.
  */
-export const drcsPage = (page: Page): number | null => {
-  const links = page.x27links;
-  let found: number | null = null;
-  for (let i = 0; i + 1 < links.length; i += 2) {
-    const w = links[i];
-    const fn = w & 3;
-    const num = (((w >> 11) & 15) << 4) | ((w >> 7) & 15);
-    if (num === 0xff || (fn !== 3 && fn !== 1)) continue;
-    if (fn === 3 || found === null) found = (page.magazine << 8) | num;
-  }
-  return found;
+const enhancementsFor = (store: TeletextStore, page: Page): Enhancements => {
+  const motPage = store.dataPage((page.magazine << 8) | 0xfe);
+  const mot = motPage ? cached(mots, motPage, parseMot) : null;
+  const own = page.page;
+  const [gpopLink, popLink, gdrcsLink] = pageLinks(page);
+  const popNo = popLink ?? (mot?.popLut[own] ? mot.pop[mot.popLut[own]]?.page : null) ?? null;
+  const gpopNo = gpopLink ?? mot?.pop[0]?.page ?? null;
+  // libzvbi takes the normal DRCS page from the POP link too.
+  const drcsNo = popLink ?? (mot?.drcsLut[own] ? mot.drcs[mot.drcsLut[own]] : null) ?? null;
+  const gdrcsNo = gdrcsLink ?? mot?.drcs[0] ?? null;
+  const pop = (no: number | null, s1: number) => {
+    const p = no === null ? null : store.dataPage(no, s1);
+    return p ? cached(pops, p, parsePop) : null;
+  };
+  return {
+    drcs: (global, s1, ptu) => {
+      const no = global ? gdrcsNo : drcsNo;
+      const d = no === null ? null : store.dataPage(no, s1);
+      return d ? drcsFromRows(d.rows, ptu) : null;
+    },
+    object: (source, type, address) => {
+      const p = pop(source === 3 ? gpopNo : popNo, address & 15);
+      return p ? resolveObject(p, type, address) : null;
+    },
+    defaults: () => {
+      const link = mot?.popLut[own] ? mot.pop[mot.popLut[own]] : null;
+      if (!link) return null;
+      const out: { type: number; triplets: Triplet[] }[] = [];
+      // Lower types first: an active object, then an adaptive or passive one over it.
+      for (const d of [...link.defaults].sort((a, b) => a.type - b.type)) {
+        if (d.type < ACTIVE) continue;
+        const p = pop(link.page, d.address & 15);
+        const triplets = p ? resolveObject(p, d.type, d.address) : null;
+        if (!triplets) return null;
+        out.push({ type: d.type, triplets });
+      }
+      return out;
+    },
+    magazine: motPage?.x29.get(0) ?? null,
+  };
 };
 
 export const buildScreen = (
@@ -27,17 +63,7 @@ export const buildScreen = (
   page: Page,
   row0: Uint8Array,
   level: 1 | 2.5 = 2.5,
-): Screen => {
-  const drcsNo = drcsPage(page);
-  const lookup =
-    drcsNo === null
-      ? null
-      : (sub: number, ptu: number) => {
-          const d = store.drcs(drcsNo, sub);
-          return d ? drcsFromRows(d.rows, ptu) : null;
-        };
-  return compose(page, row0, lookup, level);
-};
+): Screen => compose(page, row0, enhancementsFor(store, page), level);
 
 const clock = new Intl.DateTimeFormat("nb-NO", {
   timeZone: "Europe/Oslo",
