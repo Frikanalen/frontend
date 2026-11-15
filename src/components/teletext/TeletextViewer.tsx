@@ -7,6 +7,7 @@ import React, { useEffect, useRef, useState, useSyncExternalStore } from "react"
 import { pageName, type Page } from "./decode";
 import { buildScreen, headerRow } from "./screen";
 import { HEIGHT, WIDTH, render } from "./render";
+import { MixIcon, RevealIcon, TvIcon } from "./icons";
 import { teletextStore } from "./store";
 
 const FIRST_PAGE = 0x100;
@@ -38,6 +39,9 @@ const FASTEXT = [
   { name: "Blå", colour: "#00b0e0", key: "b" },
 ];
 
+// The symbols are yellow, as printed on the remotes they come from.
+const ICON = "size-5 text-yellow-300 sm:size-6";
+
 const Key = ({
   children,
   onPress,
@@ -59,7 +63,7 @@ const Key = ({
     aria-pressed={pressed}
     onClick={onPress}
     style={colour ? { backgroundColor: colour } : undefined}
-    className={`flex min-h-6 min-w-6 items-center justify-center rounded-xs bg-white/15 px-1 font-mono text-xs text-white hover:bg-white/30 focus-visible:outline-2 focus-visible:outline-white sm:min-h-8 sm:min-w-8 sm:text-sm ${pressed ? "ring-2 ring-white" : ""} ${className}`}
+    className={`flex items-center justify-center rounded-xs text-xs font-semibold text-white tabular-nums focus-visible:outline-2 focus-visible:outline-white sm:text-sm ${colour ? "hover:brightness-125" : "bg-white/15 hover:bg-white/30"} ${pressed ? "ring-2 ring-white" : ""} ${className || "min-h-6 min-w-6 px-1 sm:min-h-8 sm:min-w-8"}`}
   >
     {children}
   </button>
@@ -173,52 +177,79 @@ export default function TeletextViewer({ onClose }: { onClose: () => void }) {
       onClick={(e) => e.stopPropagation()}
       className={`absolute inset-0 z-[60] flex items-stretch justify-center outline-none ${mix ? "bg-transparent" : "bg-black"}`}
     >
-      <div className="flex flex-1 flex-col items-center justify-center gap-1 p-1">
-        <div className="grid grid-cols-3 gap-1" role="group" aria-label="Sidenummer">
-          {["1", "2", "3", "4", "5", "6", "7", "8", "9"].map((d) => (
-            <Key key={d} onPress={() => digit(d)}>
-              {d}
+      {/* Laid out like a remote: number pad with the coloured keys under it on the left,
+          the teletext keys on the right. */}
+      <div className="flex shrink-0 flex-col items-center justify-center gap-1 px-2 py-1">
+        <div className="flex flex-col gap-2">
+          <div
+            className="grid grid-cols-[repeat(3,auto)] gap-1"
+            role="group"
+            aria-label="Sidenummer"
+          >
+            {["1", "2", "3", "4", "5", "6", "7", "8", "9"].map((d) => (
+              <Key key={d} onPress={() => digit(d)}>
+                {d}
+              </Key>
+            ))}
+            <Key label="Forrige side" onPress={() => step(-1)}>
+              ‹
             </Key>
-          ))}
-          <Key label="Forrige side" onPress={() => step(-1)}>
-            ‹
-          </Key>
-          <Key onPress={() => digit("0")}>0</Key>
-          <Key label="Neste side" onPress={() => step(1)}>
-            ›
-          </Key>
+            <Key onPress={() => digit("0")}>0</Key>
+            <Key label="Neste side" onPress={() => step(1)}>
+              ›
+            </Key>
+          </div>
+          <div className="grid grid-cols-4 gap-1" role="group" aria-label="Fargeknapper">
+            {FASTEXT.map((f, i) => (
+              <Key
+                key={f.key}
+                label={f.name}
+                onPress={() => fastext(i)}
+                colour={f.colour}
+                className="h-3 w-full sm:h-4"
+              >
+                {""}
+              </Key>
+            ))}
+          </div>
         </div>
       </div>
-      <div className="relative aspect-[4/3] h-full max-w-[75%]">
-        <canvas
-          ref={canvas}
-          width={WIDTH}
-          height={HEIGHT}
-          className="size-full"
-          aria-label={`Tekst-TV side ${pageName(pageNo)}`}
-        />
-        {!store.connected && !store.pages.size && (
-          <p className="absolute inset-x-0 bottom-2 text-center font-mono text-xs text-white/70">
-            Kobler til …
-          </p>
-        )}
+      {/* The page keeps 4:3 in whatever room the keys leave. */}
+      <div
+        className="flex h-full min-w-0 flex-1 items-center justify-center"
+        style={{ containerType: "size" }}
+      >
+        <div
+          className="relative aspect-[4/3]"
+          style={{ width: "min(100cqw, calc(100cqh * 4 / 3))" }}
+        >
+          <canvas
+            ref={canvas}
+            width={WIDTH}
+            height={HEIGHT}
+            className="size-full"
+            aria-label={`Tekst-TV side ${pageName(pageNo)}`}
+          />
+          {!store.connected && !store.pages.size && (
+            <p className="absolute inset-x-0 bottom-2 text-center font-mono text-xs text-white/70">
+              Kobler til …
+            </p>
+          )}
+        </div>
       </div>
-      <div className="flex flex-1 flex-col items-center justify-center gap-1 p-1">
-        <Key label="Lukk tekst-TV" onPress={onClose}>
-          ✕
+      <div
+        className="flex shrink-0 flex-col items-center justify-center gap-1 px-2 py-1"
+        role="group"
+        aria-label="Tekst-TV"
+      >
+        <Key label="Tilbake til TV" onPress={onClose}>
+          <TvIcon className={ICON} />
         </Key>
-        <div className="grid grid-cols-2 gap-1">
-          {FASTEXT.map((f, i) => (
-            <Key key={f.key} label={f.name} onPress={() => fastext(i)} colour={f.colour}>
-              {""}
-            </Key>
-          ))}
-        </div>
         <Key label="Vis skjult tekst" pressed={reveal} onPress={() => setReveal((v) => !v)}>
-          ?
+          <RevealIcon className={ICON} />
         </Key>
         <Key label="Bilde bak teksten" pressed={mix} onPress={() => setMix((v) => !v)}>
-          ◩
+          <MixIcon className={ICON} />
         </Key>
       </div>
     </div>

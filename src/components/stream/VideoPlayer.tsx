@@ -26,6 +26,7 @@ import { defaultLayoutIcons, DefaultVideoLayout } from "@vidstack/react/player/l
 import "./videoplayer.css";
 import { Spinner } from "@heroui/react";
 import cx from "classnames";
+import { TextIcon } from "@/components/teletext/icons";
 
 declare global {
   interface Window {
@@ -167,16 +168,7 @@ const TeletextButton = ({ onPress }: { onPress: () => void }) => (
     title="Tekst-TV"
     onClick={onPress}
   >
-    {/* A television with "TXT" on the screen. */}
-    <svg className="vds-icon" viewBox="0 0 32 32" fill="none" aria-hidden>
-      <rect x="4" y="7" width="24" height="17" rx="2" stroke="currentColor" strokeWidth="2" />
-      <path d="M12 28h8M16 24v4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-      <path
-        d="M8.5 12.5h4M10.5 12.5v7M14 12.5l4 7M18 12.5l-4 7M19.5 12.5h4M21.5 12.5v7"
-        stroke="currentColor"
-        strokeWidth="1.6"
-      />
-    </svg>
+    <TextIcon className="vds-icon" />
   </button>
 );
 
