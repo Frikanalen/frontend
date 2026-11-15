@@ -100,6 +100,12 @@ const nextConfig: NextConfig = {
         source: "/contrib/:path*",
         destination: `${process.env.MEDIAMTX_WEBRTC_URL ?? "http://localhost:8889/"}contrib/:path*`,
       },
+      // ttxd's public teletext feed (the player's teletext viewer), likewise
+      // routed by the ingress in deployed environments.
+      {
+        source: "/teletext/:path*",
+        destination: `${process.env.TELETEXT_URL ?? "http://localhost:8081/"}teletext/:path*`,
+      },
     ];
   },
 };

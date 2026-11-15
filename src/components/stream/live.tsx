@@ -12,6 +12,7 @@ export const Live = () => (
       title="Frikanalen direkte"
       src="/stream/index.m3u8"
       preload="none"
+      teletext
       overlay={<LiveBadge />}
     />
   </div>
