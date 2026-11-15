@@ -2,7 +2,7 @@
 import { osloInstant } from "@/app/requests/dates";
 import { windowText } from "@/app/requests/requests";
 import { durationMilliseconds, formatDuration } from "@/app/grants/duration";
-import { isAutomatic, listMilliseconds, splitItems, windowMilliseconds } from "@/app/grants/grants";
+import { isAutomatic, itemsPayload, roomForProgramme, splitItems } from "@/app/grants/grants";
 import { osloToday } from "@/app/schedule/plan/slots/slots";
 import { ClockField } from "@/components/time/ClockField";
 import { DayField } from "@/components/time/DayField";
@@ -129,7 +129,7 @@ export const NewAirtimePanel = ({
     if (!host || !video) return;
     setError(undefined);
     const { chosen } = splitItems(host, host.items);
-    if (listMilliseconds(chosen) + videoLength > windowMilliseconds(host)) {
+    if (videoLength > roomForProgramme(chosen, host)) {
       setError("Det er ikke plass til videoen i den sendetiden.");
       return;
     }
@@ -137,7 +137,7 @@ export const NewAirtimePanel = ({
       const response = await addTo.mutateAsync({
         id: host.id,
         data: {
-          items: [...chosen.map((item) => ({ video: item.video.id })), { video: video.id }],
+          items: [...itemsPayload(chosen), { video: video.id }],
           automatic: isAutomatic(host),
         },
       });

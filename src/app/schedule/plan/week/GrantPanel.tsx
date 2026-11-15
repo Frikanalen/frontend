@@ -7,8 +7,10 @@ import {
   isAutomatic,
   itemName,
   itemStatus,
+  itemsPayload,
   listMilliseconds,
   readOnlyReason,
+  roomForProgramme,
   splitItems,
   timeline,
   windowMilliseconds,
@@ -53,7 +55,7 @@ export const GrantPanel = ({
   const { rows, graphics } = timeline(grant.items, grant);
   const { chosen } = splitItems(grant, grant.items);
   const started = Date.parse(grant.starttime) <= now;
-  const room = windowMilliseconds(grant) - listMilliseconds(chosen);
+  const room = roomForProgramme(chosen, grant);
 
   const refresh = () => queryClient.invalidateQueries({ queryKey: ["/api/grants"] });
 
@@ -63,7 +65,7 @@ export const GrantPanel = ({
       await save.mutateAsync({
         id: grant.id,
         data: {
-          items: [...chosen.map((item) => ({ video: item.video.id })), { video: video.id }],
+          items: [...itemsPayload(chosen), { video: video.id }],
           automatic,
         },
       });
@@ -114,7 +116,7 @@ export const GrantPanel = ({
 
       <FillBar
         automatic={automatic}
-        used={listMilliseconds(grant.items)}
+        used={listMilliseconds(grant.items, grant)}
         window={windowMilliseconds(grant)}
       />
       {automatic ? (
@@ -126,7 +128,7 @@ export const GrantPanel = ({
       ) : (
         <ol className="space-y-0.5 text-sm">
           {rows.map((row, index) => (
-            <li className="flex gap-2" key={`${row.item.video.id}-${index}`}>
+            <li className="flex gap-2" key={index}>
               <span className="font-semibold tabular-nums">{formatOsloTime(row.start)}</span>
               <span className="min-w-0 truncate">
                 {itemName(row.item)}

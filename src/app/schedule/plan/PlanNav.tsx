@@ -7,11 +7,12 @@ const SECTIONS = [
   { href: "/schedule/plan", label: "Uke" },
   { href: "/schedule/plan/slots", label: "Faste sendeflater" },
   { href: "/schedule/plan/requests", label: "Forespørsler" },
+  { href: "/schedule/plan/bulletins", label: "Meldinger" },
   { href: "/schedule/plan/rules", label: "Slik virker det" },
 ] as const;
 
 /**
- * The staff tools for airtime, side by side, on every one of their pages,
+ * The staff tools for what goes on air, side by side, on every one of their pages,
  * so none of them is a dead end.
  */
 export const PlanNav = () => {

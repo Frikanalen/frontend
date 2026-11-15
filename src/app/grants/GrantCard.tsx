@@ -66,7 +66,7 @@ export const GrantCard = ({
 
       <FillBar
         automatic={automatic}
-        used={listMilliseconds(grant.items)}
+        used={listMilliseconds(grant.items, grant)}
         window={windowMilliseconds(grant)}
       />
 
@@ -80,7 +80,7 @@ export const GrantCard = ({
       ) : (
         <ol className="space-y-0.5 text-sm">
           {rows.slice(0, PREVIEW_ROWS).map((row, index) => (
-            <li className="flex gap-2" key={`${row.item.video.id}-${index}`}>
+            <li className="flex gap-2" key={index}>
               <span className="font-semibold">{formatOsloTime(row.start)}</span>
               <span className="truncate">
                 {itemName(row.item)}

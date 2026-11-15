@@ -254,7 +254,7 @@ export const StaffWeek = ({
                   {grants.map((grant) => {
                     const aired = Date.parse(grant.endtime) <= now;
                     const dimmed = aired || (focus !== null && grant.organization.id !== focus);
-                    const used = listMilliseconds(grant.items);
+                    const used = listMilliseconds(grant.items, grant);
                     const window = windowMilliseconds(grant);
                     const percent = window ? Math.min(100, Math.round((used / window) * 100)) : 0;
                     const label = `${grant.organization.name}, ${formatTimeOf(grant.starttime)}–${formatTimeOf(grant.endtime)}, ${percent} % satt opp`;

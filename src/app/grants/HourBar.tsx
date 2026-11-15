@@ -1,4 +1,5 @@
 import cx from "classnames";
+import { Fragment } from "react";
 import { formatOsloTime } from "@/lib/osloTime";
 import { formatDuration } from "./duration";
 import { itemName, liveSourceName, type DraftItem, type TimelineRow } from "./grants";
@@ -21,7 +22,8 @@ export const HourBar = <T extends DraftItem>({
   rows: TimelineRow<T>[];
   start: string;
   end: string;
-  /** The list's total length in milliseconds, which may exceed the window. */
+  /** From the grant's start to the end of the list, gaps between programmes
+   * included, in milliseconds; it may exceed the window. */
   used: number;
   automatic: boolean;
 }) => {
@@ -31,7 +33,7 @@ export const HourBar = <T extends DraftItem>({
   const total = Math.max(window, used);
   const label = over
     ? `${formatDuration(used)} av ${formatDuration(window)}: ${formatDuration(used - window)} for mye`
-    : `${formatDuration(used)} av ${formatDuration(window)} brukt, ${formatDuration(window - used)} grafikk`;
+    : `${formatDuration(used)} av ${formatDuration(window)} brukt, ${formatDuration(window - used)} grafikk til slutt`;
   const quarters = [0, 0.25, 0.5, 0.75, 1].map((part) => new Date(from + window * part));
 
   return (
@@ -50,24 +52,38 @@ export const HourBar = <T extends DraftItem>({
         {rows.map((row, index) => {
           const length = row.end.getTime() - row.start.getTime();
           const live = !!liveSourceName(row.item.video);
+          const poster = !!row.item.poster;
+          const gap = row.gapBefore
+            ? row.gapBefore.end.getTime() - row.gapBefore.start.getTime()
+            : 0;
           return (
-            <div
-              className={cx(
-                "flex min-w-0 items-center gap-2 overflow-hidden px-3 text-sm font-semibold whitespace-nowrap",
-                row.overruns
-                  ? "bg-danger text-danger-foreground"
-                  : live
-                    ? "bg-stage text-stage-foreground"
-                    : automatic
-                      ? "bg-brand-plum bg-[repeating-linear-gradient(45deg,transparent_0_6px,rgb(255_255_255/0.14)_6px_12px)] text-white"
-                      : "bg-brand-green text-white",
-              )}
-              key={index}
-              style={{ flex: `${Math.max(length, 0)} 1 0` }}
-            >
-              {live ? <span className="size-2 shrink-0 rounded-full bg-brand-coral" /> : null}
-              <span className="truncate">{itemName(row.item)}</span>
-            </div>
+            <Fragment key={index}>
+              {gap > 0 ? (
+                <div
+                  className="min-w-0 bg-default-200"
+                  style={{ flex: `${gap} 1 0` }}
+                  title="Grafikk"
+                />
+              ) : null}
+              <div
+                className={cx(
+                  "flex min-w-0 items-center gap-2 overflow-hidden px-3 text-sm font-semibold whitespace-nowrap",
+                  row.overruns
+                    ? "bg-danger text-danger-foreground"
+                    : live
+                      ? "bg-stage text-stage-foreground"
+                      : poster
+                        ? "bg-brand-amber text-black"
+                        : automatic
+                          ? "bg-brand-plum bg-[repeating-linear-gradient(45deg,transparent_0_6px,rgb(255_255_255/0.14)_6px_12px)] text-white"
+                          : "bg-brand-green text-white",
+                )}
+                style={{ flex: `${Math.max(length, 0)} 1 0` }}
+              >
+                {live ? <span className="size-2 shrink-0 rounded-full bg-brand-coral" /> : null}
+                <span className="truncate">{itemName(row.item)}</span>
+              </div>
+            </Fragment>
           );
         })}
         {!over && window > used ? (
