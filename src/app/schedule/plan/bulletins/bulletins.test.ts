@@ -36,7 +36,9 @@ describe("bulletins", () => {
   });
 
   it("says where it shows", () => {
-    expect(placesText({ onAir: true, onInfographics: true })).toBe("på lufta og i infografikken");
+    expect(placesText({ onAir: true, onInfographics: true })).toBe(
+      "mellom programmer og i infografikken",
+    );
     expect(placesText({ onAir: false, onInfographics: true })).toBe("i infografikken");
     expect(placesText({ onAir: false, onInfographics: false })).toBe("ingen steder");
   });

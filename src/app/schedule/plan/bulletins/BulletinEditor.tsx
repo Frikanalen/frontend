@@ -16,6 +16,7 @@ import {
 import { formatApiError } from "@/lib/formatApiError";
 import { Button, Modal } from "@heroui/react";
 import { useQueryClient } from "@tanstack/react-query";
+import cx from "classnames";
 import { useState } from "react";
 import { PRIORITIES, instantOf, shortestGapSeconds, whenOf, type When } from "./bulletins";
 
@@ -52,7 +53,8 @@ const draftOf = (bulletin: Bulletin): Draft => ({
   priority: bulletin.priority ?? 0,
 });
 
-const Check = ({
+/** One of the places a bulletin can show, switched on or off. */
+const Place = ({
   checked,
   onChange,
   children,
@@ -61,14 +63,19 @@ const Check = ({
   onChange: (_checked: boolean) => void;
   children: React.ReactNode;
 }) => (
-  <label className="flex cursor-pointer items-start gap-2 text-sm">
+  <label
+    className={cx(
+      "flex cursor-pointer items-center gap-2 rounded-lg border-2 px-3 py-2 text-sm font-semibold",
+      checked ? "border-accent" : "border-default-200",
+    )}
+  >
     <input
       checked={checked}
-      className="mt-0.5 size-4 accent-[var(--accent)]"
+      className="size-4 accent-[var(--accent)]"
       type="checkbox"
       onChange={(event) => onChange(event.target.checked)}
     />
-    <span>{children}</span>
+    {children}
   </label>
 );
 
@@ -88,8 +95,8 @@ const OptionalWhen = ({
   value: When | null;
   onChange: (_value: When | null) => void;
 }) => (
-  <fieldset className="space-y-1">
-    <legend className="text-sm font-medium">{legend}</legend>
+  <fieldset>
+    <legend className="mb-1 text-sm font-medium">{legend}</legend>
     {value ? (
       <div className="flex flex-wrap items-end gap-2">
         <DayField
@@ -109,7 +116,7 @@ const OptionalWhen = ({
         </Button>
       </div>
     ) : (
-      <div className="flex flex-wrap items-center gap-3 text-sm text-default-600">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-default-600">
         {unset}
         <Button
           size="sm"
@@ -212,62 +219,70 @@ export const BulletinEditor = ({
                   value={draft}
                   onChange={(text) => set(text)}
                 >
-                  <fieldset className="space-y-2">
-                    <legend className="text-sm font-medium">Hvor den vises</legend>
-                    <Check checked={draft.onAir} onChange={(onAir) => set({ onAir })}>
-                      På lufta, i pausene mellom programmene.{" "}
-                      <span className="text-default-600">
-                        Hele meldingen eller ingenting: den får plass i pauser på minst{" "}
-                        {shortestGapSeconds(seconds)} sekunder.
+                  <section
+                    aria-label="Hvor og når"
+                    className="grid gap-x-6 gap-y-4 border-t border-default-200 pt-4 sm:grid-cols-2"
+                  >
+                    <fieldset className="sm:col-span-2">
+                      <legend className="mb-1 text-sm font-medium">Vises</legend>
+                      <div className="flex flex-wrap gap-2">
+                        <Place checked={draft.onAir} onChange={(onAir) => set({ onAir })}>
+                          Mellom programmer
+                        </Place>
+                        <Place
+                          checked={draft.onInfographics}
+                          onChange={(onInfographics) => set({ onInfographics })}
+                        >
+                          Infografikk
+                        </Place>
+                      </div>
+                      {draft.onAir ? (
+                        <p className="mt-1 text-xs text-default-600">
+                          Mellom programmer vises hele meldingen eller ingenting. Den trenger en
+                          pause på minst {shortestGapSeconds(seconds)} sekunder.
+                        </p>
+                      ) : null}
+                    </fieldset>
+                    <OptionalWhen
+                      add="Velg starttid"
+                      legend="Vises fra"
+                      unset="Publiseringen"
+                      value={draft.startsAt}
+                      onChange={(startsAt) => set({ startsAt })}
+                    />
+                    <OptionalWhen
+                      add="Velg sluttid"
+                      legend="Vises til"
+                      unset="Den tas ned"
+                      value={draft.endsAt}
+                      onChange={(endsAt) => set({ endsAt })}
+                    />
+                    {backwards ? (
+                      <p className="text-sm text-danger sm:col-span-2" role="alert">
+                        Sluttiden må være etter starttiden.
+                      </p>
+                    ) : null}
+                    <label className="flex flex-col gap-1 text-sm font-medium sm:col-span-2">
+                      Prioritet
+                      <select
+                        className="w-56 rounded-lg border border-default-300 bg-background px-3 py-2 font-normal"
+                        value={draft.priority}
+                        onChange={(event) => set({ priority: Number(event.target.value) })}
+                      >
+                        {PRIORITIES.map(({ value, label }) => (
+                          <option key={value} value={value}>
+                            {label}
+                          </option>
+                        ))}
+                        {PRIORITIES.some(({ value }) => value === draft.priority) ? null : (
+                          <option value={draft.priority}>{draft.priority}</option>
+                        )}
+                      </select>
+                      <span className="text-xs font-normal text-default-600">
+                        Avgjør hvem som vises når pausen er for kort til alle.
                       </span>
-                    </Check>
-                    <Check
-                      checked={draft.onInfographics}
-                      onChange={(onInfographics) => set({ onInfographics })}
-                    >
-                      I infografikken, sammen med vær, tog og sendeplan.
-                    </Check>
-                  </fieldset>
-                  <OptionalWhen
-                    add="Velg starttid"
-                    legend="Vises fra"
-                    unset="Fra den blir publisert."
-                    value={draft.startsAt}
-                    onChange={(startsAt) => set({ startsAt })}
-                  />
-                  <OptionalWhen
-                    add="Velg sluttid"
-                    legend="Vises til"
-                    unset="Til den blir tatt ned."
-                    value={draft.endsAt}
-                    onChange={(endsAt) => set({ endsAt })}
-                  />
-                  {backwards ? (
-                    <p className="text-sm text-danger" role="alert">
-                      Sluttiden må være etter starttiden.
-                    </p>
-                  ) : null}
-                  <label className="flex flex-col gap-1 text-sm font-medium">
-                    Prioritet
-                    <select
-                      className="w-56 rounded-lg border border-default-300 bg-background px-3 py-2 font-normal"
-                      value={draft.priority}
-                      onChange={(event) => set({ priority: Number(event.target.value) })}
-                    >
-                      {PRIORITIES.map(({ value, label }) => (
-                        <option key={value} value={value}>
-                          {label}
-                        </option>
-                      ))}
-                      {PRIORITIES.some(({ value }) => value === draft.priority) ? null : (
-                        <option value={draft.priority}>{draft.priority}</option>
-                      )}
-                    </select>
-                    <span className="font-normal text-default-600">
-                      Er pausen for kort til alle meldingene, vises de med høyest prioritet. Like
-                      viktige meldinger bytter på å gå først.
-                    </span>
-                  </label>
+                    </label>
+                  </section>
                 </ScreenTextEditor>
                 {error ? <p role="alert">{formatApiError(error)}</p> : null}
               </Modal.Body>

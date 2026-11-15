@@ -49,7 +49,7 @@ export const statusText = (
 
 /** Where it shows, in words. */
 export const placesText = (bulletin: Pick<Bulletin, "onAir" | "onInfographics">) =>
-  [bulletin.onAir && "på lufta", bulletin.onInfographics && "i infografikken"]
+  [bulletin.onAir && "mellom programmer", bulletin.onInfographics && "i infografikken"]
     .filter(Boolean)
     .join(" og ") || "ingen steder";
 

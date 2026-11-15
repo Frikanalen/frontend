@@ -157,7 +157,7 @@ const PosterEditor = ({
               <Modal.Body className="space-y-4">
                 <p className="text-sm text-default-600">
                   En tekstplakat vises på skjermen så lenge du velger, for eksempel i pausen etter
-                  et program. Frikanalens logo og navnet på organisasjonen kommer med av seg selv.
+                  et program. Navnet på organisasjonen kommer med av seg selv.
                 </p>
                 <ScreenTextEditor
                   autoFocus

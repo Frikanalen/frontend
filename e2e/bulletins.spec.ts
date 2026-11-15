@@ -69,10 +69,10 @@ test.describe("bulletins", () => {
     const showing = page.getByRole("region", { name: "Vises nå" });
     await expect(showing.getByRole("listitem")).toHaveCount(1);
     await expect(showing).toContainText("Velkommen tilbake");
-    await expect(showing).toContainText("på lufta og i infografikken");
+    await expect(showing).toContainText("mellom programmer og i infografikken");
     await expect(page.getByRole("region", { name: "Utkast" })).toContainText("Kladd");
     await expect(page.getByRole("region", { name: "Ferdige" })).toContainText(
-      "Ferdig 1.1. kl. 11:00 · på lufta",
+      "Ferdig 1.1. kl. 11:00 · mellom programmer",
     );
   });
 
@@ -110,7 +110,7 @@ test.describe("bulletins", () => {
     await form.getByRole("button", { name: "Vis side 1" }).click();
     await expect(frame).toHaveAttribute("data-page", "0");
 
-    await form.getByLabel("I infografikken").uncheck();
+    await form.getByLabel("Infografikk").uncheck();
     await form.getByRole("button", { name: "Velg sluttid" }).click();
     await expect(form.getByRole("group", { name: "Vises til" })).toContainText("Fjern");
     await form.getByRole("button", { name: "Publiser" }).click();
