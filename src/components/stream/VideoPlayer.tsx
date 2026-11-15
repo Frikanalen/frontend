@@ -1,6 +1,8 @@
 import React, {
+  lazy,
   MediaHTMLAttributes,
   ReactNode,
+  Suspense,
   useLayoutEffect,
   useState,
   useSyncExternalStore,
@@ -153,6 +155,31 @@ const ServerPoster = ({ src, blurred }: { src: string; blurred: boolean }) => {
   );
 };
 
+// Teletext is an easter egg: the button is all a page load pays for. The viewer, its
+// decoder and font, and the connection to the teletext feed load on the first press.
+const TeletextViewer = lazy(() => import("@/components/teletext/TeletextViewer"));
+
+const TeletextButton = ({ onPress }: { onPress: () => void }) => (
+  <button
+    type="button"
+    className="vds-button"
+    aria-label="Tekst-TV"
+    title="Tekst-TV"
+    onClick={onPress}
+  >
+    {/* A television with "TXT" on the screen. */}
+    <svg className="vds-icon" viewBox="0 0 32 32" fill="none" aria-hidden>
+      <rect x="4" y="7" width="24" height="17" rx="2" stroke="currentColor" strokeWidth="2" />
+      <path d="M12 28h8M16 24v4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      <path
+        d="M8.5 12.5h4M10.5 12.5v7M14 12.5l4 7M18 12.5l-4 7M19.5 12.5h4M21.5 12.5v7"
+        stroke="currentColor"
+        strokeWidth="1.6"
+      />
+    </svg>
+  </button>
+);
+
 type VideoPlayerProps = {
   title: string;
   src: string | PlayerSource | PlayerSource[];
@@ -167,6 +194,8 @@ type VideoPlayerProps = {
    * 1 MB on each front-page visit, before anyone has pressed play.
    */
   preload?: "none" | "metadata" | "auto";
+  /** Show the teletext button (the live player). */
+  teletext?: boolean;
 };
 
 // vidstack's React components destroy their player when React runs their effect cleanups, and
@@ -196,8 +225,10 @@ const Player = ({
   overlay,
   startTime,
   preload,
+  teletext,
 }: VideoPlayerProps) => {
   const airPlay = useCanAirPlay();
+  const [teletextOpen, setTeletextOpen] = useState(false);
   // vidstack types mediaProps as plain HTMLAttributes but spreads it onto the <video>.
   const mediaProps: MediaHTMLAttributes<HTMLMediaElement> | undefined = preload
     ? { preload }
@@ -214,6 +245,8 @@ const Player = ({
       preload={preload}
       currentTime={startTime}
       onProviderChange={onProviderChange}
+      // The teletext viewer takes the keyboard: digits key in pages there.
+      keyDisabled={teletextOpen}
     >
       {mediaPending && (
         <div className="absolute z-50 inset-0 bg-default-800/20 flex flex-col items-center justify-center gap-8">
@@ -232,7 +265,20 @@ const Player = ({
       <MediaProvider mediaProps={mediaProps}>
         {poster ? <ServerPoster src={poster} blurred={!!mediaPending} /> : null}
       </MediaProvider>
-      <DefaultVideoLayout icons={defaultLayoutIcons} colorScheme={"system"} />
+      {teletextOpen && (
+        <Suspense fallback={null}>
+          <TeletextViewer onClose={() => setTeletextOpen(false)} />
+        </Suspense>
+      )}
+      <DefaultVideoLayout
+        icons={defaultLayoutIcons}
+        colorScheme={"system"}
+        slots={
+          teletext
+            ? { beforeFullscreenButton: <TeletextButton onPress={() => setTeletextOpen(true)} /> }
+            : undefined
+        }
+      />
     </MediaPlayer>
   );
 };
