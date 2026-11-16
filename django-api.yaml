@@ -3513,6 +3513,282 @@ paths:
         - cookieAuth: []
       tags:
         - grants
+  /api/graphics:
+    get:
+      operationId: graphics_list
+      description: |-
+        Graphics staff can put in a grant's list for as long as they like:
+        HTML pages such as the infographics, aired with filler music under
+        them. Staff only; they are added in the Django admin.
+      parameters:
+        - name: ordering
+          in: query
+          description: Which field to use when ordering the results.
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Graphic'
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GraphicsListErrorResponse400'
+        '401':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: authentication_failed
+                        detail: Incorrect authentication credentials.
+                        attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_authenticated
+                        detail: Authentication credentials were not provided.
+                        attr: null
+        '403':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse403'
+              examples:
+                PermissionDenied:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: permission_denied
+                        detail: You do not have permission to perform this action.
+                        attr: null
+        '404':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+              examples:
+                NotFound:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_found
+                        detail: Not found.
+                        attr: null
+        '405':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse405'
+              examples:
+                MethodNotAllowed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: method_not_allowed
+                        detail: Method "get" not allowed.
+                        attr: null
+        '406':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse406'
+              examples:
+                NotAcceptable:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_acceptable
+                        detail: Could not satisfy the request Accept header.
+                        attr: null
+        '415':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse415'
+              examples:
+                UnsupportedMediaType:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: unsupported_media_type
+                        detail: Unsupported media type "application/json" in request.
+                        attr: null
+        '500':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+              examples:
+                APIException:
+                  value:
+                    type: server_error
+                    errors:
+                      - code: error
+                        detail: A server error occurred.
+                        attr: null
+      security:
+        - tokenAuth: []
+        - cookieAuth: []
+      tags:
+        - graphics
+  /api/graphics/{id}:
+    get:
+      operationId: graphics_retrieve
+      description: |-
+        Graphics staff can put in a grant's list for as long as they like:
+        HTML pages such as the infographics, aired with filler music under
+        them. Staff only; they are added in the Django admin.
+      parameters:
+        - name: id
+          in: path
+          description: A unique integer value identifying this graphic.
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Graphic'
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GraphicsRetrieveErrorResponse400'
+        '401':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: authentication_failed
+                        detail: Incorrect authentication credentials.
+                        attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_authenticated
+                        detail: Authentication credentials were not provided.
+                        attr: null
+        '403':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse403'
+              examples:
+                PermissionDenied:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: permission_denied
+                        detail: You do not have permission to perform this action.
+                        attr: null
+        '404':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+              examples:
+                NotFound:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_found
+                        detail: Not found.
+                        attr: null
+        '405':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse405'
+              examples:
+                MethodNotAllowed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: method_not_allowed
+                        detail: Method "get" not allowed.
+                        attr: null
+        '406':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse406'
+              examples:
+                NotAcceptable:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_acceptable
+                        detail: Could not satisfy the request Accept header.
+                        attr: null
+        '415':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse415'
+              examples:
+                UnsupportedMediaType:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: unsupported_media_type
+                        detail: Unsupported media type "application/json" in request.
+                        attr: null
+        '500':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+              examples:
+                APIException:
+                  value:
+                    type: server_error
+                    errors:
+                      - code: error
+                        detail: A server error occurred.
+                        attr: null
+      security:
+        - tokenAuth: []
+        - cookieAuth: []
+      tags:
+        - graphics
   /api/ingest/claim:
     post:
       operationId: ingest_claim
@@ -4861,6 +5137,11 @@ paths:
   /api/news/bulletins:
     get:
       operationId: news_bulletins_list
+      description: |-
+        Messages from the channel, shown between programmes by the on-air
+        graphics and in the infographics rotation. Anyone can read the
+        published ones; staff see every one and edit them. Highest priority
+        first, then newest.
       parameters:
         - name: limit
           in: query
@@ -4880,18 +5161,18 @@ paths:
           required: false
           schema:
             type: string
-        - in: query
-          name: placement
-          schema:
-            type: string
-            enum:
-              - air
-              - infographics
+        - name: placement
+          in: query
           description: |-
             Only the bulletins that are showing there now: `air` for the on-air graphics, `infographics` for the infographics rotation.
 
             * `air` - air
             * `infographics` - infographics
+          schema:
+            type: string
+            enum:
+              - air
+              - infographics
       responses:
         '200':
           description: ''
@@ -5015,13 +5296,13 @@ paths:
         - cookieAuth: []
       tags:
         - news
+    post:
+      operationId: news_bulletins_create
       description: |-
         Messages from the channel, shown between programmes by the on-air
         graphics and in the infographics rotation. Anyone can read the
         published ones; staff see every one and edit them. Highest priority
         first, then newest.
-    post:
-      operationId: news_bulletins_create
       requestBody:
         required: true
         content:
@@ -5151,14 +5432,14 @@ paths:
         - cookieAuth: []
       tags:
         - news
+  /api/news/bulletins/{id}:
+    get:
+      operationId: news_bulletins_retrieve
       description: |-
         Messages from the channel, shown between programmes by the on-air
         graphics and in the infographics rotation. Anyone can read the
         published ones; staff see every one and edit them. Highest priority
         first, then newest.
-  /api/news/bulletins/{id}:
-    get:
-      operationId: news_bulletins_retrieve
       parameters:
         - name: id
           in: path
@@ -5289,13 +5570,13 @@ paths:
         - cookieAuth: []
       tags:
         - news
+    patch:
+      operationId: news_bulletins_partial_update
       description: |-
         Messages from the channel, shown between programmes by the on-air
         graphics and in the infographics rotation. Anyone can read the
         published ones; staff see every one and edit them. Highest priority
         first, then newest.
-    patch:
-      operationId: news_bulletins_partial_update
       parameters:
         - name: id
           in: path
@@ -5431,13 +5712,13 @@ paths:
         - cookieAuth: []
       tags:
         - news
+    delete:
+      operationId: news_bulletins_destroy
       description: |-
         Messages from the channel, shown between programmes by the on-air
         graphics and in the infographics rotation. Anyone can read the
         published ones; staff see every one and edit them. Highest priority
         first, then newest.
-    delete:
-      operationId: news_bulletins_destroy
       parameters:
         - name: id
           in: path
@@ -5564,11 +5845,6 @@ paths:
         - cookieAuth: []
       tags:
         - news
-      description: |-
-        Messages from the channel, shown between programmes by the on-air
-        graphics and in the infographics rotation. Anyone can read the
-        published ones; staff see every one and edit them. Highest priority
-        first, then newest.
   /api/obtain-token:
     post:
       operationId: obtain_token_create
@@ -9016,7 +9292,7 @@ paths:
 
         `surrounding`: Include event before and after the window.
 
-        `include_posters`: Include members' text posters (for playout).
+        `include_fillers`: Include members' text posters and staff graphics (for playout).
 
         `ordering`: Field to order by. Prefix '-' for desc. Defaults to 'starttime'.
       parameters:
@@ -9029,9 +9305,9 @@ paths:
           in: query
           schema:
             type: number
-        - name: include_posters
+        - name: include_fillers
           in: query
-          description: "Include members' text posters, which playout airs in the gaps between programmes. Left out by default: they are not programmes."
+          description: "Include members' text posters and staff graphics, which playout airs between programmes. Left out by default: they are not programmes."
           schema:
             type: boolean
         - name: limit
@@ -9194,7 +9470,7 @@ paths:
 
         `surrounding`: Include event before and after the window.
 
-        `include_posters`: Include members' text posters (for playout).
+        `include_fillers`: Include members' text posters and staff graphics (for playout).
 
         `ordering`: Field to order by. Prefix '-' for desc. Defaults to 'starttime'.
       requestBody:
@@ -9342,7 +9618,7 @@ paths:
 
         `surrounding`: Include event before and after the window.
 
-        `include_posters`: Include members' text posters (for playout).
+        `include_fillers`: Include members' text posters and staff graphics (for playout).
 
         `ordering`: Field to order by. Prefix '-' for desc. Defaults to 'starttime'.
       parameters:
@@ -9490,7 +9766,7 @@ paths:
 
         `surrounding`: Include event before and after the window.
 
-        `include_posters`: Include members' text posters (for playout).
+        `include_fillers`: Include members' text posters and staff graphics (for playout).
 
         `ordering`: Field to order by. Prefix '-' for desc. Defaults to 'starttime'.
       parameters:
@@ -9644,7 +9920,7 @@ paths:
 
         `surrounding`: Include event before and after the window.
 
-        `include_posters`: Include members' text posters (for playout).
+        `include_fillers`: Include members' text posters and staff graphics (for playout).
 
         `ordering`: Field to order by. Prefix '-' for desc. Defaults to 'starttime'.
       parameters:
@@ -9797,7 +10073,7 @@ paths:
 
         `surrounding`: Include event before and after the window.
 
-        `include_posters`: Include members' text posters (for playout).
+        `include_fillers`: Include members' text posters and staff graphics (for playout).
 
         `ordering`: Field to order by. Prefix '-' for desc. Defaults to 'starttime'.
       parameters:
@@ -18138,7 +18414,7 @@ components:
         - compiled
         - cancelled
     AirtimeGrantUpdate:
-      description: Staff cancels a grant, moves its deadline or exempts it from locking.
+      description: Staff cancels a grant, moves its deadline or end, or exempts it from locking.
       type: object
       properties:
         state:
@@ -18153,8 +18429,16 @@ components:
           format: date-time
         lockExempt:
           type: boolean
+        starttime:
+          description: Move the start, until the grant is on air. A start that has passed means now. Entries that no longer fit come off the list; an earlier start needs the extra time to be free.
+          type: string
+          format: date-time
+        endtime:
+          description: 'Move the end, even while the grant is on air: what is on air past it is cut short there. Entries that no longer fit come off the list. A later end needs the extra time to be free.'
+          type: string
+          format: date-time
     AirtimeGrantUpdateRequest:
-      description: Staff cancels a grant, moves its deadline or exempts it from locking.
+      description: Staff cancels a grant, moves its deadline or end, or exempts it from locking.
       type: object
       properties:
         state:
@@ -18169,6 +18453,14 @@ components:
           format: date-time
         lockExempt:
           type: boolean
+        starttime:
+          description: Move the start, until the grant is on air. A start that has passed means now. Entries that no longer fit come off the list; an earlier start needs the extra time to be free.
+          type: string
+          format: date-time
+        endtime:
+          description: 'Move the end, even while the grant is on air: what is on air past it is cut short there. Entries that no longer fit come off the list. A later end needs the extra time to be free.'
+          type: string
+          format: date-time
     AirtimeGrantUpdateStateEnum:
       description: '* `cancelled` - cancelled'
       type: string
@@ -19019,60 +19311,60 @@ components:
         text:
           type: string
           maxLength: 1692
-        createdTime:
-          type: string
-          format: date-time
-          readOnly: true
-        isPublished:
-          type: boolean
         template:
           $ref: '#/components/schemas/TemplateEnum'
         pages:
+          description: 'The text as the screen pages it: a blank line starts a page, and a long block is paged by itself. The heading is on every page.'
           type: array
           items:
             type: string
           readOnly: true
-          description: 'The text as the screen pages it: a blank line starts a page, and a long block is paged by itself. The heading is on every page.'
         pageSeconds:
+          description: How long each page takes to read.
           type: array
           items:
             type: number
             format: double
           readOnly: true
-          description: How long each page takes to read.
         readingSeconds:
+          description: The time it takes to read every page once.
           type: integer
           readOnly: true
-          description: The time it takes to read every page once.
+        createdTime:
+          type: string
+          format: date-time
+          readOnly: true
         updatedTime:
           type: string
           format: date-time
           readOnly: true
+        isPublished:
+          type: boolean
         isCurrent:
+          description: Published, and inside the dates it runs between.
           type: boolean
           readOnly: true
-          description: Published, and inside the dates it runs between.
         startsAt:
-          type: string
-          format: date-time
-          nullable: true
           description: 'Shown from this time. Empty: as soon as it is published.'
-        endsAt:
           type: string
           format: date-time
           nullable: true
+        endsAt:
           description: 'Shown until this time. Empty: until it is unpublished.'
+          type: string
+          format: date-time
+          nullable: true
         priority:
+          description: Higher is shown first, and more often when there is little time.
           type: integer
           maximum: 32767
           minimum: -32768
-          description: Higher is shown first, and more often when there is little time.
         onAir:
-          type: boolean
           description: Shown by the on-air graphics between programmes.
-        onInfographics:
           type: boolean
+        onInfographics:
           description: Shown in the infographics rotation.
+          type: boolean
       required:
         - createdTime
         - heading
@@ -19092,33 +19384,33 @@ components:
           minLength: 1
         text:
           type: string
-          minLength: 1
           maxLength: 1692
-        isPublished:
-          type: boolean
+          minLength: 1
         template:
           $ref: '#/components/schemas/TemplateEnum'
+        isPublished:
+          type: boolean
         startsAt:
-          type: string
-          format: date-time
-          nullable: true
           description: 'Shown from this time. Empty: as soon as it is published.'
-        endsAt:
           type: string
           format: date-time
           nullable: true
+        endsAt:
           description: 'Shown until this time. Empty: until it is unpublished.'
+          type: string
+          format: date-time
+          nullable: true
         priority:
+          description: Higher is shown first, and more often when there is little time.
           type: integer
           maximum: 32767
           minimum: -32768
-          description: Higher is shown first, and more often when there is little time.
         onAir:
-          type: boolean
           description: Shown by the on-air graphics between programmes.
-        onInfographics:
           type: boolean
+        onInfographics:
           description: Shown in the infographics rotation.
+          type: boolean
       required:
         - heading
         - text
@@ -20120,15 +20412,45 @@ components:
             - $ref: '#/components/schemas/GrantItemPoster'
           nullable: true
           readOnly: true
+        graphic:
+          description: Set instead of `video` for a staff graphic, on for `duration`.
+          allOf:
+            - $ref: '#/components/schemas/GrantItemGraphic'
+          nullable: true
+          readOnly: true
+        duration:
+          description: How long the graphic is on. Only for a graphic.
+          type: string
+          nullable: true
+          readOnly: true
         pinned:
           description: Chosen by the owner. Automatic filling keeps it and fills around it.
           type: boolean
           readOnly: true
       required:
+        - duration
+        - graphic
         - pinned
         - position
         - poster
         - video
+    GrantItemGraphic:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+        url:
+          description: 'Where CasparCG loads it from: a full address, or a path on the site such as /infographics/ (add ?page=<id> to hold one page). Playout adds ?duration=<ms>.'
+          type: string
+          readOnly: true
+      required:
+        - id
+        - name
+        - url
     GrantItemLiveSource:
       type: object
       properties:
@@ -20201,13 +20523,19 @@ components:
         - organization
         - pendingUpload
     GrantItemWriteRequest:
-      description: 'A video or a text poster: exactly one of the two.'
+      description: 'A video, a text poster, or a graphic with its duration: exactly one.'
       type: object
       properties:
         video:
           type: integer
         poster:
           type: integer
+        graphic:
+          description: Staff only.
+          type: integer
+        duration:
+          description: 'With `graphic`: how long it is on.'
+          type: string
     GrantItemsWriteRequest:
       description: |-
         The videos the organization chose, in playing order. They replace
@@ -20820,6 +21148,8 @@ components:
           items.INDEX.non_field_errors: '#/components/schemas/GrantsCreateItemsINDEXNonFieldErrorsErrorComponent'
           items.INDEX.video: '#/components/schemas/GrantsCreateItemsINDEXVideoErrorComponent'
           items.INDEX.poster: '#/components/schemas/GrantsCreateItemsINDEXPosterErrorComponent'
+          items.INDEX.graphic: '#/components/schemas/GrantsCreateItemsINDEXGraphicErrorComponent'
+          items.INDEX.duration: '#/components/schemas/GrantsCreateItemsINDEXDurationErrorComponent'
       oneOf:
         - $ref: '#/components/schemas/GrantsCreateNonFieldErrorsErrorComponent'
         - $ref: '#/components/schemas/GrantsCreateOrganizationErrorComponent'
@@ -20840,6 +21170,8 @@ components:
         - $ref: '#/components/schemas/GrantsCreateItemsINDEXNonFieldErrorsErrorComponent'
         - $ref: '#/components/schemas/GrantsCreateItemsINDEXVideoErrorComponent'
         - $ref: '#/components/schemas/GrantsCreateItemsINDEXPosterErrorComponent'
+        - $ref: '#/components/schemas/GrantsCreateItemsINDEXGraphicErrorComponent'
+        - $ref: '#/components/schemas/GrantsCreateItemsINDEXDurationErrorComponent'
     GrantsCreateErrorResponse400:
       discriminator:
         propertyName: type
@@ -20849,6 +21181,54 @@ components:
       oneOf:
         - $ref: '#/components/schemas/GrantsCreateValidationError'
         - $ref: '#/components/schemas/ParseErrorResponse'
+    GrantsCreateItemsINDEXDurationErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `items.INDEX.duration` - items.INDEX.duration'
+          type: string
+          enum:
+            - items.INDEX.duration
+        code:
+          description: |-
+            * `invalid` - invalid
+            * `min_value` - min_value
+            * `null` - null
+          type: string
+          enum:
+            - invalid
+            - min_value
+            - 'null'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    GrantsCreateItemsINDEXGraphicErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `items.INDEX.graphic` - items.INDEX.graphic'
+          type: string
+          enum:
+            - items.INDEX.graphic
+        code:
+          description: |-
+            * `does_not_exist` - does_not_exist
+            * `incorrect_type` - incorrect_type
+            * `null` - null
+          type: string
+          enum:
+            - does_not_exist
+            - incorrect_type
+            - 'null'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
     GrantsCreateItemsINDEXNonFieldErrorsErrorComponent:
       type: object
       properties:
@@ -21317,6 +21697,8 @@ components:
           items.INDEX.non_field_errors: '#/components/schemas/GrantsItemsUpdateItemsINDEXNonFieldErrorsErrorComponent'
           items.INDEX.video: '#/components/schemas/GrantsItemsUpdateItemsINDEXVideoErrorComponent'
           items.INDEX.poster: '#/components/schemas/GrantsItemsUpdateItemsINDEXPosterErrorComponent'
+          items.INDEX.graphic: '#/components/schemas/GrantsItemsUpdateItemsINDEXGraphicErrorComponent'
+          items.INDEX.duration: '#/components/schemas/GrantsItemsUpdateItemsINDEXDurationErrorComponent'
           automatic: '#/components/schemas/GrantsItemsUpdateAutomaticErrorComponent'
           recipe.non_field_errors: '#/components/schemas/GrantsItemsUpdateRecipeNonFieldErrorsErrorComponent'
           recipe.kind: '#/components/schemas/GrantsItemsUpdateRecipeKindErrorComponent'
@@ -21334,6 +21716,8 @@ components:
         - $ref: '#/components/schemas/GrantsItemsUpdateItemsINDEXNonFieldErrorsErrorComponent'
         - $ref: '#/components/schemas/GrantsItemsUpdateItemsINDEXVideoErrorComponent'
         - $ref: '#/components/schemas/GrantsItemsUpdateItemsINDEXPosterErrorComponent'
+        - $ref: '#/components/schemas/GrantsItemsUpdateItemsINDEXGraphicErrorComponent'
+        - $ref: '#/components/schemas/GrantsItemsUpdateItemsINDEXDurationErrorComponent'
         - $ref: '#/components/schemas/GrantsItemsUpdateAutomaticErrorComponent'
         - $ref: '#/components/schemas/GrantsItemsUpdateRecipeNonFieldErrorsErrorComponent'
         - $ref: '#/components/schemas/GrantsItemsUpdateRecipeKindErrorComponent'
@@ -21354,6 +21738,54 @@ components:
       oneOf:
         - $ref: '#/components/schemas/GrantsItemsUpdateValidationError'
         - $ref: '#/components/schemas/ParseErrorResponse'
+    GrantsItemsUpdateItemsINDEXDurationErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `items.INDEX.duration` - items.INDEX.duration'
+          type: string
+          enum:
+            - items.INDEX.duration
+        code:
+          description: |-
+            * `invalid` - invalid
+            * `min_value` - min_value
+            * `null` - null
+          type: string
+          enum:
+            - invalid
+            - min_value
+            - 'null'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    GrantsItemsUpdateItemsINDEXGraphicErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `items.INDEX.graphic` - items.INDEX.graphic'
+          type: string
+          enum:
+            - items.INDEX.graphic
+        code:
+          description: |-
+            * `does_not_exist` - does_not_exist
+            * `incorrect_type` - incorrect_type
+            * `null` - null
+          type: string
+          enum:
+            - does_not_exist
+            - incorrect_type
+            - 'null'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
     GrantsItemsUpdateItemsINDEXNonFieldErrorsErrorComponent:
       type: object
       properties:
@@ -21827,6 +22259,34 @@ components:
       required:
         - errors
         - type
+    GrantsPartialUpdateEndtimeErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `endtime` - endtime'
+          type: string
+          enum:
+            - endtime
+        code:
+          description: |-
+            * `date` - date
+            * `invalid` - invalid
+            * `make_aware` - make_aware
+            * `null` - null
+            * `overflow` - overflow
+          type: string
+          enum:
+            - date
+            - invalid
+            - make_aware
+            - 'null'
+            - overflow
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
     GrantsPartialUpdateError:
       discriminator:
         propertyName: attr
@@ -21835,11 +22295,15 @@ components:
           state: '#/components/schemas/GrantsPartialUpdateStateErrorComponent'
           locks_at: '#/components/schemas/GrantsPartialUpdateLocksAtErrorComponent'
           lock_exempt: '#/components/schemas/GrantsPartialUpdateLockExemptErrorComponent'
+          starttime: '#/components/schemas/GrantsPartialUpdateStarttimeErrorComponent'
+          endtime: '#/components/schemas/GrantsPartialUpdateEndtimeErrorComponent'
       oneOf:
         - $ref: '#/components/schemas/GrantsPartialUpdateNonFieldErrorsErrorComponent'
         - $ref: '#/components/schemas/GrantsPartialUpdateStateErrorComponent'
         - $ref: '#/components/schemas/GrantsPartialUpdateLocksAtErrorComponent'
         - $ref: '#/components/schemas/GrantsPartialUpdateLockExemptErrorComponent'
+        - $ref: '#/components/schemas/GrantsPartialUpdateStarttimeErrorComponent'
+        - $ref: '#/components/schemas/GrantsPartialUpdateEndtimeErrorComponent'
     GrantsPartialUpdateErrorResponse400:
       discriminator:
         propertyName: type
@@ -21921,6 +22385,34 @@ components:
         - attr
         - code
         - detail
+    GrantsPartialUpdateStarttimeErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `starttime` - starttime'
+          type: string
+          enum:
+            - starttime
+        code:
+          description: |-
+            * `date` - date
+            * `invalid` - invalid
+            * `make_aware` - make_aware
+            * `null` - null
+            * `overflow` - overflow
+          type: string
+          enum:
+            - date
+            - invalid
+            - make_aware
+            - 'null'
+            - overflow
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
     GrantsPartialUpdateStateErrorComponent:
       type: object
       properties:
@@ -21962,6 +22454,34 @@ components:
           client_error: '#/components/schemas/ParseErrorResponse'
       oneOf:
         - $ref: '#/components/schemas/ParseErrorResponse'
+    GrantsUpdateEndtimeErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `endtime` - endtime'
+          type: string
+          enum:
+            - endtime
+        code:
+          description: |-
+            * `date` - date
+            * `invalid` - invalid
+            * `make_aware` - make_aware
+            * `null` - null
+            * `overflow` - overflow
+          type: string
+          enum:
+            - date
+            - invalid
+            - make_aware
+            - 'null'
+            - overflow
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
     GrantsUpdateError:
       discriminator:
         propertyName: attr
@@ -21970,11 +22490,15 @@ components:
           state: '#/components/schemas/GrantsUpdateStateErrorComponent'
           locks_at: '#/components/schemas/GrantsUpdateLocksAtErrorComponent'
           lock_exempt: '#/components/schemas/GrantsUpdateLockExemptErrorComponent'
+          starttime: '#/components/schemas/GrantsUpdateStarttimeErrorComponent'
+          endtime: '#/components/schemas/GrantsUpdateEndtimeErrorComponent'
       oneOf:
         - $ref: '#/components/schemas/GrantsUpdateNonFieldErrorsErrorComponent'
         - $ref: '#/components/schemas/GrantsUpdateStateErrorComponent'
         - $ref: '#/components/schemas/GrantsUpdateLocksAtErrorComponent'
         - $ref: '#/components/schemas/GrantsUpdateLockExemptErrorComponent'
+        - $ref: '#/components/schemas/GrantsUpdateStarttimeErrorComponent'
+        - $ref: '#/components/schemas/GrantsUpdateEndtimeErrorComponent'
     GrantsUpdateErrorResponse400:
       discriminator:
         propertyName: type
@@ -22056,6 +22580,34 @@ components:
         - attr
         - code
         - detail
+    GrantsUpdateStarttimeErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `starttime` - starttime'
+          type: string
+          enum:
+            - starttime
+        code:
+          description: |-
+            * `date` - date
+            * `invalid` - invalid
+            * `make_aware` - make_aware
+            * `null` - null
+            * `overflow` - overflow
+          type: string
+          enum:
+            - date
+            - invalid
+            - make_aware
+            - 'null'
+            - overflow
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
     GrantsUpdateStateErrorComponent:
       type: object
       properties:
@@ -22090,6 +22642,37 @@ components:
       required:
         - errors
         - type
+    Graphic:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+        url:
+          description: 'Where CasparCG loads it from: a full address, or a path on the site such as /infographics/ (add ?page=<id> to hold one page). Playout adds ?duration=<ms>.'
+          type: string
+          readOnly: true
+      required:
+        - id
+        - name
+        - url
+    GraphicsListErrorResponse400:
+      discriminator:
+        propertyName: type
+        mapping:
+          client_error: '#/components/schemas/ParseErrorResponse'
+      oneOf:
+        - $ref: '#/components/schemas/ParseErrorResponse'
+    GraphicsRetrieveErrorResponse400:
+      discriminator:
+        propertyName: type
+        mapping:
+          client_error: '#/components/schemas/ParseErrorResponse'
+      oneOf:
+        - $ref: '#/components/schemas/ParseErrorResponse'
     IngestClaimError:
       discriminator:
         propertyName: attr
@@ -22901,22 +23484,22 @@ components:
       type: object
       properties:
         attr:
+          description: '* `ends_at` - ends_at'
+          type: string
           enum:
             - ends_at
-          type: string
-          description: '* `ends_at` - ends_at'
         code:
-          enum:
-            - date
-            - invalid
-            - make_aware
-            - overflow
-          type: string
           description: |-
             * `date` - date
             * `invalid` - invalid
             * `make_aware` - make_aware
             * `overflow` - overflow
+          type: string
+          enum:
+            - date
+            - invalid
+            - make_aware
+            - overflow
         detail:
           type: string
       required:
@@ -22930,8 +23513,8 @@ components:
           non_field_errors: '#/components/schemas/NewsBulletinsCreateNonFieldErrorsErrorComponent'
           heading: '#/components/schemas/NewsBulletinsCreateHeadingErrorComponent'
           text: '#/components/schemas/NewsBulletinsCreateTextErrorComponent'
-          is_published: '#/components/schemas/NewsBulletinsCreateIsPublishedErrorComponent'
           template: '#/components/schemas/NewsBulletinsCreateTemplateErrorComponent'
+          is_published: '#/components/schemas/NewsBulletinsCreateIsPublishedErrorComponent'
           starts_at: '#/components/schemas/NewsBulletinsCreateStartsAtErrorComponent'
           ends_at: '#/components/schemas/NewsBulletinsCreateEndsAtErrorComponent'
           priority: '#/components/schemas/NewsBulletinsCreatePriorityErrorComponent'
@@ -23037,18 +23620,18 @@ components:
       type: object
       properties:
         attr:
+          description: '* `on_air` - on_air'
+          type: string
           enum:
             - on_air
-          type: string
-          description: '* `on_air` - on_air'
         code:
-          enum:
-            - invalid
-            - 'null'
-          type: string
           description: |-
             * `invalid` - invalid
             * `null` - null
+          type: string
+          enum:
+            - invalid
+            - 'null'
         detail:
           type: string
       required:
@@ -23059,18 +23642,18 @@ components:
       type: object
       properties:
         attr:
+          description: '* `on_infographics` - on_infographics'
+          type: string
           enum:
             - on_infographics
-          type: string
-          description: '* `on_infographics` - on_infographics'
         code:
-          enum:
-            - invalid
-            - 'null'
-          type: string
           description: |-
             * `invalid` - invalid
             * `null` - null
+          type: string
+          enum:
+            - invalid
+            - 'null'
         detail:
           type: string
       required:
@@ -23081,24 +23664,24 @@ components:
       type: object
       properties:
         attr:
+          description: '* `priority` - priority'
+          type: string
           enum:
             - priority
-          type: string
-          description: '* `priority` - priority'
         code:
-          enum:
-            - invalid
-            - max_string_length
-            - max_value
-            - min_value
-            - 'null'
-          type: string
           description: |-
             * `invalid` - invalid
             * `max_string_length` - max_string_length
             * `max_value` - max_value
             * `min_value` - min_value
             * `null` - null
+          type: string
+          enum:
+            - invalid
+            - max_string_length
+            - max_value
+            - min_value
+            - 'null'
         detail:
           type: string
       required:
@@ -23109,22 +23692,22 @@ components:
       type: object
       properties:
         attr:
+          description: '* `starts_at` - starts_at'
+          type: string
           enum:
             - starts_at
-          type: string
-          description: '* `starts_at` - starts_at'
         code:
-          enum:
-            - date
-            - invalid
-            - make_aware
-            - overflow
-          type: string
           description: |-
             * `date` - date
             * `invalid` - invalid
             * `make_aware` - make_aware
             * `overflow` - overflow
+          type: string
+          enum:
+            - date
+            - invalid
+            - make_aware
+            - overflow
         detail:
           type: string
       required:
@@ -23135,18 +23718,18 @@ components:
       type: object
       properties:
         attr:
+          description: '* `template` - template'
+          type: string
           enum:
             - template
-          type: string
-          description: '* `template` - template'
         code:
-          enum:
-            - invalid_choice
-            - 'null'
-          type: string
           description: |-
             * `invalid_choice` - invalid_choice
             * `null` - null
+          type: string
+          enum:
+            - invalid_choice
+            - 'null'
         detail:
           type: string
       required:
@@ -23205,18 +23788,18 @@ components:
       oneOf:
         - $ref: '#/components/schemas/ParseErrorResponse'
     NewsBulletinsListError:
-      oneOf:
-        - $ref: '#/components/schemas/NewsBulletinsListPlacementErrorComponent'
       discriminator:
         propertyName: attr
         mapping:
           placement: '#/components/schemas/NewsBulletinsListPlacementErrorComponent'
+      oneOf:
+        - $ref: '#/components/schemas/NewsBulletinsListPlacementErrorComponent'
     NewsBulletinsListErrorResponse400:
       discriminator:
         propertyName: type
         mapping:
-          client_error: '#/components/schemas/ParseErrorResponse'
           validation_error: '#/components/schemas/NewsBulletinsListValidationError'
+          client_error: '#/components/schemas/ParseErrorResponse'
       oneOf:
         - $ref: '#/components/schemas/NewsBulletinsListValidationError'
         - $ref: '#/components/schemas/ParseErrorResponse'
@@ -23224,15 +23807,15 @@ components:
       type: object
       properties:
         attr:
+          description: '* `placement` - placement'
+          type: string
           enum:
             - placement
-          type: string
-          description: '* `placement` - placement'
         code:
+          description: '* `invalid_choice` - invalid_choice'
+          type: string
           enum:
             - invalid_choice
-          type: string
-          description: '* `invalid_choice` - invalid_choice'
         detail:
           type: string
       required:
@@ -23255,22 +23838,22 @@ components:
       type: object
       properties:
         attr:
+          description: '* `ends_at` - ends_at'
+          type: string
           enum:
             - ends_at
-          type: string
-          description: '* `ends_at` - ends_at'
         code:
-          enum:
-            - date
-            - invalid
-            - make_aware
-            - overflow
-          type: string
           description: |-
             * `date` - date
             * `invalid` - invalid
             * `make_aware` - make_aware
             * `overflow` - overflow
+          type: string
+          enum:
+            - date
+            - invalid
+            - make_aware
+            - overflow
         detail:
           type: string
       required:
@@ -23284,8 +23867,8 @@ components:
           non_field_errors: '#/components/schemas/NewsBulletinsPartialUpdateNonFieldErrorsErrorComponent'
           heading: '#/components/schemas/NewsBulletinsPartialUpdateHeadingErrorComponent'
           text: '#/components/schemas/NewsBulletinsPartialUpdateTextErrorComponent'
-          is_published: '#/components/schemas/NewsBulletinsPartialUpdateIsPublishedErrorComponent'
           template: '#/components/schemas/NewsBulletinsPartialUpdateTemplateErrorComponent'
+          is_published: '#/components/schemas/NewsBulletinsPartialUpdateIsPublishedErrorComponent'
           starts_at: '#/components/schemas/NewsBulletinsPartialUpdateStartsAtErrorComponent'
           ends_at: '#/components/schemas/NewsBulletinsPartialUpdateEndsAtErrorComponent'
           priority: '#/components/schemas/NewsBulletinsPartialUpdatePriorityErrorComponent'
@@ -23391,18 +23974,18 @@ components:
       type: object
       properties:
         attr:
+          description: '* `on_air` - on_air'
+          type: string
           enum:
             - on_air
-          type: string
-          description: '* `on_air` - on_air'
         code:
-          enum:
-            - invalid
-            - 'null'
-          type: string
           description: |-
             * `invalid` - invalid
             * `null` - null
+          type: string
+          enum:
+            - invalid
+            - 'null'
         detail:
           type: string
       required:
@@ -23413,18 +23996,18 @@ components:
       type: object
       properties:
         attr:
+          description: '* `on_infographics` - on_infographics'
+          type: string
           enum:
             - on_infographics
-          type: string
-          description: '* `on_infographics` - on_infographics'
         code:
-          enum:
-            - invalid
-            - 'null'
-          type: string
           description: |-
             * `invalid` - invalid
             * `null` - null
+          type: string
+          enum:
+            - invalid
+            - 'null'
         detail:
           type: string
       required:
@@ -23435,24 +24018,24 @@ components:
       type: object
       properties:
         attr:
+          description: '* `priority` - priority'
+          type: string
           enum:
             - priority
-          type: string
-          description: '* `priority` - priority'
         code:
-          enum:
-            - invalid
-            - max_string_length
-            - max_value
-            - min_value
-            - 'null'
-          type: string
           description: |-
             * `invalid` - invalid
             * `max_string_length` - max_string_length
             * `max_value` - max_value
             * `min_value` - min_value
             * `null` - null
+          type: string
+          enum:
+            - invalid
+            - max_string_length
+            - max_value
+            - min_value
+            - 'null'
         detail:
           type: string
       required:
@@ -23463,22 +24046,22 @@ components:
       type: object
       properties:
         attr:
+          description: '* `starts_at` - starts_at'
+          type: string
           enum:
             - starts_at
-          type: string
-          description: '* `starts_at` - starts_at'
         code:
-          enum:
-            - date
-            - invalid
-            - make_aware
-            - overflow
-          type: string
           description: |-
             * `date` - date
             * `invalid` - invalid
             * `make_aware` - make_aware
             * `overflow` - overflow
+          type: string
+          enum:
+            - date
+            - invalid
+            - make_aware
+            - overflow
         detail:
           type: string
       required:
@@ -23489,18 +24072,18 @@ components:
       type: object
       properties:
         attr:
+          description: '* `template` - template'
+          type: string
           enum:
             - template
-          type: string
-          description: '* `template` - template'
         code:
-          enum:
-            - invalid_choice
-            - 'null'
-          type: string
           description: |-
             * `invalid_choice` - invalid_choice
             * `null` - null
+          type: string
+          enum:
+            - invalid_choice
+            - 'null'
         detail:
           type: string
       required:
@@ -25114,33 +25697,33 @@ components:
           minLength: 1
         text:
           type: string
-          minLength: 1
           maxLength: 1692
-        isPublished:
-          type: boolean
+          minLength: 1
         template:
           $ref: '#/components/schemas/TemplateEnum'
+        isPublished:
+          type: boolean
         startsAt:
-          type: string
-          format: date-time
-          nullable: true
           description: 'Shown from this time. Empty: as soon as it is published.'
-        endsAt:
           type: string
           format: date-time
           nullable: true
+        endsAt:
           description: 'Shown until this time. Empty: until it is unpublished.'
+          type: string
+          format: date-time
+          nullable: true
         priority:
+          description: Higher is shown first, and more often when there is little time.
           type: integer
           maximum: 32767
           minimum: -32768
-          description: Higher is shown first, and more often when there is little time.
         onAir:
-          type: boolean
           description: Shown by the on-air graphics between programmes.
-        onInfographics:
           type: boolean
+        onInfographics:
           description: Shown in the infographics rotation.
+          type: boolean
     PatchedCategoryRequest:
       type: object
       properties:
@@ -28828,6 +29411,23 @@ components:
           client_error: '#/components/schemas/ParseErrorResponse'
       oneOf:
         - $ref: '#/components/schemas/ParseErrorResponse'
+    ScheduleitemGraphic:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+        url:
+          description: 'Where CasparCG loads it from: a full address, or a path on the site such as /infographics/ (add ?page=<id> to hold one page). Playout adds ?duration=<ms>.'
+          type: string
+          readOnly: true
+      required:
+        - id
+        - name
+        - url
     ScheduleitemLiveSource:
       type: object
       properties:
@@ -28953,9 +29553,14 @@ components:
             - $ref: '#/components/schemas/ScheduleitemVideo'
           nullable: true
         poster:
-          description: "Set for a member's text poster (only with include_posters): playout airs it with the graphics template."
+          description: "Set for a member's text poster (only with include_fillers): playout airs it with the graphics template."
           allOf:
             - $ref: '#/components/schemas/ScheduleitemPoster'
+          nullable: true
+        graphic:
+          description: "Set for a staff graphic (only with include_fillers): playout airs its page for the row's duration."
+          allOf:
+            - $ref: '#/components/schemas/ScheduleitemGraphic'
           nullable: true
         schedulereason:
           nullable: true

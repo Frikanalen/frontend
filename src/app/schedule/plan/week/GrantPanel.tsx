@@ -151,7 +151,7 @@ export const GrantPanel = ({
               <span className="font-semibold tabular-nums">{formatOsloTime(row.start)}</span>
               <span className="min-w-0 truncate">
                 {itemName(row.item)}
-                {itemStatus(row.item.video) ? ` (${itemStatus(row.item.video)})` : ""}
+                {itemStatus(row.item) ? ` (${itemStatus(row.item)})` : ""}
               </span>
             </li>
           ))}

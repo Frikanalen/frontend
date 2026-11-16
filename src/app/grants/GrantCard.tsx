@@ -84,7 +84,7 @@ export const GrantCard = ({
               <span className="font-semibold">{formatOsloTime(row.start)}</span>
               <span className="truncate">
                 {itemName(row.item)}
-                {itemStatus(row.item.video) ? ` (${itemStatus(row.item.video)})` : ""}
+                {itemStatus(row.item) ? ` (${itemStatus(row.item)})` : ""}
               </span>
             </li>
           ))}
