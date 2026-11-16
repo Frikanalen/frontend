@@ -683,3 +683,46 @@ test.describe("text posters", () => {
     await expect(listRows(page).nth(2)).toContainText("18:25–18:40");
   });
 });
+
+test.describe("a grant on air, for staff", () => {
+  test.beforeEach(async ({ page, baseURL }) => {
+    await page.context().clearCookies();
+    await page.context().addCookies([{ name: "e2e-staff", value: "1", url: baseURL! }]);
+  });
+
+  test("takes the programme on air off the air after a warning", async ({ page }) => {
+    const start = Math.floor(Date.now() / 300_000) * 300_000 - 600_000;
+    const onAir = grant({
+      starttime: new Date(start).toISOString(),
+      endtime: new Date(start + 3_600_000).toISOString(),
+      state: "compiled",
+      recipe: null,
+      startedItems: 1,
+      airedItems: 0,
+    });
+    const puts: unknown[] = [];
+    await page.route("**/api/grants/700/items", (route) => {
+      puts.push(route.request().postDataJSON());
+      return route.fulfill({ status: 200, json: onAir });
+    });
+    await editor(page, onAir);
+
+    await page.getByRole("button", { name: "Endre likevel" }).click();
+    await expect(listRows(page).nth(0)).toContainText("På lufta");
+    await expect(page.getByRole("button", { name: "Flytt «Kaia i dag»" })).toHaveCount(0);
+    await expect(page.getByRole("heading", { name: "Sendetidens slutt" })).toBeVisible();
+
+    await page.getByRole("button", { name: "Ta av lufta" }).click();
+    await expect(listRows(page)).toHaveCount(1);
+    await expect(listRows(page).nth(0)).not.toContainText("På lufta");
+    await expect(page.getByRole("button", { name: "Flytt «Båtliv»" })).toBeVisible();
+    await page.getByRole("button", { name: "Lagre listen" }).click();
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toContainText("«Kaia i dag» er på lufta og tas av lufta med en gang.");
+    await page.screenshot({ path: "test-results/on-air-confirm.png" });
+    expect(puts).toEqual([]);
+
+    await dialog.getByRole("button", { name: "Gjør endringen" }).click();
+    await expect.poll(() => puts).toEqual([{ items: [{ video: 2 }], automatic: false }]);
+  });
+});

@@ -25,7 +25,7 @@ export const itemMilliseconds = (item: DraftItem) =>
 
 export const itemName = (item: DraftItem) => item.video?.name ?? item.poster?.heading ?? "";
 
-const sameEntry = (a: DraftItem, b: DraftItem) =>
+export const sameEntry = (a: DraftItem, b: DraftItem) =>
   a.video ? a.video.id === b.video?.id : a.poster?.id === b.poster?.id;
 
 /**

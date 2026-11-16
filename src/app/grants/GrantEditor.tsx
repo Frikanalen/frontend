@@ -38,6 +38,7 @@ import {
   fillSourceLabel,
   isOnAir,
   readOnlyReason,
+  sameEntry,
   lockedByDeadline,
   isAutomatic,
   ownerChoosesSource,
@@ -61,6 +62,7 @@ import {
 } from "./grants";
 import { GrantEndControl } from "./GrantEndControl";
 import { LockBadge } from "./LockBadge";
+import { closeCallWarning, cutWarning, OnAirConfirm, timeNow } from "./OnAirConfirm";
 import { ModeBadge } from "./ModeBadge";
 import { POSTER_DRAG_TYPE, PosterPicker, TEMPLATE_LABELS } from "./PosterPicker";
 import { VIDEO_DRAG_TYPE, VideoPicker } from "./VideoPicker";
@@ -158,9 +160,31 @@ const Editor = ({
 }) => {
   const [now] = useState(Date.now);
   const onAir = isOnAir(grant, now);
-  // What has aired or is on air stays at the head of the list, as it is.
+  // What has aired stays at the head of the list, as it is. What is on air
+  // (or about to start) can't be moved, but staff can take it off the air.
   const startedCount = onAir ? grant.startedItems : 0;
+  const airedCount = onAir ? Math.min(grant.airedItems, startedCount) : 0;
+  const [warnings, setWarnings] = useState<string[]>([]);
+  /** The keys of the started entries of a list as loaded: aired, then on air. */
+  const headOf = (list: KeyedItem[], started: number, aired: number) => ({
+    aired: list.slice(0, aired).map(({ key }) => key),
+    live: list.slice(aired, started).map(({ key }) => key),
+  });
   const [items, setItems] = useState<KeyedItem[]>(() => keyedItems(grant, now));
+  const [head, setHead] = useState(() => headOf(items, startedCount, airedCount));
+  /** Starts the list afresh from `data`, as it stands at `at`. */
+  const resetList = (data: AirtimeGrant, at: number) => {
+    const list = keyedItems(data, at);
+    const live = isOnAir(data, at);
+    setItems(list);
+    setHead(
+      headOf(
+        list,
+        live ? data.startedItems : 0,
+        live ? Math.min(data.airedItems, data.startedItems) : 0,
+      ),
+    );
+  };
   const [error, setError] = useState<string>();
   const [saved, setSaved] = useState(false);
   const queryClient = useQueryClient();
@@ -186,7 +210,15 @@ const Editor = ({
     ...items,
     ...filled.map((item, index) => ({ ...keyed(item), key: `filled-${index}` })),
   ];
-  const { rows: allRows, graphics } = timeline(shown, grant, now);
+  // What follows the started entries still in the list is laid out from now.
+  const startedInList = items.filter(
+    ({ key }) => head.aired.includes(key) || head.live.includes(key),
+  ).length;
+  const { rows: allRows, graphics } = timeline(
+    shown,
+    { ...grant, startedItems: onAir ? startedInList : undefined },
+    now,
+  );
   const overruns = allRows.some((row) => row.overruns);
   const rows = allRows.slice(0, items.length);
   const filledRows = allRows.slice(items.length);
@@ -198,10 +230,21 @@ const Editor = ({
   const editable = grant.canEdit && (!locked || unlocked);
   const showsAutomatic = fillRest;
 
-  const startedKeys = items.slice(0, startedCount).map(({ key }) => key);
+  const airedKeys = head.aired;
+  const startedKeys = [...head.aired, ...head.live];
+  /** Whether `list` keeps what has aired first, then what is still on air, as loaded. */
+  const keepsHead = (list: KeyedItem[]) => {
+    const present = list.filter(({ key }) => startedKeys.includes(key)).map(({ key }) => key);
+    const expected = startedKeys.filter((key) => present.includes(key));
+    return (
+      airedKeys.every((key) => present.includes(key)) &&
+      expected.every((key, index) => list[index]?.key === key)
+    );
+  };
+  const startedNow = startedInList;
   const change = (next: KeyedItem[]) => {
-    // Nothing may be put before, or taken out of, what has started.
-    if (next.slice(0, startedCount).some(({ key }, index) => key !== startedKeys[index])) return;
+    // What has aired stays first, then what is on air unless it is taken off.
+    if (!keepsHead(next)) return;
     setItems(next);
     setSaved(false);
     setError(undefined);
@@ -250,8 +293,8 @@ const Editor = ({
 
   // Starts the editor afresh from what the server now holds.
   const refresh = async (data: AirtimeGrant) => {
-    setItems(keyedItems(data, Date.now()));
-    setFillRest(fillsItself(data, Date.now()));
+    resetList(data, timeNow());
+    setFillRest(fillsItself(data, timeNow()));
     setSource(sourceOf(data));
     setWholeSlot(false);
     queryClient.setQueryData(getGrantsRetrieveQueryKey(grant.id), (old: object | undefined) => ({
@@ -261,7 +304,43 @@ const Editor = ({
     await queryClient.invalidateQueries({ queryKey: ["/api/grants"] });
   };
 
+  /** What saving the list would do to what is on air or about to be. */
+  const airWarnings = () => {
+    const at = timeNow();
+    const result: string[] = [];
+    head.live.forEach((key, offset) => {
+      const before = stored.chosen[head.aired.length + offset];
+      if (before && !items.some((item) => item.key === key))
+        result.push(cutWarning(itemName(before), new Date(at), at));
+    });
+    // The first change after what has started: how soon does it air?
+    const storedRows = timeline(stored.chosen, grant, at).rows;
+    const storedStart = startedKeys.length;
+    const length = Math.max(items.length - startedNow, stored.chosen.length - storedStart);
+    for (let offset = 0; offset < length; offset++) {
+      const before = stored.chosen[storedStart + offset];
+      const after = items[startedNow + offset];
+      if (before && after && sameEntry(before, after)) continue;
+      const starts = [
+        storedRows[storedStart + offset]?.start,
+        rows[startedNow + offset]?.start,
+      ].filter((start): start is Date => start !== undefined);
+      const soonest = starts.sort((a, b) => a.getTime() - b.getTime())[0];
+      const warning = closeCallWarning(soonest, at);
+      if (warning) result.push(warning);
+      break;
+    }
+    return result;
+  };
+
+  const askThenSave = () => {
+    const found = isStaff ? airWarnings() : [];
+    if (found.length > 0) setWarnings(found);
+    else void save();
+  };
+
   const save = async () => {
+    setWarnings([]);
     setError(undefined);
     try {
       const response = await saveItems.mutateAsync({
@@ -341,7 +420,7 @@ const Editor = ({
         >
           <span className="grow">
             {onAir
-              ? "Sendetiden er på lufta nå. Som ansatt kan du likevel endre det som kommer senere, og korte den ned. Det som er sendt eller går nå, blir stående."
+              ? "Sendetiden er på lufta nå. Som ansatt kan du likevel endre den: ta det som går nå av lufta, endre det som kommer etterpå, eller korte den ned. Det som allerede er sendt, blir stående."
               : "Listen er låst og gjort klar for sending. Som ansatt kan du likevel endre den helt til sendetiden er over."}
           </span>
           <HeroButton size="sm" variant="tertiary" onPress={() => setUnlocked(true)}>
@@ -378,12 +457,13 @@ const Editor = ({
             aria-label="Sendeliste"
             className="min-h-24 border-t border-foreground data-[drop-target]:bg-accent/10 data-[drop-target]:outline-2 data-[drop-target]:outline-dashed data-[drop-target]:outline-accent"
             disabledBehavior="all"
-            disabledKeys={startedKeys}
+            disabledKeys={airedKeys}
             dragAndDropHooks={dragAndDropHooks}
-            items={rows.map((row, index) => ({
+            items={rows.map((row) => ({
               ...row,
               id: row.item.key,
-              started: index < startedCount,
+              started: startedKeys.includes(row.item.key),
+              aired: airedKeys.includes(row.item.key),
             }))}
             renderEmptyState={() => (
               <p className="flex min-h-24 items-center justify-center border-b border-dashed border-default-300 p-4 text-center text-default-600">
@@ -456,9 +536,23 @@ const Editor = ({
                   </span>
                 </span>
                 {editable && row.started ? (
-                  <span className="shrink-0 rounded bg-default-100 px-2 py-1 text-xs font-semibold">
-                    {row.end.getTime() <= now ? "Sendt" : "På lufta"}
+                  <span
+                    className={cx(
+                      "shrink-0 rounded px-2 py-1 text-xs font-semibold",
+                      row.aired ? "bg-default-100" : "bg-danger-100 text-danger-800",
+                    )}
+                  >
+                    {row.aired ? "Sendt" : "På lufta"}
                   </span>
+                ) : null}
+                {editable && row.started && !row.aired ? (
+                  <HeroButton
+                    size="sm"
+                    variant="danger-soft"
+                    onPress={() => change(items.filter(({ key }) => key !== row.item.key))}
+                  >
+                    Ta av lufta
+                  </HeroButton>
                 ) : null}
                 {editable && !row.started ? (
                   <HeroButton
@@ -589,7 +683,7 @@ const Editor = ({
                 isDisabled={!dirty || overruns}
                 isPending={saveItems.isPending}
                 variant="primary"
-                onPress={save}
+                onPress={askThenSave}
               >
                 Lagre listen
               </HeroButton>
@@ -597,7 +691,7 @@ const Editor = ({
                 isDisabled={!dirty}
                 variant="tertiary"
                 onPress={() => {
-                  setItems(keyedItems(grant, now));
+                  resetList(grant, now);
                   setFillRest(fillsItself(grant, now));
                   setSource(storedSource);
                   setWholeSlot(false);
@@ -619,6 +713,10 @@ const Editor = ({
             <GrantEndControl
               dirty={dirty}
               grant={grant}
+              onAir={(() => {
+                const live = rows.filter(({ item }) => head.live.includes(item.key)).at(-1);
+                return live ? { name: itemName(live.item), until: live.end } : undefined;
+              })()}
               key={grant.endtime}
               onSaved={async (data) => {
                 setSaved(false);
@@ -655,6 +753,12 @@ const Editor = ({
           </aside>
         ) : null}
       </div>
+      <OnAirConfirm
+        pending={saveItems.isPending}
+        warnings={warnings}
+        onCancel={() => setWarnings([])}
+        onConfirm={() => void save()}
+      />
     </div>
   );
 };

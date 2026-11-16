@@ -17986,10 +17986,15 @@ components:
           type: boolean
           readOnly: true
         startedItems:
-          description: How many entries at the head of the list have aired, are on air or start within seconds. An edit must keep them first, as they are; staff may change the rest, and move the end, while the grant is on air.
+          description: How many entries at the head of the list have aired, are on air or start within seconds. Staff may change what follows them, and move the end, while the grant is on air.
+          type: integer
+          readOnly: true
+        airedItems:
+          description: 'How many entries at the head of the list have finished airing. An edit must keep them first, as they are. Staff may leave out the ones between this and `startedItems`: that takes them off the air at once.'
           type: integer
           readOnly: true
       required:
+        - airedItems
         - canEdit
         - endtime
         - id
