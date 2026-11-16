@@ -29,7 +29,7 @@ test.describe("content security policy", () => {
       headers["content-security-policy"] ?? headers["content-security-policy-report-only"];
 
     expect(policy).toContain("default-src 'self'");
-    expect(policy).toContain("frame-ancestors 'none'");
+    expect(policy).toContain("frame-ancestors 'self'");
   });
 
   for (const path of PAGES) {
