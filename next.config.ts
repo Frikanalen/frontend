@@ -10,7 +10,8 @@ import type { NextConfig } from "next";
 // inline <script> tags, and the strict alternative (a nonce per request)
 // forces every page to render per request, which would throw away the
 // cached static shells. Even so, this keeps out scripts from anywhere else,
-// plugins, framing by other sites and forms posting off-site.
+// plugins, framing by other sites and forms posting off-site. The site may
+// frame itself: the poster editor previews /graphics/ in an iframe.
 //
 // React's development build needs eval() for its error overlays.
 const isDev = process.env.NODE_ENV === "development";
@@ -27,7 +28,7 @@ const contentSecurityPolicy = [
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",
-  "frame-ancestors 'none'",
+  "frame-ancestors 'self'",
 ].join("; ");
 
 // Report-only until it has been clicked through on staging; browsers then log
