@@ -1,6 +1,26 @@
 2025-05-31 
 # Changelog
 
+## [3.10.0](https://github.com/Frikanalen/frontend/compare/v3.9.0...v3.10.0) (2026-11-16)
+
+
+### Features
+
+* **grants:** space between programmes, and text posters in the list ([445f8ff](https://github.com/Frikanalen/frontend/commit/445f8ff9ed55fce35f78e28d75f3098d9cd5fd0a))
+* **live:** teletext viewer behind a button on the live player ([#137](https://github.com/Frikanalen/frontend/issues/137)) ([68ef8de](https://github.com/Frikanalen/frontend/commit/68ef8dec6124af875253dcca4337d269594f4615))
+* one editor for text on the screen, and the channel's bulletins ([cc714f7](https://github.com/Frikanalen/frontend/commit/cc714f71056930823886b3b357ebee7023036a5d))
+* one editor for text on the screen, and the channel's bulletins ([90f5688](https://github.com/Frikanalen/frontend/commit/90f568862460ac07674983a4544ffdcdc51f9a4b))
+* **posters:** previews of every slide, by day and night; a length it can be read in ([f958ef9](https://github.com/Frikanalen/frontend/commit/f958ef946d1e937b35418f22b593ef98aa14712d))
+* send a report-only Content-Security-Policy ([#130](https://github.com/Frikanalen/frontend/issues/130)) ([a11e834](https://github.com/Frikanalen/frontend/commit/a11e834a5032ab19886767bbadedd58afb590170))
+* **teletext:** Level 2.5 objects, global DRCS, magazine palette and G3 in the web viewer ([#138](https://github.com/Frikanalen/frontend/issues/138)) ([df9bba2](https://github.com/Frikanalen/frontend/commit/df9bba2231743c7c7c94d56f65eb858deb9d2981))
+* **teletext:** remote-style keys with the classic teletext symbols ([#139](https://github.com/Frikanalen/frontend/issues/139)) ([ce8a9f1](https://github.com/Frikanalen/frontend/commit/ce8a9f173c3f1541674bddaa397b1a908541053e))
+* tidy the bulletin form and name its places as on screen ([e745b8a](https://github.com/Frikanalen/frontend/commit/e745b8af3e56f36d390962aa6e61e4f5ed9a1b10))
+
+
+### Bug Fixes
+
+* **csp:** allow same-origin framing (frame-ancestors 'self') ([#140](https://github.com/Frikanalen/frontend/issues/140)) ([0734c61](https://github.com/Frikanalen/frontend/commit/0734c6183ca2bd7c01fe1f5da90dbcf47a70f214))
+
 ## [3.9.0](https://github.com/Frikanalen/frontend/compare/v3.8.0...v3.9.0) (2026-11-14)
 
 
