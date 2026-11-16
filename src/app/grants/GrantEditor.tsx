@@ -36,6 +36,7 @@ import { mondayOf, osloPlace } from "@/app/schedule/plan/week/week";
 import {
   deadlineText,
   fillSourceLabel,
+  isOnAir,
   readOnlyReason,
   lockedByDeadline,
   isAutomatic,
@@ -58,6 +59,7 @@ import {
   timeline,
   videoItem,
 } from "./grants";
+import { GrantEndControl } from "./GrantEndControl";
 import { LockBadge } from "./LockBadge";
 import { ModeBadge } from "./ModeBadge";
 import { POSTER_DRAG_TYPE, PosterPicker, TEMPLATE_LABELS } from "./PosterPicker";
@@ -79,9 +81,17 @@ const keyed = ({ video, poster }: DraftItem): KeyedItem => ({
   video,
   poster,
 });
-/** What the editor edits: the pinned items of a self-filling grant, or all of a hand-made one. */
-const keyedItems = (grant: AirtimeGrant) =>
-  splitItems(grant, grant.items).chosen.map((item) => keyed(item));
+/**
+ * What the editor edits: the pinned items of a self-filling grant, or all of a
+ * hand-made one. On air, all of it: staff edit it as a list of their own.
+ */
+const editedItems = (grant: AirtimeGrant, now: number) =>
+  isOnAir(grant, now) ? [...grant.items] : splitItems(grant, grant.items).chosen;
+const keyedItems = (grant: AirtimeGrant, now: number) =>
+  editedItems(grant, now).map((item) => keyed(item));
+/** Whether the grant fills itself, as the editor treats it: never once on air. */
+const fillsItself = (grant: AirtimeGrant, now: number) =>
+  !isOnAir(grant, now) && isAutomatic(grant);
 
 /** Videos and posters dropped from the library. */
 const droppedEntries = async (items: DropItem[]) =>
@@ -110,9 +120,12 @@ export const GrantEditor = ({
   grantId,
   backHref,
   newLiveFrom,
+  isStaff = false,
 }: {
   grantId: number;
   backHref: string;
+  /** Staff may also move the grant's end. */
+  isStaff?: boolean;
   /** Opens with a new live broadcast from this source ready to fill in. */
   newLiveFrom?: number;
 }) => {
@@ -121,25 +134,39 @@ export const GrantEditor = ({
 
   if (query.isLoading) return <p>Laster sendetid…</p>;
   if (query.isError || !grant) return <p role="alert">{formatApiError(query.error)}</p>;
-  return <Editor backHref={backHref} grant={grant} key={grant.id} newLiveFrom={newLiveFrom} />;
+  return (
+    <Editor
+      backHref={backHref}
+      grant={grant}
+      isStaff={isStaff}
+      key={grant.id}
+      newLiveFrom={newLiveFrom}
+    />
+  );
 };
 
 const Editor = ({
   grant,
   backHref,
   newLiveFrom,
+  isStaff,
 }: {
   grant: AirtimeGrant;
   backHref: string;
   newLiveFrom?: number;
+  isStaff: boolean;
 }) => {
-  const [items, setItems] = useState<KeyedItem[]>(() => keyedItems(grant));
+  const [now] = useState(Date.now);
+  const onAir = isOnAir(grant, now);
+  // What has aired or is on air stays at the head of the list, as it is.
+  const startedCount = onAir ? grant.startedItems : 0;
+  const [items, setItems] = useState<KeyedItem[]>(() => keyedItems(grant, now));
   const [error, setError] = useState<string>();
   const [saved, setSaved] = useState(false);
   const queryClient = useQueryClient();
   const saveItems = useGrantsItemsUpdate();
   // Whether the grant's rule fills the time the chosen videos leave.
-  const [fillRest, setFillRest] = useState(isAutomatic(grant));
+  const [fillRest, setFillRest] = useState(fillsItself(grant, now));
   // What it fills from: one of the organization's series, or everything.
   const storedSource = sourceOf(grant);
   const choosesSource = ownerChoosesSource(grant);
@@ -147,22 +174,22 @@ const Editor = ({
   const [wholeSlot, setWholeSlot] = useState(false);
   const series = useSeriesList({ organization: grant.organization.id, limit: 200 });
   const sourceChanged = fillRest && choosesSource && (source !== storedSource || wholeSlot);
-  const stored = splitItems(grant, grant.items);
+  const stored = onAir ? { chosen: [...grant.items], filled: [] } : splitItems(grant, grant.items);
   // Until a member changes something, the list is what the server holds.
   // Against that, so moving something and moving it back, or adding and
   // removing a video, isn't a change worth saving.
-  const dirty = !sameList(items, stored.chosen) || fillRest !== isAutomatic(grant) || sourceChanged;
+  const dirty =
+    !sameList(items, stored.chosen) || fillRest !== fillsItself(grant, now) || sourceChanged;
   // The rule's own picks are only known for the list as saved.
   const filled = fillRest && !dirty ? stored.filled : [];
   const shown = [
     ...items,
     ...filled.map((item, index) => ({ ...keyed(item), key: `filled-${index}` })),
   ];
-  const { rows: allRows, graphics } = timeline(shown, grant);
+  const { rows: allRows, graphics } = timeline(shown, grant, now);
   const overruns = allRows.some((row) => row.overruns);
   const rows = allRows.slice(0, items.length);
   const filledRows = allRows.slice(items.length);
-  const [now] = useState(Date.now);
   // Locked for transmission: the list is settled, so it is shown as it will
   // air, without the tools for changing it. Staff may still change it until
   // it airs, but have to ask for the tools first.
@@ -171,7 +198,10 @@ const Editor = ({
   const editable = grant.canEdit && (!locked || unlocked);
   const showsAutomatic = fillRest;
 
+  const startedKeys = items.slice(0, startedCount).map(({ key }) => key);
   const change = (next: KeyedItem[]) => {
+    // Nothing may be put before, or taken out of, what has started.
+    if (next.slice(0, startedCount).some(({ key }, index) => key !== startedKeys[index])) return;
     setItems(next);
     setSaved(false);
     setError(undefined);
@@ -184,7 +214,7 @@ const Editor = ({
     acceptedDragTypes: [ITEM_DRAG_TYPE, VIDEO_DRAG_TYPE, POSTER_DRAG_TYPE],
     getItems: (keys) =>
       items
-        .filter(({ key }) => keys.has(key))
+        .filter(({ key }) => keys.has(key) && !startedKeys.includes(key))
         .map((item) => ({ [ITEM_DRAG_TYPE]: item.key, "text/plain": itemName(item) })),
     onReorder: ({ keys, target }) => {
       const moving = items.filter(({ key }) => keys.has(key));
@@ -220,8 +250,8 @@ const Editor = ({
 
   // Starts the editor afresh from what the server now holds.
   const refresh = async (data: AirtimeGrant) => {
-    setItems(keyedItems(data));
-    setFillRest(isAutomatic(data));
+    setItems(keyedItems(data, Date.now()));
+    setFillRest(fillsItself(data, Date.now()));
     setSource(sourceOf(data));
     setWholeSlot(false);
     queryClient.setQueryData(getGrantsRetrieveQueryKey(grant.id), (old: object | undefined) => ({
@@ -310,8 +340,9 @@ const Editor = ({
           role="note"
         >
           <span className="grow">
-            Listen er låst og gjort klar for sending. Som ansatt kan du likevel endre den frem til
-            den går på lufta.
+            {onAir
+              ? "Sendetiden er på lufta nå. Som ansatt kan du likevel endre det som kommer senere, og korte den ned. Det som er sendt eller går nå, blir stående."
+              : "Listen er låst og gjort klar for sending. Som ansatt kan du likevel endre den helt til sendetiden er over."}
           </span>
           <HeroButton size="sm" variant="tertiary" onPress={() => setUnlocked(true)}>
             Endre likevel
@@ -346,8 +377,14 @@ const Editor = ({
           <GridList
             aria-label="Sendeliste"
             className="min-h-24 border-t border-foreground data-[drop-target]:bg-accent/10 data-[drop-target]:outline-2 data-[drop-target]:outline-dashed data-[drop-target]:outline-accent"
+            disabledBehavior="all"
+            disabledKeys={startedKeys}
             dragAndDropHooks={dragAndDropHooks}
-            items={rows.map((row) => ({ ...row, id: row.item.key }))}
+            items={rows.map((row, index) => ({
+              ...row,
+              id: row.item.key,
+              started: index < startedCount,
+            }))}
             renderEmptyState={() => (
               <p className="flex min-h-24 items-center justify-center border-b border-dashed border-default-300 p-4 text-center text-default-600">
                 {editable
@@ -373,7 +410,7 @@ const Editor = ({
                 textValue={itemName(row.item)}
               >
                 {row.gapBefore ? <GapLine gap={row.gapBefore} /> : null}
-                {editable ? (
+                {editable && !row.started ? (
                   <Button
                     aria-label={`Flytt «${itemName(row.item)}»`}
                     className="cursor-grab rounded p-1 text-lg text-foreground/70 hover:bg-default-100"
@@ -418,7 +455,12 @@ const Editor = ({
                     ) : null}
                   </span>
                 </span>
-                {editable ? (
+                {editable && row.started ? (
+                  <span className="shrink-0 rounded bg-default-100 px-2 py-1 text-xs font-semibold">
+                    {row.end.getTime() <= now ? "Sendt" : "På lufta"}
+                  </span>
+                ) : null}
+                {editable && !row.started ? (
                   <HeroButton
                     aria-label={`Fjern «${itemName(row.item)}»`}
                     isIconOnly
@@ -485,7 +527,7 @@ const Editor = ({
               {error}
             </p>
           ) : null}
-          {editable ? (
+          {editable && !onAir ? (
             <label className="flex items-start gap-2 border-t border-default-200 pt-3">
               <input
                 checked={fillRest}
@@ -555,8 +597,8 @@ const Editor = ({
                 isDisabled={!dirty}
                 variant="tertiary"
                 onPress={() => {
-                  setItems(keyedItems(grant));
-                  setFillRest(isAutomatic(grant));
+                  setItems(keyedItems(grant, now));
+                  setFillRest(fillsItself(grant, now));
                   setSource(storedSource);
                   setWholeSlot(false);
                   setError(undefined);
@@ -572,6 +614,17 @@ const Editor = ({
                 <span className="text-sm text-default-600">Ikke lagret</span>
               ) : null}
             </div>
+          ) : null}
+          {isStaff && editable ? (
+            <GrantEndControl
+              dirty={dirty}
+              grant={grant}
+              key={grant.endtime}
+              onSaved={async (data) => {
+                setSaved(false);
+                await refresh(data);
+              }}
+            />
           ) : null}
         </section>
 

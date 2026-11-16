@@ -134,6 +134,20 @@ describe("grant lists", () => {
     expect(graphics?.start.toISOString()).toBe("2026-11-16T18:40:00.000Z");
   });
 
+  it("on air, lays out what follows the started entries from now, not the past", () => {
+    const onAir = { ...hour, startedItems: 1 };
+    const at = Date.parse("2026-11-16T18:30:00Z");
+    const { rows } = timeline([video(1, "00:20:00"), video(2, "00:15:00")], onAir, at);
+
+    expect(rows.map(({ start }) => start.toISOString().slice(11, 19))).toEqual([
+      "18:00:00",
+      "18:35:00",
+    ]);
+    // While the first is still on air, the next follows it as usual.
+    const early = timeline([video(1, "00:20:00"), video(2, "00:15:00")], onAir, at - 25 * 60_000);
+    expect(early.rows[1].start.toISOString().slice(11, 19)).toBe("18:25:00");
+  });
+
   it("flags entries that run past the window and leaves no graphics", () => {
     const window = { starttime: "2026-11-16T18:00:00Z", endtime: "2026-11-16T18:30:00Z" };
     const { rows, graphics } = timeline([video(1, "00:20:00"), video(2, "00:15:00")], window);

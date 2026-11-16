@@ -31,6 +31,7 @@ export default async function Page({
         newLiveFrom={Number.isInteger(liveSourceId) && liveSourceId > 0 ? liveSourceId : undefined}
         backHref={user.isStaff ? "/schedule/plan?uke=" : `/organization/${organizationId}/schedule`}
         grantId={grantId}
+        isStaff={user.isStaff}
       />
     </div>
   );
