@@ -80,7 +80,13 @@ export const NewAirtimePanel = ({
     onSelectionChange({ ...selection, ...changes });
   };
 
-  const collisions = overlapping(grants, starttime, endtime);
+  // Under the playhead the airtime starts now; the server says the same.
+  const startsNow = mode === "airtime" && Date.parse(starttime) <= now && Date.parse(endtime) > now;
+  const collisions = overlapping(
+    grants,
+    startsNow ? new Date(now).toISOString() : starttime,
+    endtime,
+  );
   // A video at a time the organization already has: it can go in there.
   const host =
     mode === "video" &&
@@ -96,7 +102,7 @@ export const NewAirtimePanel = ({
       ? "Velg organisasjon."
       : mode === "video" && !video
         ? "Velg en video."
-        : selection.date < osloToday() || Date.parse(starttime) <= now
+        : Date.parse(endtime) <= now || (mode === "video" && Date.parse(starttime) <= now)
           ? "Velg en tid som ikke er passert."
           : mode === "airtime" && selection.duration < 5
             ? "Velg en lengde."
@@ -272,6 +278,12 @@ export const NewAirtimePanel = ({
           ) : null}
         </>
       )}
+
+      {startsNow ? (
+        <p className="bg-default-100 px-3 py-2 text-sm" role="status">
+          Starten er passert, så sendetiden starter med en gang.
+        </p>
+      ) : null}
 
       {host ? (
         <div className="space-y-2 bg-default-100 p-3 text-sm">

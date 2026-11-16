@@ -2,9 +2,11 @@
 import { durationMilliseconds, formatDuration } from "@/app/grants/duration";
 import { FillBar } from "@/app/grants/FillBar";
 import { grantHref } from "@/app/grants/GrantCard";
+import { GrantTimesControl } from "@/app/grants/GrantTimesControl";
 import {
   fillSourceLabel,
   isAutomatic,
+  isOnAir,
   itemName,
   itemStatus,
   itemsPayload,
@@ -17,6 +19,7 @@ import {
 } from "@/app/grants/grants";
 import { LockBadge } from "@/app/grants/LockBadge";
 import { ModeBadge } from "@/app/grants/ModeBadge";
+import { cutWarning, OnAirConfirm, timeNow } from "@/app/grants/OnAirConfirm";
 import { ButtonLink } from "@/components/ButtonLink";
 import type { AirtimeGrant, Video } from "@/generated/frikanalenDjangoAPI.schemas";
 import { useGrantsItemsUpdate, useGrantsPartialUpdate } from "@/generated/grants/grants";
@@ -32,7 +35,8 @@ import { VideoChooser } from "./VideoChooser";
 
 /**
  * One grant, picked on the week: who has it, what is in it and how full it
- * is. Staff add a video to it here, open the full list editor, or delete it.
+ * is. Staff add a video to it here, move its times, open the full list
+ * editor, or delete it, also while it is on air.
  */
 export const GrantPanel = ({
   grant,
@@ -51,11 +55,25 @@ export const GrantPanel = ({
   const [adding, setAdding] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState<string>();
+  const [warnings, setWarnings] = useState<string[]>([]);
   const automatic = isAutomatic(grant);
-  const { rows, graphics } = timeline(grant.items, grant);
-  const { chosen } = splitItems(grant, grant.items);
-  const started = Date.parse(grant.starttime) <= now;
+  const onAir = isOnAir(grant, now);
+  const { rows, graphics } = timeline(
+    grant.items,
+    { ...grant, startedItems: onAir ? grant.startedItems : undefined },
+    now,
+  );
+  // On air the whole list is kept as it is, so what is on air stays on.
+  const chosen = onAir ? grant.items : splitItems(grant, grant.items).chosen;
+  const ended = Date.parse(grant.endtime) <= now;
   const room = roomForProgramme(chosen, grant);
+  const live = onAir
+    ? rows
+        .slice(0, grant.startedItems)
+        .filter((row) => row.end.getTime() > now)
+        .at(-1)
+    : undefined;
+  const liveProgramme = live ? { name: itemName(live.item), until: live.end } : undefined;
 
   const refresh = () => queryClient.invalidateQueries({ queryKey: ["/api/grants"] });
 
@@ -66,7 +84,7 @@ export const GrantPanel = ({
         id: grant.id,
         data: {
           items: [...itemsPayload(chosen), { video: video.id }],
-          automatic,
+          automatic: automatic && !onAir,
         },
       });
       setAdding(false);
@@ -78,6 +96,7 @@ export const GrantPanel = ({
 
   const remove = async () => {
     setError(undefined);
+    setWarnings([]);
     try {
       await cancel.mutateAsync({ id: grant.id, data: { state: "cancelled" } });
       await refresh();
@@ -149,6 +168,18 @@ export const GrantPanel = ({
         <p className="text-sm text-default-600">{readOnlyReason(grant, now)}</p>
       )}
 
+      {grant.canEdit && !ended ? (
+        <GrantTimesControl
+          grant={grant}
+          key={`${grant.starttime}-${grant.endtime}`}
+          now={now}
+          onAir={liveProgramme}
+          onSaved={async () => {
+            await refresh();
+          }}
+        />
+      ) : null}
+
       <div className="flex flex-wrap gap-2">
         <ButtonLink href={grantHref(grant)} size="sm">
           {grant.canEdit ? "Åpne sendelisten" : "Se listen"}
@@ -188,8 +219,22 @@ export const GrantPanel = ({
       ) : null}
 
       <div className="border-t border-separator pt-3">
-        {started ? (
-          <p className="text-sm text-default-600">Sendetid som har startet, kan ikke slettes.</p>
+        {ended ? (
+          <p className="text-sm text-default-600">Sendetid som er sendt, kan ikke slettes.</p>
+        ) : onAir ? (
+          <Button
+            size="sm"
+            variant="danger-soft"
+            onPress={() => {
+              const at = timeNow();
+              setWarnings([
+                ...(liveProgramme ? [cutWarning(liveProgramme.name, new Date(at), at)] : []),
+                `${grant.organization.name} mister resten av sendetiden, og det som skulle gå videre, tas av sendeplanen.`,
+              ]);
+            }}
+          >
+            Slett sendetiden
+          </Button>
         ) : confirming ? (
           <div className="space-y-2" role="group" aria-label="Bekreft sletting">
             <p className="text-sm font-medium">
@@ -225,6 +270,12 @@ export const GrantPanel = ({
           {error}
         </p>
       ) : null}
+      <OnAirConfirm
+        pending={cancel.isPending}
+        warnings={warnings}
+        onCancel={() => setWarnings([])}
+        onConfirm={() => void remove()}
+      />
     </section>
   );
 };

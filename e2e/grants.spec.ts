@@ -710,7 +710,7 @@ test.describe("a grant on air, for staff", () => {
     await page.getByRole("button", { name: "Endre likevel" }).click();
     await expect(listRows(page).nth(0)).toContainText("På lufta");
     await expect(page.getByRole("button", { name: "Flytt «Kaia i dag»" })).toHaveCount(0);
-    await expect(page.getByRole("heading", { name: "Sendetidens slutt" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Tidspunkt" })).toBeVisible();
 
     await page.getByRole("button", { name: "Ta av lufta" }).click();
     await expect(listRows(page)).toHaveCount(1);

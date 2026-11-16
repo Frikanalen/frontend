@@ -218,4 +218,52 @@ test.describe("the staff week", () => {
     await expect.poll(() => writes.length).toBe(1);
     expect(writes[0]).toMatchObject({ method: "PATCH", body: { state: "cancelled" } });
   });
+
+  test("staff move a grant's start and end", async ({ page }) => {
+    const { writes } = await backend(page);
+    await page.goto("/schedule/plan?uke=2030-01-14");
+    await waitForHydration(page);
+
+    await page.getByRole("button", { name: /Havneforeningen, 18:00–19:00/ }).click();
+    const times = page.getByRole("region", { name: "Tidspunkt" });
+    await times.getByLabel("Starter kl.").fill("17:30");
+    await times.getByLabel("Slutter kl.").fill("18:45");
+    await times.getByRole("button", { name: "Endre tidspunkt" }).click();
+
+    await expect.poll(() => writes.filter(({ method }) => method === "PATCH").length).toBe(1);
+    const patch = writes.find(({ method }) => method === "PATCH")!;
+    expect(Date.parse(patch.body.starttime as string)).toBe(Date.parse("2030-01-14T16:30:00Z"));
+    expect(Date.parse(patch.body.endtime as string)).toBe(Date.parse("2030-01-14T17:45:00Z"));
+  });
+
+  test("staff delete a grant on air after a warning", async ({ page }) => {
+    const start = Math.floor(Date.now() / 300_000) * 300_000 - 600_000;
+    const onAir = grant({
+      starttime: new Date(start).toISOString(),
+      endtime: new Date(start + 3_600_000).toISOString(),
+      state: "compiled",
+      startedItems: 1,
+      airedItems: 0,
+    });
+    const patches: unknown[] = [];
+    await page.route("**/api/grants?**", (route) =>
+      route.fulfill({ status: 200, json: page_([onAir]) }),
+    );
+    await page.route("**/api/grants/700", (route) => {
+      patches.push(route.request().postDataJSON());
+      return route.fulfill({ status: 200, json: { state: "cancelled" } });
+    });
+    await page.goto("/schedule/plan");
+    await waitForHydration(page);
+
+    await page.getByRole("button", { name: /Havneforeningen, \d\d:\d\d–\d\d:\d\d/ }).click();
+    await expect(page.getByRole("region", { name: "Tidspunkt" })).toBeVisible();
+    await expect(page.getByLabel("Starter kl.")).toHaveCount(0);
+    await page.getByRole("button", { name: "Slett sendetiden" }).click();
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toContainText("«Kaia i dag» er på lufta og tas av lufta med en gang.");
+    expect(patches).toEqual([]);
+    await dialog.getByRole("button", { name: "Gjør endringen" }).click();
+    await expect.poll(() => patches).toEqual([{ state: "cancelled" }]);
+  });
 });

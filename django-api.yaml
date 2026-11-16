@@ -25064,8 +25064,12 @@ components:
           format: date-time
         lockExempt:
           type: boolean
+        starttime:
+          description: Move the start, until the grant is on air. A start that has passed means now. Entries that no longer fit come off the list; an earlier start needs the extra time to be free.
+          type: string
+          format: date-time
         endtime:
-          description: Move the end, even while the grant is on air, but not before the end of what is on air. Entries that no longer fit come off the list. A later end needs the extra time to be free.
+          description: 'Move the end, even while the grant is on air: what is on air past it is cut short there. Entries that no longer fit come off the list. A later end needs the extra time to be free.'
           type: string
           format: date-time
     PatchedAsRunRequest:

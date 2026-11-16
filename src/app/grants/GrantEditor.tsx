@@ -60,7 +60,7 @@ import {
   timeline,
   videoItem,
 } from "./grants";
-import { GrantEndControl } from "./GrantEndControl";
+import { GrantTimesControl } from "./GrantTimesControl";
 import { LockBadge } from "./LockBadge";
 import { closeCallWarning, cutWarning, OnAirConfirm, timeNow } from "./OnAirConfirm";
 import { ModeBadge } from "./ModeBadge";
@@ -710,14 +710,15 @@ const Editor = ({
             </div>
           ) : null}
           {isStaff && editable ? (
-            <GrantEndControl
+            <GrantTimesControl
               dirty={dirty}
               grant={grant}
+              now={now}
               onAir={(() => {
                 const live = rows.filter(({ item }) => head.live.includes(item.key)).at(-1);
                 return live ? { name: itemName(live.item), until: live.end } : undefined;
               })()}
-              key={grant.endtime}
+              key={`${grant.starttime}-${grant.endtime}`}
               onSaved={async (data) => {
                 setSaved(false);
                 await refresh(data);
