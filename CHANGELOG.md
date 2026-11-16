@@ -1,6 +1,15 @@
 2025-05-31 
 # Changelog
 
+## [3.12.0](https://github.com/Frikanalen/frontend/compare/v3.11.0...v3.12.0) (2026-11-16)
+
+
+### Features
+
+* **grants:** let staff take the programme on air off the air, with a warning ([#143](https://github.com/Frikanalen/frontend/issues/143)) ([46da037](https://github.com/Frikanalen/frontend/commit/46da0376a19020e602a7b6af8c180f590d823c02))
+* **grants:** staff put graphics such as the infographics in a grant's list ([#146](https://github.com/Frikanalen/frontend/issues/146)) ([2944aee](https://github.com/Frikanalen/frontend/commit/2944aee1433bd04dcc5e54e637cc16813bdd376c))
+* **schedule:** running edits on the staff week page ([#145](https://github.com/Frikanalen/frontend/issues/145)) ([b4b5909](https://github.com/Frikanalen/frontend/commit/b4b590950a6bd9dae42a5d38380c4d2abcc44dd2))
+
 ## [3.11.0](https://github.com/Frikanalen/frontend/compare/v3.10.0...v3.11.0) (2026-11-16)
 
 
