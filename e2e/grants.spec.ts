@@ -726,3 +726,53 @@ test.describe("a grant on air, for staff", () => {
     await expect.poll(() => puts).toEqual([{ items: [{ video: 2 }], automatic: false }]);
   });
 });
+
+test.describe("graphics, for staff", () => {
+  test.beforeEach(async ({ page, baseURL }) => {
+    await page.context().clearCookies();
+    await page.context().addCookies([{ name: "e2e-staff", value: "1", url: baseURL! }]);
+  });
+
+  test("puts the infographics in for the rest of the window", async ({ page }) => {
+    const puts: unknown[] = [];
+    await page.route("**/api/graphics", (route) =>
+      route.fulfill({
+        status: 200,
+        json: [{ id: 1, name: "Infografikk", url: "/infographics/" }],
+      }),
+    );
+    await page.route("**/api/grants/700/items", (route) => {
+      puts.push(route.request().postDataJSON());
+      return route.fulfill({ status: 200, json: grant({ recipe: null }) });
+    });
+    await editor(page, grant({ recipe: null }));
+
+    const picker = page.getByRole("list", { name: "Grafikk du kan legge til" });
+    await expect(picker).toContainText("Infografikk");
+    await picker.getByRole("button", { name: "Legg til" }).click();
+
+    await expect(listRows(page)).toHaveCount(3);
+    await expect(listRows(page).nth(2)).toContainText("18:40–19:00");
+    await expect(listRows(page).nth(2)).toContainText("grafikk");
+    await page.screenshot({ path: "test-results/graphic-picker.png", fullPage: true });
+
+    await page.getByRole("button", { name: "Lagre listen" }).click();
+    await expect
+      .poll(() => puts)
+      .toEqual([
+        {
+          items: [{ video: 1 }, { video: 2 }, { graphic: 1, duration: "00:20:00" }],
+          automatic: false,
+        },
+      ]);
+  });
+
+  test("members don't get the graphics", async ({ page, baseURL }) => {
+    await page.context().clearCookies();
+    await page.context().addCookies([{ name: "e2e-member", value: "1", url: baseURL! }]);
+    await editor(page, grant({ recipe: null }));
+
+    await expect(page.getByRole("heading", { name: "Tekstplakater" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Grafikk" })).toHaveCount(0);
+  });
+});

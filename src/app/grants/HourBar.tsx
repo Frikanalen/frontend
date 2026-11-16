@@ -53,6 +53,7 @@ export const HourBar = <T extends DraftItem>({
           const length = row.end.getTime() - row.start.getTime();
           const live = !!liveSourceName(row.item.video);
           const poster = !!row.item.poster;
+          const graphic = !!row.item.graphic;
           const gap = row.gapBefore
             ? row.gapBefore.end.getTime() - row.gapBefore.start.getTime()
             : 0;
@@ -74,9 +75,11 @@ export const HourBar = <T extends DraftItem>({
                       ? "bg-stage text-stage-foreground"
                       : poster
                         ? "bg-brand-amber text-black"
-                        : automatic
-                          ? "bg-brand-plum bg-[repeating-linear-gradient(45deg,transparent_0_6px,rgb(255_255_255/0.14)_6px_12px)] text-white"
-                          : "bg-brand-green text-white",
+                        : graphic
+                          ? "bg-default-300 text-foreground"
+                          : automatic
+                            ? "bg-brand-plum bg-[repeating-linear-gradient(45deg,transparent_0_6px,rgb(255_255_255/0.14)_6px_12px)] text-white"
+                            : "bg-brand-green text-white",
                 )}
                 style={{ flex: `${Math.max(length, 0)} 1 0` }}
               >

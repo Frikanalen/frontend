@@ -1,6 +1,7 @@
 import type {
   AirtimeGrant,
   GrantItem,
+  GrantItemGraphic,
   GrantItemPoster,
   GrantItemVideo,
   GrantItemWriteRequest,
@@ -9,31 +10,58 @@ import { durationMilliseconds } from "./duration";
 
 /**
  * An item in a list being edited: what a GrantItem is before the server
- * numbers it. A video or a text poster; the other is null.
+ * numbers it. A video, a text poster or (staff only) a graphic with its
+ * `duration`; the others are null.
  */
-export type DraftItem = Pick<GrantItem, "video" | "poster">;
+export type DraftItem = Pick<GrantItem, "video" | "poster" | "graphic" | "duration">;
 
-export const videoItem = (video: GrantItemVideo): DraftItem => ({ video, poster: null });
-export const posterItem = (poster: GrantItemPoster): DraftItem => ({ video: null, poster });
+const NONE = { video: null, poster: null, graphic: null, duration: null };
+export const videoItem = (video: GrantItemVideo): DraftItem => ({ ...NONE, video });
+export const posterItem = (poster: GrantItemPoster): DraftItem => ({ ...NONE, poster });
+export const graphicItem = (graphic: GrantItemGraphic, milliseconds: number): DraftItem => ({
+  ...NONE,
+  graphic,
+  duration: apiDuration(milliseconds),
+});
+
+/** A length as Django's DurationField takes it: "HH:MM:SS", whole seconds. */
+export const apiDuration = (milliseconds: number) => {
+  const total = Math.max(0, Math.floor(milliseconds / 1000));
+  const pad = (part: number) => String(part).padStart(2, "0");
+  return `${pad(Math.floor(total / 3600))}:${pad(Math.floor((total % 3600) / 60))}:${pad(total % 60)}`;
+};
+
+/** Whether the entry fills time rather than being a programme: a poster or a graphic. */
+const isFiller = (item: Pick<DraftItem, "poster" | "graphic">) => !!(item.poster || item.graphic);
 
 export const windowMilliseconds = (grant: Pick<AirtimeGrant, "starttime" | "endtime">) =>
   new Date(grant.endtime).getTime() - new Date(grant.starttime).getTime();
 
 /** How long one entry is on air. No usable length counts as zero; the editor flags it. */
 export const itemMilliseconds = (item: DraftItem) =>
-  durationMilliseconds(item.video?.duration ?? item.poster?.duration ?? "") ?? 0;
+  durationMilliseconds(
+    item.video?.duration ?? item.poster?.duration ?? (item.graphic ? item.duration : null) ?? "",
+  ) ?? 0;
 
-export const itemName = (item: DraftItem) => item.video?.name ?? item.poster?.heading ?? "";
+export const itemName = (item: DraftItem) =>
+  item.video?.name ?? item.poster?.heading ?? item.graphic?.name ?? "";
 
-export const sameEntry = (a: DraftItem, b: DraftItem) =>
-  a.video ? a.video.id === b.video?.id : a.poster?.id === b.poster?.id;
+export const sameEntry = (a: DraftItem, b: DraftItem) => {
+  if (a.video) return a.video.id === b.video?.id;
+  if (a.poster) return a.poster.id === b.poster?.id;
+  return a.graphic?.id === b.graphic?.id && a.duration === b.duration;
+};
 
 /**
  * The body PUT /grants/{id}/items takes: the whole list, in order, no
  * positions.
  */
 export const itemsPayload = (items: readonly DraftItem[]): GrantItemWriteRequest[] =>
-  items.map((item) => (item.video ? { video: item.video.id } : { poster: item.poster!.id }));
+  items.map((item) => {
+    if (item.video) return { video: item.video.id };
+    if (item.poster) return { poster: item.poster.id };
+    return { graphic: item.graphic!.id, duration: item.duration! };
+  });
 
 /**
  * A grant's list as the editor holds it. While the grant fills itself, the
@@ -71,7 +99,7 @@ export const placeItems = (
 };
 
 // Programmes start on the five-minute grid, at least BREATHER after the
-// programme before; a poster plays right after whatever is before it. The
+// programme before; a poster or graphic plays right after whatever is before it. The
 // first entry starts with the grant. Jukebox grants are not padded. The
 // server lays lists out the same way (scheduling/layout.py in django-api).
 export const GRID_MILLISECONDS = 5 * 60 * 1000;
@@ -85,11 +113,11 @@ const upToGrid = (instant: number) => Math.ceil(instant / GRID_MILLISECONDS) * G
 const nextStart = (
   cursor: number,
   previous: DraftItem | undefined,
-  entry: Pick<DraftItem, "poster">,
+  entry: Pick<DraftItem, "poster" | "graphic">,
   padded: boolean,
 ) => {
-  if (!padded || previous === undefined || entry.poster) return cursor;
-  return upToGrid(previous.poster ? cursor : cursor + BREATHER_MILLISECONDS);
+  if (!padded || previous === undefined || isFiller(entry)) return cursor;
+  return upToGrid(isFiller(previous) ? cursor : cursor + BREATHER_MILLISECONDS);
 };
 
 export type TimelineRow<T extends DraftItem> = {
@@ -168,11 +196,11 @@ export const listMilliseconds = (items: readonly DraftItem[], grant: Layout) =>
  */
 export const roomForProgramme = (items: readonly DraftItem[], grant: Layout) => {
   const end = timeline(items, grant).end.getTime();
-  const start = nextStart(end, items.at(-1), { poster: null }, grant.padded ?? true);
+  const start = nextStart(end, items.at(-1), { poster: null, graphic: null }, grant.padded ?? true);
   return new Date(grant.endtime).getTime() - start;
 };
 
-/** How long a poster added after `items` could be. */
+/** How long a poster or graphic added after `items` could be. */
 export const roomForPoster = (items: readonly DraftItem[], grant: Layout) =>
   new Date(grant.endtime).getTime() - timeline(items, grant).end.getTime();
 
@@ -269,8 +297,10 @@ export const liveSourceName = (video: GrantItemVideo | null) =>
   video?.liveSource != null && video.pendingUpload ? video.liveSource.name : undefined;
 
 /** What a listed entry is still waiting for, or where it airs from. */
-export const itemStatus = (video: GrantItemVideo | null) => {
-  if (!video) return "tekstplakat";
+export const itemStatus = ({ video, poster, graphic }: DraftItem) => {
+  if (poster) return "tekstplakat";
+  if (graphic) return "grafikk";
+  if (!video) return undefined;
   const source = liveSourceName(video);
   if (source) return `direkte fra ${source}`;
   return video.pendingUpload ? "venter på fil" : undefined;

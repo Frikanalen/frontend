@@ -28,7 +28,15 @@ import {
   useDragAndDrop,
   type DropItem,
 } from "react-aria-components";
-import { GoBroadcast, GoGrabber, GoNote, GoPin, GoSync, GoX } from "react-icons/go";
+import {
+  GoBroadcast,
+  GoDeviceDesktop,
+  GoGrabber,
+  GoNote,
+  GoPin,
+  GoSync,
+  GoX,
+} from "react-icons/go";
 import { formatDuration } from "./duration";
 import { HourBar } from "./HourBar";
 import { ExemptionRequest } from "@/app/requests/ExemptionRequest";
@@ -51,6 +59,7 @@ import {
   type KeyedItem,
   listMilliseconds,
   placeItems,
+  graphicItem,
   posterItem,
   roomForPoster,
   roomForProgramme,
@@ -63,6 +72,7 @@ import {
 import { GrantTimesControl } from "./GrantTimesControl";
 import { LockBadge } from "./LockBadge";
 import { closeCallWarning, cutWarning, OnAirConfirm, timeNow } from "./OnAirConfirm";
+import { GraphicPicker } from "./GraphicPicker";
 import { ModeBadge } from "./ModeBadge";
 import { POSTER_DRAG_TYPE, PosterPicker, TEMPLATE_LABELS } from "./PosterPicker";
 import { VIDEO_DRAG_TYPE, VideoPicker } from "./VideoPicker";
@@ -78,10 +88,12 @@ const sourceOf = ({ recipe }: Pick<AirtimeGrant, "recipe">) =>
 const ITEM_DRAG_TYPE = "application/x-frikanalen-grant-item";
 
 let nextKey = 0;
-const keyed = ({ video, poster }: DraftItem): KeyedItem => ({
+const keyed = ({ video, poster, graphic, duration }: DraftItem): KeyedItem => ({
   key: `item-${nextKey++}`,
   video,
   poster,
+  graphic,
+  duration,
 });
 /**
  * What the editor edits: the pinned items of a self-filling grant, or all of a
@@ -517,6 +529,9 @@ const Editor = ({
                     {row.item.poster ? (
                       <GoNote aria-label="Tekstplakat" className="shrink-0 text-default-600" />
                     ) : null}
+                    {row.item.graphic ? (
+                      <GoDeviceDesktop aria-label="Grafikk" className="shrink-0 text-default-600" />
+                    ) : null}
                     <span className="truncate">{itemName(row.item)}</span>
                   </span>
                   <span className="text-sm text-default-600">
@@ -524,9 +539,7 @@ const Editor = ({
                     {row.item.poster
                       ? ` · tekstplakat, ${TEMPLATE_LABELS[row.item.poster.template].toLowerCase()}`
                       : ""}
-                    {itemStatus(row.item.video) && row.item.video
-                      ? ` · ${itemStatus(row.item.video)}`
-                      : ""}
+                    {itemStatus(row.item) && !row.item.poster ? ` · ${itemStatus(row.item)}` : ""}
                     {row.item.video && row.item.video.organization.id !== grant.organization.id
                       ? ` · ${row.item.video.organization.name}`
                       : ""}
@@ -586,7 +599,7 @@ const Editor = ({
                     <span className="block truncate font-semibold">{itemName(row.item)}</span>
                     <span className="text-sm text-default-600">
                       {formatDuration(itemMilliseconds(row.item))}
-                      {itemStatus(row.item.video) ? ` · ${itemStatus(row.item.video)}` : ""}
+                      {itemStatus(row.item) ? ` · ${itemStatus(row.item)}` : ""}
                     </span>
                   </span>
                   {editable ? (
@@ -751,6 +764,14 @@ const Editor = ({
               }}
               onPick={(poster) => change([...items, keyed(posterItem(poster))])}
             />
+            {isStaff ? (
+              <GraphicPicker
+                remaining={roomForPoster(items, grant)}
+                onPick={(graphic, milliseconds) =>
+                  change([...items, keyed(graphicItem(graphic, milliseconds))])
+                }
+              />
+            ) : null}
           </aside>
         ) : null}
       </div>

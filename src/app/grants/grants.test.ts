@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import type { GrantItemPoster, GrantItemVideo } from "@/generated/frikanalenDjangoAPI.schemas";
 import {
   deadlineText,
+  graphicItem,
+  itemStatus,
   readOnlyReason,
   itemsPayload,
   listMilliseconds,
@@ -27,6 +29,8 @@ const video = (id: number, duration: string): DraftItem => ({
     liveSource: null,
   } satisfies GrantItemVideo,
   poster: null,
+  graphic: null,
+  duration: null,
 });
 
 const poster = (id: number, duration: string): DraftItem => ({
@@ -38,7 +42,12 @@ const poster = (id: number, duration: string): DraftItem => ({
     text: "",
     duration,
   } satisfies GrantItemPoster,
+  graphic: null,
+  duration: null,
 });
+
+const infographics = (minutes: number): DraftItem =>
+  graphicItem({ id: 1, name: "Infografikk", url: "/infographics/" }, minutes * 60_000);
 
 const hour = { starttime: "2026-11-16T18:00:00Z", endtime: "2026-11-16T19:00:00Z" };
 const starts = (items: DraftItem[], window: typeof hour & { padded?: boolean } = hour) =>
@@ -232,5 +241,29 @@ describe("splitItems", () => {
     const { chosen, filled } = splitItems({ recipe: null }, items);
     expect(chosen).toHaveLength(2);
     expect(filled).toEqual([]);
+  });
+
+  describe("graphics", () => {
+    it("follow what is before them, and the next programme starts on the grid", () => {
+      expect(starts([video(1, "00:20:00"), infographics(12), video(2, "00:10:00")])).toEqual([
+        "18:00:00",
+        "18:20:00",
+        "18:35:00",
+      ]);
+    });
+
+    it("are written with their length", () => {
+      expect(itemsPayload([infographics(90)])).toEqual([{ graphic: 1, duration: "01:30:00" }]);
+    });
+
+    it("are told apart by their length too", () => {
+      expect(sameList([infographics(10)], [infographics(10)])).toBe(true);
+      expect(sameList([infographics(10)], [infographics(20)])).toBe(false);
+    });
+
+    it("say what they are", () => {
+      expect(itemStatus(infographics(10))).toBe("grafikk");
+      expect(itemStatus(poster(1, "00:00:30"))).toBe("tekstplakat");
+    });
   });
 });
