@@ -1,6 +1,13 @@
 2025-05-31 
 # Changelog
 
+## [3.11.0](https://github.com/Frikanalen/frontend/compare/v3.10.0...v3.11.0) (2026-11-16)
+
+
+### Features
+
+* **grants:** let staff edit and shorten a grant while it is on air ([#141](https://github.com/Frikanalen/frontend/issues/141)) ([fa451b0](https://github.com/Frikanalen/frontend/commit/fa451b0b2701971bef768a5fc14f33f026f13cba))
+
 ## [3.10.0](https://github.com/Frikanalen/frontend/compare/v3.9.0...v3.10.0) (2026-11-16)
 
 
