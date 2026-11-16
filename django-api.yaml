@@ -17985,6 +17985,10 @@ components:
           description: Whether the requesting user may replace the list right now.
           type: boolean
           readOnly: true
+        startedItems:
+          description: How many entries at the head of the list have aired, are on air or start within seconds. An edit must keep them first, as they are; staff may change the rest, and move the end, while the grant is on air.
+          type: integer
+          readOnly: true
       required:
         - canEdit
         - endtime
@@ -17997,6 +18001,7 @@ components:
         - originSlot
         - padded
         - recipe
+        - startedItems
         - starttime
         - state
     AirtimeGrantCreateRequest:
@@ -25039,7 +25044,7 @@ components:
       required:
         - email
     PatchedAirtimeGrantUpdateRequest:
-      description: Staff cancels a grant, moves its deadline or exempts it from locking.
+      description: Staff cancels a grant, moves its deadline or end, or exempts it from locking.
       type: object
       properties:
         state:
@@ -25054,6 +25059,10 @@ components:
           format: date-time
         lockExempt:
           type: boolean
+        endtime:
+          description: Move the end, even while the grant is on air, but not before the end of what is on air. Entries that no longer fit come off the list. A later end needs the extra time to be free.
+          type: string
+          format: date-time
     PatchedAsRunRequest:
       description: |-
         One entry in the playout log: a video or a named programme, and

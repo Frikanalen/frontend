@@ -102,18 +102,45 @@ export type TimelineRow<T extends DraftItem> = {
   overruns: boolean;
 };
 
-type Layout = Pick<AirtimeGrant, "starttime" | "endtime"> & { padded?: boolean };
+type Layout = Pick<AirtimeGrant, "starttime" | "endtime"> & {
+  padded?: boolean;
+  /** On air: how many entries at the head have aired or are on air. */
+  startedItems?: number;
+};
+
+/** What starts this soon counts as on air (ON_AIR_MARGIN in django-api). */
+export const ON_AIR_MARGIN_MILLISECONDS = 30 * 1000;
+
+/** Whether the grant is on air: started, or starting within the margin, and not over. */
+export const isOnAir = (grant: Pick<AirtimeGrant, "starttime" | "endtime">, now: number) =>
+  Date.parse(grant.starttime) <= now + ON_AIR_MARGIN_MILLISECONDS &&
+  Date.parse(grant.endtime) > now;
 
 /**
  * When each entry would play, as the compiler lays them out, plus whatever is
  * left over at the end, which airs graphics. `end` is when the list ends.
  */
-export const timeline = <T extends DraftItem>(items: readonly T[], grant: Layout) => {
+export const timeline = <T extends DraftItem>(
+  items: readonly T[],
+  grant: Layout,
+  now: number = Date.now(),
+) => {
   const windowEnd = new Date(grant.endtime).getTime();
   const padded = grant.padded ?? true;
   let cursor = new Date(grant.starttime).getTime();
   let previous: T | undefined;
-  const rows: TimelineRow<T>[] = items.map((item) => {
+  // On air, what comes after the started entries can't begin in the past:
+  // the server lays it out from now (on the grid) if graphics are showing.
+  const startedItems = grant.startedItems;
+  const onAir = startedItems !== undefined && isOnAir(grant, now);
+  const rows: TimelineRow<T>[] = items.map((item, index) => {
+    if (onAir && index === startedItems) {
+      const earliest = now + ON_AIR_MARGIN_MILLISECONDS;
+      if (cursor < earliest) {
+        cursor = padded ? upToGrid(earliest) : earliest;
+        previous = undefined;
+      }
+    }
     const start = nextStart(cursor, previous, item, padded);
     const gapBefore = start > cursor ? { start: new Date(cursor), end: new Date(start) } : null;
     cursor = start + itemMilliseconds(item);
