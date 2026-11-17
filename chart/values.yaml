@@ -9,6 +9,8 @@ podDisruptionBudget:
 
 image:
   repository: ghcr.io/frikanalen/frontend
+  # Empty = v<Chart.Version>: the chart at a release tag runs that release's
+  # image, so a deploy only names the version once (targetRevision).
   tag: ""
   pullPolicy: Always
 
