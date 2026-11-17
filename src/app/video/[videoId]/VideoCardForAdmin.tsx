@@ -5,6 +5,7 @@ import VideoPlayer from "@/components/stream/VideoPlayer";
 import { djangoVideoFilesToVidstackSrcList } from "@/app/video/[videoId]/VideoCard";
 import { VideoCardMeta } from "@/app/video/[videoId]/VideoCardMeta";
 import { VideoStage } from "@/app/video/[videoId]/VideoStage";
+import { LiveProgrammeStage, isAwaitingLiveAiring } from "@/app/video/[videoId]/LiveProgrammeStage";
 import { ProgressBar } from "@heroui/react";
 import { Notice } from "@/components/Notice";
 
@@ -28,7 +29,9 @@ export const VideoCardForAdmin = ({
   });
   const video = videoResponse?.data ?? initialVideo;
   const videoFiles = djangoVideoFilesToVidstackSrcList(video.files);
-  const mediaPending = !videoFiles.length;
+  // A live programme without a file is not being processed: it has yet to air.
+  const awaitingLive = isAwaitingLiveAiring(video, videoFiles.length > 0);
+  const mediaPending = !videoFiles.length && !awaitingLive;
   const previewPlaying = Boolean(video.files.dashPreview && !video.files.dash);
   const { description } = useIngestProgress(video.id, previewPlaying || mediaPending);
 
@@ -36,14 +39,18 @@ export const VideoCardForAdmin = ({
   return (
     <VideoStage
       player={
-        <VideoPlayer
-          key={videoFiles[0] ? String(videoFiles[0].src) : "pending"}
-          title={video.name}
-          src={videoFiles}
-          poster={video.files.largeThumb?.url}
-          mediaPending={mediaPending}
-          startTime={startTime}
-        />
+        awaitingLive ? (
+          <LiveProgrammeStage video={video} />
+        ) : (
+          <VideoPlayer
+            key={videoFiles[0] ? String(videoFiles[0].src) : "pending"}
+            title={video.name}
+            src={videoFiles}
+            poster={video.files.largeThumb?.url}
+            mediaPending={mediaPending}
+            startTime={startTime}
+          />
+        )
       }
     >
       {previewPlaying && (
