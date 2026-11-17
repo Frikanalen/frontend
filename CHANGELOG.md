@@ -1,6 +1,18 @@
 2025-05-31 
 # Changelog
 
+## [3.13.0](https://github.com/Frikanalen/frontend/compare/v3.12.0...v3.13.0) (2026-11-17)
+
+
+### Features
+
+* **video:** show a live programme that hasn't aired as coming, not as processing ([#147](https://github.com/Frikanalen/frontend/issues/147)) ([dd1c31b](https://github.com/Frikanalen/frontend/commit/dd1c31be3096eaf0ca262ee4103cbe369588ca0a))
+
+
+### Bug Fixes
+
+* **chart:** default image tag to v&lt;Chart.Version&gt; ([#149](https://github.com/Frikanalen/frontend/issues/149)) ([17310ee](https://github.com/Frikanalen/frontend/commit/17310ee1ce35183a8fec7dfbdb9a873964d33304))
+
 ## [3.12.0](https://github.com/Frikanalen/frontend/compare/v3.11.0...v3.12.0) (2026-11-16)
 
 
