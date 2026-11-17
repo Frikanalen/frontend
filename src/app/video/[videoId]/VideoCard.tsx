@@ -15,6 +15,7 @@ import {
 } from "@vidstack/react";
 import { VideoStage } from "@/app/video/[videoId]/VideoStage";
 import { VideoCardMeta } from "@/app/video/[videoId]/VideoCardMeta";
+import { LiveProgrammeStage, isAwaitingLiveAiring } from "@/app/video/[videoId]/LiveProgrammeStage";
 
 // Ordered by preference: vidstack plays the first source it finds a provider for,
 // so DASH wins wherever Media Source Extensions are available and the progressive
@@ -61,15 +62,20 @@ export const djangoVideoFilesToVidstackSrcList = (
 
 export const VideoCard = ({ video, startTime }: { video: Video; startTime?: number }) => {
   if (!video.organization.fkmember) return notFound();
+  const src = djangoVideoFilesToVidstackSrcList(video.files);
   return (
     <VideoStage
       player={
-        <VideoPlayer
-          title={video.name}
-          src={djangoVideoFilesToVidstackSrcList(video.files)}
-          poster={video.files.largeThumb?.url}
-          startTime={startTime}
-        />
+        isAwaitingLiveAiring(video, src.length > 0) ? (
+          <LiveProgrammeStage video={video} />
+        ) : (
+          <VideoPlayer
+            title={video.name}
+            src={src}
+            poster={video.files.largeThumb?.url}
+            startTime={startTime}
+          />
+        )
       }
     >
       <VideoCardMeta video={video} />

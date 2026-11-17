@@ -22967,6 +22967,25 @@ components:
         - lastUsedAt
         - password
         - revokedAt
+    LiveAiring:
+      description: One coming live airing of a video, in the channel's own time zone.
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        starttime:
+          type: string
+          format: date-time
+          readOnly: true
+        endtime:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+        - endtime
+        - id
+        - starttime
     LiveSource:
       type: object
       properties:
@@ -32965,6 +32984,12 @@ components:
           description: "Makes the video a live programme: it airs from this live source, one of the organization's own, until it has a file. Null for none."
           type: integer
           nullable: true
+        liveAirings:
+          description: 'The live airings of a live programme that have not ended yet, soonest first: when it goes out, and whether it is on air now. Empty for a video without a live source, and once it has a file.'
+          type: array
+          items:
+            $ref: '#/components/schemas/LiveAiring'
+          readOnly: true
         createdTime:
           description: Time the program record was created
           type: string
@@ -32987,6 +33012,7 @@ components:
         - durationSec
         - files
         - id
+        - liveAirings
         - name
         - organization
         - series
