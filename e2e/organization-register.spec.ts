@@ -114,3 +114,34 @@ test("sends the number along with the new organization", async ({ page }) => {
     streetAddress: "Testgata 1\n0150 OSLO",
   });
 });
+
+test("will not create an organization without its number", async ({ page }) => {
+  const created = await resolveWith(page, "/api/organization", { id: 99 });
+
+  await fillAndConfirm(page.getByLabel("Organisasjonens navn"), "Testforeningen");
+  await page.getByRole("button", { name: "Opprett organisasjon" }).click();
+
+  const orgnr = page.getByLabel("Organisasjonsnummer");
+  await expect(orgnr).toHaveJSProperty("required", true);
+  await expect
+    .poll(() => orgnr.evaluate((input: HTMLInputElement) => input.validity.valid))
+    .toBe(false);
+  expect(created).toHaveLength(0);
+});
+
+test("sends the organization's own phone number", async ({ page }) => {
+  await resolveWith(page, LOOKUP, entity);
+  const created = await resolveWith(page, "/api/organization", { id: 99 });
+  await page.route("**/organization/99/start", (route) =>
+    route.fulfill({ status: 200, contentType: "text/html", body: "<html>ok</html>" }),
+  );
+
+  await fillAndConfirm(page.getByLabel("Organisasjonsnummer"), ORGNR);
+  await fetchButton(page).click();
+  await expect(page.getByLabel("Organisasjonens navn")).toHaveValue("TESTFORENINGEN");
+  await fillAndConfirm(page.getByLabel("Organisasjonens telefonnummer"), "22 33 44 55");
+  await page.getByRole("button", { name: "Opprett organisasjon" }).click();
+
+  await expect.poll(() => created.length).toBe(1);
+  expect(created[0]).toMatchObject({ orgnr: ORGNR, phoneNumber: "22 33 44 55" });
+});

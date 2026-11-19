@@ -31,8 +31,6 @@ export default async function Page({ params }: { params: Promise<{ organizationI
   const steps = onboardingSteps({
     organizationId,
     loggedIn: true,
-    identityConfirmed: user.identityConfirmed,
-    isStaff: user.isStaff,
     isMember: organization.fkmember,
   });
   const next = nextStep(steps);

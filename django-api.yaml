@@ -24877,6 +24877,9 @@ components:
         orgnr:
           type: string
           maxLength: 255
+        phoneNumber:
+          description: The organization's own phone number. Norwegian numbers may omit +47.
+          type: string
         postalAddress:
           type: string
           maxLength: 2048
@@ -24899,7 +24902,10 @@ components:
           nullable: true
           readOnly: true
         editorMsisdn:
-          description: The editor's number in international format, or None if there isn't one.
+          description: |-
+            The number listed with the editor information: the organization's
+            own, in international format, or None if it has none. The editor's
+            personal number is never published.
           type: string
           nullable: true
           readOnly: true
@@ -24918,6 +24924,7 @@ components:
         - id
         - isRogue
         - name
+        - orgnr
     OrganizationCreateDescriptionErrorComponent:
       type: object
       properties:
@@ -24955,6 +24962,7 @@ components:
           homepage: '#/components/schemas/OrganizationCreateHomepageErrorComponent'
           description: '#/components/schemas/OrganizationCreateDescriptionErrorComponent'
           orgnr: '#/components/schemas/OrganizationCreateOrgnrErrorComponent'
+          phone_number: '#/components/schemas/OrganizationCreatePhoneNumberErrorComponent'
           postal_address: '#/components/schemas/OrganizationCreatePostalAddressErrorComponent'
           street_address: '#/components/schemas/OrganizationCreateStreetAddressErrorComponent'
       oneOf:
@@ -24963,6 +24971,7 @@ components:
         - $ref: '#/components/schemas/OrganizationCreateHomepageErrorComponent'
         - $ref: '#/components/schemas/OrganizationCreateDescriptionErrorComponent'
         - $ref: '#/components/schemas/OrganizationCreateOrgnrErrorComponent'
+        - $ref: '#/components/schemas/OrganizationCreatePhoneNumberErrorComponent'
         - $ref: '#/components/schemas/OrganizationCreatePostalAddressErrorComponent'
         - $ref: '#/components/schemas/OrganizationCreateStreetAddressErrorComponent'
     OrganizationCreateErrorResponse400:
@@ -25068,11 +25077,39 @@ components:
             * `max_length` - max_length
             * `null` - null
             * `null_characters_not_allowed` - null_characters_not_allowed
+            * `required` - required
             * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed
           type: string
           enum:
             - invalid
             - max_length
+            - 'null'
+            - null_characters_not_allowed
+            - required
+            - surrogate_characters_not_allowed
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    OrganizationCreatePhoneNumberErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `phone_number` - phone_number'
+          type: string
+          enum:
+            - phone_number
+        code:
+          description: |-
+            * `invalid` - invalid
+            * `null` - null
+            * `null_characters_not_allowed` - null_characters_not_allowed
+            * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed
+          type: string
+          enum:
+            - invalid
             - 'null'
             - null_characters_not_allowed
             - surrogate_characters_not_allowed
@@ -25366,6 +25403,7 @@ components:
           homepage: '#/components/schemas/OrganizationPartialUpdateHomepageErrorComponent'
           description: '#/components/schemas/OrganizationPartialUpdateDescriptionErrorComponent'
           orgnr: '#/components/schemas/OrganizationPartialUpdateOrgnrErrorComponent'
+          phone_number: '#/components/schemas/OrganizationPartialUpdatePhoneNumberErrorComponent'
           postal_address: '#/components/schemas/OrganizationPartialUpdatePostalAddressErrorComponent'
           street_address: '#/components/schemas/OrganizationPartialUpdateStreetAddressErrorComponent'
       oneOf:
@@ -25374,6 +25412,7 @@ components:
         - $ref: '#/components/schemas/OrganizationPartialUpdateHomepageErrorComponent'
         - $ref: '#/components/schemas/OrganizationPartialUpdateDescriptionErrorComponent'
         - $ref: '#/components/schemas/OrganizationPartialUpdateOrgnrErrorComponent'
+        - $ref: '#/components/schemas/OrganizationPartialUpdatePhoneNumberErrorComponent'
         - $ref: '#/components/schemas/OrganizationPartialUpdatePostalAddressErrorComponent'
         - $ref: '#/components/schemas/OrganizationPartialUpdateStreetAddressErrorComponent'
     OrganizationPartialUpdateErrorResponse400:
@@ -25479,11 +25518,39 @@ components:
             * `max_length` - max_length
             * `null` - null
             * `null_characters_not_allowed` - null_characters_not_allowed
+            * `required` - required
             * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed
           type: string
           enum:
             - invalid
             - max_length
+            - 'null'
+            - null_characters_not_allowed
+            - required
+            - surrogate_characters_not_allowed
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    OrganizationPartialUpdatePhoneNumberErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `phone_number` - phone_number'
+          type: string
+          enum:
+            - phone_number
+        code:
+          description: |-
+            * `invalid` - invalid
+            * `null` - null
+            * `null_characters_not_allowed` - null_characters_not_allowed
+            * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed
+          type: string
+          enum:
+            - invalid
             - 'null'
             - null_characters_not_allowed
             - surrogate_characters_not_allowed
@@ -25575,6 +25642,9 @@ components:
         orgnr:
           type: string
           maxLength: 255
+        phoneNumber:
+          description: The organization's own phone number. Norwegian numbers may omit +47.
+          type: string
         postalAddress:
           type: string
           maxLength: 2048
@@ -25587,6 +25657,7 @@ components:
           title: Street address for organization.
       required:
         - name
+        - orgnr
     OrganizationRetrieveErrorResponse400:
       discriminator:
         propertyName: type
@@ -25631,6 +25702,7 @@ components:
           homepage: '#/components/schemas/OrganizationUpdateHomepageErrorComponent'
           description: '#/components/schemas/OrganizationUpdateDescriptionErrorComponent'
           orgnr: '#/components/schemas/OrganizationUpdateOrgnrErrorComponent'
+          phone_number: '#/components/schemas/OrganizationUpdatePhoneNumberErrorComponent'
           postal_address: '#/components/schemas/OrganizationUpdatePostalAddressErrorComponent'
           street_address: '#/components/schemas/OrganizationUpdateStreetAddressErrorComponent'
       oneOf:
@@ -25639,6 +25711,7 @@ components:
         - $ref: '#/components/schemas/OrganizationUpdateHomepageErrorComponent'
         - $ref: '#/components/schemas/OrganizationUpdateDescriptionErrorComponent'
         - $ref: '#/components/schemas/OrganizationUpdateOrgnrErrorComponent'
+        - $ref: '#/components/schemas/OrganizationUpdatePhoneNumberErrorComponent'
         - $ref: '#/components/schemas/OrganizationUpdatePostalAddressErrorComponent'
         - $ref: '#/components/schemas/OrganizationUpdateStreetAddressErrorComponent'
     OrganizationUpdateErrorResponse400:
@@ -25744,11 +25817,39 @@ components:
             * `max_length` - max_length
             * `null` - null
             * `null_characters_not_allowed` - null_characters_not_allowed
+            * `required` - required
             * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed
           type: string
           enum:
             - invalid
             - max_length
+            - 'null'
+            - null_characters_not_allowed
+            - required
+            - surrogate_characters_not_allowed
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
+    OrganizationUpdatePhoneNumberErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `phone_number` - phone_number'
+          type: string
+          enum:
+            - phone_number
+        code:
+          description: |-
+            * `invalid` - invalid
+            * `null` - null
+            * `null_characters_not_allowed` - null_characters_not_allowed
+            * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed
+          type: string
+          enum:
+            - invalid
             - 'null'
             - null_characters_not_allowed
             - surrogate_characters_not_allowed
@@ -26367,6 +26468,9 @@ components:
         orgnr:
           type: string
           maxLength: 255
+        phoneNumber:
+          description: The organization's own phone number. Norwegian numbers may omit +47.
+          type: string
         postalAddress:
           type: string
           maxLength: 2048
@@ -27267,8 +27371,10 @@ components:
           type: string
           readOnly: true
         fkmember:
+          description: Tick when the editor's signed affidavit has been received. This approves the membership and confirms the editor's identity.
           type: boolean
           readOnly: true
+          title: Member
       required:
         - fkmember
         - id
@@ -31820,7 +31926,7 @@ components:
           type: boolean
           readOnly: true
         identityConfirmed:
-          description: Whether the identity of this user has been confirmed by Frikanalen management.
+          description: Set automatically when the signed affidavit of an organization this user edits is received (the organization is made a member). Tick by hand only for someone who is not an editor.
           type: boolean
           readOnly: true
         dateJoined:

@@ -40,6 +40,14 @@ export const EditorInfo = ({ organization }: { organization: Organization }) => 
                 </Link>
               )}
             </Row>
+            {/* The organization's own number: the editor's personal one is never listed. */}
+            <Row label={"Telefon:"}>
+              {organization.editorMsisdn && (
+                <Link href={`tel:${organization.editorMsisdn.replace(/\s/g, "")}`}>
+                  {organization.editorMsisdn}
+                </Link>
+              )}
+            </Row>
             <Row label={"Postadresse:"}>{organization.postalAddress?.trim()}</Row>
             <Row label={"Besøksadresse:"}>{organization.streetAddress?.trim()}</Row>
           </dl>

@@ -77,9 +77,9 @@ export const OrgCreateForm = ({ className }: { className?: string }) => {
   const form = useForm<OrganizationRequest>();
   const { register } = form;
   // Controlled, so what the register fills in shows up in the fields.
-  const [name, homepage, description, streetAddress, postalAddress] = useWatch({
+  const [name, homepage, description, streetAddress, postalAddress, phoneNumber] = useWatch({
     control: form.control,
-    name: ["name", "homepage", "description", "streetAddress", "postalAddress"],
+    name: ["name", "homepage", "description", "streetAddress", "postalAddress", "phoneNumber"],
   });
   const { lookup, canFetch, fetch } = useBrregLookup(
     useWatch({ control: form.control, name: "orgnr" }),
@@ -111,8 +111,9 @@ export const OrgCreateForm = ({ className }: { className?: string }) => {
               label={"Organisasjonsnummer"}
               labelPlacement={"outside-top"}
               description={
-                "Fra Brønnøysundregistrene. Hent opplysningene derfra, eller la feltet stå tomt hvis organisasjonen ikke har et."
+                "Fra Brønnøysundregistrene. Organisasjonen må være registrert i Enhetsregisteret. Hent opplysningene derfra og se over feltene under."
               }
+              isRequired
               inputMode={"numeric"}
               autoComplete={"off"}
               id="org-orgnr"
@@ -122,7 +123,9 @@ export const OrgCreateForm = ({ className }: { className?: string }) => {
               {...register("orgnr", {
                 setValueAs: (value: string) => normalizeOrgnr(value ?? ""),
                 validate: (value) =>
-                  !value || isValidOrgnr(value) || "Organisasjonsnummeret er ikke gyldig.",
+                  !value
+                    ? "Fyll inn organisasjonsnummeret."
+                    : isValidOrgnr(value) || "Organisasjonsnummeret er ikke gyldig.",
               })}
             />
             <Button
@@ -151,6 +154,22 @@ export const OrgCreateForm = ({ className }: { className?: string }) => {
           id="org-homepage"
           {...register("homepage")}
           value={homepage ?? ""}
+        />
+        <FormInput
+          label={"Organisasjonens telefonnummer"}
+          labelPlacement={"outside-top"}
+          description={
+            "Vises sammen med redaktørinformasjonen. Ikke bruk ditt private nummer. La feltet stå tomt hvis organisasjonen ikke har et."
+          }
+          type={"tel"}
+          inputMode={"tel"}
+          autoComplete={"off"}
+          id="org-phoneNumber"
+          className="w-full sm:max-w-xs"
+          isInvalid={!!form.formState.errors.phoneNumber}
+          errorMessage={form.formState.errors.phoneNumber?.message}
+          {...register("phoneNumber")}
+          value={phoneNumber ?? ""}
         />
         <FormTextArea
           label={"En kort beskrivelse av organisasjonen"}

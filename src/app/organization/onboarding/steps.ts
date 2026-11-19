@@ -19,7 +19,7 @@ export type StepState =
 export type StepAction = { href: string; label: string };
 
 export type OnboardingStep = {
-  id: "account" | "organization" | "affidavit" | "identity";
+  id: "account" | "organization" | "affidavit";
   title: string;
   text: string;
   state: StepState;
@@ -30,17 +30,17 @@ export type OnboardingFacts = {
   /** Null before the organization exists. */
   organizationId: number | null;
   loggedIn: boolean;
-  identityConfirmed: boolean;
-  /** Staff are exempt from the identity check, as on the scheduling pages. */
-  isStaff: boolean;
-  /** Frikanalen has received the editor's declaration and approved membership. */
+  /**
+   * Frikanalen has received the editor's signed declaration and approved
+   * membership. Receiving it is also what confirms the editor's identity, so
+   * there is no separate step for that.
+   */
   isMember: boolean;
 };
 
 export const onboardingSteps = (facts: OnboardingFacts): OnboardingStep[] => {
   const { organizationId: id, loggedIn, isMember } = facts;
   const registered = id !== null;
-  const identityOk = facts.identityConfirmed || facts.isStaff;
 
   return [
     {
@@ -58,7 +58,7 @@ export const onboardingSteps = (facts: OnboardingFacts): OnboardingStep[] => {
     {
       id: "organization",
       title: "Registrer organisasjonen",
-      text: "Navn, adresse og en kort beskrivelse. Redaktørens navn og kontaktinformasjon blir offentlig, slik kringkastingsloven krever.",
+      text: "Organisasjonsnummer, navn, adresse og en kort beskrivelse. Redaktørens navn og kontaktinformasjon blir offentlig, slik kringkastingsloven krever.",
       state: registered ? "done" : loggedIn ? "todo" : "blocked",
       actions:
         registered || !loggedIn
@@ -69,24 +69,17 @@ export const onboardingSteps = (facts: OnboardingFacts): OnboardingStep[] => {
       id: "affidavit",
       title: "Send inn redaktørerklæringen",
       text: isMember
-        ? "Frikanalen har mottatt erklæringen og godkjent medlemskapet."
-        : "Redaktøren signerer en erklæring om redaktøransvar og sender den til foreningen per post. Når brevet er mottatt, godkjenner Frikanalen medlemskapet.",
+        ? "Frikanalen har mottatt erklæringen, godkjent medlemskapet og bekreftet redaktørens identitet."
+        : "Redaktøren skriver ut erklæringen om redaktøransvar, signerer den og sender den til foreningen per post. Når brevet er mottatt, godkjenner Frikanalen medlemskapet. Det bekrefter også redaktørens identitet.",
       state: isMember ? "done" : registered ? "waiting" : "blocked",
       actions: isMember
         ? []
         : [
-            { href: "/about/join/affidavit", label: "Se erklæringen" },
+            registered
+              ? { href: `/organization/${id}/affidavit`, label: "Skriv ut erklæringen" }
+              : { href: "/about/join/affidavit", label: "Se erklæringen" },
             { href: "/about/join", label: "Kontingent og vilkår" },
           ],
-    },
-    {
-      id: "identity",
-      title: "Få identiteten din bekreftet",
-      text: identityOk
-        ? "Frikanalen har bekreftet hvem du er."
-        : "Frikanalen må vite hvem som setter opp sendinger. Ta kontakt, så bekrefter vi identiteten din.",
-      state: identityOk ? "done" : loggedIn ? "waiting" : "blocked",
-      actions: identityOk || !loggedIn ? [] : [{ href: "/about/contact", label: "Ta kontakt" }],
     },
   ];
 };
