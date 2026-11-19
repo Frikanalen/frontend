@@ -1,6 +1,21 @@
 2025-05-31 
 # Changelog
 
+## [3.14.0](https://github.com/Frikanalen/frontend/compare/v3.13.0...v3.14.0) (2026-11-19)
+
+
+### Features
+
+* **schedule:** group the day by whose airtime it is ([#152](https://github.com/Frikanalen/frontend/issues/152)) ([f519696](https://github.com/Frikanalen/frontend/commit/f5196968ae8e3fe3342f251b016851ac9a280807))
+* **schedule:** show the whole day as one list, without day-phase tabs ([#150](https://github.com/Frikanalen/frontend/issues/150)) ([52da0a9](https://github.com/Frikanalen/frontend/commit/52da0a9fad6975affc4f4f4bd0f41091dcb1a465))
+
+
+### Bug Fixes
+
+* **editor:** scroll long descriptions inside the editor instead of spilling over the page ([#154](https://github.com/Frikanalen/frontend/issues/154)) ([03bd43a](https://github.com/Frikanalen/frontend/commit/03bd43a7c4f2410439ec42460011f7d52bd56ba0))
+* let members and staff into the video edit page and Studio pages ([#153](https://github.com/Frikanalen/frontend/issues/153)) ([c276433](https://github.com/Frikanalen/frontend/commit/c2764331182e403c33cf1195711b1848ef3fef57))
+* **video-edit:** show the title, read links in descriptions, and finish the edit page ([#155](https://github.com/Frikanalen/frontend/issues/155)) ([784452e](https://github.com/Frikanalen/frontend/commit/784452e3baf08fbabd3d593ee76ef0616caf6441))
+
 ## [3.13.0](https://github.com/Frikanalen/frontend/compare/v3.12.0...v3.13.0) (2026-11-17)
 
 
