@@ -3513,6 +3513,138 @@ paths:
         - cookieAuth: []
       tags:
         - grants
+  /api/grants/public:
+    get:
+      operationId: grants_public_list
+      description: |-
+        Whose airtime it is, for everyone: the grants that touch the given
+        days, with only their organization and window. The public schedule
+        shows them around the programmes of /api/scheduleitems, which name
+        their grant.
+      parameters:
+        - name: date
+          in: query
+          description: Europe/Oslo. Today if left out.
+          schema:
+            type: string
+            format: date
+        - name: days
+          in: query
+          description: Number of days. Defaults to 1.
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PublicGrant'
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GrantsPublicListErrorResponse400'
+        '401':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: authentication_failed
+                        detail: Incorrect authentication credentials.
+                        attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_authenticated
+                        detail: Authentication credentials were not provided.
+                        attr: null
+        '404':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+              examples:
+                NotFound:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_found
+                        detail: Not found.
+                        attr: null
+        '405':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse405'
+              examples:
+                MethodNotAllowed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: method_not_allowed
+                        detail: Method "get" not allowed.
+                        attr: null
+        '406':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse406'
+              examples:
+                NotAcceptable:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_acceptable
+                        detail: Could not satisfy the request Accept header.
+                        attr: null
+        '415':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse415'
+              examples:
+                UnsupportedMediaType:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: unsupported_media_type
+                        detail: Unsupported media type "application/json" in request.
+                        attr: null
+        '500':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+              examples:
+                APIException:
+                  value:
+                    type: server_error
+                    errors:
+                      - code: error
+                        detail: A server error occurred.
+                        attr: null
+      security:
+        - tokenAuth: []
+        - cookieAuth: []
+        - {}
+      tags:
+        - grants
   /api/graphics:
     get:
       operationId: graphics_list
@@ -22447,6 +22579,13 @@ components:
       required:
         - errors
         - type
+    GrantsPublicListErrorResponse400:
+      discriminator:
+        propertyName: type
+        mapping:
+          client_error: '#/components/schemas/ParseErrorResponse'
+      oneOf:
+        - $ref: '#/components/schemas/ParseErrorResponse'
     GrantsRetrieveErrorResponse400:
       discriminator:
         propertyName: type
@@ -22997,6 +23136,8 @@ components:
           maxLength: 100
         enabled:
           type: boolean
+        logoPosition:
+          $ref: '#/components/schemas/LogoPositionEnum'
         isPulled:
           type: boolean
           readOnly: true
@@ -23047,6 +23188,8 @@ components:
           minLength: 1
         enabled:
           type: boolean
+        logoPosition:
+          $ref: '#/components/schemas/LogoPositionEnum'
         pullUrl:
           description: An address Frikanalen pulls this source from (srt://, rtmp(s)://, rtsp(s)://, or https:// for HLS), instead of an encoder pushing to it. Empty makes it a pushed source again. Never returned; see pull_target.
           type: string
@@ -23195,11 +23338,13 @@ components:
           non_field_errors: '#/components/schemas/LiveSourcesPartialUpdateNonFieldErrorsErrorComponent'
           name: '#/components/schemas/LiveSourcesPartialUpdateNameErrorComponent'
           enabled: '#/components/schemas/LiveSourcesPartialUpdateEnabledErrorComponent'
+          logo_position: '#/components/schemas/LiveSourcesPartialUpdateLogoPositionErrorComponent'
           pull_url: '#/components/schemas/LiveSourcesPartialUpdatePullUrlErrorComponent'
       oneOf:
         - $ref: '#/components/schemas/LiveSourcesPartialUpdateNonFieldErrorsErrorComponent'
         - $ref: '#/components/schemas/LiveSourcesPartialUpdateNameErrorComponent'
         - $ref: '#/components/schemas/LiveSourcesPartialUpdateEnabledErrorComponent'
+        - $ref: '#/components/schemas/LiveSourcesPartialUpdateLogoPositionErrorComponent'
         - $ref: '#/components/schemas/LiveSourcesPartialUpdatePullUrlErrorComponent'
     LiveSourcesPartialUpdateErrorResponse400:
       discriminator:
@@ -23210,6 +23355,28 @@ components:
       oneOf:
         - $ref: '#/components/schemas/LiveSourcesPartialUpdateValidationError'
         - $ref: '#/components/schemas/ParseErrorResponse'
+    LiveSourcesPartialUpdateLogoPositionErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `logo_position` - logo_position'
+          type: string
+          enum:
+            - logo_position
+        code:
+          description: |-
+            * `invalid_choice` - invalid_choice
+            * `null` - null
+          type: string
+          enum:
+            - invalid_choice
+            - 'null'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
     LiveSourcesPartialUpdateNameErrorComponent:
       type: object
       properties:
@@ -23359,6 +23526,14 @@ components:
       required:
         - email
         - password
+    LogoPositionEnum:
+      description: |-
+        * `top-right` - Øverst til høyre
+        * `stortinget-clock` - Rundt Stortingets klokke
+      type: string
+      enum:
+        - top-right
+        - stortinget-clock
     Logout:
       description: 'Representation for the logout response: a short human-readable message.'
       type: object
@@ -24637,11 +24812,13 @@ components:
           non_field_errors: '#/components/schemas/OrganizationLiveSourcesCreateNonFieldErrorsErrorComponent'
           name: '#/components/schemas/OrganizationLiveSourcesCreateNameErrorComponent'
           enabled: '#/components/schemas/OrganizationLiveSourcesCreateEnabledErrorComponent'
+          logo_position: '#/components/schemas/OrganizationLiveSourcesCreateLogoPositionErrorComponent'
           pull_url: '#/components/schemas/OrganizationLiveSourcesCreatePullUrlErrorComponent'
       oneOf:
         - $ref: '#/components/schemas/OrganizationLiveSourcesCreateNonFieldErrorsErrorComponent'
         - $ref: '#/components/schemas/OrganizationLiveSourcesCreateNameErrorComponent'
         - $ref: '#/components/schemas/OrganizationLiveSourcesCreateEnabledErrorComponent'
+        - $ref: '#/components/schemas/OrganizationLiveSourcesCreateLogoPositionErrorComponent'
         - $ref: '#/components/schemas/OrganizationLiveSourcesCreatePullUrlErrorComponent'
     OrganizationLiveSourcesCreateErrorResponse400:
       discriminator:
@@ -24652,6 +24829,28 @@ components:
       oneOf:
         - $ref: '#/components/schemas/OrganizationLiveSourcesCreateValidationError'
         - $ref: '#/components/schemas/ParseErrorResponse'
+    OrganizationLiveSourcesCreateLogoPositionErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `logo_position` - logo_position'
+          type: string
+          enum:
+            - logo_position
+        code:
+          description: |-
+            * `invalid_choice` - invalid_choice
+            * `null` - null
+          type: string
+          enum:
+            - invalid_choice
+            - 'null'
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
     OrganizationLiveSourcesCreateNameErrorComponent:
       type: object
       properties:
@@ -25766,6 +25965,8 @@ components:
           minLength: 1
         enabled:
           type: boolean
+        logoPosition:
+          $ref: '#/components/schemas/LogoPositionEnum'
         pullUrl:
           description: An address Frikanalen pulls this source from (srt://, rtmp(s)://, rtsp(s)://, or https:// for HLS), instead of an encoder pushing to it. Empty makes it a pushed source again. Never returned; see pull_target.
           type: string
@@ -26655,6 +26856,30 @@ components:
           $ref: '#/components/schemas/RoleEnum'
       required:
         - role
+    PublicGrant:
+      description: 'Whose airtime a window is: all the public schedule says of a grant.'
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        organization:
+          allOf:
+            - $ref: '#/components/schemas/GrantOrganization'
+          readOnly: true
+        starttime:
+          type: string
+          format: date-time
+          readOnly: true
+        endtime:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+        - endtime
+        - id
+        - organization
+        - starttime
     Recipe:
       description: |-
         How a slot or a grant programs itself.
@@ -29457,8 +29682,13 @@ components:
           type: string
           format: uuid
           readOnly: true
+        logoPosition:
+          description: "How the channel logo sits while the source is on air: top-right (the usual bug) or stortinget-clock (DIREKTE under the clock in Stortinget's feed, the logo to its left), or one added since. Anything unknown is shown top-right."
+          type: string
+          readOnly: true
       required:
         - id
+        - logoPosition
         - streamId
     ScheduleitemModify:
       description: |-
@@ -33113,6 +33343,12 @@ components:
           description: "Makes the video a live programme: it airs from this live source, one of the organization's own, until it has a file. Null for none."
           type: integer
           nullable: true
+        liveAirings:
+          description: 'The live airings of a live programme that have not ended yet, soonest first: when it goes out, and whether it is on air now. Empty for a video without a live source, and once it has a file.'
+          type: array
+          items:
+            $ref: '#/components/schemas/LiveAiring'
+          readOnly: true
         createdTime:
           description: Time the program record was created
           type: string
@@ -33135,6 +33371,7 @@ components:
         - durationSec
         - files
         - id
+        - liveAirings
         - name
         - series
         - updatedTime
