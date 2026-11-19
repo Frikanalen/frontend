@@ -13,26 +13,7 @@ const link = "font-semibold text-link hover:underline";
 /** The steps from a regular slot to what is on air, in the order they happen. */
 const STEPS = [
   {
-    title: "Faste sendeflater",
-    body: (
-      <>
-        <p>
-          Grunnlaget er de faste sendeflatene. En fast sendeflate er et tidsrom som tilhører én
-          medlemsorganisasjon, for eksempel hver torsdag kl. 19.00–20.00. Frikanalen fordeler
-          flatene etter ønske fra medlemmene, og to flater kan aldri overlappe.
-        </p>
-        <p>
-          Alle faste sendeflater er offentlige.{" "}
-          <Link className={link} href="/schedule/slots">
-            Se hvem som har hvilke flater
-          </Link>
-          .
-        </p>
-      </>
-    ),
-  },
-  {
-    title: "Sendetid",
+    title: "Organisasjonen får sendetid",
     body: (
       <>
         <p>
@@ -41,16 +22,25 @@ const STEPS = [
         </p>
         <ul className="list-disc space-y-2 ps-5">
           <li>
-            <strong>Automatisk, fra en fast sendeflate.</strong> Har organisasjonen en fast
-            sendeflate, får den sendetid for hver dag flaten gjelder, uten å måtte be om det.
-            Sendetiden for en uke opprettes natt til mandag to uker før, så organisasjonen har en
-            uke på å planlegge før fristen.
+            <strong>Automatisk, fra en fast sendeflate.</strong> En fast sendeflate er et fast
+            tidsrom som tilhører én medlemsorganisasjon, for eksempel hver torsdag kl. 19.00–20.00.
+            Frikanalen fordeler flatene etter ønske fra medlemmene, og to flater kan aldri
+            overlappe. Organisasjonen får sendetid for hver dag flaten gjelder, uten å måtte be om
+            det. Sendetiden for en uke opprettes natt til mandag to uker før, så organisasjonen har
+            en uke på å planlegge før fristen.
           </li>
           <li>
             <strong>Enkeltvis, etter avtale.</strong> Frikanalen kan også gi sendetid én gang, for
             eksempel til en direktesending eller ett enkelt program.
           </li>
         </ul>
+        <p>
+          Alle faste sendeflater er offentlige.{" "}
+          <Link className={link} href="/schedule/slots">
+            Se hvem som har hvilke flater
+          </Link>
+          .
+        </p>
       </>
     ),
   },
