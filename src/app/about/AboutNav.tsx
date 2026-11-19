@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 
 const SECTIONS = [
   { href: "/about", label: "Om oss", exact: true },
+  { href: "/about/airtime", label: "Sendetid" },
   { href: "/about/join", label: "Bli medlem" },
   { href: "/about/statutes", label: "Vedtekter" },
   { href: "/about/contact", label: "Kontakt" },

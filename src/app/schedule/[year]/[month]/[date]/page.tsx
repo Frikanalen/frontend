@@ -98,9 +98,15 @@ export default function Schedule({ params }: { params: ScheduleParams }) {
           </p>
           <Link
             className="self-start py-1 font-semibold text-primary-700 hover:underline"
-            href="/about"
+            href="/schedule/slots"
           >
-            Om Frikanalen →
+            Faste sendeflater →
+          </Link>
+          <Link
+            className="self-start py-1 font-semibold text-primary-700 hover:underline"
+            href="/about/airtime"
+          >
+            Slik fordeles sendetiden →
           </Link>
         </aside>
       </div>
