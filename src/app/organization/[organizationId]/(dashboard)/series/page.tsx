@@ -15,7 +15,7 @@ export default async function Page({ params }: { params: Promise<{ organizationI
   const headers = await getCookiesFromRequest();
   const user = await getUserOrNull(headers);
   if (!user) return redirect("/login");
-  if (!profileIsAdminOrMember(organizationId, user)) return forbidden();
+  if (!user.isStaff && !profileIsAdminOrMember(organizationId, user)) forbidden();
 
   const response = await organizationRetrieve(organizationId, { headers });
   if (response.status === 404) return notFound();

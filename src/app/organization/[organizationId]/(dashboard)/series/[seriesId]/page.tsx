@@ -22,7 +22,7 @@ export default async function Page({
   const headers = await getCookiesFromRequest();
   const user = await getUserOrNull(headers);
   if (!user) return redirect("/login");
-  if (!profileIsAdminOrMember(organizationId, user)) return forbidden();
+  if (!user.isStaff && !profileIsAdminOrMember(organizationId, user)) forbidden();
 
   const [organizationResponse, seriesResponse] = await Promise.all([
     organizationRetrieve(organizationId, { headers }),
