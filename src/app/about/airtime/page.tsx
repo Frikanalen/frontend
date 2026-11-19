@@ -73,7 +73,7 @@ const STEPS = [
         </p>
         <p>
           Sendetid som ikke er fylt ved fristen, også tid som blir igjen etter siste program, går
-          tapt for organisasjonen. Den kan da brukes av andre organisasjoner. Blir den stående tom,
+          tapt for organisasjonen. Den kan da omdisponeres av Frikanalen. Blir den stående tom,
           viser kanalen grafikk med programoversikt og informasjon.
         </p>
       </>
