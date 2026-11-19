@@ -83,4 +83,41 @@ describe("ScheduleItemList", () => {
     expect(screen.getByText("Direktesending")).toBeDefined();
     expect(screen.queryByText("Presentert av")).toBeNull();
   });
+
+  it("groups programmes under the organization whose airtime it is", () => {
+    const grant = {
+      id: 7,
+      organization: { id: 1, name: "Norsk Presse", fkmember: true },
+      starttime: "2026-08-21T20:00:00+02:00",
+      endtime: "2026-08-21T21:00:00+02:00",
+    };
+    const by = (item: ScheduleitemRead, name: string, grant: number | null) =>
+      ({
+        ...item,
+        grant,
+        video: { ...item.video, organization: { id: item.id, name, description: "" } },
+      }) as ScheduleitemRead;
+    render(
+      <ScheduleItemList
+        items={[
+          { ...evening, grant: 7 },
+          by(program(4, "Gjestespill", "20:30"), "Havneforeningen", 7),
+          by(smallHours, "Frikanalen", null),
+        ]}
+        grants={[
+          grant,
+          { ...grant, id: 8, organization: { id: 9, name: "Sjakklubben", fkmember: true } },
+        ]}
+      />,
+    );
+
+    const heading = screen.getByRole("heading", { name: /Norsk Presse/ });
+    expect(heading.closest("section")!.textContent).toContain("20:00–21:00");
+    // Its own programme does not repeat the name; a guest's names its maker.
+    expect(screen.getAllByText("Norsk Presse")).toHaveLength(1);
+    expect(screen.getByText("Havneforeningen")).toBeDefined();
+    // Outside any grant, and a grant that passed with nothing in it.
+    expect(screen.getByRole("heading", { name: "Fra Frikanalen" })).toBeDefined();
+    expect(screen.getByText("Sendetiden ble ikke brukt.")).toBeDefined();
+  });
 });
