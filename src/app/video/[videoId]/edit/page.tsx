@@ -6,6 +6,7 @@ import {
 } from "@/generated/ssr/videos/videos";
 import { ssrOrganizationLiveSourcesList } from "@/generated/ssr/organization/organization";
 import { forbidden, notFound } from "next/navigation";
+import { profileIsAdminOrMember } from "@/app/organization/[organizationId]/admin/profileIsAdminOrMember";
 import { getUserOrNull } from "@/app/getUserOrNull";
 import { VideoPageProps } from "@/app/video/[videoId]/page";
 import { VideoEditForm } from "@/app/video/[videoId]/edit/VideoEditForm";
@@ -32,7 +33,9 @@ export default async function Page({ params }: VideoPageProps) {
     throw new Error(
       `Unexpected status code ${status} when fetching video ${videoId} from ssrVideosRetrieve`,
     );
-  if (!user?.editorOf.some(({ id }) => id == video.organization.id)) return forbidden();
+  // Same people the API lets change the video: staff, and the organization's
+  // editor and members.
+  if (!user?.isStaff && !profileIsAdminOrMember(video.organization.id, user)) return forbidden();
 
   const [seriesResponse, imagesResponse, uploadTokenResponse, liveSourcesResponse] =
     await Promise.all([

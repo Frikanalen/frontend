@@ -98,7 +98,7 @@ const Video = async ({ params, searchParams }: VideoPageProps) => {
     throw new Error(
       `Unexpected status code ${status} when fetching video ${videoId} from ssrVideosRetrieve`,
     );
-  const mayEdit = profileIsAdminOrMember(video.organization.id, user);
+  const mayEdit = !!user?.isStaff || profileIsAdminOrMember(video.organization.id, user);
 
   return mayEdit ? (
     <VideoCardForAdmin video={video} startTime={startTime} />
