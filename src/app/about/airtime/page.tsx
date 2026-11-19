@@ -28,9 +28,9 @@ const STEPS = [
           <li>
             <strong>Automatisk, fra en fast sendeflate.</strong> En fast sendeflate er et fast
             tidsrom som tilhører én medlemsorganisasjon, for eksempel hver torsdag kl. 19.00–20.00.
-            To flater kan aldri overlappe. Organisasjonen får sendetid for hver dag flaten gjelder,
-            uten å måtte be om det. Sendetiden for en uke opprettes natt til mandag to uker før, så
-            organisasjonen har en uke på å planlegge før fristen.
+            Organisasjonen får sendetid for hver dag flaten gjelder, uten å måtte be om det.
+            Sendetiden for en uke opprettes natt til mandag to uker før, så organisasjonen har en
+            uke på å planlegge før fristen.
           </li>
           <li>
             <strong>Enkeltvis, etter avtale.</strong> Frikanalen kan også gi sendetid én gang, for
