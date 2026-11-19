@@ -20,7 +20,7 @@ export default async function Page({ params }: { params: Promise<{ organizationI
   if (orgRes.status === 404) return notFound();
 
   const organization = orgRes.data;
-  if (!profileIsAdminOrMember(organizationId, user)) throw forbidden();
+  if (!user.isStaff && !profileIsAdminOrMember(organizationId, user)) forbidden();
 
   return <OrgAdminPage organization={organization} />;
 }
