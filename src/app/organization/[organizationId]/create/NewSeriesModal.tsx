@@ -47,7 +47,7 @@ export const NewSeriesModal = ({
     <Modal isOpen={isOpen} onOpenChange={handleOpenChange}>
       <Modal.Backdrop isDismissable={!isSubmitting}>
         <Modal.Container
-          size="lg"
+            size="lg"
           scroll="inside"
           className="m-0 h-[100dvh] max-h-[100dvh] max-w-full rounded-none sm:m-6 sm:h-auto sm:max-h-[calc(100dvh-3rem)] sm:max-w-3xl sm:rounded-large"
         >
