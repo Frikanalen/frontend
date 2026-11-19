@@ -17,17 +17,20 @@ const STEPS = [
     body: (
       <>
         <p>
-          En sendetid er et konkret tidsrom på en bestemt dag som tilhører én organisasjon. Det er
-          to måter å få sendetid på:
+          En sendetid er et konkret tidsrom på en bestemt dag som tilhører én organisasjon. Styret
+          administrerer sendeplanen etter føringer fra generalforsamlingen og{" "}
+          <Link className={link} href="/about/statutes">
+            vedtektene
+          </Link>
+          . Det er to måter å få sendetid på:
         </p>
         <ul className="list-disc space-y-2 ps-5">
           <li>
             <strong>Automatisk, fra en fast sendeflate.</strong> En fast sendeflate er et fast
             tidsrom som tilhører én medlemsorganisasjon, for eksempel hver torsdag kl. 19.00–20.00.
-            Frikanalen fordeler flatene etter ønske fra medlemmene, og to flater kan aldri
-            overlappe. Organisasjonen får sendetid for hver dag flaten gjelder, uten å måtte be om
-            det. Sendetiden for en uke opprettes natt til mandag to uker før, så organisasjonen har
-            en uke på å planlegge før fristen.
+            To flater kan aldri overlappe. Organisasjonen får sendetid for hver dag flaten gjelder,
+            uten å måtte be om det. Sendetiden for en uke opprettes natt til mandag to uker før, så
+            organisasjonen har en uke på å planlegge før fristen.
           </li>
           <li>
             <strong>Enkeltvis, etter avtale.</strong> Frikanalen kan også gi sendetid én gang, for
@@ -72,6 +75,11 @@ const STEPS = [
           Trenger en organisasjon å endre noe etter fristen, for eksempel rundt en direktesending,
           kan den be Frikanalen om det.
         </p>
+        <p>
+          Sendetid som ikke er fylt ved fristen, også tid som blir igjen etter siste program, går
+          tapt for organisasjonen. Den kan da brukes av andre organisasjoner. Blir den stående tom,
+          viser kanalen grafikk med programoversikt og informasjon.
+        </p>
       </>
     ),
   },
@@ -102,32 +110,10 @@ export default function Airtime() {
       </ol>
 
       <section className="max-w-3xl space-y-3 text-default-800">
-        <h2 className="text-2xl font-bold text-foreground">Tid uten program</h2>
-        <p>
-          Bruker ikke organisasjonen sendetiden sin, eller blir det tid igjen etter siste program,
-          viser kanalen grafikk med programoversikt og informasjon. Det samme gjelder tid som ikke
-          hører til noen sendetid.
-        </p>
-      </section>
-
-      <section className="max-w-3xl space-y-3 text-default-800">
         <h2 className="text-2xl font-bold text-foreground">Frikanalens egne sendinger</h2>
         <p>
           I tid som ikke er gitt til et medlem, setter Frikanalen selv opp sendinger: programmer fra
           arkivet, sendinger vi formidler videre, som Stortingets møter, og informasjon til seerne.
-        </p>
-      </section>
-
-      <section className="max-w-3xl space-y-3 text-default-800">
-        <h2 className="text-2xl font-bold text-foreground">Hvem bestemmer?</h2>
-        <p>
-          Frikanalen er en demokratisk medlemsorganisasjon, og medlemmene velger styret på årsmøtet.
-          Slik praktiserer vi fordelingen i dag: styret har ansvaret for kanalen, og
-          administrasjonen fordeler sendetiden etter ønsker fra medlemmene. Praksisen kan endre seg.{" "}
-          <Link className={link} href="/about/statutes">
-            Les vedtektene
-          </Link>
-          .
         </p>
       </section>
 
