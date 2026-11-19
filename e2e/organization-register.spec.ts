@@ -116,17 +116,16 @@ test("sends the number along with the new organization", async ({ page }) => {
 });
 
 test("will not create an organization without its number", async ({ page }) => {
-  const created = await resolveWith(page, "/api/organization", { id: 99 });
-
   await fillAndConfirm(page.getByLabel("Organisasjonens navn"), "Testforeningen");
-  await page.getByRole("button", { name: "Opprett organisasjon" }).click();
 
+  // Checked without pressing submit: Firefox's headless build crashes on the
+  // native validation bubble that a click would open.
   const orgnr = page.getByLabel("Organisasjonsnummer");
   await expect(orgnr).toHaveJSProperty("required", true);
-  await expect
-    .poll(() => orgnr.evaluate((input: HTMLInputElement) => input.validity.valid))
-    .toBe(false);
-  expect(created).toHaveLength(0);
+  expect(await orgnr.evaluate((input: HTMLInputElement) => input.validity.valueMissing)).toBe(true);
+  expect(await orgnr.evaluate((input: HTMLInputElement) => input.form?.checkValidity())).toBe(
+    false,
+  );
 });
 
 test("sends the organization's own phone number", async ({ page }) => {
