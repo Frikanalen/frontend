@@ -1,8 +1,9 @@
 import { Suspense } from "react";
 import { cacheLife, cacheTag } from "next/cache";
 import Link from "next/link";
+import { ssrGrantsPublicList } from "@/generated/ssr/grants/grants";
 import { ssrScheduleitemsList } from "@/generated/ssr/scheduleitems/scheduleitems";
-import { ScheduleitemRead } from "@/generated/frikanalenDjangoAPI.schemas";
+import { PublicGrant, ScheduleitemRead } from "@/generated/frikanalenDjangoAPI.schemas";
 import { ScheduleNavBar } from "@/app/schedule/ScheduleNavBar";
 import { ScheduleItemList } from "@/app/schedule/ScheduleItemView";
 import { ScheduleWeek } from "@/app/schedule/ScheduleWeek";
@@ -26,6 +27,19 @@ const fetchScheduleDay = async (date: string, generation: string): Promise<Sched
   const { data, status } = await ssrScheduleitemsList({ date });
   if (status !== 200) throw new Error(`Schedule for ${date}: the API answered ${status}`);
   return data.results ?? [];
+};
+
+/**
+ * Whose airtime the day is, cached like the day's programmes. The listing
+ * works without it, so an API that cannot answer costs the headings only.
+ */
+const fetchGrantsDay = async (date: string, generation: string): Promise<PublicGrant[]> => {
+  "use cache";
+  cacheLife("minutes");
+  cacheTag("schedule", `schedule-generation:${generation}`);
+
+  const { data, status } = await ssrGrantsPublicList({ date });
+  return status === 200 ? data : [];
 };
 
 /**
@@ -53,8 +67,12 @@ const DayNavigation = async ({ params }: { params: ScheduleParams }) => {
 
 const DayItems = async ({ params }: { params: ScheduleParams }) => {
   const { year, month, date } = await parseParamsOr404(ScheduleDateParams, params);
-  const items = await fetchScheduleDay(`${year}-${month}-${date}`, scheduleGeneration());
-  return <ScheduleItemList items={items} />;
+  const day = `${year}-${month}-${date}`;
+  const [items, grants] = await Promise.all([
+    fetchScheduleDay(day, scheduleGeneration()),
+    fetchGrantsDay(day, scheduleGeneration()),
+  ]);
+  return <ScheduleItemList items={items} grants={grants} />;
 };
 
 /**

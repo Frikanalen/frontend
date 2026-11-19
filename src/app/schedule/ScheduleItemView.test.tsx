@@ -3,8 +3,9 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { ScheduleItemList } from "./ScheduleItemView";
 import { ScheduleitemRead } from "@/generated/frikanalenDjangoAPI.schemas";
 
-// Oslo start times, read somewhere else on purpose - see the note in
-// useDatePhaseInHash.test.ts. Pinned to Oslo this file would pass either way.
+// Oslo start times, read somewhere else on purpose: the labels must be Oslo
+// time whatever the viewer's clock says. Pinned to Oslo this file would pass
+// either way.
 const ORIGINAL_TZ = process.env.TZ;
 
 beforeAll(() => {
@@ -39,11 +40,6 @@ const program = (id: number, name: string, from: string) =>
 const evening = program(1, "Kveldens konsert", "20:00");
 const smallHours = program(2, "Nattsending", "00:30");
 
-// The tab in view is the phase in the URL hash, which is what the list filters on.
-const showTab = (phase: number) => {
-  window.location.hash = `#p${phase}`;
-};
-
 afterEach(cleanup);
 
 describe("ScheduleItemList", () => {
@@ -52,7 +48,6 @@ describe("ScheduleItemList", () => {
   });
 
   it("labels a program with its Oslo start time", () => {
-    showTab(2);
     render(<ScheduleItemList items={[evening]} />);
 
     expect(screen.getByText("20:00")).toBeDefined();
@@ -61,19 +56,17 @@ describe("ScheduleItemList", () => {
     expect(screen.getByText("Kveldens konsert — programbeskrivelse")).toBeDefined();
   });
 
-  it("keeps a small-hours program in Natt, labelled as such", () => {
+  it("lists the whole day in start order, small hours first", () => {
     // 00:30 Oslo is 18:30 the previous evening in New York: read locally this
-    // row would say 18:30 and sit under Kveld instead.
-    showTab(3);
+    // row would say 18:30.
     render(<ScheduleItemList items={[evening, smallHours]} />);
 
     expect(screen.getByText("00:30")).toBeDefined();
-    expect(screen.getByText("Nattsending")).toBeDefined();
-    expect(screen.queryByText("Kveldens konsert")).toBeNull();
+    const names = screen.getAllByRole("link", { name: /Kveldens konsert|Nattsending/ });
+    expect(names.map((a) => a.textContent)).toEqual(["Nattsending", "Kveldens konsert"]);
   });
 
   it("renders a named programme without a video", () => {
-    showTab(2);
     render(
       <ScheduleItemList
         items={[
@@ -89,5 +82,42 @@ describe("ScheduleItemList", () => {
 
     expect(screen.getByText("Direktesending")).toBeDefined();
     expect(screen.queryByText("Presentert av")).toBeNull();
+  });
+
+  it("groups programmes under the organization whose airtime it is", () => {
+    const grant = {
+      id: 7,
+      organization: { id: 1, name: "Norsk Presse", fkmember: true },
+      starttime: "2026-08-21T20:00:00+02:00",
+      endtime: "2026-08-21T21:00:00+02:00",
+    };
+    const by = (item: ScheduleitemRead, name: string, grant: number | null) =>
+      ({
+        ...item,
+        grant,
+        video: { ...item.video, organization: { id: item.id, name, description: "" } },
+      }) as ScheduleitemRead;
+    render(
+      <ScheduleItemList
+        items={[
+          { ...evening, grant: 7 },
+          by(program(4, "Gjestespill", "20:30"), "Havneforeningen", 7),
+          by(smallHours, "Frikanalen", null),
+        ]}
+        grants={[
+          grant,
+          { ...grant, id: 8, organization: { id: 9, name: "Sjakklubben", fkmember: true } },
+        ]}
+      />,
+    );
+
+    const heading = screen.getByRole("heading", { name: /Norsk Presse/ });
+    expect(heading.closest("section")!.textContent).toContain("20:00–21:00");
+    // Its own programme does not repeat the name; a guest's names its maker.
+    expect(screen.getAllByText("Norsk Presse")).toHaveLength(1);
+    expect(screen.getByText("Havneforeningen")).toBeDefined();
+    // Outside any grant, and a grant that passed with nothing in it.
+    expect(screen.getByRole("heading", { name: "Fra Frikanalen" })).toBeDefined();
+    expect(screen.getByText("Sendetiden ble ikke brukt.")).toBeDefined();
   });
 });

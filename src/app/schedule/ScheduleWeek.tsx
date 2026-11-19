@@ -42,9 +42,7 @@ export const ScheduleWeek = ({
                     ? "bg-stage text-stage-foreground"
                     : "bg-background text-foreground hover:bg-default-100",
                 )}
-                // Evening is where most of the schedule is, so that is the
-                // part of the day a newly opened day starts on.
-                href={`/schedule/${format(day, "yyyy/MM/dd")}#p2`}
+                href={`/schedule/${format(day, "yyyy/MM/dd")}`}
               >
                 <span
                   className={cx(
