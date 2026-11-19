@@ -32,14 +32,16 @@ export default async function Page() {
         </p>
 
         <h2>Hvor kommer sendetiden fra?</h2>
+        <p>Det er to måter å få sendetid på:</p>
         <ul>
           <li>
-            <strong>Faste sendeflater</strong>, for eksempel hver torsdag kl. 19.00. Hver gang
-            flaten kommer igjen, får organisasjonen en ny sendetid.
+            <strong>Automatisk, fra en fast sendeflate</strong>, for eksempel hver torsdag kl.
+            19.00. Organisasjonen får sendetid for hver dag flaten gjelder, uten å måtte be om det.
+            Sendetiden for en uke opprettes natt til mandag to uker før.
           </li>
           <li>
-            <strong>Enkeltstående sendetid</strong> som Frikanalen gir direkte, for eksempel til en
-            direktesending.
+            <strong>Enkeltvis, etter avtale.</strong> Frikanalen kan gi sendetid én gang, for
+            eksempel til en direktesending.
           </li>
         </ul>
 
@@ -63,9 +65,9 @@ export default async function Page() {
 
         <h2>Frist</h2>
         <p>
-          Hver sendetid har en frist. Vanligvis er det mandagen uken før sendingen. Frem til fristen
-          kan dere endre listen så ofte dere vil. Ved fristen låses den, og sendeplanen lages av
-          den. Slik vet seere og programoversikter hva som sendes, en uke i forveien.
+          Ved midnatt natt til mandag, uken før sending, låses planen for hele uken. Frem til da kan
+          dere endre listen så ofte dere vil. Ved fristen låses den, og sendeplanen lages av den.
+          Slik vet seere og programoversikter hva som sendes, en uke i forveien.
         </p>
         <p>
           Trenger dere å endre noe etter fristen, for eksempel rundt en direktesending, kan dere be
@@ -92,8 +94,9 @@ export default async function Page() {
 
         <h2>Tid uten program</h2>
         <p>
-          Tid som ikke er satt opp, også tom sendetid og det som er igjen etter siste video, viser
-          kanalgrafikk.
+          Sendetid som ikke er fylt ved fristen, også tid som blir igjen etter siste video, går tapt
+          for organisasjonen. Den kan da omdisponeres av Frikanalen. Blir den stående tom, viser
+          kanalen grafikk.
         </p>
 
         <p>
