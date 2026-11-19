@@ -379,3 +379,11 @@
   size: A4;
   margin: 15mm;
 }
+
+/* MDXEditor (the description editor) paints its select boxes, dialogs and
+   popups with a fixed white page colour; follow the site's background so
+   they read in dark mode too. Doubled classes outrank the library's own. */
+.mdxeditor.mdxeditor,
+.mdxeditor-popup-container.mdxeditor-popup-container {
+  --basePageBg: var(--background);
+}
