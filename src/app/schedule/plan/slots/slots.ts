@@ -53,7 +53,9 @@ export const clamp = (value: number, low: number, high: number) =>
   Math.min(Math.max(value, low), high);
 
 /** The weekdays a slot airs on; a daily slot with none airs every day. */
-export const slotDays = (slot: Pick<RecurringSlot, "frequency" | "weekdays">): number[] => {
+export const slotDays = (
+  slot: Pick<RecurringSlot, "frequency"> & { weekdays?: readonly number[] },
+): number[] => {
   const days = [...new Set(slot.weekdays ?? [])].sort((a, b) => a - b);
   if (slot.frequency === "daily" && days.length === 0) return [0, 1, 2, 3, 4, 5, 6];
   return days;
@@ -61,7 +63,7 @@ export const slotDays = (slot: Pick<RecurringSlot, "frequency" | "weekdays">): n
 
 /** Every week, or a short phrase for the rarer patterns. */
 export const recurrenceLabel = (
-  slot: Pick<RecurringSlot, "frequency" | "interval" | "monthWeeks">,
+  slot: Pick<RecurringSlot, "frequency" | "interval"> & { monthWeeks?: readonly number[] },
 ): string | null => {
   const interval = slot.interval ?? 1;
   if (slot.frequency === "monthly") {

@@ -15,10 +15,12 @@ const PAGE_SIZE = 500;
 const staticPaths = [
   "",
   "/about",
+  "/about/airtime",
   "/about/contact",
   "/about/join",
   "/about/join/affidavit",
   "/about/statutes",
+  "/schedule/slots",
 ];
 
 // Each list is cached for an hour. A failed request throws, and a throw is

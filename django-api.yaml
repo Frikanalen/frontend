@@ -7920,6 +7920,264 @@ paths:
         - cookieAuth: []
       tags:
         - posters
+  /api/recordings/{id}:
+    get:
+      operationId: recordings_retrieve
+      description: A recording request, with a URL to fetch its window from (ingest only).
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: No response body
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecordingsRetrieveErrorResponse400'
+        '401':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: authentication_failed
+                        detail: Incorrect authentication credentials.
+                        attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_authenticated
+                        detail: Authentication credentials were not provided.
+                        attr: null
+        '403':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse403'
+              examples:
+                PermissionDenied:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: permission_denied
+                        detail: You do not have permission to perform this action.
+                        attr: null
+        '404':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+              examples:
+                NotFound:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_found
+                        detail: Not found.
+                        attr: null
+        '405':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse405'
+              examples:
+                MethodNotAllowed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: method_not_allowed
+                        detail: Method "get" not allowed.
+                        attr: null
+        '406':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse406'
+              examples:
+                NotAcceptable:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_acceptable
+                        detail: Could not satisfy the request Accept header.
+                        attr: null
+        '415':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse415'
+              examples:
+                UnsupportedMediaType:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: unsupported_media_type
+                        detail: Unsupported media type "application/json" in request.
+                        attr: null
+        '500':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+              examples:
+                APIException:
+                  value:
+                    type: server_error
+                    errors:
+                      - code: error
+                        detail: A server error occurred.
+                        attr: null
+      security:
+        - tokenAuth: []
+        - cookieAuth: []
+      tags:
+        - recordings
+  /api/recordings/{id}/result:
+    post:
+      operationId: recordings_result_create
+      description: Ingest reports that it archived the recording, or why it couldn't.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: No response body
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecordingsResultCreateErrorResponse400'
+        '401':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: authentication_failed
+                        detail: Incorrect authentication credentials.
+                        attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_authenticated
+                        detail: Authentication credentials were not provided.
+                        attr: null
+        '403':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse403'
+              examples:
+                PermissionDenied:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: permission_denied
+                        detail: You do not have permission to perform this action.
+                        attr: null
+        '404':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+              examples:
+                NotFound:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_found
+                        detail: Not found.
+                        attr: null
+        '405':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse405'
+              examples:
+                MethodNotAllowed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: method_not_allowed
+                        detail: Method "get" not allowed.
+                        attr: null
+        '406':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse406'
+              examples:
+                NotAcceptable:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_acceptable
+                        detail: Could not satisfy the request Accept header.
+                        attr: null
+        '415':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse415'
+              examples:
+                UnsupportedMediaType:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: unsupported_media_type
+                        detail: Unsupported media type "application/json" in request.
+                        attr: null
+        '500':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+              examples:
+                APIException:
+                  value:
+                    type: server_error
+                    errors:
+                      - code: error
+                        detail: A server error occurred.
+                        attr: null
+      security:
+        - tokenAuth: []
+        - cookieAuth: []
+      tags:
+        - recordings
   /api/recurring-slot-requests:
     get:
       operationId: recurring_slot_requests_list
@@ -9406,6 +9664,125 @@ paths:
       security:
         - tokenAuth: []
         - cookieAuth: []
+      tags:
+        - recurring-slots
+  /api/recurring-slots/public:
+    get:
+      operationId: recurring_slots_public_list
+      description: |-
+        The regular slots in force, for everyone: who has the airtime and
+        when. Ended slots and those of suspended organizations are left out,
+        as is how each slot programs itself.
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PublicRecurringSlot'
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecurringSlotsPublicListErrorResponse400'
+        '401':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: authentication_failed
+                        detail: Incorrect authentication credentials.
+                        attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_authenticated
+                        detail: Authentication credentials were not provided.
+                        attr: null
+        '404':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+              examples:
+                NotFound:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_found
+                        detail: Not found.
+                        attr: null
+        '405':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse405'
+              examples:
+                MethodNotAllowed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: method_not_allowed
+                        detail: Method "get" not allowed.
+                        attr: null
+        '406':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse406'
+              examples:
+                NotAcceptable:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_acceptable
+                        detail: Could not satisfy the request Accept header.
+                        attr: null
+        '415':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse415'
+              examples:
+                UnsupportedMediaType:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: unsupported_media_type
+                        detail: Unsupported media type "application/json" in request.
+                        attr: null
+        '500':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+              examples:
+                APIException:
+                  value:
+                    type: server_error
+                    errors:
+                      - code: error
+                        detail: A server error occurred.
+                        attr: null
+      security:
+        - tokenAuth: []
+        - cookieAuth: []
+        - {}
       tags:
         - recurring-slots
   /api/scheduleitems:
@@ -26896,6 +27273,76 @@ components:
         - fkmember
         - id
         - name
+    PublicRecurringSlot:
+      description: |-
+        A regular slot as anyone may see it: who has the airtime and when,
+        without how it programs itself.
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        organization:
+          allOf:
+            - $ref: '#/components/schemas/PublicGrantOrganization'
+          nullable: true
+          readOnly: true
+        frequency:
+          allOf:
+            - $ref: '#/components/schemas/FrequencyEnum'
+          readOnly: true
+        interval:
+          type: integer
+          readOnly: true
+        weekdays:
+          description: 0 is Monday. Required for weekly and monthly slots; for daily slots, empty means every day.
+          type: array
+          items:
+            type: integer
+            maximum: 6
+            minimum: 0
+          readOnly: true
+        monthWeeks:
+          description: 'Monthly slots: which occurrence of the weekday in the month, 1-5, or -1 for the last.'
+          type: array
+          items:
+            type: integer
+            maximum: 5
+            minimum: -1
+          readOnly: true
+        startTime:
+          description: Wall-clock time in Europe/Oslo.
+          type: string
+          format: time
+          readOnly: true
+        duration:
+          type: string
+          readOnly: true
+        startsOn:
+          type: string
+          format: date
+          readOnly: true
+        endsOn:
+          type: string
+          format: date
+          nullable: true
+          readOnly: true
+        jukebox:
+          description: The station's own airtime, filled from the archive.
+          type: boolean
+          readOnly: true
+      required:
+        - duration
+        - endsOn
+        - frequency
+        - id
+        - interval
+        - jukebox
+        - monthWeeks
+        - organization
+        - startTime
+        - startsOn
+        - weekdays
     Recipe:
       description: |-
         How a slot or a grant programs itself.
@@ -27005,6 +27452,20 @@ components:
           nullable: true
       required:
         - kind
+    RecordingsResultCreateErrorResponse400:
+      discriminator:
+        propertyName: type
+        mapping:
+          client_error: '#/components/schemas/ParseErrorResponse'
+      oneOf:
+        - $ref: '#/components/schemas/ParseErrorResponse'
+    RecordingsRetrieveErrorResponse400:
+      discriminator:
+        propertyName: type
+        mapping:
+          client_error: '#/components/schemas/ParseErrorResponse'
+      oneOf:
+        - $ref: '#/components/schemas/ParseErrorResponse'
     RecoveryCodes:
       type: object
       properties:
@@ -29034,6 +29495,13 @@ components:
         - attr
         - code
         - detail
+    RecurringSlotsPublicListErrorResponse400:
+      discriminator:
+        propertyName: type
+        mapping:
+          client_error: '#/components/schemas/ParseErrorResponse'
+      oneOf:
+        - $ref: '#/components/schemas/ParseErrorResponse'
     RecurringSlotsRetrieveErrorResponse400:
       discriminator:
         propertyName: type
