@@ -120,20 +120,3 @@ test("asks for the organization number as a required field", async ({ page }) =>
   // native validation of this form runs, so the browser is left to enforce it.
   await expect(page.getByLabel("Organisasjonsnummer")).toHaveAttribute("required", "");
 });
-
-test("sends the organization's own phone number", async ({ page }) => {
-  await resolveWith(page, LOOKUP, entity);
-  const created = await resolveWith(page, "/api/organization", { id: 99 });
-  await page.route("**/organization/99/start", (route) =>
-    route.fulfill({ status: 200, contentType: "text/html", body: "<html>ok</html>" }),
-  );
-
-  await fillAndConfirm(page.getByLabel("Organisasjonsnummer"), ORGNR);
-  await fetchButton(page).click();
-  await expect(page.getByLabel("Organisasjonens navn")).toHaveValue("TESTFORENINGEN");
-  await fillAndConfirm(page.getByLabel("Organisasjonens telefonnummer"), "22 33 44 55");
-  await page.getByRole("button", { name: "Opprett organisasjon" }).click();
-
-  await expect.poll(() => created.length).toBe(1);
-  expect(created[0]).toMatchObject({ orgnr: ORGNR, phoneNumber: "22 33 44 55" });
-});

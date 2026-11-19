@@ -102,7 +102,6 @@ export default async function Page({ params }: { params: Promise<{ organizationI
               address={orBlank(organization.postalAddress)}
               email={orBlank(organization.editorEmail)}
               editorName={orBlank(organization.editorName?.toUpperCase())}
-              editorPhone={orBlank(organization.editorMsisdn)}
             />
           </div>
         </details>

@@ -8,7 +8,6 @@ export type AffidavitDetails = {
   address: string | null;
   email: string | null;
   editorName: string | null;
-  phone: string | null;
 };
 
 // Its default hyphenation is English and splits Norwegian words badly.
@@ -68,7 +67,6 @@ export const AffidavitPdf = ({ details }: { details: AffidavitDetails }) => (
         <Field label="Adresse" value={details.address} />
         <Field label="E-post" value={details.email} />
         <Field label="Redaktørens navn i blokkbokstaver" value={details.editorName} wide />
-        <Field label="Telefon" value={details.phone} wide />
       </View>
       <Text style={styles.intro}>{AFFIDAVIT_INTRO}</Text>
       {AFFIDAVIT_CLAUSES.map((clause, index) => (

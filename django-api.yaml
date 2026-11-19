@@ -25319,9 +25319,6 @@ components:
         orgnr:
           type: string
           maxLength: 255
-        phoneNumber:
-          description: The organization's own phone number. Norwegian numbers may omit +47.
-          type: string
         postalAddress:
           type: string
           maxLength: 2048
@@ -25345,9 +25342,8 @@ components:
           readOnly: true
         editorMsisdn:
           description: |-
-            The number listed with the editor information: the organization's
-            own, in international format, or None if it has none. The editor's
-            personal number is never published.
+            Always None: no phone number is published for an organization or
+            its editor. Kept so clients built against the old schema still parse.
           type: string
           nullable: true
           readOnly: true
@@ -25425,7 +25421,6 @@ components:
           homepage: '#/components/schemas/OrganizationCreateHomepageErrorComponent'
           description: '#/components/schemas/OrganizationCreateDescriptionErrorComponent'
           orgnr: '#/components/schemas/OrganizationCreateOrgnrErrorComponent'
-          phone_number: '#/components/schemas/OrganizationCreatePhoneNumberErrorComponent'
           postal_address: '#/components/schemas/OrganizationCreatePostalAddressErrorComponent'
           street_address: '#/components/schemas/OrganizationCreateStreetAddressErrorComponent'
       oneOf:
@@ -25434,7 +25429,6 @@ components:
         - $ref: '#/components/schemas/OrganizationCreateHomepageErrorComponent'
         - $ref: '#/components/schemas/OrganizationCreateDescriptionErrorComponent'
         - $ref: '#/components/schemas/OrganizationCreateOrgnrErrorComponent'
-        - $ref: '#/components/schemas/OrganizationCreatePhoneNumberErrorComponent'
         - $ref: '#/components/schemas/OrganizationCreatePostalAddressErrorComponent'
         - $ref: '#/components/schemas/OrganizationCreateStreetAddressErrorComponent'
     OrganizationCreateErrorResponse400:
@@ -25549,32 +25543,6 @@ components:
             - 'null'
             - null_characters_not_allowed
             - required
-            - surrogate_characters_not_allowed
-        detail:
-          type: string
-      required:
-        - attr
-        - code
-        - detail
-    OrganizationCreatePhoneNumberErrorComponent:
-      type: object
-      properties:
-        attr:
-          description: '* `phone_number` - phone_number'
-          type: string
-          enum:
-            - phone_number
-        code:
-          description: |-
-            * `invalid` - invalid
-            * `null` - null
-            * `null_characters_not_allowed` - null_characters_not_allowed
-            * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed
-          type: string
-          enum:
-            - invalid
-            - 'null'
-            - null_characters_not_allowed
             - surrogate_characters_not_allowed
         detail:
           type: string
@@ -25866,7 +25834,6 @@ components:
           homepage: '#/components/schemas/OrganizationPartialUpdateHomepageErrorComponent'
           description: '#/components/schemas/OrganizationPartialUpdateDescriptionErrorComponent'
           orgnr: '#/components/schemas/OrganizationPartialUpdateOrgnrErrorComponent'
-          phone_number: '#/components/schemas/OrganizationPartialUpdatePhoneNumberErrorComponent'
           postal_address: '#/components/schemas/OrganizationPartialUpdatePostalAddressErrorComponent'
           street_address: '#/components/schemas/OrganizationPartialUpdateStreetAddressErrorComponent'
       oneOf:
@@ -25875,7 +25842,6 @@ components:
         - $ref: '#/components/schemas/OrganizationPartialUpdateHomepageErrorComponent'
         - $ref: '#/components/schemas/OrganizationPartialUpdateDescriptionErrorComponent'
         - $ref: '#/components/schemas/OrganizationPartialUpdateOrgnrErrorComponent'
-        - $ref: '#/components/schemas/OrganizationPartialUpdatePhoneNumberErrorComponent'
         - $ref: '#/components/schemas/OrganizationPartialUpdatePostalAddressErrorComponent'
         - $ref: '#/components/schemas/OrganizationPartialUpdateStreetAddressErrorComponent'
     OrganizationPartialUpdateErrorResponse400:
@@ -25997,32 +25963,6 @@ components:
         - attr
         - code
         - detail
-    OrganizationPartialUpdatePhoneNumberErrorComponent:
-      type: object
-      properties:
-        attr:
-          description: '* `phone_number` - phone_number'
-          type: string
-          enum:
-            - phone_number
-        code:
-          description: |-
-            * `invalid` - invalid
-            * `null` - null
-            * `null_characters_not_allowed` - null_characters_not_allowed
-            * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed
-          type: string
-          enum:
-            - invalid
-            - 'null'
-            - null_characters_not_allowed
-            - surrogate_characters_not_allowed
-        detail:
-          type: string
-      required:
-        - attr
-        - code
-        - detail
     OrganizationPartialUpdatePostalAddressErrorComponent:
       type: object
       properties:
@@ -26105,9 +26045,6 @@ components:
         orgnr:
           type: string
           maxLength: 255
-        phoneNumber:
-          description: The organization's own phone number. Norwegian numbers may omit +47.
-          type: string
         postalAddress:
           type: string
           maxLength: 2048
@@ -26165,7 +26102,6 @@ components:
           homepage: '#/components/schemas/OrganizationUpdateHomepageErrorComponent'
           description: '#/components/schemas/OrganizationUpdateDescriptionErrorComponent'
           orgnr: '#/components/schemas/OrganizationUpdateOrgnrErrorComponent'
-          phone_number: '#/components/schemas/OrganizationUpdatePhoneNumberErrorComponent'
           postal_address: '#/components/schemas/OrganizationUpdatePostalAddressErrorComponent'
           street_address: '#/components/schemas/OrganizationUpdateStreetAddressErrorComponent'
       oneOf:
@@ -26174,7 +26110,6 @@ components:
         - $ref: '#/components/schemas/OrganizationUpdateHomepageErrorComponent'
         - $ref: '#/components/schemas/OrganizationUpdateDescriptionErrorComponent'
         - $ref: '#/components/schemas/OrganizationUpdateOrgnrErrorComponent'
-        - $ref: '#/components/schemas/OrganizationUpdatePhoneNumberErrorComponent'
         - $ref: '#/components/schemas/OrganizationUpdatePostalAddressErrorComponent'
         - $ref: '#/components/schemas/OrganizationUpdateStreetAddressErrorComponent'
     OrganizationUpdateErrorResponse400:
@@ -26289,32 +26224,6 @@ components:
             - 'null'
             - null_characters_not_allowed
             - required
-            - surrogate_characters_not_allowed
-        detail:
-          type: string
-      required:
-        - attr
-        - code
-        - detail
-    OrganizationUpdatePhoneNumberErrorComponent:
-      type: object
-      properties:
-        attr:
-          description: '* `phone_number` - phone_number'
-          type: string
-          enum:
-            - phone_number
-        code:
-          description: |-
-            * `invalid` - invalid
-            * `null` - null
-            * `null_characters_not_allowed` - null_characters_not_allowed
-            * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed
-          type: string
-          enum:
-            - invalid
-            - 'null'
-            - null_characters_not_allowed
             - surrogate_characters_not_allowed
         detail:
           type: string
@@ -26931,9 +26840,6 @@ components:
         orgnr:
           type: string
           maxLength: 255
-        phoneNumber:
-          description: The organization's own phone number. Norwegian numbers may omit +47.
-          type: string
         postalAddress:
           type: string
           maxLength: 2048

@@ -9,11 +9,10 @@ const organization = {
   name: "Havneforeningen",
   description: "",
   orgnr: "971526920",
-  phoneNumber: "+4722334455",
   editorId: null,
   editorName: "",
   editorEmail: null,
-  editorMsisdn: "+47 22 33 44 55",
+  editorMsisdn: null,
   fkmember: true,
 };
 

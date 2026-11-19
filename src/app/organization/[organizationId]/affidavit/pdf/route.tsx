@@ -35,7 +35,6 @@ export async function GET(
         address: blankIfEmpty(organization.postalAddress),
         email: blankIfEmpty(organization.editorEmail),
         editorName: blankIfEmpty(organization.editorName)?.toUpperCase() ?? null,
-        phone: blankIfEmpty(organization.editorMsisdn),
       }}
     />,
   );

@@ -7,14 +7,12 @@ export default function RedaktorAnsvarFrikanalen({
   address,
   email,
   editorName,
-  editorPhone,
 }: {
   organization: ReactNode;
   orgNumber: ReactNode;
   address: ReactNode;
   email: ReactNode;
   editorName: ReactNode;
-  editorPhone: ReactNode;
 }) {
   return (
     <article lang="no" aria-labelledby="tittel" className="prose dark:prose-invert max-w-none">
@@ -50,10 +48,6 @@ export default function RedaktorAnsvarFrikanalen({
           <div className="sm:col-span-2">
             <dt className="font-medium">Redaktørs navn i blokkbokstaver</dt>
             <dd>{editorName}</dd>
-          </div>
-          <div className="sm:col-span-2">
-            <dt className="font-medium">Telefon</dt>
-            <dd>{editorPhone}</dd>
           </div>
         </dl>
       </section>

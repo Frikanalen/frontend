@@ -35,7 +35,7 @@ export default async function Page() {
               <p className="mt-2 max-w-2xl text-default-700">
                 Du blir organisasjonens redaktør. Navnet ditt og e-postadressen din ({user.email})
                 blir offentlig synlige, i tråd med kringkastingslovens krav om kontaktinformasjon
-                for redaktører. Telefonnummeret som vises, er organisasjonens, ikke ditt eget.
+                for redaktører.
               </p>
               <OrgCreateForm className="mt-6" />
             </>
