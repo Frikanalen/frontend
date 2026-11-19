@@ -17,12 +17,8 @@ const STEPS = [
     body: (
       <>
         <p>
-          En sendetid er et konkret tidsrom på en bestemt dag som tilhører én organisasjon. Styret
-          administrerer sendeplanen etter føringer fra generalforsamlingen og{" "}
-          <Link className={link} href="/about/statutes">
-            vedtektene
-          </Link>
-          . Det er to måter å få sendetid på:
+          En sendetid er et konkret tidsrom på en bestemt dag som tilhører én organisasjon. Det er
+          to måter å få sendetid på:
         </p>
         <ul className="list-disc space-y-2 ps-5">
           <li>
