@@ -42,9 +42,9 @@ const STEPS = [
         <ul className="list-disc space-y-2 ps-5">
           <li>
             <strong>Automatisk, fra en fast sendeflate.</strong> Har organisasjonen en fast
-            sendeflate, får den en ny sendetid hver gang flaten kommer igjen, uten å måtte be om
-            det. Sendetiden blir til to uker før sending, så organisasjonen har god tid til å
-            planlegge.
+            sendeflate, får den sendetid for hver dag flaten gjelder, uten å måtte be om det.
+            Sendetiden for en uke opprettes natt til mandag to uker før, så organisasjonen har en
+            uke på å planlegge før fristen.
           </li>
           <li>
             <strong>Enkeltvis, etter avtale.</strong> Frikanalen kan også gi sendetid én gang, for
@@ -75,9 +75,8 @@ const STEPS = [
     body: (
       <>
         <p>
-          Hver sendetid har en frist, vanligvis mandagen uken før sending. Ved fristen låses planen,
-          og sendeplanen for uken blir til. Slik kan seere og programoversikter vite hva som sendes
-          en uke i forveien.
+          Ved midnatt natt til mandag, uken før sending, låses planen for hele uken, og sendeplanen
+          blir til. Slik kan seere og programoversikter vite hva som sendes en uke i forveien.
         </p>
         <p>
           Trenger en organisasjon å endre noe etter fristen, for eksempel rundt en direktesending,
