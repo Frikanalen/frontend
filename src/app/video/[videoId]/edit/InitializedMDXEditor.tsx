@@ -7,6 +7,8 @@ import {
   quotePlugin,
   thematicBreakPlugin,
   markdownShortcutPlugin,
+  linkPlugin,
+  linkDialogPlugin,
   MDXEditor,
   type MDXEditorMethods,
   type MDXEditorProps,
@@ -33,6 +35,10 @@ export default function InitializedMDXEditor({
         listsPlugin(),
         quotePlugin(),
         thematicBreakPlugin(),
+        // Links are common in descriptions; without these two the editor
+        // stops drawing at the first one and the toolbar's link button is dead.
+        linkPlugin(),
+        linkDialogPlugin(),
         markdownShortcutPlugin(),
         toolbarPlugin({
           toolbarClassName:

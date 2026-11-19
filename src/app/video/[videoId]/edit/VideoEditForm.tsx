@@ -1,7 +1,7 @@
 "use client";
 import { FormInput } from "@/components/FormField";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import {
   LiveSource,
   PatchedVideoRequest,
@@ -75,11 +75,21 @@ export const VideoEditForm = ({
     <div>
       <Form onSubmit={onSubmit}>
         <FormError error={error} />
-        <FormInput
-          label={"Navn"}
-          labelPlacement={"outside-top"}
-          id="video-name"
-          {...register("name")}
+        {/* Controlled: the field keeps its own copy of the value, so a
+            registered (uncontrolled) input showed up empty. */}
+        <Controller
+          control={control}
+          name="name"
+          render={({ field }) => (
+            <FormInput
+              {...field}
+              value={field.value ?? ""}
+              label={"Navn"}
+              id="video-name"
+              maxLength={255}
+              isRequired
+            />
+          )}
         />
         <MDXEditorField
           className={"w-full"}
