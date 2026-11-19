@@ -15,7 +15,14 @@ export type AffidavitDetails = {
 Font.registerHyphenationCallback((word) => [word]);
 
 const styles = StyleSheet.create({
-  page: { paddingTop: 48, paddingBottom: 56, paddingHorizontal: 56, fontFamily: "Helvetica", fontSize: 10.5, lineHeight: 1.4 },
+  page: {
+    paddingTop: 48,
+    paddingBottom: 56,
+    paddingHorizontal: 56,
+    fontFamily: "Helvetica",
+    fontSize: 10.5,
+    lineHeight: 1.4,
+  },
   title: { fontFamily: "Helvetica-Bold", fontSize: 18, marginBottom: 18 },
   grid: { flexDirection: "row", flexWrap: "wrap", marginBottom: 14 },
   cell: { width: "50%", marginBottom: 10, paddingRight: 12 },
