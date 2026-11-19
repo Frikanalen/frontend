@@ -1,11 +1,9 @@
 "use client";
 import { ScheduleitemRead } from "@/generated/frikanalenDjangoAPI.schemas";
 import { Accordion } from "@heroui/react";
-import { parseISO } from "date-fns";
 import Link from "next/link";
 import cx from "classnames";
 import { VideoBlurb } from "@/app/videoBlurb";
-import { phaseOf, useDatePhaseInHash } from "@/app/schedule/useDatePhaseInHash";
 import { formatOsloTime } from "@/lib/osloTime";
 import { useNow } from "@/app/frontpage/useNow";
 
@@ -18,25 +16,24 @@ const minutesBetween = (from: string, to: string) => {
 };
 
 /**
- * One part of the day as a TV listing: the start time large and tabular on
+ * A day's schedule as a TV listing: the start time large and tabular on
  * the left, the programme and who made it beside it. The programme on air is
  * a dark band, the same "stage" the player sits on.
  */
 export const ScheduleItemList = ({ items }: { items: ScheduleitemRead[] }) => {
-  const [phase] = useDatePhaseInHash();
   const now = useNow(30_000);
-  const filteredItems = items.filter((item) => phaseOf(parseISO(item.starttime)) == phase);
+  const sortedItems = items.toSorted((a, b) => Date.parse(a.starttime) - Date.parse(b.starttime));
 
-  if (filteredItems.length === 0)
+  if (sortedItems.length === 0)
     return (
       <p className="border-t-2 border-foreground py-6 text-default-600">
-        Ingen programmer er satt opp i denne delen av døgnet.
+        Ingen programmer er satt opp denne dagen.
       </p>
     );
 
   return (
     <Accordion className="border-t-2 border-foreground">
-      {filteredItems.map(({ id, starttime, endtime, video, defaultName, isLive }) => {
+      {sortedItems.map(({ id, starttime, endtime, video, defaultName, isLive }) => {
         const startsAt = formatOsloTime(starttime);
         const name = video?.name || defaultName || "Uten programnavn";
         const onAir = Date.parse(starttime) <= now && now < Date.parse(endtime);
