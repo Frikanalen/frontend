@@ -66,8 +66,8 @@ export default async function Page() {
         <h2>Frist</h2>
         <p>
           Ved midnatt natt til mandag, uken før sending, låses planen for hele uken. Frem til da kan
-          dere endre listen så ofte dere vil. Ved fristen låses den, og sendeplanen lages av den.
-          Slik vet seere og programoversikter hva som sendes, en uke i forveien.
+          dere endre listen så ofte dere vil. Deretter lages sendeplanen av den. Slik vet seere og
+          programoversikter hva som sendes, en uke i forveien.
         </p>
         <p>
           Trenger dere å endre noe etter fristen, for eksempel rundt en direktesending, kan dere be
