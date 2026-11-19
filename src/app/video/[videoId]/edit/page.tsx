@@ -76,16 +76,19 @@ export default async function Page({ params }: VideoPageProps) {
         <h1 className="text-2xl!">Rediger video</h1>
       </div>
       <VideoEditForm
+        image={
+          <ProgramImageManager
+            videoId={videoId}
+            uploadEndpoint={uploadTokenResponse.data.uploadUrl}
+            uploadToken={uploadToken}
+            initialImages={imagesResponse.data.results}
+            fallbackThumbnail={video.files.largeThumb?.url}
+          />
+        }
         categories={categoriesResponse.status === 200 ? categoriesResponse.data.results : []}
         liveSources={liveSourcesResponse.status === 200 ? liveSourcesResponse.data : []}
         series={seriesResponse.data.results}
         video={video}
-      />
-      <ProgramImageManager
-        videoId={videoId}
-        uploadEndpoint={uploadTokenResponse.data.uploadUrl}
-        uploadToken={uploadToken}
-        initialImages={imagesResponse.data.results}
       />
     </section>
   );

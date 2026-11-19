@@ -1,6 +1,6 @@
 "use client";
 import { FormInput } from "@/components/FormField";
-import { useState } from "react";
+import { ReactNode, useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import {
   Category,
@@ -35,8 +35,11 @@ export const VideoEditForm = ({
   series,
   categories = [],
   liveSources = [],
+  image,
 }: {
   video: Video;
+  /** The video's picture, which opens its image manager. */
+  image?: ReactNode;
   series: Series[];
   /** Every category there is; the video carries some of them. */
   categories?: Category[];
@@ -56,7 +59,7 @@ export const VideoEditForm = ({
       publishOnWeb: video.publishOnWeb ?? true,
     },
   });
-  const { register, control } = form;
+  const { control } = form;
   const router = useRouter();
   const [availableSeries, setAvailableSeries] = useState<SeriesOption[]>(series);
   const [isSeriesModalOpen, setSeriesModalOpen] = useState(false);
@@ -106,6 +109,18 @@ export const VideoEditForm = ({
   return (
     <div>
       <Form onSubmit={onSubmit} className="flex flex-col gap-5">
+        <div className="flex w-full flex-col gap-5 sm:flex-row sm:items-start">
+          {image}
+          <div className="min-w-0 flex-1 space-y-4">
+            <Controller
+              control={control}
+              name="publishOnWeb"
+              render={({ field }) => (
+                <VisibilitySwitch value={field.value ?? true} onChange={field.onChange} />
+              )}
+            />
+          </div>
+        </div>
         <FormError error={error} />
         <Controller
           control={control}
@@ -206,20 +221,6 @@ export const VideoEditForm = ({
           <LanguageField control={control} name="spokenLanguage" />
           <MinimumAgeField control={control} name="minimumAge" />
         </div>
-        <label className="flex items-start gap-3 text-sm">
-          <input
-            type="checkbox"
-            className="mt-0.5 size-4 accent-primary"
-            {...register("publishOnWeb")}
-          />
-          <span>
-            Vis i arkivet og på nettsiden
-            <span className="block text-xs text-foreground-500">
-              Slått av vises videoen ikke i arkivet, i søk eller på forsiden. Den kan fortsatt
-              sendes på TV.
-            </span>
-          </span>
-        </label>
         <div className="flex w-full flex-wrap items-center justify-end gap-3">
           <Link
             href={videoPage}
@@ -241,3 +242,55 @@ export const VideoEditForm = ({
     </div>
   );
 };
+
+const VISIBILITY = [
+  {
+    value: true,
+    label: "Offentlig",
+    help: "Vises i arkivet, i søk og på forsiden, og kan sendes på TV.",
+  },
+  {
+    value: false,
+    label: "Skjult",
+    help: "Vises ikke i arkivet, i søk eller på forsiden, men kan fortsatt sendes på TV.",
+  },
+];
+
+/** Whether the video is published on the web (`publishOnWeb`). */
+const VisibilitySwitch = ({
+  value,
+  onChange,
+}: {
+  value: boolean;
+  onChange: (_value: boolean) => void;
+}) => (
+  <fieldset className="space-y-2">
+    <legend className="mb-2 text-sm font-medium">Synlighet på nettsiden</legend>
+    <div className="inline-flex rounded-md border border-default p-0.5">
+      {VISIBILITY.map((option) => (
+        <label
+          key={option.label}
+          className={`cursor-pointer rounded px-4 py-1.5 text-sm font-medium has-focus-visible:outline-2 has-focus-visible:outline-focus ${
+            value === option.value
+              ? option.value
+                ? "bg-primary text-primary-foreground"
+                : "bg-foreground text-background"
+              : "text-foreground-500 hover:text-foreground"
+          }`}
+        >
+          <input
+            type="radio"
+            name="visibility"
+            className="sr-only"
+            checked={value === option.value}
+            onChange={() => onChange(option.value)}
+          />
+          {option.label}
+        </label>
+      ))}
+    </div>
+    <p className="text-xs text-foreground-500">
+      {VISIBILITY.find((option) => option.value === value)?.help}
+    </p>
+  </fieldset>
+);
