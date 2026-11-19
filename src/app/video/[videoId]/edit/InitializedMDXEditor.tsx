@@ -25,7 +25,9 @@ export default function InitializedMDXEditor({
   return (
     <MDXEditor
       className="min-w-0 max-w-full"
-      contentEditableClassName="prose! dark:prose-invert! h-56 grow max-w-none! sm:h-80"
+      // The box grows with the text up to a cap and then scrolls; without the
+      // overflow rule a long description spilled over the fields below it.
+      contentEditableClassName="prose! dark:prose-invert! min-h-56 max-h-[70vh] grow overflow-y-auto wrap-break-word max-w-none! sm:min-h-80"
       plugins={[
         headingsPlugin({ allowedHeadingLevels: [3, 4, 5, 6] }),
         listsPlugin(),
