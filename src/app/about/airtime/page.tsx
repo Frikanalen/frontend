@@ -36,14 +36,21 @@ const STEPS = [
     body: (
       <>
         <p>
-          Hver gang en fast sendeflate kommer igjen, får organisasjonen en sendetid: et konkret
-          tidsrom på en bestemt dag. Sendetiden blir til to uker før sending, så organisasjonen har
-          god tid til å planlegge.
+          En sendetid er et konkret tidsrom på en bestemt dag som tilhører én organisasjon. Det er
+          to måter å få sendetid på:
         </p>
-        <p>
-          Frikanalen kan også gi enkeltstående sendetid, for eksempel til en direktesending eller
-          ett enkelt program.
-        </p>
+        <ul className="list-disc space-y-2 ps-5">
+          <li>
+            <strong>Automatisk, fra en fast sendeflate.</strong> Har organisasjonen en fast
+            sendeflate, får den en ny sendetid hver gang flaten kommer igjen, uten å måtte be om
+            det. Sendetiden blir til to uker før sending, så organisasjonen har god tid til å
+            planlegge.
+          </li>
+          <li>
+            <strong>Enkeltvis, etter avtale.</strong> Frikanalen kan også gi sendetid én gang, for
+            eksempel til en direktesending eller ett enkelt program.
+          </li>
+        </ul>
       </>
     ),
   },
@@ -125,8 +132,9 @@ export default function Airtime() {
       <section className="max-w-3xl space-y-3 text-default-800">
         <h2 className="text-2xl font-bold text-foreground">Hvem bestemmer?</h2>
         <p>
-          Frikanalen er en demokratisk medlemsorganisasjon. Medlemmene velger styret på årsmøtet, og
-          styret har ansvaret for kanalen og for hvordan sendetiden fordeles.{" "}
+          Frikanalen er en demokratisk medlemsorganisasjon, og medlemmene velger styret på årsmøtet.
+          Slik praktiserer vi fordelingen i dag: styret har ansvaret for kanalen, og
+          administrasjonen fordeler sendetiden etter ønsker fra medlemmene. Praksisen kan endre seg.{" "}
           <Link className={link} href="/about/statutes">
             Les vedtektene
           </Link>
