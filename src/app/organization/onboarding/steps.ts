@@ -36,10 +36,12 @@ export type OnboardingFacts = {
    * there is no separate step for that.
    */
   isMember: boolean;
+  /** Where the latest uploaded scan of the declaration stands, if any. */
+  affidavit: "none" | "pending" | "rejected";
 };
 
 export const onboardingSteps = (facts: OnboardingFacts): OnboardingStep[] => {
-  const { organizationId: id, loggedIn, isMember } = facts;
+  const { organizationId: id, loggedIn, isMember, affidavit } = facts;
   const registered = id !== null;
 
   return [
@@ -69,14 +71,27 @@ export const onboardingSteps = (facts: OnboardingFacts): OnboardingStep[] => {
       id: "affidavit",
       title: "Send inn redaktørerklæringen",
       text: isMember
-        ? "Frikanalen har mottatt erklæringen, godkjent medlemskapet og bekreftet redaktørens identitet."
-        : "Redaktøren skriver ut erklæringen om redaktøransvar, signerer den og sender den til foreningen per post. Når brevet er mottatt, godkjenner Frikanalen medlemskapet. Det bekrefter også redaktørens identitet.",
-      state: isMember ? "done" : registered ? "waiting" : "blocked",
+        ? "Frikanalen har godkjent erklæringen. Organisasjonen er medlem, og redaktørens identitet er bekreftet."
+        : affidavit === "pending"
+          ? "Erklæringen er lastet opp og venter på at Frikanalen sjekker den."
+          : affidavit === "rejected"
+            ? "Frikanalen kunne ikke godkjenne erklæringen. Se hvorfor, og last opp en ny."
+            : "Redaktøren laster ned erklæringen om redaktøransvar, skriver den ut og signerer den, og laster opp en skannet kopi. Når Frikanalen har godkjent den, blir organisasjonen medlem og redaktørens identitet bekreftet.",
+      state: isMember
+        ? "done"
+        : !registered
+          ? "blocked"
+          : affidavit === "pending"
+            ? "waiting"
+            : "todo",
       actions: isMember
         ? []
         : [
             registered
-              ? { href: `/organization/${id}/affidavit`, label: "Skriv ut erklæringen" }
+              ? {
+                  href: `/organization/${id}/affidavit`,
+                  label: affidavit === "pending" ? "Se erklæringen" : "Last ned og last opp",
+                }
               : { href: "/about/join/affidavit", label: "Se erklæringen" },
             { href: "/about/join", label: "Kontingent og vilkår" },
           ],

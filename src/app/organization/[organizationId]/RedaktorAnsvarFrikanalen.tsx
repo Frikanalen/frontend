@@ -52,7 +52,7 @@ export default function RedaktorAnsvarFrikanalen({
             <dd>{editorName}</dd>
           </div>
           <div className="sm:col-span-2">
-            <dt className="font-medium">Redaktørens tlf</dt>
+            <dt className="font-medium">Telefon</dt>
             <dd>{editorPhone}</dd>
           </div>
         </dl>

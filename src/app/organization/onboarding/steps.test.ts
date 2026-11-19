@@ -5,6 +5,7 @@ const facts = (over: Partial<OnboardingFacts> = {}): OnboardingFacts => ({
   organizationId: 3,
   loggedIn: true,
   isMember: false,
+  affidavit: "none",
   ...over,
 });
 
@@ -29,22 +30,26 @@ describe("onboardingSteps", () => {
     expect(nextStep(onboardingSteps(facts({ organizationId: null })))?.id).toBe("organization");
   });
 
-  it("leaves a new organization waiting on Frikanalen, not on itself", () => {
+  it("asks a new organization for its signed declaration", () => {
     const steps = onboardingSteps(facts());
-    expect(nextStep(steps)).toBeUndefined();
-    expect(states()).toEqual({
-      account: "done",
-      organization: "done",
-      affidavit: "waiting",
+    expect(nextStep(steps)?.id).toBe("affidavit");
+    expect(affidavit().actions[0]).toEqual({
+      href: "/organization/3/affidavit",
+      label: "Last ned og last opp",
     });
     expect(isOnboarded(steps)).toBe(false);
   });
 
-  it("offers a registered organization its own declaration to print", () => {
-    expect(affidavit().actions[0]).toEqual({
-      href: "/organization/3/affidavit",
-      label: "Skriv ut erklæringen",
-    });
+  it("waits on Frikanalen once the scan is uploaded", () => {
+    expect(nextStep(onboardingSteps(facts({ affidavit: "pending" })))).toBeUndefined();
+    expect(states({ affidavit: "pending" }).affidavit).toBe("waiting");
+  });
+
+  it("hands a rejected scan back to the organization", () => {
+    expect(states({ affidavit: "rejected" }).affidavit).toBe("todo");
+  });
+
+  it("points a visitor at the published declaration", () => {
     expect(affidavit({ organizationId: null }).actions[0].href).toBe("/about/join/affidavit");
   });
 
