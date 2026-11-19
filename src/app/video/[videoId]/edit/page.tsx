@@ -12,6 +12,8 @@ import { VideoPageProps } from "@/app/video/[videoId]/page";
 import { VideoEditForm } from "@/app/video/[videoId]/edit/VideoEditForm";
 import { ProgramImageManager } from "@/app/video/[videoId]/edit/ProgramImageManager";
 import { ssrSeriesList } from "@/generated/ssr/series/series";
+import { ssrCategoriesList } from "@/generated/ssr/categories/categories";
+import Link from "next/link";
 import { VideoParams, parseParamsOr404 } from "@/lib/routeParams";
 
 // Per-visitor: rendered on request, without a static shell of its own.
@@ -37,16 +39,22 @@ export default async function Page({ params }: VideoPageProps) {
   // editor and members.
   if (!user?.isStaff && !profileIsAdminOrMember(video.organization.id, user)) return forbidden();
 
-  const [seriesResponse, imagesResponse, uploadTokenResponse, liveSourcesResponse] =
-    await Promise.all([
-      ssrSeriesList(
-        { organization: video.organization.id, limit: 100 },
-        { headers, cache: "no-store" },
-      ),
-      ssrVideosImagesList(videoId, { limit: 100 }, { headers, cache: "no-store" }),
-      ssrVideosUploadTokenRetrieve(videoId, { headers, cache: "no-store" }),
-      ssrOrganizationLiveSourcesList(video.organization.id, { headers, cache: "no-store" }),
-    ]);
+  const [
+    seriesResponse,
+    imagesResponse,
+    uploadTokenResponse,
+    liveSourcesResponse,
+    categoriesResponse,
+  ] = await Promise.all([
+    ssrSeriesList(
+      { organization: video.organization.id, limit: 100 },
+      { headers, cache: "no-store" },
+    ),
+    ssrVideosImagesList(videoId, { limit: 100 }, { headers, cache: "no-store" }),
+    ssrVideosUploadTokenRetrieve(videoId, { headers, cache: "no-store" }),
+    ssrOrganizationLiveSourcesList(video.organization.id, { headers, cache: "no-store" }),
+    ssrCategoriesList({ limit: 100 }, { headers, cache: "no-store" }),
+  ]);
   if (seriesResponse.status !== 200)
     throw new Error(`Unexpected status ${seriesResponse.status} when fetching series`);
   if (imagesResponse.status !== 200)
@@ -58,10 +66,17 @@ export default async function Page({ params }: VideoPageProps) {
 
   return (
     <section className={"mx-auto mt-10 max-w-5xl space-y-3 bg-background p-6 sm:p-8"}>
+      <Link
+        href={`/video/${videoId}`}
+        className="text-sm text-foreground-500 underline-offset-4 hover:underline"
+      >
+        ← Tilbake til videoen
+      </Link>
       <div className={"prose dark:prose-invert"}>
-        <h2>Rediger video</h2>
+        <h1 className="text-2xl!">Rediger video</h1>
       </div>
       <VideoEditForm
+        categories={categoriesResponse.status === 200 ? categoriesResponse.data.results : []}
         liveSources={liveSourcesResponse.status === 200 ? liveSourcesResponse.data : []}
         series={seriesResponse.data.results}
         video={video}

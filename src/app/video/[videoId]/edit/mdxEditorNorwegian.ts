@@ -1,0 +1,41 @@
+/**
+ * Norwegian strings for the parts of MDXEditor that the description editor
+ * shows: its toolbar, the link dialog and the link preview. Keys not listed
+ * here fall back to the library's English text.
+ */
+export const mdxEditorNorwegian: Record<string, string> = {
+  "contentArea.editableMarkdown": "Redigerbar tekst",
+  "toolbar.blockTypeSelect.placeholder": "Avsnittstype",
+  "toolbar.blockTypeSelect.selectBlockTypeTooltip": "Velg avsnittstype",
+  "toolbar.blockTypes.paragraph": "Avsnitt",
+  "toolbar.blockTypes.quote": "Sitat",
+  "toolbar.blockTypes.heading": "Overskrift {{level}}",
+  "toolbar.undo": "Angre {{shortcut}}",
+  "toolbar.redo": "Gjør om {{shortcut}}",
+  "toolbar.bold": "Fet",
+  "toolbar.removeBold": "Fjern fet",
+  "toolbar.italic": "Kursiv",
+  "toolbar.removeItalic": "Fjern kursiv",
+  "toolbar.underline": "Understreking",
+  "toolbar.removeUnderline": "Fjern understreking",
+  "toolbar.link": "Lag lenke",
+  "toolbar.bulletedList": "Punktliste",
+  "toolbar.numberedList": "Nummerert liste",
+  "toolbar.checkList": "Sjekkliste",
+  "toolbar.toggleGroup": "Velg",
+  "createLink.url": "Adresse",
+  "createLink.urlPlaceholder": "Lim inn en adresse",
+  "createLink.text": "Lenketekst",
+  "createLink.textTooltip": "Teksten som vises for lenken",
+  "createLink.title": "Tittel",
+  "createLink.titleTooltip": "Vises når man holder musen over lenken",
+  "createLink.saveTooltip": "Lagre lenken",
+  "createLink.cancelTooltip": "Avbryt",
+  "dialogControls.save": "Lagre",
+  "dialogControls.cancel": "Avbryt",
+  "linkPreview.open": "Åpne {{url}} i nytt vindu",
+  "linkPreview.edit": "Endre lenken",
+  "linkPreview.copyToClipboard": "Kopier",
+  "linkPreview.copied": "Kopiert!",
+  "linkPreview.remove": "Fjern lenken",
+};

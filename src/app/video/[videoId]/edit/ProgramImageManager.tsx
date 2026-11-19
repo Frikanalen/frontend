@@ -65,6 +65,7 @@ export const ProgramImageManager = ({
   };
 
   const unpublish = async (image: ProgramImage) => {
+    if (!window.confirm("Fjerne bildet fra publisering? Det kan ikke angres.")) return;
     setActionError(undefined);
     setActionImageId(image.id);
     try {
@@ -83,8 +84,11 @@ export const ProgramImageManager = ({
       <div className="prose dark:prose-invert">
         <h2>Bilder</h2>
         <p>
-          Last opp et promobilde — JPEG, PNG eller WebP, opptil 10 MB. Bildet blir kontrollert av
-          ingest og publisert i mediearkivet sammen med videoen.
+          Last opp et promobilde: JPEG, PNG eller WebP, opptil 10 MB. Bildet blir kontrollert og
+          publisert i mediearkivet sammen med videoen.
+        </p>
+        <p className="text-sm">
+          Bilder lagres med en gang de er lastet opp eller fjernet. De trenger ikke «Lagre» over.
         </p>
       </div>
 

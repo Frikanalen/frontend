@@ -140,12 +140,14 @@ beforeEach(() => {
 afterEach(cleanup);
 
 describe("VideoEditForm series membership", () => {
-  it("does not render an episode selector and leaves ordering to the new series", async () => {
+  it("leaves the episode number empty when moving the video to another series", async () => {
     render(<VideoEditForm video={editedVideo} series={[existingSeries, otherSeries]} />);
 
-    expect(screen.queryByLabelText("Episodenummer")).toBeNull();
+    expect((screen.getByLabelText("Episodenummer (valgfritt)") as HTMLInputElement).value).toBe(
+      "2",
+    );
     fireEvent.change(screen.getByLabelText("Serie (valgfritt)"), { target: { value: "8" } });
-    fireEvent.click(screen.getByRole("button", { name: "Send inn" }));
+    fireEvent.click(screen.getByRole("button", { name: "Lagre" }));
 
     await waitFor(() => expect(actions.update).toHaveBeenCalledOnce());
     expect(actions.update).toHaveBeenCalledWith(
@@ -158,7 +160,7 @@ describe("VideoEditForm series membership", () => {
     render(<VideoEditForm video={editedVideo} series={[existingSeries, otherSeries]} />);
 
     fireEvent.change(screen.getByLabelText("Serie (valgfritt)"), { target: { value: "none" } });
-    fireEvent.click(screen.getByRole("button", { name: "Send inn" }));
+    fireEvent.click(screen.getByRole("button", { name: "Lagre" }));
 
     await waitFor(() => expect(actions.update).toHaveBeenCalledOnce());
     expect(actions.update).toHaveBeenCalledWith(
@@ -175,12 +177,34 @@ describe("VideoEditForm series membership", () => {
 
     const seriesSelect = screen.getByLabelText("Serie (valgfritt)") as HTMLSelectElement;
     expect(seriesSelect.value).toBe("9");
-    fireEvent.click(screen.getByRole("button", { name: "Send inn" }));
+    fireEvent.click(screen.getByRole("button", { name: "Lagre" }));
 
     await waitFor(() => expect(actions.update).toHaveBeenCalledOnce());
     expect(actions.update).toHaveBeenCalledWith(
       42,
       expect.objectContaining({ seriesId: 9, episodeNumber: 1 }),
+    );
+  });
+});
+
+describe("VideoEditForm fields", () => {
+  it("shows the video's current title", () => {
+    render(<VideoEditForm video={editedVideo} series={[existingSeries, otherSeries]} />);
+
+    expect((screen.getByLabelText("Navn") as HTMLInputElement).value).toBe("Reportasje");
+  });
+
+  it("saves an age rating and a language", async () => {
+    render(<VideoEditForm video={editedVideo} series={[existingSeries, otherSeries]} />);
+
+    fireEvent.change(screen.getByLabelText("Aldersgrense"), { target: { value: "12" } });
+    fireEvent.change(screen.getByLabelText("Språk"), { target: { value: "none" } });
+    fireEvent.click(screen.getByRole("button", { name: "Lagre" }));
+
+    await waitFor(() => expect(actions.update).toHaveBeenCalledOnce());
+    expect(actions.update).toHaveBeenCalledWith(
+      42,
+      expect.objectContaining({ minimumAge: 12, spokenLanguage: "" }),
     );
   });
 });

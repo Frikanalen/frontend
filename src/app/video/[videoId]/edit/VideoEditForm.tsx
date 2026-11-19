@@ -1,15 +1,17 @@
 "use client";
 import { FormInput } from "@/components/FormField";
 import { useState } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import {
+  Category,
   LiveSource,
   PatchedVideoRequest,
   Series,
   Video,
 } from "@/generated/frikanalenDjangoAPI.schemas";
 import { useRouter } from "next/navigation";
-import { Button, Form } from "@heroui/react";
+import Link from "next/link";
+import { Button, Form, Label, ListBox, Select } from "@heroui/react";
 
 import { MDXEditorField } from "@/app/video/[videoId]/edit/MDXEditorField";
 import { editAction } from "@/app/video/[videoId]/edit/editAction";
@@ -19,14 +21,25 @@ import { FormError } from "@/components/form/FormError";
 import { SeriesFields } from "@/app/organization/[organizationId]/create/SeriesFields";
 import type { SeriesOption } from "@/app/organization/[organizationId]/create/SeriesFields";
 import { NewSeriesModal } from "@/app/organization/[organizationId]/create/NewSeriesModal";
+import { Categories } from "@/app/organization/[organizationId]/create/Categories";
+import { useUnsavedChangesWarning } from "@/lib/useUnsavedChangesWarning";
+import {
+  LanguageField,
+  MinimumAgeField,
+} from "@/app/video/[videoId]/edit/ProgrammeInformationFields";
+
+const UNSAVED_WARNING = "Du har endringer som ikke er lagret. Vil du forlate siden?";
 
 export const VideoEditForm = ({
   video,
   series,
+  categories = [],
   liveSources = [],
 }: {
   video: Video;
   series: Series[];
+  /** Every category there is; the video carries some of them. */
+  categories?: Category[];
   /** The organization's live sources; the enabled ones can be chosen. */
   liveSources?: LiveSource[];
 }) => {
@@ -34,18 +47,43 @@ export const VideoEditForm = ({
     defaultValues: {
       name: video.name,
       description: video.description,
+      categories: video.categories,
       seriesId: video.series?.id ?? null,
+      episodeNumber: video.episodeNumber ?? null,
       liveSource: video.liveSource ?? null,
+      spokenLanguage: video.spokenLanguage ?? "",
+      minimumAge: video.minimumAge ?? null,
+      publishOnWeb: video.publishOnWeb ?? true,
     },
   });
   const { register, control } = form;
   const router = useRouter();
   const [availableSeries, setAvailableSeries] = useState<SeriesOption[]>(series);
   const [isSeriesModalOpen, setSeriesModalOpen] = useState(false);
+  const videoPage = `/video/${video.id}`;
+
+  const { onSubmit, error, isSubmitting } = useApiFormSubmit(form, async (data) => {
+    // Sent only when changed: the API checks a source it's given, and a
+    // source switched off since would otherwise block every other edit.
+    const payload = { ...data };
+    if (!form.formState.dirtyFields.liveSource) delete payload.liveSource;
+    const update = await videosPartialUpdate(video.id, payload);
+    if (update.status !== 200)
+      throw new Error(`Failed to update video ${video.id} with status ${update.status}`);
+    // Saved: leaving now must not ask about unsaved changes.
+    form.reset(data);
+    await editAction(video.id);
+    router.push(videoPage);
+  });
+
+  const isDirty = form.formState.isDirty && !form.formState.isSubmitSuccessful;
+  useUnsavedChangesWarning(isDirty, UNSAVED_WARNING);
 
   const selectSeries = (selected: SeriesOption | null) => {
     const originalSeriesId = video.series?.id ?? null;
     const selectedSeriesId = selected?.id ?? null;
+    // Back in its own series it gets its number back; in another one the
+    // number starts empty, since many series aren't numbered at all.
     form.setValue(
       "episodeNumber",
       selectedSeriesId === originalSeriesId ? (video.episodeNumber ?? null) : null,
@@ -59,24 +97,16 @@ export const VideoEditForm = ({
     form.setValue("episodeNumber", 1, { shouldDirty: true });
   };
 
-  const { onSubmit, error, isSubmitting } = useApiFormSubmit(form, async (data) => {
-    // Sent only when changed: the API checks a source it's given, and a
-    // source switched off since would otherwise block every other edit.
-    const payload = { ...data };
-    if (!form.formState.dirtyFields.liveSource) delete payload.liveSource;
-    const update = await videosPartialUpdate(video.id, payload);
-    if (update.status !== 200)
-      throw new Error(`Failed to update video ${video.id} with status ${update.status}`);
-    await editAction(video.id);
-    router.push(`/video/${video.id}`);
-  });
+  const seriesId = useWatch({ control, name: "seriesId" });
+  const selectedSeries = availableSeries.find(({ id }) => id === seriesId);
+  const choosableLiveSources = liveSources.filter(
+    ({ enabled, id }) => enabled || id === video.liveSource,
+  );
 
   return (
     <div>
-      <Form onSubmit={onSubmit}>
+      <Form onSubmit={onSubmit} className="flex flex-col gap-5">
         <FormError error={error} />
-        {/* Controlled: the field keeps its own copy of the value, so a
-            registered (uncontrolled) input showed up empty. */}
         <Controller
           control={control}
           name="name"
@@ -97,39 +127,108 @@ export const VideoEditForm = ({
           control={control}
           name={"description"}
         />
+        {categories.length > 0 && (
+          <Categories control={control} name={"categories"} categories={categories} />
+        )}
         <SeriesFields
           control={control}
           series={availableSeries}
           seriesName="seriesId"
           onCreateSeries={() => setSeriesModalOpen(true)}
-          onSeriesChange={selectSeries}
+          onSeriesChange={(selected) => selectSeries(selected)}
         />
-        {liveSources.length > 0 || video.liveSource != null ? (
-          <label className="flex w-full flex-col gap-1 text-sm font-medium">
-            Direktesending
-            <select
-              className="rounded-lg border border-default-300 bg-background px-3 py-2"
-              {...register("liveSource", {
-                setValueAs: (value) => (value === "" || value == null ? null : Number(value)),
-              })}
-            >
-              <option value="">Ingen: sendes fra fil</option>
-              {liveSources
-                .filter(({ enabled, id }) => enabled || id === video.liveSource)
-                .map(({ id, name }) => (
-                  <option key={id} value={id}>
-                    Direkte fra {name}
-                  </option>
-                ))}
-            </select>
-            <span className="text-xs font-normal text-default-500">
+        {seriesId != null && (
+          <Controller
+            control={control}
+            name="episodeNumber"
+            render={({ field }) => (
+              <FormInput
+                name={field.name}
+                ref={field.ref}
+                onBlur={field.onBlur}
+                type="number"
+                inputMode="numeric"
+                min={1}
+                className="sm:max-w-48"
+                label="Episodenummer (valgfritt)"
+                description={
+                  selectedSeries
+                    ? `${selectedSeries.name} har ${selectedSeries.episodeCount} episoder. La stå tomt hvis serien ikke er nummerert.`
+                    : "La stå tomt hvis serien ikke er nummerert."
+                }
+                value={field.value == null ? "" : String(field.value)}
+                onValueChange={(value) => field.onChange(value === "" ? null : Number(value))}
+              />
+            )}
+          />
+        )}
+        {choosableLiveSources.length > 0 || video.liveSource != null ? (
+          <div className="space-y-1">
+            <Controller
+              control={control}
+              name="liveSource"
+              render={({ field }) => (
+                <Select
+                  value={field.value == null ? "none" : String(field.value)}
+                  onChange={(key) =>
+                    field.onChange(key === "none" || key == null ? null : Number(key))
+                  }
+                  onBlur={field.onBlur}
+                >
+                  <Label>Direktesending</Label>
+                  <Select.Trigger>
+                    <Select.Value />
+                    <Select.Indicator />
+                  </Select.Trigger>
+                  <Select.Popover>
+                    <ListBox>
+                      <ListBox.Item id="none" textValue="Ingen: sendes fra fil">
+                        Ingen: sendes fra fil
+                        <ListBox.ItemIndicator />
+                      </ListBox.Item>
+                      {choosableLiveSources.map(({ id, name }) => (
+                        <ListBox.Item key={id} id={String(id)} textValue={`Direkte fra ${name}`}>
+                          Direkte fra {name}
+                          <ListBox.ItemIndicator />
+                        </ListBox.Item>
+                      ))}
+                    </ListBox>
+                  </Select.Popover>
+                </Select>
+              )}
+            />
+            <p className="text-xs text-foreground-500">
               En direktesending sendes direkte fra kilden helt til videoen har fått en fil.
-            </span>
-          </label>
+            </p>
+          </div>
         ) : null}
-        <div className={"ml-auto"}>
+        <div className="grid gap-5 sm:grid-cols-2">
+          <LanguageField control={control} name="spokenLanguage" />
+          <MinimumAgeField control={control} name="minimumAge" />
+        </div>
+        <label className="flex items-start gap-3 text-sm">
+          <input
+            type="checkbox"
+            className="mt-0.5 size-4 accent-primary"
+            {...register("publishOnWeb")}
+          />
+          <span>
+            Vis i arkivet og på nettsiden
+            <span className="block text-xs text-foreground-500">
+              Slått av vises videoen ikke i arkivet, i søk eller på forsiden. Den kan fortsatt
+              sendes på TV.
+            </span>
+          </span>
+        </label>
+        <div className="flex w-full flex-wrap items-center justify-end gap-3">
+          <Link
+            href={videoPage}
+            className="text-sm text-foreground-500 underline-offset-4 hover:underline"
+          >
+            Avbryt
+          </Link>
           <Button type={"submit"} isPending={isSubmitting}>
-            Send inn
+            Lagre
           </Button>
         </div>
       </Form>

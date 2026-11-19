@@ -11,6 +11,7 @@ import { ForwardRefEditor } from "./ForwardRefEditor";
 import type { MDXEditorMethods, MDXEditorProps, Translation } from "@mdxeditor/editor";
 import { Card } from "@heroui/react";
 import { Notice } from "@/components/Notice";
+import { mdxEditorNorwegian } from "./mdxEditorNorwegian";
 
 type EditorPassThrough = Omit<
   MDXEditorProps,
@@ -91,7 +92,7 @@ export function MDXEditorField<
 
       return Object.entries(interpolations).reduce(
         (value, [name, replacement]) => value.replaceAll(`{{${name}}}`, String(replacement)),
-        defaultValue,
+        mdxEditorNorwegian[key] ?? defaultValue,
       );
     },
     [editorTranslation, label],
@@ -145,7 +146,12 @@ export function MDXEditorField<
             <ForwardRefEditor
               ref={editorRef}
               markdown={(field.value as unknown as string) ?? ""}
-              onChange={field.onChange}
+              // The editor tidies the text it is given (spacing, list markers)
+              // and reports that as a change; only the editor's own edits count,
+              // or every page would open with "unsaved changes".
+              onChange={(markdown, initialMarkdownNormalize) => {
+                if (!initialMarkdownNormalize) field.onChange(markdown);
+              }}
               onBlur={field.onBlur}
               placeholder={placeholder}
               aria-required={isRequired || undefined}
