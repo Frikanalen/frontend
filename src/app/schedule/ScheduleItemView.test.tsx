@@ -87,7 +87,7 @@ describe("ScheduleItemList", () => {
   it("groups programmes under the organization whose airtime it is", () => {
     const grant = {
       id: 7,
-      organization: { id: 1, name: "Norsk Presse" },
+      organization: { id: 1, name: "Norsk Presse", fkmember: true },
       starttime: "2026-08-21T20:00:00+02:00",
       endtime: "2026-08-21T21:00:00+02:00",
     };
@@ -104,7 +104,10 @@ describe("ScheduleItemList", () => {
           by(program(4, "Gjestespill", "20:30"), "Havneforeningen", 7),
           by(smallHours, "Frikanalen", null),
         ]}
-        grants={[grant, { ...grant, id: 8, organization: { id: 9, name: "Sjakklubben" } }]}
+        grants={[
+          grant,
+          { ...grant, id: 8, organization: { id: 9, name: "Sjakklubben", fkmember: true } },
+        ]}
       />,
     );
 

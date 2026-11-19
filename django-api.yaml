@@ -26865,7 +26865,7 @@ components:
           readOnly: true
         organization:
           allOf:
-            - $ref: '#/components/schemas/GrantOrganization'
+            - $ref: '#/components/schemas/PublicGrantOrganization'
           readOnly: true
         starttime:
           type: string
@@ -26880,6 +26880,22 @@ components:
         - id
         - organization
         - starttime
+    PublicGrantOrganization:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+        fkmember:
+          type: boolean
+          readOnly: true
+      required:
+        - fkmember
+        - id
+        - name
     Recipe:
       description: |-
         How a slot or a grant programs itself.

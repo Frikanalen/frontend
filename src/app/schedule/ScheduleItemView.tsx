@@ -100,9 +100,7 @@ export const ScheduleItemList = ({
               <Rows items={items} now={now} ownerId={grant.organization.id} />
             ) : (
               <p className="border-t border-default-200 px-2 py-4 text-default-600 sm:px-3">
-                {over
-                  ? "Sendetiden ble ikke brukt."
-                  : `${grant.organization.name} har ikke satt opp programmer ennå.`}
+                {over ? "Sendetiden ble ikke brukt." : "Programmet er ikke klart ennå."}
               </p>
             )}
           </section>
