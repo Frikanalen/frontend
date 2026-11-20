@@ -1,7 +1,7 @@
 import { categoriesList } from "@/generated/categories/categories";
 import { VideoCreateForm } from "@/app/organization/[organizationId]/create/VideoCreateForm";
+import { StudioHeader } from "@/app/organization/[organizationId]/StudioHeader";
 import { getCookiesFromRequest } from "@/lib/getCookiesFromRequest";
-import { organizationRetrieve } from "@/generated/organization/organization";
 import { seriesList } from "@/generated/series/series";
 import { OrganizationParams, parseParamsOr404 } from "@/lib/routeParams";
 
@@ -13,19 +13,19 @@ export default async function Page({ params }: { params: Promise<{ organizationI
   const { organizationId } = await parseParamsOr404(OrganizationParams, params);
 
   const headers = await getCookiesFromRequest();
-  const { data: organization } = await organizationRetrieve(organizationId, {
-    headers,
-  });
   const { data: series } = await seriesList(
     { organization: organizationId, limit: 100 },
     { headers },
   );
 
   return (
-    <section className="mx-auto max-w-3xl">
+    <section className="max-w-3xl">
+      <StudioHeader
+        title="Ny video"
+        intro="Velg filen og gi videoen en tittel. Opplastingen starter med en gang, og dere fyller inn resten mens den pågår."
+      />
       <VideoCreateForm
         organizationId={organizationId}
-        organizationName={organization.name}
         categories={categories.results}
         series={series.results}
       />

@@ -10,6 +10,7 @@ import { profileIsAdminOrMember } from "@/app/organization/[organizationId]/admi
 import { getUserOrNull } from "@/app/getUserOrNull";
 import { VideoPageProps } from "@/app/video/[videoId]/page";
 import { VideoEditForm } from "@/app/video/[videoId]/edit/VideoEditForm";
+import { VideoUploadPanel } from "@/app/video/[videoId]/edit/VideoUploadPanel";
 import { ProgramImageManager } from "@/app/video/[videoId]/edit/ProgramImageManager";
 import { ssrSeriesList } from "@/generated/ssr/series/series";
 import { ssrCategoriesList } from "@/generated/ssr/categories/categories";
@@ -81,6 +82,12 @@ export default async function Page({ params }: VideoPageProps) {
                 Se offentlig side ↗
               </Link>
             }
+          />
+          <VideoUploadPanel
+            videoId={videoId}
+            uploadEndpoint={uploadTokenResponse.data.uploadUrl}
+            uploadToken={uploadToken}
+            needsFile={!video.properImport && video.liveSource == null}
           />
           <VideoEditForm
             image={

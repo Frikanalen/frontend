@@ -3,7 +3,7 @@ import { FormInput } from "@/components/FormField";
 import { Category, Series, VideoCreateRequest } from "@/generated/frikanalenDjangoAPI.schemas";
 import { Button, Form } from "@heroui/react";
 import { Categories } from "@/app/organization/[organizationId]/create/Categories";
-import { useVideosCreate, videosUploadTokenRetrieve } from "@/generated/videos/videos";
+import { useVideosCreate } from "@/generated/videos/videos";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { useApiFormSubmit } from "@/lib/useApiFormSubmit";
@@ -14,26 +14,30 @@ import {
 } from "@/app/organization/[organizationId]/create/SeriesFields";
 import type { SeriesOption } from "@/app/organization/[organizationId]/create/SeriesFields";
 import { NewSeriesModal } from "@/app/organization/[organizationId]/create/NewSeriesModal";
-import { FileUpload } from "@/components/upload/FileUpload";
 import { useState } from "react";
 import { VideoFileDropzone } from "@/app/organization/[organizationId]/create/VideoFileDropzone";
-import { MDXEditorField } from "@/app/video/[videoId]/edit/MDXEditorField";
+import { stashUpload } from "@/app/organization/[organizationId]/create/pendingUploads";
 
-type UploadJob = {
-  videoId: number;
-  uploadEndpoint: string;
-  uploadToken: string;
-  file: File;
-};
+/** A file name as a first guess at a title: no extension, separators as spaces. */
+export const titleFromFileName = (name: string) =>
+  name
+    .replace(/\.[^.]+$/, "")
+    .replace(/[_]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 
+/**
+ * The first step of a new video: the file, and the little the API needs to
+ * create it. The member then lands on the video's own page, where the file
+ * goes up while the rest (description, picture, visibility, language, age
+ * rating) is filled in on the same form used for every later edit.
+ */
 export const VideoCreateForm = ({
   organizationId,
-  organizationName,
   categories,
   series,
 }: {
   organizationId: number;
-  organizationName: string;
   categories: Category[];
   series: Series[];
 }) => {
@@ -44,27 +48,24 @@ export const VideoCreateForm = ({
   const [availableSeries, setAvailableSeries] = useState<SeriesOption[]>(series);
   const [isSeriesModalOpen, setSeriesModalOpen] = useState(false);
   const [videoFile, setVideoFile] = useState<File | null>(null);
-  const [uploadJob, setUploadJob] = useState<UploadJob | null>(null);
+  const [title, setTitle] = useState("");
+
+  const chooseFile = (file: File | null) => {
+    setVideoFile(file);
+    // Only a guess, and only where the member has not typed a title already.
+    if (file && !form.getValues("name")) {
+      const guess = titleFromFileName(file.name);
+      form.setValue("name", guess, { shouldDirty: true });
+      setTitle(guess);
+    }
+  };
 
   const { onSubmit, error, isSubmitting } = useApiFormSubmit(form, async (data) => {
-    if (!videoFile) throw new Error("Velg en videofil før du oppretter videoen.");
+    if (!videoFile) throw new Error("Velg en videofil først.");
     const response = await mutateAsync({ data });
     const videoId = response.data.id;
-
-    try {
-      const tokenResponse = await videosUploadTokenRetrieve(videoId);
-      if (!tokenResponse.data.uploadToken) throw new Error("No upload token returned");
-      setUploadJob({
-        videoId,
-        uploadEndpoint: tokenResponse.data.uploadUrl,
-        uploadToken: tokenResponse.data.uploadToken,
-        file: videoFile,
-      });
-    } catch {
-      // The record already exists. Continue on the recovery page instead of
-      // letting a retry create a duplicate video.
-      router.push(`/video/${videoId}/upload`);
-    }
+    stashUpload(videoId, videoFile);
+    router.push(`/video/${videoId}/edit`);
   });
 
   const selectSeries = (selected: SeriesOption | null) => {
@@ -79,60 +80,20 @@ export const VideoCreateForm = ({
     form.setValue("episodeNumber", 1, { shouldDirty: true });
   };
 
-  if (uploadJob) {
-    return (
-      <section className="space-y-4" aria-live="polite">
-        <div className="prose dark:prose-invert">
-          <h3>Videoen er opprettet. Laster opp {uploadJob.file.name}</h3>
-          <p>La denne siden være åpen mens filen lastes opp og behandles.</p>
-        </div>
-        <FileUpload
-          videoId={uploadJob.videoId}
-          uploadEndpoint={uploadJob.uploadEndpoint}
-          uploadToken={uploadJob.uploadToken}
-          initialFile={uploadJob.file}
-          // An upload that ingest rejects is retried with another file from
-          // right here, and the heading above should say which one.
-          onFileChange={(file) => setUploadJob((job) => job && { ...job, file })}
-          autoStart
-        />
-      </section>
-    );
-  }
-
   return (
     <>
-      <div className="prose mb-4 dark:prose-invert">
-        <h2 className="mb-1!">Ny video</h2>
-        <h3>for {organizationName}</h3>
-        <p>
-          Fyll inn videodetaljene og velg originalfilen. Videoen opprettes og lastes opp fra denne
-          siden.
-        </p>
-      </div>
       <Form onSubmit={onSubmit} className="block" autoComplete={"off"}>
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-5">
           <FormError error={error} />
+          <VideoFileDropzone file={videoFile} onFileChange={chooseFile} isDisabled={isSubmitting} />
           <FormInput
             id="video-name"
             {...register("name")}
-            placeholder={"Videotittel"}
-            label={"Videotittel"}
+            value={title}
+            onValueChange={setTitle}
+            label={"Tittel"}
             labelPlacement={"outside-top"}
             isRequired
-          />
-          <MDXEditorField
-            name="description"
-            control={control}
-            label="Beskrivelse"
-            placeholder="Beskrivelse"
-            rules={{
-              required: "Beskrivelse er påkrevd.",
-              maxLength: {
-                value: 2048,
-                message: "Beskrivelsen kan ikke være lengre enn 2048 tegn.",
-              },
-            }}
           />
           <Categories control={control} name={"categories"} categories={categories} />
           <SeriesFields
@@ -142,14 +103,12 @@ export const VideoCreateForm = ({
             onCreateSeries={() => setSeriesModalOpen(true)}
             onSeriesChange={selectSeries}
           />
-          <VideoFileDropzone
-            file={videoFile}
-            onFileChange={setVideoFile}
-            isDisabled={isSubmitting}
-          />
-          <div className="p-2 ml-auto">
+          <div className="flex flex-wrap items-center justify-end gap-4">
+            <p className="text-sm text-default-600">
+              Beskrivelse, bilde og resten fyller dere inn mens filen lastes opp.
+            </p>
             <Button type="submit" isPending={isSubmitting} variant="primary">
-              Opprett
+              Last opp og fortsett
             </Button>
           </div>
         </div>
