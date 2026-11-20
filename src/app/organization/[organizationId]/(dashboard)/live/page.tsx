@@ -9,6 +9,7 @@ import { OrganizationParams, parseParamsOr404 } from "@/lib/routeParams";
 import { forbidden, notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { LiveSources } from "./LiveSources";
+import { LiveProgrammes } from "./LiveProgrammes";
 import { StudioHeader } from "@/app/organization/[organizationId]/StudioHeader";
 
 // Per-visitor: rendered on request, without a static shell of its own.
@@ -62,6 +63,7 @@ export default async function Page({
         organizationId={organizationId}
         sources={sources}
       />
+      <LiveProgrammes organizationId={organizationId} />
     </section>
   );
 }

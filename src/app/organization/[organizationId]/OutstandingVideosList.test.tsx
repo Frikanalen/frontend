@@ -116,7 +116,7 @@ describe("OutstandingVideosList", () => {
       "/video/42/edit",
     );
     expect(screen.getByRole("link", { name: "Last opp" }).getAttribute("href")).toBe(
-      "/video/42/upload",
+      "/video/42/edit",
     );
   });
 
@@ -134,6 +134,15 @@ describe("OutstandingVideosList", () => {
 
     expect(screen.getByText("Direkte · sendes fredag 18. januar kl. 17:32")).toBeTruthy();
     expect(screen.queryByRole("link", { name: "Last opp" })).toBeNull();
+  });
+
+  it("leaves a live programme that has had its airing to Direktesending", () => {
+    api.videos = [
+      { ...video(44, "Fjorårets årsmøte"), liveSource: 9, liveAirings: [] } as unknown as Video,
+    ];
+    const { container } = render(<OutstandingVideosList organizationId={9} />);
+
+    expect(container.innerHTML).toBe("");
   });
 
   it("renders nothing at all when every video is imported", () => {
