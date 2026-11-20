@@ -8,6 +8,7 @@ import { FormInput } from "@/components/FormField";
 import { FormError } from "@/components/form/FormError";
 import type {
   Invitation,
+  InvitationCreated,
   InviteRequest,
   OrganizationMember,
 } from "@/generated/frikanalenDjangoAPI.schemas";
@@ -30,7 +31,9 @@ export const LEAVE_QUESTION =
   "Forlate organisasjonen? Du mister tilgangen til Studio, og redaktøren må invitere deg på nytt.";
 
 export const withdrawQuestion = (invitation: Invitation) =>
-  `Trekke tilbake invitasjonen til ${invitation.email}? Lenken i e-posten slutter å virke.`;
+  invitation.email
+    ? `Trekke tilbake invitasjonen til ${invitation.email}? Lenken i e-posten slutter å virke.`
+    : "Trekke tilbake invitasjonslenken? Den slutter å virke.";
 
 const dateFormat = new Intl.DateTimeFormat("nb-NO", {
   day: "numeric",
@@ -39,10 +42,71 @@ const dateFormat = new Intl.DateTimeFormat("nb-NO", {
 });
 
 /**
- * Invite someone by e-mail, and the invitations nobody has accepted yet.
- * The answer is the same whether or not the address has an account, and an
- * invitation shows by its address until it is accepted, so this tells the
- * editor nothing about who is registered.
+ * A new invitation's link, the only time it can be shown: copy it, or let
+ * the person scan it from this screen.
+ */
+export const InvitationLink = ({ invitation }: { invitation: InvitationCreated }) => {
+  const [copied, setCopied] = useState(false);
+  const [showQr, setShowQr] = useState(false);
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(invitation.link);
+      setCopied(true);
+    } catch {
+      // No clipboard (an insecure page, or a refusal): the field is
+      // selectable, so it can still be copied by hand.
+      setCopied(false);
+    }
+  };
+
+  return (
+    <div className="space-y-3 border border-default-200 bg-default-50 p-4" role="status">
+      <p className="font-medium">
+        {invitation.email
+          ? `Invitasjonen er sendt til ${invitation.email}.`
+          : "Invitasjonen er klar."}{" "}
+        <span className="font-normal text-default-700">
+          Dere kan også dele lenken selv. Den virker én gang, til{" "}
+          {dateFormat.format(new Date(invitation.expiresAt))}.
+        </span>
+      </p>
+      <div className="flex flex-col gap-2 sm:flex-row">
+        <input
+          readOnly
+          aria-label="Invitasjonslenke"
+          value={invitation.link}
+          onFocus={(event) => event.currentTarget.select()}
+          className="min-w-0 grow border border-default-300 bg-background px-3 py-2 font-mono text-sm"
+        />
+        <div className="flex gap-2">
+          <Button variant="secondary" onPress={() => void copy()}>
+            {copied ? "Kopiert" : "Kopier"}
+          </Button>
+          <Button variant="tertiary" onPress={() => setShowQr((shown) => !shown)}>
+            {showQr ? "Skjul QR-kode" : "Vis QR-kode"}
+          </Button>
+        </div>
+      </div>
+      {showQr ? (
+        // eslint-disable-next-line @next/next/no-img-element -- a data URI from the API
+        <img
+          src={invitation.qrCode}
+          alt="QR-kode med invitasjonslenken"
+          className="size-56 bg-white p-2"
+        />
+      ) : null}
+      <p className="text-sm text-default-600">
+        Lenken vises bare nå. Mister dere den, lager dere en ny og trekker tilbake den gamle.
+      </p>
+    </div>
+  );
+};
+
+/**
+ * Invite someone: by e-mail, or as a link or QR code to hand over. The
+ * answer is the same whether or not an address has an account, and an
+ * invitation shows by its address (or as a link) until it is accepted, so
+ * this tells the editor nothing about who is registered.
  */
 const Invitations = ({ organizationId }: { organizationId: number }) => {
   const queryClient = useQueryClient();
@@ -51,30 +115,46 @@ const Invitations = ({ organizationId }: { organizationId: number }) => {
   const { mutateAsync: withdraw } = useOrganizationInvitationsDestroy();
   const { data: response } = useOrganizationInvitationsList(organizationId);
   const invitations = response?.data ?? [];
-  const [sent, setSent] = useState<string | null>(null);
+  const [created, setCreated] = useState<InvitationCreated | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [making, setMaking] = useState(false);
   const refresh = () =>
     queryClient.invalidateQueries({
       queryKey: getOrganizationInvitationsListQueryKey(organizationId),
     });
 
+  const invite = async (email: string) => {
+    setCreated(null);
+    const { data: invitation } = await create({ id: organizationId, data: email ? { email } : {} });
+    form.reset({ email: "" });
+    setCreated(invitation);
+    await refresh();
+  };
+
   const {
     onSubmit,
     error: inviteError,
     isSubmitting,
-  } = useApiFormSubmit(form, async (data) => {
-    setSent(null);
-    const { data: invitation } = await create({ id: organizationId, data });
-    form.reset({ email: "" });
-    setSent(invitation.email);
-    await refresh();
-  });
+  } = useApiFormSubmit(form, (data) => invite(data.email ?? ""));
+
+  const makeLink = async () => {
+    setError(null);
+    setMaking(true);
+    try {
+      await invite("");
+    } catch (cause) {
+      setError(formatApiError(cause));
+    } finally {
+      setMaking(false);
+    }
+  };
 
   const onWithdraw = async (invitation: Invitation) => {
     if (!globalThis.confirm(withdrawQuestion(invitation))) return;
     setError(null);
     try {
       await withdraw({ id: organizationId, invitationId: invitation.id });
+      if (created?.id === invitation.id) setCreated(null);
       await refresh();
     } catch (cause) {
       setError(formatApiError(cause));
@@ -83,10 +163,40 @@ const Invitations = ({ organizationId }: { organizationId: number }) => {
 
   return (
     <div className="space-y-4">
+      <div>
+        <h3 className="font-semibold">Inviter et medlem</h3>
+        <p className="mt-1 text-sm text-default-600">
+          Send invitasjonen på e-post, eller lag en lenke dere deler selv, som tekst eller QR-kode.
+          Har personen ikke bruker på Frikanalen, lager de den fra lenken.
+        </p>
+      </div>
+      <FormError error={error ?? inviteError} />
+      <Form onSubmit={onSubmit} className="block" aria-label="Inviter på e-post">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
+          <FormInput
+            label="E-postadresse"
+            labelPlacement="outside-top"
+            type="email"
+            id="member-email"
+            className="w-full sm:max-w-sm"
+            isRequired
+            {...form.register("email", { required: true })}
+          />
+          <div className="flex items-center gap-2">
+            <Button type="submit" variant="secondary" isPending={isSubmitting}>
+              Send på e-post
+            </Button>
+            <span className="text-sm text-default-600">eller</span>
+            <Button variant="tertiary" isPending={making} onPress={() => void makeLink()}>
+              Lag lenke
+            </Button>
+          </div>
+        </div>
+      </Form>
+      {created ? <InvitationLink invitation={created} /> : null}
       {invitations.length > 0 ? (
         <div>
           <h3 className="text-sm font-semibold">Invitert, ikke svart ennå</h3>
-          <FormError error={error} />
           <ul className="mt-1 divide-y divide-default-200 border-y border-default-200">
             {invitations.map((invitation) => (
               <li
@@ -94,9 +204,9 @@ const Invitations = ({ organizationId }: { organizationId: number }) => {
                 className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 py-3"
               >
                 <div className="min-w-0">
-                  <p className="break-all">{invitation.email}</p>
+                  <p className="break-all">{invitation.email || "Lenke"}</p>
                   <p className="text-sm text-default-600">
-                    Lenken virker til {dateFormat.format(new Date(invitation.expiresAt))}
+                    Virker til {dateFormat.format(new Date(invitation.expiresAt))}
                   </p>
                 </div>
                 <Button size="sm" variant="tertiary" onPress={() => void onWithdraw(invitation)}>
@@ -107,29 +217,6 @@ const Invitations = ({ organizationId }: { organizationId: number }) => {
           </ul>
         </div>
       ) : null}
-      <Form onSubmit={onSubmit} className="block space-y-2" aria-label="Inviter et medlem">
-        <FormError error={inviteError} />
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
-          <FormInput
-            label="Inviter et medlem"
-            labelPlacement="outside-top"
-            type="email"
-            id="member-email"
-            className="w-full sm:max-w-sm"
-            description="Personen får en lenke på e-post. Har de ikke bruker på Frikanalen, lager de den fra lenken."
-            isRequired
-            {...form.register("email", { required: true })}
-          />
-          <Button type="submit" variant="secondary" isPending={isSubmitting}>
-            Send invitasjon
-          </Button>
-        </div>
-        {sent ? (
-          <p role="status" className="text-sm text-success">
-            Invitasjonen er sendt til {sent}.
-          </p>
-        ) : null}
-      </Form>
     </div>
   );
 };
@@ -194,7 +281,7 @@ export const OrganizationMembers = ({
         <p className="mt-1 max-w-3xl text-sm text-default-600">
           Medlemmene jobber på vegne av organisasjonen: de laster opp videoer, og når Frikanalen har
           bekreftet hvem de er, setter de opp sendetid.
-          {mayManage ? " Dere inviterer nye medlemmer på e-post." : null}
+          {mayManage ? " Dere inviterer nye medlemmer på e-post eller med en lenke." : null}
         </p>
       </div>
       <FormError error={error ?? (loadError ? formatApiError(loadError) : null)} />

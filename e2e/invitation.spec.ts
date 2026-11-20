@@ -37,6 +37,29 @@ test("someone without an account makes one from the link and lands in Studio", a
   ]);
 });
 
+test("a link handed over in person asks for the new member's address", async ({ page }) => {
+  const requests = await resolveWith(page, "/api/invitations/link-token/accept", member);
+  await stubPage(page, "/organization/3/admin");
+  await page.goto("/invitation/link-token");
+  await waitForHydration(page);
+
+  await fillAndConfirm(page.getByLabel("E-post (brukernavn)"), "eva@example.test");
+  await fillAndConfirm(page.getByLabel("Fornavn"), "Eva");
+  await fillAndConfirm(page.getByLabel("Etternavn"), "Eng");
+  await fillAndConfirm(page.getByLabel("Velg et passord"), "kaia-om-kvelden-1987");
+  await page.getByRole("button", { name: "Lag bruker og bli med" }).click();
+
+  await expect(page).toHaveURL(/\/organization\/3\/admin$/);
+  expect(requests).toEqual([
+    {
+      email: "eva@example.test",
+      firstName: "Eva",
+      lastName: "Eng",
+      password: "kaia-om-kvelden-1987",
+    },
+  ]);
+});
+
 test("someone with an account logs in and comes back to the invitation", async ({ page }) => {
   await page.goto("/invitation/good-token");
   await waitForHydration(page);

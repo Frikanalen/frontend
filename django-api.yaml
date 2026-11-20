@@ -7825,8 +7825,9 @@ paths:
     get:
       operationId: organization_invitations_list
       description: |-
-        The organization's open invitations, by address. The editor and staff
-        see them and invite more.
+        The organization's open invitations, by address (blank for one shared
+        as a link). The editor and staff see them and invite more: by e-mail,
+        or as a link and QR code to hand over themselves.
       parameters:
       - in: path
         name: id
@@ -7947,8 +7948,9 @@ paths:
     post:
       operationId: organization_invitations_create
       description: |-
-        The organization's open invitations, by address. The editor and staff
-        see them and invite more.
+        The organization's open invitations, by address (blank for one shared
+        as a link). The editor and staff see them and invite more: by e-mail,
+        or as a link and QR code to hand over themselves.
       parameters:
       - in: path
         name: id
@@ -7962,7 +7964,6 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/InviteRequest'
-        required: true
       security:
       - tokenAuth: []
       - cookieAuth: []
@@ -8068,7 +8069,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Invitation'
+                $ref: '#/components/schemas/InvitationCreated'
           description: ''
   /api/organization/{id}/invitations/{invitation_id}:
     delete:
@@ -26899,6 +26900,11 @@ components:
       type: object
       description: 'Empty when logged in. Without a session: the new account''s details.'
       properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+          description: Only for an invitation shared as a link, which has no address.
         firstName:
           type: string
           minLength: 1
@@ -26916,9 +26922,12 @@ components:
           type: integer
           readOnly: true
         email:
-          type: string
-          format: email
-          maxLength: 254
+          oneOf:
+          - type: string
+            format: email
+            maxLength: 254
+          - type: string
+            maxLength: 0
         createdAt:
           type: string
           format: date-time
@@ -26926,7 +26935,6 @@ components:
           type: string
           format: date-time
       required:
-      - email
       - expiresAt
       - id
     InvitationPreview:
@@ -26940,8 +26948,7 @@ components:
           type: string
         email:
           type: string
-          format: email
-          description: The address the invitation was sent to.
+          description: The address the invitation was sent to; blank for a link.
         expiresAt:
           type: string
           format: date-time
@@ -26954,6 +26961,7 @@ components:
     InvitationsAcceptCreateError:
       oneOf:
       - $ref: '#/components/schemas/InvitationsAcceptCreateNonFieldErrorsErrorComponent'
+      - $ref: '#/components/schemas/InvitationsAcceptCreateEmailErrorComponent'
       - $ref: '#/components/schemas/InvitationsAcceptCreateFirstNameErrorComponent'
       - $ref: '#/components/schemas/InvitationsAcceptCreateLastNameErrorComponent'
       - $ref: '#/components/schemas/InvitationsAcceptCreatePasswordErrorComponent'
@@ -26961,6 +26969,7 @@ components:
         propertyName: attr
         mapping:
           non_field_errors: '#/components/schemas/InvitationsAcceptCreateNonFieldErrorsErrorComponent'
+          email: '#/components/schemas/InvitationsAcceptCreateEmailErrorComponent'
           first_name: '#/components/schemas/InvitationsAcceptCreateFirstNameErrorComponent'
           last_name: '#/components/schemas/InvitationsAcceptCreateLastNameErrorComponent'
           password: '#/components/schemas/InvitationsAcceptCreatePasswordErrorComponent'
@@ -27102,11 +27111,13 @@ components:
       type: object
       properties:
         email:
-          type: string
-          format: email
-          minLength: 1
-      required:
-      - email
+          description: Send the link here. Leave out to only get the link, to share
+            yourself.
+          oneOf:
+          - type: string
+            format: email
+          - type: string
+            maxLength: 0
     OrganizationInvitationsCreateEmailErrorComponent:
       type: object
       properties:
@@ -27117,19 +27128,15 @@ components:
           description: '* `email` - email'
         code:
           enum:
-          - blank
           - invalid
           - 'null'
           - null_characters_not_allowed
-          - required
           - surrogate_characters_not_allowed
           type: string
           description: |-
-            * `blank` - blank
             * `invalid` - invalid
             * `null` - null
             * `null_characters_not_allowed` - null_characters_not_allowed
-            * `required` - required
             * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed
         detail:
           type: string
@@ -27239,6 +27246,68 @@ components:
         propertyName: type
         mapping:
           client_error: '#/components/schemas/ParseErrorResponse'
+    InvitationCreated:
+      type: object
+      description: |-
+        A new invitation, with its link. The link is only ever shown here: only
+        its hash is stored, so a lost link means a new invitation.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        email:
+          oneOf:
+          - type: string
+            format: email
+            maxLength: 254
+          - type: string
+            maxLength: 0
+        createdAt:
+          type: string
+          format: date-time
+        expiresAt:
+          type: string
+          format: date-time
+        link:
+          type: string
+          readOnly: true
+        qrCode:
+          type: string
+          readOnly: true
+          description: The link as an SVG data URI
+      required:
+      - expiresAt
+      - id
+      - link
+      - qrCode
+    InvitationsAcceptCreateEmailErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+          - email
+          type: string
+          description: '* `email` - email'
+        code:
+          enum:
+          - blank
+          - invalid
+          - 'null'
+          - null_characters_not_allowed
+          - surrogate_characters_not_allowed
+          type: string
+          description: |-
+            * `blank` - blank
+            * `invalid` - invalid
+            * `null` - null
+            * `null_characters_not_allowed` - null_characters_not_allowed
+            * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed
+        detail:
+          type: string
+      required:
+      - attr
+      - code
+      - detail
     OrganizationRequest:
       type: object
       properties:
