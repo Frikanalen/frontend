@@ -7,6 +7,7 @@ import { AccountHeader } from "@/app/profile/AccountHeader";
 import { ActionLink } from "@/app/profile/ActionLink";
 import { IdentityNotice } from "@/app/profile/IdentityNotice";
 import { NoOrganizations } from "@/app/profile/NoOrganizations";
+import { Organizations } from "@/app/profile/Organizations";
 
 // Per-visitor: rendered on request, without a static shell of its own.
 export const instant = false;
@@ -59,9 +60,13 @@ export default async function Page() {
       <AccountHeader user={user} />
       {isBlockedFromScheduling && <IdentityNotice />}
       {/* An organization's tools are behind Studio in the channel bar on every
-          page, so this page is about the account. Only someone with no
-          organization yet is told here what to do next. */}
-      {user.memberOf.length + user.editorOf.length === 0 && <NoOrganizations />}
+          page. Here you see which organizations you are in and your role in
+          each; someone with no organization yet is told what to do next. */}
+      {user.memberOf.length + user.editorOf.length === 0 ? (
+        <NoOrganizations />
+      ) : (
+        <Organizations user={user} />
+      )}
       {user.isStaff && <StaffTools />}
     </div>
   );
