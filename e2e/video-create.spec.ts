@@ -1,5 +1,5 @@
 import { expect, test, type Locator, type Page, type Route } from "@playwright/test";
-import { stubApi, stubPage } from "./support/api";
+import { stubApi } from "./support/api";
 import { waitForHydration } from "./support/hydration";
 
 const CREATE_PAGE = "/organization/3/create";
@@ -31,17 +31,7 @@ const openSelect = async (trigger: Locator) => {
 };
 
 const fillRequiredDetails = async (page: Page) => {
-  await page.getByLabel("Videotittel").fill("Ny episode fra kaia");
-  await page.getByLabel("Beskrivelse").fill("En fersk reportasje fra havna.");
-
-  const categories = page.getByRole("button", { name: /Kategorier/ });
-  await openSelect(categories);
-  const listbox = page.getByRole("listbox", { name: /Kategorier/ });
-  await expect(listbox).toBeVisible();
-  await listbox.getByRole("option", { name: "Kultur" }).click();
-  // A multi-select deliberately stays open after one choice.
-  await listbox.press("Escape");
-  await expect(categories).toHaveAttribute("aria-expanded", "false");
+  await page.getByLabel("Tittel").fill("Ny episode fra kaia");
 };
 
 const chooseExistingSeries = async (page: Page) => {
@@ -51,8 +41,14 @@ const chooseExistingSeries = async (page: Page) => {
   await listbox.getByRole("option", { name: "Havna vår" }).click();
 };
 
+/** The file input: the dropzone on "Ny video", the upload panel on the video's page. */
+const fileInput = (page: Page) =>
+  page.url().includes("/edit")
+    ? page.getByRole("region", { name: "Videofil" }).locator('input[type="file"]')
+    : page.locator('input[type="file"]');
+
 const selectVideoFile = (page: Page, name = "havna.mxf") =>
-  page.locator('input[type="file"]').setInputFiles({
+  fileInput(page).setInputFiles({
     name,
     mimeType: "application/mxf",
     buffer: Buffer.from("video"),
@@ -142,23 +138,33 @@ const stubIngest = async (page: Page) => {
   };
 };
 
-test.beforeEach(async ({ page }) => {
+const SUBMIT = "Last opp og fortsett";
+
+test.beforeEach(async ({ page, baseURL }) => {
+  // The video's page, where the upload carries on, is for members only.
+  await page.context().addCookies([{ name: "e2e-member", value: "1", url: baseURL! }]);
   await stubApi(page);
   await page.goto(CREATE_PAGE);
   await waitForHydration(page);
 });
 
 test.describe("video creation", () => {
-  test("presents one unified, optional-series form", async ({ page }) => {
+  test("asks for the file and the little needed to create the video", async ({ page }) => {
     await expect(page.getByRole("heading", { name: "Ny video" })).toBeVisible();
-    await expect(page.getByText("Videoen opprettes og lastes opp fra denne siden.")).toBeVisible();
+    await expect(page.getByText("Opplastingen starter med en gang")).toBeVisible();
+    await expect(page.getByLabel("Beskrivelse")).toHaveCount(0);
     await expect(page.getByRole("button", { name: /Serie \(valgfritt\)/ })).toBeVisible();
     await expect(page.getByText("La stå som «Ingen serie»")).toBeVisible();
     await expect(page.getByLabel("Episodenummer")).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Videofil" })).toContainText(
       "Slipp videofilen her",
     );
-    await expect(page.getByRole("button", { name: "Opprett", exact: true })).toBeVisible();
+    await expect(page.getByRole("button", { name: SUBMIT })).toBeVisible();
+  });
+
+  test("takes a first guess at the title from the file name", async ({ page }) => {
+    await selectVideoFile(page, "havna_vaar_episode_4.mov");
+    await expect(page.getByLabel("Tittel")).toHaveValue("havna vaar episode 4");
   });
 
   test("aligns series creation with the series selector", async ({ page }) => {
@@ -189,7 +195,7 @@ test.describe("video creation", () => {
     await expect(page.getByText(/Klikk eller slipp en annen fil/)).toBeVisible();
   });
 
-  test("submits the next episode and starts its upload without a second step", async ({ page }) => {
+  test("creates the next episode and carries on uploading on its own page", async ({ page }) => {
     const videoRequests = await recordPost(page, "/api/videos", { id: VIDEO_ID });
     const uploadRequests = await stubUpload(page);
     await stubIngest(page);
@@ -197,18 +203,18 @@ test.describe("video creation", () => {
     await fillRequiredDetails(page);
     await chooseExistingSeries(page);
     await selectVideoFile(page);
-    await page.getByRole("button", { name: "Opprett", exact: true }).click();
+    await page.getByRole("button", { name: SUBMIT }).click();
 
+    await expect(page).toHaveURL(new RegExp(`/video/${VIDEO_ID}/edit$`));
     await expect(page.getByRole("heading", { name: /Laster opp havna\.mxf/ })).toBeVisible();
-    await expect(page.getByText("Fyll inn videodetaljene")).toHaveCount(0);
+    await expect(page.getByLabel("Beskrivelse")).toBeVisible();
     await expect.poll(() => uploadRequests.map(({ method }) => method)).toContain("PATCH");
 
     expect(videoRequests).toHaveLength(1);
     expect(videoRequests[0]).toMatchObject({
       name: "Ny episode fra kaia",
-      description: "En fersk reportasje fra havna.",
       organization: 3,
-      categories: ["Kultur"],
+      categories: [],
       seriesId: 9001,
       episodeNumber: 4,
     });
@@ -222,12 +228,12 @@ test.describe("video creation", () => {
     await recordPost(page, "/api/videos", { id: VIDEO_ID });
     await stubUpload(page);
     const report = await stubIngest(page);
-    await stubPage(page, `/video/${VIDEO_ID}`);
 
     await fillRequiredDetails(page);
     await selectVideoFile(page);
-    await page.getByRole("button", { name: "Opprett", exact: true }).click();
+    await page.getByRole("button", { name: SUBMIT }).click();
 
+    await expect(page).toHaveURL(new RegExp(`/video/${VIDEO_ID}/edit$`));
     report({ state: "failed", errorCode: "not_compliant", updatedTime: "2026-08-21T10:00:00Z" });
     await expect(page.getByText(/Filformatet kan ikke sendes/)).toBeVisible();
 
@@ -243,7 +249,8 @@ test.describe("video creation", () => {
 
     report({ state: "done", percentageDone: 100, updatedTime: "2026-08-21T10:05:00Z" });
     await expect(page.getByRole("heading", { name: "Videoen er klar!" })).toBeVisible();
-    await expect(page).toHaveURL(new RegExp(`/video/${VIDEO_ID}$`), { timeout: 15_000 });
+    // The member is already where the video is worked on: no jump elsewhere.
+    await expect(page).toHaveURL(new RegExp(`/video/${VIDEO_ID}/edit$`));
   });
 
   test("creates and selects a new series with episode one", async ({ page }) => {
@@ -256,7 +263,6 @@ test.describe("video creation", () => {
       episodeCount: 0,
     });
     const videoRequests = await recordPost(page, "/api/videos", { id: VIDEO_ID });
-    await page.route(`**/api/videos/${VIDEO_ID}/upload_token`, () => {});
 
     await page.getByRole("button", { name: "Opprett ny serie" }).click();
     const dialog = page.getByRole("dialog", { name: "Opprett ny serie" });
@@ -271,7 +277,7 @@ test.describe("video creation", () => {
 
     await fillRequiredDetails(page);
     await selectVideoFile(page, "fjord.mp4");
-    await page.getByRole("button", { name: "Opprett", exact: true }).click();
+    await page.getByRole("button", { name: SUBMIT }).click();
     await expect.poll(() => videoRequests.length).toBe(1);
 
     expect(seriesRequests).toEqual([
@@ -282,11 +288,10 @@ test.describe("video creation", () => {
 
   test("leaves series and episode out for a standalone video", async ({ page }) => {
     const videoRequests = await recordPost(page, "/api/videos", { id: VIDEO_ID });
-    await page.route(`**/api/videos/${VIDEO_ID}/upload_token`, () => {});
 
     await fillRequiredDetails(page);
     await selectVideoFile(page, "enkeltvideo.mp4");
-    await page.getByRole("button", { name: "Opprett", exact: true }).click();
+    await page.getByRole("button", { name: SUBMIT }).click();
     await expect.poll(() => videoRequests.length).toBe(1);
 
     expect(videoRequests[0].seriesId).toBeFalsy();

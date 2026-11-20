@@ -204,7 +204,7 @@ test.describe("series management", () => {
     expect(response?.status()).toBe(200);
     await waitForHydration(page);
 
-    await page.getByRole("link", { name: "Rediger" }).click();
+    await page.getByRole("link", { name: "Havna vår" }).click();
     await expect(page).toHaveURL("/organization/3/series/9001");
     await expect(page.getByRole("heading", { name: "Episoderekkefølge" })).toBeVisible();
 

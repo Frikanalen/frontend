@@ -1,40 +1,11 @@
-import { getCookiesFromRequest } from "@/lib/getCookiesFromRequest";
-import { videosRetrieve, videosUploadTokenRetrieve } from "@/generated/videos/videos";
-import { profileIsAdminOrMember } from "@/app/organization/[organizationId]/admin/profileIsAdminOrMember";
-import { forbidden } from "next/navigation";
+import { redirect } from "next/navigation";
 import { VideoParams, parseParamsOr404 } from "@/lib/routeParams";
-
-import { PageShell, PageShellBody } from "@/components/layout/PageShell";
-import { getUserOrNull } from "@/app/getUserOrNull";
-import { FileUpload } from "@/components/upload/FileUpload";
 
 // Per-visitor: rendered on request, without a static shell of its own.
 export const instant = false;
 
+/** The file is uploaded on the video's own page now; old links land there. */
 export default async function Page({ params }: { params: Promise<{ videoId: string }> }) {
   const { videoId } = await parseParamsOr404(VideoParams, params);
-  const headers = await getCookiesFromRequest();
-
-  const { data: video } = await videosRetrieve(videoId, { headers });
-  const user = await getUserOrNull(headers);
-  const mayEdit = !!user?.isStaff || profileIsAdminOrMember(video.organization.id, user);
-  if (!mayEdit) return forbidden();
-  const { data: uploadToken } = await videosUploadTokenRetrieve(videoId, {
-    headers,
-  });
-
-  return (
-    <PageShell>
-      <PageShellBody className={"space-y-4"}>
-        <div className="prose dark:prose-invert">
-          <h2>Last opp originalfil for {video.name}</h2>
-        </div>
-        <FileUpload
-          videoId={videoId}
-          uploadEndpoint={uploadToken.uploadUrl}
-          uploadToken={uploadToken.uploadToken}
-        />
-      </PageShellBody>
-    </PageShell>
-  );
+  redirect(`/video/${videoId}/edit`);
 }

@@ -9,6 +9,8 @@ import { OrganizationParams, parseParamsOr404 } from "@/lib/routeParams";
 import { forbidden, notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { LiveSources } from "./LiveSources";
+import { LiveProgrammes } from "./LiveProgrammes";
+import { StudioHeader } from "@/app/organization/[organizationId]/StudioHeader";
 
 // Per-visitor: rendered on request, without a static shell of its own.
 export const instant = false;
@@ -37,14 +39,11 @@ export default async function Page({
   const maySetUp = user.isStaff || (user.identityConfirmed && organization.fkmember);
 
   return (
-    <section className="flex flex-col gap-6">
-      <header>
-        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Direktesending</h1>
-        <p className="mt-2 max-w-3xl text-default-600">
-          En direktekilde er et sted {organization.name} sender direkte fra. Sett den opp én gang,
-          se at signalet kommer fram, og legg sendingen i sendetiden.
-        </p>
-      </header>
+    <section className="flex flex-col gap-4">
+      <StudioHeader
+        title="Direktesending"
+        intro={`En direktekilde er et sted ${organization.name} sender direkte fra. Sett den opp én gang, se at signalet kommer fram, og legg sendingen i sendetiden.`}
+      />
       {maySetUp ? null : (
         <p className="border-l-4 border-warning bg-background p-4" role="note">
           {organization.fkmember
@@ -64,6 +63,7 @@ export default async function Page({
         organizationId={organizationId}
         sources={sources}
       />
+      <LiveProgrammes organizationId={organizationId} />
     </section>
   );
 }

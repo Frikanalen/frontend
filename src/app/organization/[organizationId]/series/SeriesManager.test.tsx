@@ -45,18 +45,21 @@ type ButtonProps = {
 };
 
 vi.mock("@heroui/react", () => {
-  const Table = Object.assign(({ children }: { children: ReactNode }) => <table>{children}</table>, {
-    Content: ({ children }: { children: ReactNode }) => <>{children}</>,
-    Header: ({ children }: { children: ReactNode }) => (
-      <thead>
-        <tr>{children}</tr>
-      </thead>
-    ),
-    Column: ({ children }: { children: ReactNode }) => <th>{children}</th>,
-    Body: ({ children }: { children: ReactNode }) => <tbody>{children}</tbody>,
-    Row: ({ children }: { children: ReactNode }) => <tr>{children}</tr>,
-    Cell: ({ children }: { children: ReactNode }) => <td>{children}</td>,
-  });
+  const Table = Object.assign(
+    ({ children }: { children: ReactNode }) => <table>{children}</table>,
+    {
+      Content: ({ children }: { children: ReactNode }) => <>{children}</>,
+      Header: ({ children }: { children: ReactNode }) => (
+        <thead>
+          <tr>{children}</tr>
+        </thead>
+      ),
+      Column: ({ children }: { children: ReactNode }) => <th>{children}</th>,
+      Body: ({ children }: { children: ReactNode }) => <tbody>{children}</tbody>,
+      Row: ({ children }: { children: ReactNode }) => <tr>{children}</tr>,
+      Cell: ({ children }: { children: ReactNode }) => <td>{children}</td>,
+    },
+  );
   return {
     Button: ({ as: Component, children, href, onPress }: ButtonProps) =>
       Component ? <a href={href}>{children}</a> : <button onClick={onPress}>{children}</button>,
@@ -81,17 +84,14 @@ beforeEach(() => {
 afterEach(cleanup);
 
 describe("SeriesManager", () => {
-  it("lists series and links editing to the dedicated organization route", () => {
+  it("lists series, each name leading to its editor", () => {
     render(<SeriesManager organizationId={9} />);
 
-    expect(screen.getByText("Havna vår")).toBeDefined();
     expect(screen.getByText("3")).toBeDefined();
-    expect(screen.getByRole("link", { name: "Rediger" }).getAttribute("href")).toBe(
+    expect(screen.getByRole("link", { name: "Havna vår" }).getAttribute("href")).toBe(
       "/organization/9/series/4",
     );
-    expect(screen.getByRole("link", { name: "Offentlig side" }).getAttribute("href")).toBe(
-      "/series/4",
-    );
+    expect(screen.queryByRole("link", { name: "Offentlig side" })).toBeNull();
   });
 
   it("opens series creation in a modal and refreshes the list afterward", async () => {

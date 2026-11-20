@@ -19,8 +19,15 @@ export const FileUpload = ({
   initialFile,
   autoStart = false,
   onFileChange,
+  doneHref,
 }: {
   videoId: number;
+  /**
+   * Where to go once the video can be watched; null stays on the page, for
+   * a caller that already is where the member will work on the video.
+   * Defaults to the video's public page.
+   */
+  doneHref?: string | null;
   uploadEndpoint: string;
   uploadToken: string | undefined;
   initialFile?: File;
@@ -84,15 +91,17 @@ export const FileUpload = ({
   });
   const previewReady = Boolean(videoResponse?.data.files.dashPreview);
 
+  const target = doneHref === undefined ? `/video/${videoId}` : doneHref;
   useEffect(() => {
+    if (target === null) return;
     if (previewReady) {
-      router.push(`/video/${videoId}`);
+      router.push(target);
       return;
     }
     if (description?.phase !== "done") return;
-    const timer = setTimeout(() => router.push(`/video/${videoId}`), REDIRECT_DELAY_MS);
+    const timer = setTimeout(() => router.push(target), REDIRECT_DELAY_MS);
     return () => clearTimeout(timer);
-  }, [description?.phase, previewReady, router, videoId]);
+  }, [description?.phase, previewReady, router, target]);
 
   const isIngesting = isSuccess && description?.phase !== "done" && description?.phase !== "failed";
 
@@ -142,9 +151,11 @@ export const FileUpload = ({
       {description?.phase === "done" && (
         <Notice status="success" className={"prose dark:prose-invert"}>
           <h3>Videoen er klar!</h3>
-          <p>
-            Du blir sendt til <Link href={`/video/${videoId}`}>videosiden</Link>.
-          </p>
+          {target !== null && (
+            <p>
+              Du blir sendt videre til <Link href={target}>videoen</Link>.
+            </p>
+          )}
         </Notice>
       )}
 
