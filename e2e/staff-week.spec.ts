@@ -256,7 +256,12 @@ test.describe("the staff week", () => {
     await page.goto("/schedule/plan");
     await waitForHydration(page);
 
-    await page.getByRole("button", { name: /Havneforeningen, \d\d:\d\d–\d\d:\d\d/ }).click();
+    // Run near midnight, the hour on air crosses into the next day and the
+    // week shows it as two blocks of the same grant: either opens it.
+    await page
+      .getByRole("button", { name: /Havneforeningen, \d\d:\d\d–\d\d:\d\d/ })
+      .first()
+      .click();
     await expect(page.getByRole("region", { name: "Tidspunkt" })).toBeVisible();
     await expect(page.getByLabel("Starter kl.")).toHaveCount(0);
     await page.getByRole("button", { name: "Slett sendetiden" }).click();

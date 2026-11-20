@@ -90,6 +90,7 @@ describe("ScheduleItemList", () => {
       organization: { id: 1, name: "Norsk Presse", fkmember: true },
       starttime: "2026-08-21T20:00:00+02:00",
       endtime: "2026-08-21T21:00:00+02:00",
+      station: false,
     };
     const by = (item: ScheduleitemRead, name: string, grant: number | null) =>
       ({
