@@ -32,15 +32,6 @@ const openSelect = async (trigger: Locator) => {
 
 const fillRequiredDetails = async (page: Page) => {
   await page.getByLabel("Tittel").fill("Ny episode fra kaia");
-
-  const categories = page.getByRole("button", { name: /Kategorier/ });
-  await openSelect(categories);
-  const listbox = page.getByRole("listbox", { name: /Kategorier/ });
-  await expect(listbox).toBeVisible();
-  await listbox.getByRole("option", { name: "Kultur" }).click();
-  // A multi-select deliberately stays open after one choice.
-  await listbox.press("Escape");
-  await expect(categories).toHaveAttribute("aria-expanded", "false");
 };
 
 const chooseExistingSeries = async (page: Page) => {
@@ -223,7 +214,7 @@ test.describe("video creation", () => {
     expect(videoRequests[0]).toMatchObject({
       name: "Ny episode fra kaia",
       organization: 3,
-      categories: ["Kultur"],
+      categories: [],
       seriesId: 9001,
       episodeNumber: 4,
     });

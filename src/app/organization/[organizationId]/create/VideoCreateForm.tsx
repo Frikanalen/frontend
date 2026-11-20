@@ -1,8 +1,7 @@
 "use client";
 import { FormInput } from "@/components/FormField";
-import { Category, Series, VideoCreateRequest } from "@/generated/frikanalenDjangoAPI.schemas";
+import { Series, VideoCreateRequest } from "@/generated/frikanalenDjangoAPI.schemas";
 import { Button, Form } from "@heroui/react";
-import { Categories } from "@/app/organization/[organizationId]/create/Categories";
 import { useVideosCreate } from "@/generated/videos/videos";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
@@ -28,22 +27,23 @@ export const titleFromFileName = (name: string) =>
 
 /**
  * The first step of a new video: the file, and the little the API needs to
- * create it. The member then lands on the video's own page, where the file
+ * create it: a file and a title. The member then lands on the video's own page, where the file
  * goes up while the rest (description, picture, visibility, language, age
  * rating) is filled in on the same form used for every later edit.
  */
 export const VideoCreateForm = ({
   organizationId,
-  categories,
   series,
 }: {
   organizationId: number;
-  categories: Category[];
   series: Series[];
 }) => {
   const { mutateAsync } = useVideosCreate();
   const router = useRouter();
-  const form = useForm<VideoCreateRequest>({ defaultValues: { organization: organizationId } });
+  const form = useForm<VideoCreateRequest>({
+    // Categories are optional and set later on the video's page, if at all.
+    defaultValues: { organization: organizationId, categories: [] },
+  });
   const { register, control } = form;
   const [availableSeries, setAvailableSeries] = useState<SeriesOption[]>(series);
   const [isSeriesModalOpen, setSeriesModalOpen] = useState(false);
@@ -95,7 +95,6 @@ export const VideoCreateForm = ({
             labelPlacement={"outside-top"}
             isRequired
           />
-          <Categories control={control} name={"categories"} categories={categories} />
           <SeriesFields
             control={control}
             series={availableSeries}
