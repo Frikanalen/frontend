@@ -5,6 +5,7 @@ import { getUserOrNull } from "@/app/getUserOrNull";
 import { profileIsAdminOrMember } from "@/app/organization/[organizationId]/admin/profileIsAdminOrMember";
 import { StudioHeader } from "@/app/organization/[organizationId]/StudioHeader";
 import { OrganizationProfileForm } from "@/app/organization/[organizationId]/(dashboard)/profile/OrganizationProfileForm";
+import { OrganizationMembers } from "@/app/organization/[organizationId]/(dashboard)/profile/OrganizationMembers";
 import { ssrOrganizationRetrieve } from "@/generated/ssr/organization/organization";
 import { getCookiesFromRequest } from "@/lib/getCookiesFromRequest";
 import { OrganizationParams, parseParamsOr404 } from "@/lib/routeParams";
@@ -15,8 +16,9 @@ export const instant = false;
 export const metadata: Metadata = { title: "Organisasjon - Frikanalen" };
 
 /**
- * What the organization says about itself on its public page, and who
- * answers for it. The editor changes it; members see it as it stands.
+ * The organization itself: what it says about itself on its public page,
+ * who answers for it, and who works for it. The editor changes the profile
+ * and decides who the members are; members see both, and can leave.
  */
 export default async function Page({ params }: { params: Promise<{ organizationId: string }> }) {
   const { organizationId } = await parseParamsOr404(OrganizationParams, params);
@@ -46,6 +48,11 @@ export default async function Page({ params }: { params: Promise<{ organizationI
         }
       />
       <OrganizationProfileForm organization={organization} mayEdit={mayEdit} />
+      <OrganizationMembers
+        organizationId={organizationId}
+        currentUserId={user.id}
+        mayManage={mayEdit}
+      />
     </section>
   );
 }

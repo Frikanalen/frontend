@@ -153,6 +153,41 @@ createServer((request, response) => {
         : [],
     );
   }
+  // The Organisasjon tab's member list: the editor and one member whose
+  // identity Frikanalen has not confirmed yet.
+  if (url.pathname === `/api/organization/${organization.id}/members`)
+    return json(response, 200, [
+      {
+        id: member.id,
+        name: "Test Editor",
+        email: member.email,
+        isEditor: true,
+        identityConfirmed: true,
+      },
+      {
+        id: 43,
+        name: "Bo Berg",
+        email: "bo@example.test",
+        isEditor: false,
+        identityConfirmed: false,
+      },
+    ]);
+  // An invitation link: one good token, anything else is used or expired.
+  if (url.pathname === "/api/invitations/good-token")
+    return json(response, 200, {
+      organizationId: organization.id,
+      organizationName: organization.name,
+      invitedBy: "Ada Lovelace",
+      email: "ny@example.test",
+      expiresAt: "2026-12-04T12:00:00Z",
+    });
+  if (url.pathname.startsWith("/api/invitations/"))
+    return json(response, 404, {
+      type: "client_error",
+      errors: [{ code: "not_found", detail: "Ikke funnet.", attr: null }],
+    });
+  if (url.pathname === `/api/organization/${organization.id}/invitations`)
+    return json(response, 200, []);
   if (url.pathname === `/api/organization/${organization.id}/live-sources`) {
     // A test sets the state of the sources with dot-separated words in the
     // `e2e-live` cookie, and changes it as its story moves on.

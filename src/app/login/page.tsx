@@ -17,6 +17,7 @@ import { SecurityKeyStep } from "@/components/form/SecurityKeyStep";
 import { PasskeyLogin } from "@/app/login/PasskeyLogin";
 import { hasSecurityKey } from "@/lib/webauthn";
 import { useCallback, useState } from "react";
+import { safeNext } from "@/lib/safeNext";
 
 const UserLoginFormSchema = z.object({
   email: z.email("Skriv inn en gyldig e-postadresse."),
@@ -37,7 +38,7 @@ export default function Login() {
 
   const loggedIn = useCallback(() => {
     // we force a refresh because profile data is rendered server-side
-    router.push("/profile");
+    router.push(safeNext(globalThis.location?.search ?? ""));
     router.refresh();
   }, [router]);
 
