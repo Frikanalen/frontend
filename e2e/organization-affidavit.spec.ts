@@ -92,3 +92,34 @@ test("shows a member organization its approval instead", async ({ page, baseURL 
   await expect(page.getByText("Frikanalen har godkjent erklæringen.")).toBeVisible();
   await expect(page.getByRole("button", { name: "Send til Frikanalen" })).toHaveCount(0);
 });
+
+test("tells an unfinished organization what is left on its other pages", async ({
+  page,
+  baseURL,
+}) => {
+  await asApplicant(page, baseURL!);
+  await page.goto("/organization/3/admin");
+
+  const banner = page.getByRole("region", { name: "Medlemskap" });
+  await expect(banner).toContainText("Registreringen er ikke ferdig");
+  await expect(
+    banner.getByRole("link", { name: "Last ned og last opp erklæringen →" }),
+  ).toHaveAttribute("href", "/organization/3/affidavit");
+});
+
+test("shows a rejected declaration on the other pages too", async ({ page, baseURL }) => {
+  await asApplicant(page, baseURL!, "rejected");
+  await page.goto("/organization/3/admin");
+
+  await expect(page.getByRole("region", { name: "Medlemskap" })).toContainText(
+    "Erklæringen ble ikke godkjent",
+  );
+});
+
+test("leaves the banner off the start page itself", async ({ page, baseURL }) => {
+  await asApplicant(page, baseURL!);
+  await page.goto("/organization/3/start");
+
+  await expect(page.getByRole("heading", { name: "Kom i gang" })).toBeVisible();
+  await expect(page.getByRole("region", { name: "Medlemskap" })).toHaveCount(0);
+});
