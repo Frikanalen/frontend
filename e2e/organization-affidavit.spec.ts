@@ -101,10 +101,10 @@ test("tells an unfinished organization what is left on its other pages", async (
   await page.goto("/organization/3/admin");
 
   const banner = page.getByRole("region", { name: "Medlemskap" });
-  await expect(banner).toContainText("Registreringen er ikke ferdig");
+  await expect(banner).toContainText("Innmeldingen er ikke ferdig");
   await expect(
     banner.getByRole("link", { name: "Last ned og last opp erklæringen →" }),
-  ).toHaveAttribute("href", "/organization/3/affidavit");
+  ).toHaveAttribute("href", "/organization/3/start?erklaering");
 });
 
 test("shows a rejected declaration on the other pages too", async ({ page, baseURL }) => {
@@ -122,4 +122,28 @@ test("leaves the banner off the start page itself", async ({ page, baseURL }) =>
 
   await expect(page.getByRole("heading", { name: "Kom i gang" })).toBeVisible();
   await expect(page.getByRole("region", { name: "Medlemskap" })).toHaveCount(0);
+});
+
+test("opens the declaration as a dialog on the start page", async ({ page, baseURL }) => {
+  await asApplicant(page, baseURL!);
+  await page.goto("/organization/3/start");
+  await waitForHydration(page);
+
+  await page.getByRole("link", { name: "Last ned og last opp" }).click();
+
+  const dialog = page.getByRole("dialog", { name: "Redaktørerklæringen" });
+  await expect(dialog.getByRole("link", { name: "Last ned erklæringen (PDF)" })).toBeVisible();
+  await expect(page).toHaveURL(/\/organization\/3\/start\?erklaering/);
+
+  await dialog.getByRole("button", { name: "Lukk" }).click();
+  await expect(dialog).toHaveCount(0);
+  await expect(page).toHaveURL(/\/organization\/3\/start$/);
+});
+
+test("sends old declaration links to the dialog", async ({ page, baseURL }) => {
+  await asApplicant(page, baseURL!);
+  await page.goto("/organization/3/affidavit");
+
+  await expect(page).toHaveURL(/\/organization\/3\/start\?erklaering/);
+  await expect(page.getByRole("dialog", { name: "Redaktørerklæringen" })).toBeVisible();
 });
