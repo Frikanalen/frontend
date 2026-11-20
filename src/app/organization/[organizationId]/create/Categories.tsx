@@ -17,13 +17,12 @@ export const Categories = <T extends FieldValues>({
     render={({ field }) => (
       <Select
         selectionMode="multiple"
-        placeholder="Velg minst én kategori"
-        isRequired
+        placeholder="Ingen kategori"
         value={field.value ?? []}
         onChange={field.onChange}
         onBlur={field.onBlur}
       >
-        <Label>Kategorier</Label>
+        <Label>Kategorier (valgfritt)</Label>
         <Select.Trigger>
           <Select.Value />
           <Select.Indicator />
