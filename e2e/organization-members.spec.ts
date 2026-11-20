@@ -75,7 +75,19 @@ test("the editor sees the members and invites by e-mail", async ({ page, baseURL
 
 test("the editor makes a link to copy or show as a QR code", async ({ page, baseURL }) => {
   await page.context().addCookies([{ name: "e2e-staff", value: "1", url: baseURL! }]);
-  await page.context().grantPermissions(["clipboard-read", "clipboard-write"]);
+  // Clipboard permissions differ per browser, so the clipboard is stood in
+  // for: what matters is that the link is what gets written.
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: {
+        writeText: (text: string) => {
+          (window as unknown as { copied: string }).copied = text;
+          return Promise.resolve();
+        },
+      },
+    });
+  });
   const invited: unknown[] = [];
   await page.route(`**/api/organization/3/members`, (route) =>
     route.fulfill({ status: 200, json: [] }),
@@ -97,7 +109,7 @@ test("the editor makes a link to copy or show as a QR code", async ({ page, base
 
   await page.getByRole("button", { name: "Kopier" }).click();
   await expect(page.getByRole("button", { name: "Kopiert" })).toBeVisible();
-  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(LINK);
+  expect(await page.evaluate(() => (window as unknown as { copied: string }).copied)).toBe(LINK);
 
   await page.getByRole("button", { name: "Vis QR-kode" }).click();
   await expect(page.getByRole("img", { name: "QR-kode med invitasjonslenken" })).toBeVisible();

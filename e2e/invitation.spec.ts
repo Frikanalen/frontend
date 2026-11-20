@@ -1,5 +1,5 @@
-import { expect, test } from "@playwright/test";
-import { resolveWith, stubApi, stubPage } from "./support/api";
+import { expect, test, type Page } from "@playwright/test";
+import { resolveWith, stubApi } from "./support/api";
 import { fillAndConfirm, waitForHydration } from "./support/hydration";
 
 const ACCEPT = "/api/invitations/good-token/accept";
@@ -15,9 +15,24 @@ test.beforeEach(async ({ page }) => {
   await stubApi(page);
 });
 
+/**
+ * Studio, where joining leads, as a placeholder. Every request for it is
+ * answered, not only the document: the client navigation's own request
+ * would otherwise render the real page, which sends a visitor who is not
+ * logged in on to /login.
+ */
+const stubStudio = (page: Page) =>
+  page.route("**/organization/3/admin**", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "text/html",
+      body: "<html><body>Studio</body></html>",
+    }),
+  );
+
 test("someone without an account makes one from the link and lands in Studio", async ({ page }) => {
   const requests = await resolveWith(page, ACCEPT, member);
-  await stubPage(page, "/organization/3/admin");
+  await stubStudio(page);
   await page.goto("/invitation/good-token");
   await waitForHydration(page);
 
@@ -39,7 +54,7 @@ test("someone without an account makes one from the link and lands in Studio", a
 
 test("a link handed over in person asks for the new member's address", async ({ page }) => {
   const requests = await resolveWith(page, "/api/invitations/link-token/accept", member);
-  await stubPage(page, "/organization/3/admin");
+  await stubStudio(page);
   await page.goto("/invitation/link-token");
   await waitForHydration(page);
 
@@ -72,7 +87,7 @@ test("someone with an account logs in and comes back to the invitation", async (
 test("a logged-in user joins with one button", async ({ page, baseURL }) => {
   await page.context().addCookies([{ name: "e2e-member", value: "1", url: baseURL! }]);
   const requests = await resolveWith(page, ACCEPT, member);
-  await stubPage(page, "/organization/3/admin");
+  await stubStudio(page);
   await page.goto("/invitation/good-token");
   await waitForHydration(page);
 
