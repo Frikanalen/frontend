@@ -28,8 +28,9 @@ export const IdentityNotice = () => (
         </h2>
         <p className="mt-1">
           Du kan laste opp videoer som vanlig, men Frikanalen må bekrefte hvem du er før du kan
-          programmere sendetid. Er du redaktør, skjer det når Frikanalen har mottatt den signerte
-          redaktørerklæringen.
+          programmere sendetid. Er du redaktør, skjer det når Frikanalen har godkjent
+          redaktørerklæringen dere laster opp under «Kom i gang» i Studio. Er du medlem, ta kontakt
+          med Frikanalen.
         </p>
         <Link href="/about/contact" className="text-warning-800 mt-2 inline-block underline">
           Ta kontakt med Frikanalen
