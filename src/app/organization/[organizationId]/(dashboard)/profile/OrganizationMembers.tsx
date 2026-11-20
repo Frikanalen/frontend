@@ -1,5 +1,5 @@
 "use client";
-import { Button, Chip, Form } from "@heroui/react";
+import { Button, Chip, Form, Modal } from "@heroui/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -43,11 +43,18 @@ const dateFormat = new Intl.DateTimeFormat("nb-NO", {
 
 /**
  * A new invitation's link, the only time it can be shown: copy it, or let
- * the person scan it from this screen.
+ * the person scan it from this screen. A link made to hand over shows its
+ * QR code at once; one that went by e-mail keeps it behind a button.
  */
-export const InvitationLink = ({ invitation }: { invitation: InvitationCreated }) => {
+export const InvitationLink = ({
+  invitation,
+  onAnother,
+}: {
+  invitation: InvitationCreated;
+  onAnother?: () => void;
+}) => {
   const [copied, setCopied] = useState(false);
-  const [showQr, setShowQr] = useState(false);
+  const [showQr, setShowQr] = useState(!invitation.email);
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(invitation.link);
@@ -60,47 +67,74 @@ export const InvitationLink = ({ invitation }: { invitation: InvitationCreated }
   };
 
   return (
-    <div className="space-y-3 border border-default-200 bg-default-50 p-4" role="status">
-      <p className="font-medium">
-        {invitation.email
-          ? `Invitasjonen er sendt til ${invitation.email}.`
-          : "Invitasjonen er klar."}{" "}
-        <span className="font-normal text-default-700">
-          Dere kan også dele lenken selv. Den virker én gang, til{" "}
-          {dateFormat.format(new Date(invitation.expiresAt))}.
+    <div className="space-y-3" role="status">
+      <p>
+        <span className="font-medium">
+          {invitation.email
+            ? `Invitasjonen er sendt til ${invitation.email}.`
+            : "Invitasjonen er klar."}
+        </span>{" "}
+        <span className="text-default-700">
+          Lenken virker én gang, til {dateFormat.format(new Date(invitation.expiresAt))}.
         </span>
       </p>
-      <div className="flex flex-col gap-2 sm:flex-row">
-        <input
-          readOnly
-          aria-label="Invitasjonslenke"
-          value={invitation.link}
-          onFocus={(event) => event.currentTarget.select()}
-          className="min-w-0 grow border border-default-300 bg-background px-3 py-2 font-mono text-sm"
-        />
-        <div className="flex gap-2">
-          <Button variant="secondary" onPress={() => void copy()}>
-            {copied ? "Kopiert" : "Kopier"}
-          </Button>
-          <Button variant="tertiary" onPress={() => setShowQr((shown) => !shown)}>
-            {showQr ? "Skjul QR-kode" : "Vis QR-kode"}
-          </Button>
+      <div className="flex flex-col gap-4">
+        {showQr ? (
+          // eslint-disable-next-line @next/next/no-img-element -- a data URI from the API
+          <img
+            src={invitation.qrCode}
+            alt="QR-kode med invitasjonslenken"
+            className="size-48 self-center border border-default-200 bg-white p-2"
+          />
+        ) : null}
+        <div className="min-w-0 grow space-y-2">
+          <div className="flex gap-2">
+            <input
+              readOnly
+              aria-label="Invitasjonslenke"
+              value={invitation.link}
+              onFocus={(event) => event.currentTarget.select()}
+              className="min-w-0 grow border border-default-300 bg-background px-3 py-2 font-mono text-sm"
+            />
+            <Button variant="primary" onPress={() => void copy()}>
+              {copied ? "Kopiert" : "Kopier"}
+            </Button>
+          </div>
+          <p className="text-sm text-default-600">
+            Lenken vises bare nå. Mister dere den, lager dere en ny og trekker tilbake den gamle.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {invitation.email ? (
+              <Button size="sm" variant="tertiary" onPress={() => setShowQr((shown) => !shown)}>
+                {showQr ? "Skjul QR-kode" : "Vis QR-kode"}
+              </Button>
+            ) : null}
+            {onAnother ? (
+              <Button size="sm" variant="tertiary" onPress={onAnother}>
+                {invitation.email ? "Inviter en til" : "Lag en ny lenke"}
+              </Button>
+            ) : null}
+          </div>
         </div>
       </div>
-      {showQr ? (
-        // eslint-disable-next-line @next/next/no-img-element -- a data URI from the API
-        <img
-          src={invitation.qrCode}
-          alt="QR-kode med invitasjonslenken"
-          className="size-56 bg-white p-2"
-        />
-      ) : null}
-      <p className="text-sm text-default-600">
-        Lenken vises bare nå. Mister dere den, lager dere en ny og trekker tilbake den gamle.
-      </p>
     </div>
   );
 };
+
+type Way = "email" | "link";
+
+const WAYS: { value: Way; label: string; hint: string }[] = [
+  {
+    value: "email",
+    label: "På e-post",
+    hint: "Vi sender lenken til adressen. Har personen ikke bruker, lager de den fra lenken.",
+  },
+  {
+    value: "link",
+    label: "Lenke og QR-kode",
+    hint: "Send lenken i en melding selv, eller la personen skanne QR-koden fra skjermen deres.",
+  },
+];
 
 /**
  * Invite someone: by e-mail, or as a link or QR code to hand over. The
@@ -108,27 +142,29 @@ export const InvitationLink = ({ invitation }: { invitation: InvitationCreated }
  * invitation shows by its address (or as a link) until it is accepted, so
  * this tells the editor nothing about who is registered.
  */
-const Invitations = ({ organizationId }: { organizationId: number }) => {
-  const queryClient = useQueryClient();
+export const InviteMemberModal = ({
+  organizationId,
+  isOpen,
+  onClose,
+  onInvited,
+}: {
+  organizationId: number;
+  isOpen: boolean;
+  onClose: () => void;
+  onInvited: () => Promise<unknown>;
+}) => {
   const form = useForm<InviteRequest>({ defaultValues: { email: "" } });
   const { mutateAsync: create } = useOrganizationInvitationsCreate();
-  const { mutateAsync: withdraw } = useOrganizationInvitationsDestroy();
-  const { data: response } = useOrganizationInvitationsList(organizationId);
-  const invitations = response?.data ?? [];
+  const [way, setWay] = useState<Way>("email");
   const [created, setCreated] = useState<InvitationCreated | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [making, setMaking] = useState(false);
-  const refresh = () =>
-    queryClient.invalidateQueries({
-      queryKey: getOrganizationInvitationsListQueryKey(organizationId),
-    });
 
   const invite = async (email: string) => {
-    setCreated(null);
     const { data: invitation } = await create({ id: organizationId, data: email ? { email } : {} });
     form.reset({ email: "" });
     setCreated(invitation);
-    await refresh();
+    await onInvited();
   };
 
   const {
@@ -149,76 +185,140 @@ const Invitations = ({ organizationId }: { organizationId: number }) => {
     }
   };
 
-  const onWithdraw = async (invitation: Invitation) => {
-    if (!globalThis.confirm(withdrawQuestion(invitation))) return;
+  const choose = (next: Way) => {
+    setWay(next);
+    setCreated(null);
     setError(null);
-    try {
-      await withdraw({ id: organizationId, invitationId: invitation.id });
-      if (created?.id === invitation.id) setCreated(null);
-      await refresh();
-    } catch (cause) {
-      setError(formatApiError(cause));
-    }
+  };
+  const hint = WAYS.find((w) => w.value === way)?.hint;
+  const close = () => {
+    choose("email");
+    form.reset({ email: "" });
+    onClose();
   };
 
   return (
-    <div className="space-y-4">
-      <div>
-        <h3 className="font-semibold">Inviter et medlem</h3>
-        <p className="mt-1 text-sm text-default-600">
-          Send invitasjonen på e-post, eller lag en lenke dere deler selv, som tekst eller QR-kode.
-          Har personen ikke bruker på Frikanalen, lager de den fra lenken.
+    <Modal isOpen={isOpen} onOpenChange={(open) => (open ? undefined : close())}>
+      <Modal.Backdrop>
+        <Modal.Container size="md">
+          <Modal.Dialog>
+            <Modal.CloseTrigger aria-label="Lukk" />
+            <Modal.Header>
+              <Modal.Heading>Inviter et medlem</Modal.Heading>
+            </Modal.Header>
+            <Modal.Body className="space-y-4">
+              <div
+                role="group"
+                aria-label="Hvordan dere inviterer"
+                className="grid grid-cols-2 border border-default-300 bg-background p-0.5 text-sm"
+              >
+                {WAYS.map((w) => (
+                  <button
+                    key={w.value}
+                    type="button"
+                    aria-pressed={way === w.value}
+                    onClick={() => choose(w.value)}
+                    className={
+                      way === w.value
+                        ? "bg-foreground px-3 py-1.5 font-medium text-background"
+                        : "px-3 py-1.5 text-default-700 hover:bg-default-100"
+                    }
+                  >
+                    {w.label}
+                  </button>
+                ))}
+              </div>
+              {created ? (
+                <InvitationLink
+                  key={created.id}
+                  invitation={created}
+                  onAnother={() => setCreated(null)}
+                />
+              ) : (
+                <>
+                  <p className="text-sm text-default-600">{hint}</p>
+                  <FormError error={error ?? inviteError} />
+                  {way === "email" ? (
+                    <Form onSubmit={onSubmit} className="space-y-3" aria-label="Inviter på e-post">
+                      <FormInput
+                        label="E-postadresse"
+                        labelPlacement="outside-top"
+                        type="email"
+                        id="member-email"
+                        autoFocus
+                        {...form.register("email", { required: true })}
+                      />
+                      <Button type="submit" variant="primary" isPending={isSubmitting}>
+                        Send invitasjon
+                      </Button>
+                    </Form>
+                  ) : (
+                    <Button variant="primary" isPending={making} onPress={() => void makeLink()}>
+                      Lag lenke
+                    </Button>
+                  )}
+                </>
+              )}
+            </Modal.Body>
+            <Modal.Footer>
+              <Button variant="tertiary" onPress={close}>
+                {created ? "Ferdig" : "Avbryt"}
+              </Button>
+            </Modal.Footer>
+          </Modal.Dialog>
+        </Modal.Container>
+      </Modal.Backdrop>
+    </Modal>
+  );
+};
+
+/** Invitations not answered yet, as muted rows under the members. */
+const PendingInvitations = ({
+  organizationId,
+  onError,
+}: {
+  organizationId: number;
+  onError: (_message: string | null) => void;
+}) => {
+  const queryClient = useQueryClient();
+  const { mutateAsync: withdraw } = useOrganizationInvitationsDestroy();
+  const { data: response } = useOrganizationInvitationsList(organizationId);
+  const invitations = response?.data ?? [];
+
+  const onWithdraw = async (invitation: Invitation) => {
+    if (!globalThis.confirm(withdrawQuestion(invitation))) return;
+    onError(null);
+    try {
+      await withdraw({ id: organizationId, invitationId: invitation.id });
+      await queryClient.invalidateQueries({
+        queryKey: getOrganizationInvitationsListQueryKey(organizationId),
+      });
+    } catch (cause) {
+      onError(formatApiError(cause));
+    }
+  };
+
+  return invitations.map((invitation) => (
+    <li
+      key={`invitation-${invitation.id}`}
+      className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 py-3"
+    >
+      <div className="min-w-0">
+        <p className="break-all text-default-700">{invitation.email || "Invitasjonslenke"}</p>
+        <p className="text-sm text-default-600">
+          Virker til {dateFormat.format(new Date(invitation.expiresAt))}
         </p>
       </div>
-      <FormError error={error ?? inviteError} />
-      <Form onSubmit={onSubmit} className="block" aria-label="Inviter på e-post">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
-          <FormInput
-            label="E-postadresse"
-            labelPlacement="outside-top"
-            type="email"
-            id="member-email"
-            className="w-full sm:max-w-sm"
-            isRequired
-            {...form.register("email", { required: true })}
-          />
-          <div className="flex items-center gap-2">
-            <Button type="submit" variant="secondary" isPending={isSubmitting}>
-              Send på e-post
-            </Button>
-            <span className="text-sm text-default-600">eller</span>
-            <Button variant="tertiary" isPending={making} onPress={() => void makeLink()}>
-              Lag lenke
-            </Button>
-          </div>
-        </div>
-      </Form>
-      {created ? <InvitationLink invitation={created} /> : null}
-      {invitations.length > 0 ? (
-        <div>
-          <h3 className="text-sm font-semibold">Invitert, ikke svart ennå</h3>
-          <ul className="mt-1 divide-y divide-default-200 border-y border-default-200">
-            {invitations.map((invitation) => (
-              <li
-                key={invitation.id}
-                className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 py-3"
-              >
-                <div className="min-w-0">
-                  <p className="break-all">{invitation.email || "Lenke"}</p>
-                  <p className="text-sm text-default-600">
-                    Virker til {dateFormat.format(new Date(invitation.expiresAt))}
-                  </p>
-                </div>
-                <Button size="sm" variant="tertiary" onPress={() => void onWithdraw(invitation)}>
-                  Trekk tilbake
-                </Button>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ) : null}
-    </div>
-  );
+      <div className="flex flex-wrap items-center gap-2">
+        <Chip size="sm" variant="soft">
+          Venter på svar
+        </Chip>
+        <Button size="sm" variant="tertiary" onPress={() => void onWithdraw(invitation)}>
+          Trekk tilbake
+        </Button>
+      </div>
+    </li>
+  ));
 };
 
 /**
@@ -246,6 +346,7 @@ export const OrganizationMembers = ({
   const { mutateAsync: remove } = useOrganizationMembersDestroy();
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState<number | null>(null);
+  const [inviting, setInviting] = useState(false);
 
   const onRemove = async (member: OrganizationMember) => {
     const leaving = member.id === currentUserId;
@@ -275,13 +376,19 @@ export const OrganizationMembers = ({
       className="mt-8 max-w-3xl space-y-4 border-t border-default-200 pt-5"
     >
       <div>
-        <h2 id="members-heading" className="text-lg font-bold">
-          Medlemmer
-        </h2>
+        <div className="flex items-center justify-between gap-4">
+          <h2 id="members-heading" className="text-lg font-bold">
+            Medlemmer
+          </h2>
+          {mayManage ? (
+            <Button size="sm" variant="primary" onPress={() => setInviting(true)}>
+              Inviter medlem
+            </Button>
+          ) : null}
+        </div>
         <p className="mt-1 max-w-3xl text-sm text-default-600">
           Medlemmene jobber på vegne av organisasjonen: de laster opp videoer, og når Frikanalen har
           bekreftet hvem de er, setter de opp sendetid.
-          {mayManage ? " Dere inviterer nye medlemmer på e-post eller med en lenke." : null}
         </p>
       </div>
       <FormError error={error ?? (loadError ? formatApiError(loadError) : null)} />
@@ -326,9 +433,23 @@ export const OrganizationMembers = ({
               </li>
             );
           })}
+          {mayManage ? (
+            <PendingInvitations organizationId={organizationId} onError={setError} />
+          ) : null}
         </ul>
       ) : null}
-      {mayManage ? <Invitations organizationId={organizationId} /> : null}
+      {mayManage ? (
+        <InviteMemberModal
+          organizationId={organizationId}
+          isOpen={inviting}
+          onClose={() => setInviting(false)}
+          onInvited={() =>
+            queryClient.invalidateQueries({
+              queryKey: getOrganizationInvitationsListQueryKey(organizationId),
+            })
+          }
+        />
+      ) : null}
     </section>
   );
 };

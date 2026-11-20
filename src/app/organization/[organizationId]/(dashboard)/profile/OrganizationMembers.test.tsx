@@ -56,6 +56,17 @@ vi.mock("@heroui/react", () => ({
     <form {...props}>{children}</form>
   ),
   Chip: ({ children }: { children: ReactNode }) => <span>{children}</span>,
+  Modal: Object.assign(
+    ({ children, isOpen }: { children: ReactNode; isOpen: boolean }) =>
+      isOpen ? <div role="dialog">{children}</div> : null,
+    Object.fromEntries(
+      ["Backdrop", "Container", "Dialog", "Header", "Heading", "Body", "Footer"].map((part) => [
+        part,
+        ({ children }: { children: ReactNode }) => <div>{children}</div>,
+      ]),
+    ),
+    { CloseTrigger: () => null },
+  ),
   Button: ({
     children,
     isPending,
@@ -120,12 +131,14 @@ describe("OrganizationMembers", () => {
     expect(screen.queryByLabelText("Legg til medlem")).toBeNull();
     expect(screen.queryByRole("button", { name: "Fjern" })).toBeNull();
     expect(screen.getByRole("button", { name: "Forlat organisasjonen" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Inviter medlem" })).toBeNull();
   });
 
   it("lets the editor invite by e-mail, without saying whether the address has an account", async () => {
     api.people = [editor];
     api.create.mockResolvedValue({ data: created });
     render(<OrganizationMembers organizationId={3} currentUserId={42} mayManage />);
+    fireEvent.click(screen.getByRole("button", { name: "Inviter medlem" }));
     fireEvent.change(screen.getByRole("textbox", { name: "E-postadresse" }), {
       target: { value: "bo@example.test" },
     });
@@ -146,6 +159,8 @@ describe("OrganizationMembers", () => {
     Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText } });
     render(<OrganizationMembers organizationId={3} currentUserId={42} mayManage />);
 
+    fireEvent.click(screen.getByRole("button", { name: "Inviter medlem" }));
+    fireEvent.click(screen.getByRole("button", { name: "Lenke og QR-kode" }));
     fireEvent.click(screen.getByRole("button", { name: "Lag lenke" }));
     await waitFor(() => expect(api.create).toHaveBeenCalledWith({ id: 3, data: {} }));
     const link = await screen.findByRole("textbox", { name: "Invitasjonslenke" });
@@ -156,7 +171,7 @@ describe("OrganizationMembers", () => {
     await waitFor(() => expect(writeText).toHaveBeenCalledWith(created.link));
     expect(await screen.findByRole("button", { name: "Kopiert" })).toBeTruthy();
 
-    fireEvent.click(screen.getByRole("button", { name: "Vis QR-kode" }));
+    // A link to hand over shows its QR code straight away.
     expect(screen.getByRole("img", { name: "QR-kode med invitasjonslenken" })).toHaveProperty(
       "src",
       created.qrCode,

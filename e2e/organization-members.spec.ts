@@ -62,8 +62,10 @@ test("the editor sees the members and invites by e-mail", async ({ page, baseURL
   await expect(members.getByText("Bo Berg")).toBeVisible();
   await expect(members.getByText("Identitet ikke bekreftet")).toBeVisible();
 
-  await fillAndConfirm(page.getByRole("textbox", { name: "E-postadresse" }), "ny@example.test");
-  await page.getByRole("button", { name: "Send på e-post" }).click();
+  await page.getByRole("button", { name: "Inviter medlem" }).click();
+  const dialog = page.getByRole("dialog", { name: "Inviter et medlem" });
+  await fillAndConfirm(dialog.getByRole("textbox", { name: "E-postadresse" }), "ny@example.test");
+  await dialog.getByRole("button", { name: "Send invitasjon" }).click();
 
   await expect(page.getByRole("status")).toContainText(
     "Invitasjonen er sendt til ny@example.test.",
@@ -102,6 +104,8 @@ test("the editor makes a link to copy or show as a QR code", async ({ page, base
   await page.goto("/organization/3/profile");
   await waitForHydration(page);
 
+  await page.getByRole("button", { name: "Inviter medlem" }).click();
+  await page.getByRole("button", { name: "Lenke og QR-kode" }).click();
   await page.getByRole("button", { name: "Lag lenke" }).click();
   await expect(page.getByRole("status")).toContainText("Invitasjonen er klar.");
   await expect(page.getByRole("textbox", { name: "Invitasjonslenke" })).toHaveValue(LINK);
@@ -111,7 +115,7 @@ test("the editor makes a link to copy or show as a QR code", async ({ page, base
   await expect(page.getByRole("button", { name: "Kopiert" })).toBeVisible();
   expect(await page.evaluate(() => (window as unknown as { copied: string }).copied)).toBe(LINK);
 
-  await page.getByRole("button", { name: "Vis QR-kode" }).click();
+  // A link to hand over shows its QR code straight away.
   await expect(page.getByRole("img", { name: "QR-kode med invitasjonslenken" })).toBeVisible();
 });
 
@@ -142,5 +146,5 @@ test("a member sees the list but cannot invite", async ({ page, baseURL }) => {
   await waitForHydration(page);
 
   await expect(page.getByRole("button", { name: "Forlat organisasjonen" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Lag lenke" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Inviter medlem" })).toHaveCount(0);
 });
