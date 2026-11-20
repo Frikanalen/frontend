@@ -8,6 +8,7 @@ const organization = {
   id: 3,
   name: "Havneforeningen",
   description: "",
+  orgnr: "971526920",
   editorId: null,
   editorName: "",
   editorEmail: null,
@@ -117,8 +118,41 @@ createServer((request, response) => {
       previous: null,
       results: [organization],
     });
+  // `e2e-applicant=1`: the organization is not a member yet and the logged-in
+  // user is its editor. `e2e-affidavit=pending|rejected` sets its latest scan.
+  const applicant = request.headers.cookie?.includes("e2e-applicant=1");
   if (url.pathname === `/api/organization/${organization.id}`)
-    return json(response, 200, organization);
+    return json(
+      response,
+      200,
+      applicant
+        ? {
+            ...organization,
+            fkmember: false,
+            editorId: member.id,
+            editorName: "Ada Lovelace",
+          }
+        : organization,
+    );
+  if (url.pathname === `/api/organization/${organization.id}/affidavit`) {
+    const state = /e2e-affidavit=(\w+)/.exec(request.headers.cookie ?? "")?.[1];
+    return json(
+      response,
+      200,
+      state
+        ? [
+            {
+              id: 1,
+              submittedAt: "2026-11-19T20:00:00Z",
+              fileName: "erklaering.pdf",
+              status: state,
+              reviewedAt: state === "pending" ? null : "2026-11-19T21:00:00Z",
+              reviewNote: state === "rejected" ? "Signaturen mangler." : "",
+            },
+          ]
+        : [],
+    );
+  }
   if (url.pathname === `/api/organization/${organization.id}/live-sources`) {
     // A test sets the state of the sources with dot-separated words in the
     // `e2e-live` cookie, and changes it as its story moves on.

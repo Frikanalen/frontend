@@ -29,14 +29,13 @@ export default async function Layout({
     !!user &&
     (user.isStaff || profileIsAdminOrMember(organizationId, user));
 
-  // Shown until Frikanalen has approved both the organization and the user:
-  // after that the road in is behind them and the bar is for daily work.
+  // Shown until Frikanalen has received the editor's declaration and approved
+  // the membership: after that the road in is behind them and the bar is for
+  // daily work.
   let showStart = false;
   if (inStudio) {
     const organization = await loadOrganization(organizationId).catch(() => null);
-    showStart =
-      organization?.status === 200 &&
-      (!organization.data.fkmember || !(user.identityConfirmed || user.isStaff));
+    showStart = organization?.status === 200 && !organization.data.fkmember;
   }
 
   return (

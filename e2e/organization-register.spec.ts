@@ -114,3 +114,9 @@ test("sends the number along with the new organization", async ({ page }) => {
     streetAddress: "Testgata 1\n0150 OSLO",
   });
 });
+
+test("asks for the organization number as a required field", async ({ page }) => {
+  // Only the markup is checked: Firefox's headless build crashes when the
+  // native validation of this form runs, so the browser is left to enforce it.
+  await expect(page.getByLabel("Organisasjonsnummer")).toHaveAttribute("required", "");
+});

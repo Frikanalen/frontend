@@ -6922,6 +6922,396 @@ paths:
         - cookieAuth: []
       tags:
         - organization
+  /api/organization/{id}/affidavit:
+    get:
+      operationId: organization_affidavit_list
+      description: |-
+        The organization's uploaded affidavit scans, newest first, and how far
+        each has got. The editor uploads a new one here; uploading replaces any
+        scan still waiting for review.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AffidavitSubmission'
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationAffidavitListErrorResponse400'
+        '401':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: authentication_failed
+                        detail: Incorrect authentication credentials.
+                        attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_authenticated
+                        detail: Authentication credentials were not provided.
+                        attr: null
+        '404':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+              examples:
+                NotFound:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_found
+                        detail: Not found.
+                        attr: null
+        '405':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse405'
+              examples:
+                MethodNotAllowed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: method_not_allowed
+                        detail: Method "get" not allowed.
+                        attr: null
+        '406':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse406'
+              examples:
+                NotAcceptable:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_acceptable
+                        detail: Could not satisfy the request Accept header.
+                        attr: null
+        '415':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse415'
+              examples:
+                UnsupportedMediaType:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: unsupported_media_type
+                        detail: Unsupported media type "application/json" in request.
+                        attr: null
+        '500':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+              examples:
+                APIException:
+                  value:
+                    type: server_error
+                    errors:
+                      - code: error
+                        detail: A server error occurred.
+                        attr: null
+      security:
+        - tokenAuth: []
+        - cookieAuth: []
+      tags:
+        - organization
+    post:
+      operationId: organization_affidavit_create
+      description: |-
+        The organization's uploaded affidavit scans, newest first, and how far
+        each has got. The editor uploads a new one here; uploading replaces any
+        scan still waiting for review.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AffidavitUploadRequest'
+      responses:
+        '201':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffidavitSubmission'
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationAffidavitCreateErrorResponse400'
+        '401':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: authentication_failed
+                        detail: Incorrect authentication credentials.
+                        attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_authenticated
+                        detail: Authentication credentials were not provided.
+                        attr: null
+        '404':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+              examples:
+                NotFound:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_found
+                        detail: Not found.
+                        attr: null
+        '405':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse405'
+              examples:
+                MethodNotAllowed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: method_not_allowed
+                        detail: Method "get" not allowed.
+                        attr: null
+        '406':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse406'
+              examples:
+                NotAcceptable:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_acceptable
+                        detail: Could not satisfy the request Accept header.
+                        attr: null
+        '415':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse415'
+              examples:
+                UnsupportedMediaType:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: unsupported_media_type
+                        detail: Unsupported media type "application/json" in request.
+                        attr: null
+        '500':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+              examples:
+                APIException:
+                  value:
+                    type: server_error
+                    errors:
+                      - code: error
+                        detail: A server error occurred.
+                        attr: null
+      security:
+        - tokenAuth: []
+        - cookieAuth: []
+      tags:
+        - organization
+  /api/organization/{id}/affidavit/{submission_id}/file:
+    get:
+      operationId: organization_affidavit_file_retrieve
+      description: The scan itself, for staff only.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: submission_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: ''
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationAffidavitFileRetrieveErrorResponse400'
+        '401':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: authentication_failed
+                        detail: Incorrect authentication credentials.
+                        attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_authenticated
+                        detail: Authentication credentials were not provided.
+                        attr: null
+        '403':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse403'
+              examples:
+                PermissionDenied:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: permission_denied
+                        detail: You do not have permission to perform this action.
+                        attr: null
+        '404':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+              examples:
+                NotFound:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_found
+                        detail: Not found.
+                        attr: null
+        '405':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse405'
+              examples:
+                MethodNotAllowed:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: method_not_allowed
+                        detail: Method "get" not allowed.
+                        attr: null
+        '406':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse406'
+              examples:
+                NotAcceptable:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: not_acceptable
+                        detail: Could not satisfy the request Accept header.
+                        attr: null
+        '415':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse415'
+              examples:
+                UnsupportedMediaType:
+                  value:
+                    type: client_error
+                    errors:
+                      - code: unsupported_media_type
+                        detail: Unsupported media type "application/json" in request.
+                        attr: null
+        '500':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+              examples:
+                APIException:
+                  value:
+                    type: server_error
+                    errors:
+                      - code: error
+                        detail: A server error occurred.
+                        attr: null
+      security:
+        - tokenAuth: []
+        - cookieAuth: []
+      tags:
+        - organization
   /api/organization/{id}/live-sources:
     get:
       operationId: organization_live_sources_list
@@ -18712,6 +19102,58 @@ components:
         type: string
       description: CSRF token echoed from csrftoken cookie when using SessionAuthentication.
   schemas:
+    AffidavitSubmission:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        submittedAt:
+          type: string
+          format: date-time
+          readOnly: true
+        fileName:
+          type: string
+          readOnly: true
+        status:
+          allOf:
+            - $ref: '#/components/schemas/AffidavitSubmissionStatusEnum'
+          readOnly: true
+        reviewedAt:
+          type: string
+          format: date-time
+          nullable: true
+          readOnly: true
+        reviewNote:
+          description: 'Shown to the organization when the scan is rejected: say what to fix.'
+          type: string
+          readOnly: true
+      required:
+        - fileName
+        - id
+        - reviewNote
+        - reviewedAt
+        - status
+        - submittedAt
+    AffidavitSubmissionStatusEnum:
+      description: |-
+        * `pending` - Awaiting review
+        * `approved` - Approved
+        * `rejected` - Rejected
+      type: string
+      enum:
+        - pending
+        - approved
+        - rejected
+    AffidavitUploadRequest:
+      type: object
+      properties:
+        file:
+          description: 'The signed affidavit: PDF, JPEG or PNG, up to 10 MB.'
+          type: string
+          format: binary
+      required:
+        - file
     AirtimeGrant:
       type: object
       properties:
@@ -24899,7 +25341,9 @@ components:
           nullable: true
           readOnly: true
         editorMsisdn:
-          description: The editor's number in international format, or None if there isn't one.
+          description: |-
+            Always None: no phone number is published for an organization or
+            its editor. Kept so clients built against the old schema still parse.
           type: string
           nullable: true
           readOnly: true
@@ -24918,6 +25362,28 @@ components:
         - id
         - isRogue
         - name
+        - orgnr
+    OrganizationAffidavitCreateErrorResponse400:
+      discriminator:
+        propertyName: type
+        mapping:
+          client_error: '#/components/schemas/ParseErrorResponse'
+      oneOf:
+        - $ref: '#/components/schemas/ParseErrorResponse'
+    OrganizationAffidavitFileRetrieveErrorResponse400:
+      discriminator:
+        propertyName: type
+        mapping:
+          client_error: '#/components/schemas/ParseErrorResponse'
+      oneOf:
+        - $ref: '#/components/schemas/ParseErrorResponse'
+    OrganizationAffidavitListErrorResponse400:
+      discriminator:
+        propertyName: type
+        mapping:
+          client_error: '#/components/schemas/ParseErrorResponse'
+      oneOf:
+        - $ref: '#/components/schemas/ParseErrorResponse'
     OrganizationCreateDescriptionErrorComponent:
       type: object
       properties:
@@ -25068,6 +25534,7 @@ components:
             * `max_length` - max_length
             * `null` - null
             * `null_characters_not_allowed` - null_characters_not_allowed
+            * `required` - required
             * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed
           type: string
           enum:
@@ -25075,6 +25542,7 @@ components:
             - max_length
             - 'null'
             - null_characters_not_allowed
+            - required
             - surrogate_characters_not_allowed
         detail:
           type: string
@@ -25479,6 +25947,7 @@ components:
             * `max_length` - max_length
             * `null` - null
             * `null_characters_not_allowed` - null_characters_not_allowed
+            * `required` - required
             * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed
           type: string
           enum:
@@ -25486,6 +25955,7 @@ components:
             - max_length
             - 'null'
             - null_characters_not_allowed
+            - required
             - surrogate_characters_not_allowed
         detail:
           type: string
@@ -25587,6 +26057,7 @@ components:
           title: Street address for organization.
       required:
         - name
+        - orgnr
     OrganizationRetrieveErrorResponse400:
       discriminator:
         propertyName: type
@@ -25744,6 +26215,7 @@ components:
             * `max_length` - max_length
             * `null` - null
             * `null_characters_not_allowed` - null_characters_not_allowed
+            * `required` - required
             * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed
           type: string
           enum:
@@ -25751,6 +26223,7 @@ components:
             - max_length
             - 'null'
             - null_characters_not_allowed
+            - required
             - surrogate_characters_not_allowed
         detail:
           type: string
@@ -27267,8 +27740,10 @@ components:
           type: string
           readOnly: true
         fkmember:
+          description: Tick when the editor's signed affidavit has been received. This approves the membership and confirms the editor's identity.
           type: boolean
           readOnly: true
+          title: Member
       required:
         - fkmember
         - id
@@ -31820,7 +32295,7 @@ components:
           type: boolean
           readOnly: true
         identityConfirmed:
-          description: Whether the identity of this user has been confirmed by Frikanalen management.
+          description: Set automatically when the signed affidavit of an organization this user edits is received (the organization is made a member). Tick by hand only for someone who is not an editor.
           type: boolean
           readOnly: true
         dateJoined:

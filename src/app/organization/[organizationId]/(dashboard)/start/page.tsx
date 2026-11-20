@@ -2,7 +2,11 @@ import { getUserOrNull } from "@/app/getUserOrNull";
 import { profileIsAdminOrMember } from "@/app/organization/[organizationId]/admin/profileIsAdminOrMember";
 import { OnboardingSteps } from "@/app/organization/onboarding/OnboardingSteps";
 import { isOnboarded, nextStep, onboardingSteps } from "@/app/organization/onboarding/steps";
-import { ssrOrganizationRetrieve } from "@/generated/ssr/organization/organization";
+import { latestAffidavitState } from "@/app/organization/[organizationId]/affidavit/latestAffidavitState";
+import {
+  ssrOrganizationAffidavitList,
+  ssrOrganizationRetrieve,
+} from "@/generated/ssr/organization/organization";
 import { getCookiesFromRequest } from "@/lib/getCookiesFromRequest";
 import { OrganizationParams, parseParamsOr404 } from "@/lib/routeParams";
 import type { Metadata } from "next";
@@ -27,13 +31,18 @@ export default async function Page({ params }: { params: Promise<{ organizationI
   });
   if (organizationResponse.status !== 200) notFound();
   const organization = organizationResponse.data;
+  const affidavitResponse = await ssrOrganizationAffidavitList(organizationId, {
+    headers,
+    cache: "no-store",
+  });
+  const affidavit =
+    affidavitResponse.status === 200 ? latestAffidavitState(affidavitResponse.data) : "none";
 
   const steps = onboardingSteps({
     organizationId,
     loggedIn: true,
-    identityConfirmed: user.identityConfirmed,
-    isStaff: user.isStaff,
     isMember: organization.fkmember,
+    affidavit,
   });
   const next = nextStep(steps);
   const onboarded = isOnboarded(steps);

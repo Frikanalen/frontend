@@ -111,8 +111,9 @@ export const OrgCreateForm = ({ className }: { className?: string }) => {
               label={"Organisasjonsnummer"}
               labelPlacement={"outside-top"}
               description={
-                "Fra Brønnøysundregistrene. Hent opplysningene derfra, eller la feltet stå tomt hvis organisasjonen ikke har et."
+                "Fra Brønnøysundregistrene. Organisasjonen må være registrert i Enhetsregisteret. Hent opplysningene derfra og se over feltene under."
               }
+              isRequired
               inputMode={"numeric"}
               autoComplete={"off"}
               id="org-orgnr"
@@ -122,7 +123,9 @@ export const OrgCreateForm = ({ className }: { className?: string }) => {
               {...register("orgnr", {
                 setValueAs: (value: string) => normalizeOrgnr(value ?? ""),
                 validate: (value) =>
-                  !value || isValidOrgnr(value) || "Organisasjonsnummeret er ikke gyldig.",
+                  !value
+                    ? "Fyll inn organisasjonsnummeret."
+                    : isValidOrgnr(value) || "Organisasjonsnummeret er ikke gyldig.",
               })}
             />
             <Button
