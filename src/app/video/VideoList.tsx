@@ -29,8 +29,10 @@ const VideoRow = ({
   showCategory,
   status,
   actions,
+  href,
 }: {
   video: Video;
+  href: string;
   showOrganization: boolean;
   showCategory: boolean;
   status?: ReactNode;
@@ -104,7 +106,7 @@ const VideoRow = ({
       <div className="flex min-w-0 flex-1 flex-col gap-0.5 py-0.5">
         <h3 className="text-medium font-semibold leading-snug">
           <Link
-            href={`/video/${video.id}`}
+            href={href}
             // Stretches the anchor over the row. `outline-hidden` because the
             // focus ring is drawn on the row instead - a ring around just the
             // title, with the row already highlighted behind it, reads as two
@@ -197,8 +199,11 @@ export const VideoList = ({
   showCategory = true,
   status,
   actions,
+  href = (video) => `/video/${video.id}`,
 }: {
   videos: Video[];
+  /** Where a row leads: the public video page unless the caller says otherwise. */
+  href?: (_video: Video) => string;
   showOrganization?: boolean;
   showCategory?: boolean;
   /** Rendered under the title, above the facts line. */
@@ -213,6 +218,7 @@ export const VideoList = ({
         video={video}
         showOrganization={showOrganization}
         showCategory={showCategory}
+        href={href(video)}
         status={status?.(video)}
         actions={actions?.(video)}
       />

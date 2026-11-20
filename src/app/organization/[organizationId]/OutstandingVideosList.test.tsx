@@ -26,6 +26,13 @@ vi.mock("@/generated/videos/videos", () => ({
   useVideosIngestRetrieve: () => ({ data: undefined, isError: false }),
 }));
 
+// The menu is react-aria's; here it only has to hand over the delete.
+vi.mock("@/app/organization/[organizationId]/VideoRowMenu", () => ({
+  VideoRowMenu: ({ onDelete }: { onDelete: () => void }) => (
+    <button onClick={onDelete}>Slett</button>
+  ),
+}));
+
 vi.mock("@tanstack/react-query", () => ({
   useQueryClient: () => ({ invalidateQueries: api.invalidate }),
 }));
@@ -94,18 +101,39 @@ describe("OutstandingVideosList", () => {
   it("asks the server for exactly the unimported videos", () => {
     render(<OutstandingVideosList organizationId={9} />);
 
-    expect(api.params).toEqual({ organization: 9, proper_import: false, ordering: "-id" });
+    expect(api.params).toEqual({
+      organization: 9,
+      proper_import: false,
+      ordering: "-id",
+      limit: 50,
+    });
   });
 
-  it("shows the videos as ordinary archive rows", () => {
+  it("leads each row to the video's editor and offers an upload", () => {
     render(<OutstandingVideosList organizationId={9} />);
 
     expect(screen.getByRole("link", { name: "Fastlåst opplasting" }).getAttribute("href")).toBe(
-      "/video/42",
+      "/video/42/edit",
     );
     expect(screen.getByRole("link", { name: "Last opp" }).getAttribute("href")).toBe(
       "/video/42/upload",
     );
+  });
+
+  it("shows a live programme as waiting for its airing, not as an upload to make", () => {
+    api.videos = [
+      {
+        ...video(43, "Årsmøtet"),
+        liveSource: 9,
+        liveAirings: [
+          { id: 1, starttime: "2030-01-18T16:32:00Z", endtime: "2030-01-18T17:32:00Z" },
+        ],
+      } as unknown as Video,
+    ];
+    render(<OutstandingVideosList organizationId={9} />);
+
+    expect(screen.getByText("Direkte · sendes fredag 18. januar kl. 17:32")).toBeTruthy();
+    expect(screen.queryByRole("link", { name: "Last opp" })).toBeNull();
   });
 
   it("renders nothing at all when every video is imported", () => {
@@ -121,9 +149,7 @@ describe("OutstandingVideosList", () => {
     fireEvent.click(screen.getByRole("button", { name: "Slett" }));
 
     await waitFor(() => expect(api.destroy).toHaveBeenCalledWith({ id: 42 }));
-    expect(api.confirm).toHaveBeenCalledWith(
-      "Slett den uimporterte videoen «Fastlåst opplasting»?",
-    );
+    expect(api.confirm).toHaveBeenCalledWith("Slett «Fastlåst opplasting»? Dette kan ikke angres.");
     expect(api.invalidate).toHaveBeenCalledWith({ queryKey: ["/api/videos"] });
   });
 
