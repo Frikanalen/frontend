@@ -11,7 +11,12 @@ import { Metadata } from "next";
 import { VideoParams, parseParamsOr404 } from "@/lib/routeParams";
 import { videoStartTimeFrom } from "@/app/video/[videoId]/videoStartTime";
 import { SuspendedNotice, suspendedOrganizationFrom } from "@/components/suspended/SuspendedNotice";
-import { REMOVED_HEADING, RemovedNotice, isRemovedVideo } from "@/components/removed/RemovedNotice";
+import {
+  RemovedNotice,
+  isRemovedVideo,
+  removedVideoOwnerFrom,
+} from "@/components/removed/RemovedNotice";
+import { getCookiesFromRequest } from "@/lib/getCookiesFromRequest";
 
 /**
  * A video as a visitor sees it, shared by every visitor and by the page and
@@ -43,7 +48,7 @@ export async function generateMetadata({ params }: VideoPageProps): Promise<Meta
 
   const { data: video, status } = await loadVideo(videoId);
   if (status === 403) {
-    if (isRemovedVideo(video)) return { title: `${REMOVED_HEADING} - Frikanalen` };
+    if (isRemovedVideo(video)) return { title: "Utilgjengelig - Frikanalen" };
     const suspended = suspendedOrganizationFrom(video);
     if (suspended) return { title: `${suspended.name} er suspendert - Frikanalen` };
   }
@@ -90,7 +95,7 @@ const Video = async ({ params, searchParams }: VideoPageProps) => {
     if (isRemovedVideo(video))
       return (
         <div className="mx-auto w-full max-w-5xl px-4 pt-10 sm:px-6">
-          <RemovedNotice />
+          <RemovedNotice ownOrganization={user ? await ownRemovedVideo(videoId) : null} />
         </div>
       );
     const suspended = suspendedOrganizationFrom(video);
@@ -113,4 +118,16 @@ const Video = async ({ params, searchParams }: VideoPageProps) => {
   ) : (
     <VideoCard video={video} startTime={startTime} />
   );
+};
+
+/**
+ * Asked as the visitor, uncached: the API names the organization of a removed
+ * video only to its own members, so their page can say more than "unavailable".
+ */
+const ownRemovedVideo = async (videoId: number) => {
+  const { data } = await ssrVideosRetrieve(videoId, {
+    headers: await getCookiesFromRequest(),
+    cache: "no-store",
+  });
+  return removedVideoOwnerFrom(data);
 };

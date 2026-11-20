@@ -8,7 +8,6 @@ import { VideoStage } from "@/app/video/[videoId]/VideoStage";
 import { LiveProgrammeStage, isAwaitingLiveAiring } from "@/app/video/[videoId]/LiveProgrammeStage";
 import { ProgressBar } from "@heroui/react";
 import { Notice } from "@/components/Notice";
-import { REMOVED_TEXT } from "@/components/removed/RemovedNotice";
 
 import { useVideosRetrieve } from "@/generated/videos/videos";
 import { POLL_INTERVAL_MS, useIngestProgress } from "@/lib/upload/useIngestProgress";
@@ -56,8 +55,8 @@ export const VideoCardForAdmin = ({
     >
       {video.isBanned && (
         <Notice status="danger">
-          {REMOVED_TEXT} Bare administratorer ser videoen. Andre ser bare denne meldingen, og den
-          sendes ikke.
+          Videoen er administrativt fjernet i påvente av gjennomgang. Bare administratorer ser den.
+          Alle andre ser at den er utilgjengelig, og den blir ikke sendt.
         </Notice>
       )}
       {previewPlaying && (
