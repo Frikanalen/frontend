@@ -5,7 +5,7 @@ import {
   ssrVideosUploadTokenRetrieve,
 } from "@/generated/ssr/videos/videos";
 import { ssrOrganizationLiveSourcesList } from "@/generated/ssr/organization/organization";
-import { forbidden, notFound } from "next/navigation";
+import { forbidden, notFound, redirect } from "next/navigation";
 import { profileIsAdminOrMember } from "@/app/organization/[organizationId]/admin/profileIsAdminOrMember";
 import { getUserOrNull } from "@/app/getUserOrNull";
 import { VideoPageProps } from "@/app/video/[videoId]/page";
@@ -33,6 +33,9 @@ export default async function Page({ params }: VideoPageProps) {
   });
 
   if (status === 404) return notFound();
+  // Removed by staff, or from a suspended organization: the video page
+  // says which, and there is nothing here to edit.
+  if (status === 403) redirect(`/video/${videoId}`);
 
   if (status !== 200)
     throw new Error(
