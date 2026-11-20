@@ -1,6 +1,9 @@
 import { expect, test, type Page } from "@playwright/test";
 import { waitForHydration } from "./support/hydration";
 
+/** The declaration dialog on Kom i gang, where /affidavit now lands. */
+const declaration = (page: Page) => page.getByRole("dialog", { name: "Redaktørerklæringen" });
+
 const asApplicant = async (page: Page, baseURL: string, affidavit?: string) => {
   const url = baseURL;
   await page
@@ -74,22 +77,24 @@ test("says a scan is waiting for review", async ({ page, baseURL }) => {
   await asApplicant(page, baseURL!, "pending");
   await page.goto("/organization/3/affidavit");
 
-  await expect(page.getByText("venter på at Frikanalen sjekker den")).toBeVisible();
+  await expect(declaration(page).getByText("venter på at Frikanalen sjekker den")).toBeVisible();
 });
 
 test("passes on why a scan was turned down", async ({ page, baseURL }) => {
   await asApplicant(page, baseURL!, "rejected");
   await page.goto("/organization/3/affidavit");
 
-  await expect(page.getByText("Frikanalen kunne ikke godkjenne erklæringen.")).toBeVisible();
-  await expect(page.getByText("Signaturen mangler.")).toBeVisible();
+  await expect(
+    declaration(page).getByText("Frikanalen kunne ikke godkjenne erklæringen."),
+  ).toBeVisible();
+  await expect(declaration(page).getByText("Signaturen mangler.")).toBeVisible();
 });
 
 test("shows a member organization its approval instead", async ({ page, baseURL }) => {
   await page.context().addCookies([{ name: "e2e-member", value: "1", url: baseURL! }]);
   await page.goto("/organization/3/affidavit");
 
-  await expect(page.getByText("Frikanalen har godkjent erklæringen.")).toBeVisible();
+  await expect(declaration(page).getByText("Frikanalen har godkjent erklæringen.")).toBeVisible();
   await expect(page.getByRole("button", { name: "Send til Frikanalen" })).toHaveCount(0);
 });
 
