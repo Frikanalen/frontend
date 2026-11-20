@@ -53,6 +53,12 @@ export const VideoCardForAdmin = ({
         )
       }
     >
+      {video.isBanned && (
+        <Notice status="danger">
+          Videoen er administrativt fjernet i påvente av gjennomgang. Bare administratorer ser den.
+          Alle andre ser at den er utilgjengelig, og den blir ikke sendt.
+        </Notice>
+      )}
       {previewPlaying && (
         <div className="space-y-3 border-l-4 border-warning bg-background p-4">
           <div className="flex items-center gap-4">
