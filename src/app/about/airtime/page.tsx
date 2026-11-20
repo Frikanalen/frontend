@@ -117,8 +117,8 @@ export default function Airtime() {
         <div className="min-w-0 grow basis-80">
           <h2 className="text-2xl font-bold">Vil organisasjonen din ha sendetid?</h2>
           <p className="mt-1 text-default-700">
-            Medlemmer ber om sendetid fra Studio, under Sendetid. Er organisasjonen ikke medlem
-            ennå, starter du med å melde den inn.
+            Medlemmer ber om sendetid fra Studio, under Sendetid. Er dere ikke medlem ennå, starter
+            dere med å melde dere inn.
           </p>
         </div>
         <Link

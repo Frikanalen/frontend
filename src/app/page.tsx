@@ -123,8 +123,8 @@ export default function Home() {
           </h2>
           <div className="flex flex-col gap-5">
             <p className="text-lg text-[#cfe9c8]">
-              Er du med i en frivillig organisasjon? Som medlem får organisasjonen sendetid på
-              kanalen og plass i arkivet.
+              Er dere en frivillig organisasjon? Som medlem får dere sendetid på kanalen og plass i
+              arkivet.
             </p>
             <Link
               className="inline-flex min-h-12 items-center self-start rounded-md bg-white px-5 text-lg font-bold text-brand-deep hover:bg-white/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"

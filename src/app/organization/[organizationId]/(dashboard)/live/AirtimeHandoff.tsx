@@ -36,8 +36,8 @@ export const AirtimeHandoff = ({
         Sett den i sendeplanen
       </h3>
       <p className="text-sm text-default-600">
-        Kilden går på lufta når en direktesending fra den står i organisasjonens sendetid. Velg en
-        sendetid, så får du opp skjemaet med «{source.name}» valgt.
+        Kilden går på lufta når en direktesending fra den står i sendetiden deres. Velg en sendetid,
+        så får du opp skjemaet med «{source.name}» valgt.
       </p>
       {grants.isLoading ? <p className="text-sm">Laster sendetid…</p> : null}
       {open.length > 0 ? (
@@ -62,7 +62,7 @@ export const AirtimeHandoff = ({
         </ul>
       ) : null}
       {!grants.isLoading && open.length === 0 ? (
-        <p className="text-sm">Organisasjonen har ingen kommende sendetid som kan endres.</p>
+        <p className="text-sm">Dere har ingen kommende sendetid som kan endres.</p>
       ) : null}
       <p className="text-sm">
         <Link className="font-semibold text-link hover:underline" href={`${base}/request?engang=1`}>

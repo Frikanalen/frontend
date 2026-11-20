@@ -290,7 +290,7 @@ export const PosterPicker = ({
           posters.isLoading ? null : (
             <p className="p-2 text-sm text-default-600">
               Ingen plakater ennå. En plakat kan for eksempel fortelle hva som kommer etter pausen,
-              eller hvordan seerne kan nå organisasjonen.
+              eller hvordan seerne kan nå dere.
             </p>
           )
         }

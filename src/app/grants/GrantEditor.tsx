@@ -443,8 +443,8 @@ const Editor = ({
 
       {showsAutomatic && editable ? (
         <p className="border-l-4 border-brand-plum bg-background p-3 text-sm">
-          Sendetiden fyller seg selv hver natt, helt frem til et døgn før sending. Videoer du legger
-          inn selv, blir stående først, og resten fylles rundt dem.
+          Sendetiden fyller seg selv hver natt, helt frem til et døgn før sending. Videoer dere
+          legger inn selv, blir stående først, og resten fylles rundt dem.
         </p>
       ) : null}
 

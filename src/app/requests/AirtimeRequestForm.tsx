@@ -184,7 +184,7 @@ export const AirtimeRequestForm = ({
       <Field label="Melding til Frikanalen (valgfri)">
         <textarea
           className={cx(fieldClass, "min-h-24")}
-          placeholder="Hva vil du sende?"
+          placeholder="Hva vil dere sende?"
           value={message}
           onChange={(event) => setMessage(event.target.value)}
         />
@@ -192,8 +192,8 @@ export const AirtimeRequestForm = ({
 
       <p className="text-sm text-default-600">
         {kind === "weekly"
-          ? "Frikanalen ser på forespørselen og svarer her. Blir den godkjent, får organisasjonen sendetid hver uke fra da av, og den fylles automatisk med de nyeste videoene til du setter opp noe selv."
-          : "Frikanalen ser på forespørselen og svarer her. Blir den godkjent, finner du sendetiden under Sendetid."}
+          ? "Frikanalen ser på forespørselen og svarer her. Blir den godkjent, får dere sendetid hver uke fra da av, og den fylles automatisk med deres nyeste videoer til dere setter opp noe selv."
+          : "Frikanalen ser på forespørselen og svarer her. Blir den godkjent, finner dere sendetiden under Sendetid."}
       </p>
 
       {sent ? (

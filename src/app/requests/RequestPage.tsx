@@ -51,7 +51,7 @@ export const RequestPage = ({
         {isLoading ? <p>Laster forespørsler…</p> : null}
         {error ? <p role="alert">{formatApiError(error)}</p> : null}
         {!isLoading && requests.length === 0 ? (
-          <p className="bg-background p-5">Organisasjonen har ikke bedt om sendetid ennå.</p>
+          <p className="bg-background p-5">Dere har ikke bedt om sendetid ennå.</p>
         ) : null}
         <div className="grid gap-3 md:grid-cols-2">
           {requests.map((request) => (

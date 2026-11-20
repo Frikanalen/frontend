@@ -210,7 +210,7 @@ export const fillSourceLabel = ({ recipe }: Pick<AirtimeGrant, "recipe">) => {
   if (recipe?.kind === "playlist") return "en spilleliste Frikanalen har satt opp";
   if (recipe?.kind === "jukebox")
     return recipe.name ? `videojukeboksen «${recipe.name}»` : "videojukeboksen";
-  return "alt du laster opp";
+  return "alt dere laster opp";
 };
 
 /**

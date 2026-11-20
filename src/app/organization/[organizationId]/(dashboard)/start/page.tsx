@@ -59,8 +59,8 @@ export default async function Page({ params }: { params: Promise<{ organizationI
           {onboarded
             ? "Alt er på plass. Organisasjonen er et aktivt medlem."
             : next
-              ? `Neste for deg: ${next.title.toLowerCase()}.`
-              : "Du har gjort det du kan nå. Resten venter på Frikanalen."}
+              ? `Neste for dere: ${next.title.toLowerCase()}.`
+              : "Dere har gjort det dere kan nå. Resten venter på Frikanalen."}
         </p>
         <p className="mt-1 text-default-600">
           {finished} av {steps.length} steg er ferdige.
@@ -71,7 +71,7 @@ export default async function Page({ params }: { params: Promise<{ organizationI
       <p className="flex flex-wrap items-center gap-x-6 gap-y-2 text-default-700">
         {onboarded
           ? "Medlemskapet er aktivt."
-          : "Du kan laste opp videoer mens du venter. De blir synlige når medlemskapet er godkjent."}
+          : "Dere kan laste opp videoer mens dere venter. De blir synlige når medlemskapet er godkjent."}
         <Link
           className="font-semibold text-link hover:underline"
           href={`/organization/${organizationId}/create`}

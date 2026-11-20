@@ -5,7 +5,7 @@ import type { OnboardingStep, StepState } from "./steps";
 
 const STATE_LABELS: Record<StepState, string | null> = {
   done: "Ferdig",
-  todo: "Din tur",
+  todo: "Deres tur",
   waiting: "Venter på Frikanalen",
   blocked: "Senere",
 };
