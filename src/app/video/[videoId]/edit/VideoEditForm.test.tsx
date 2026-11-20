@@ -141,7 +141,13 @@ afterEach(cleanup);
 
 describe("VideoEditForm series membership", () => {
   it("leaves the episode number empty when moving the video to another series", async () => {
-    render(<VideoEditForm video={editedVideo} series={[existingSeries, otherSeries]} />);
+    render(
+      <VideoEditForm
+        returnHref="/organization/9/admin"
+        video={editedVideo}
+        series={[existingSeries, otherSeries]}
+      />,
+    );
 
     expect((screen.getByLabelText("Episodenummer (valgfritt)") as HTMLInputElement).value).toBe(
       "2",
@@ -157,7 +163,13 @@ describe("VideoEditForm series membership", () => {
   });
 
   it("clears the episode number when removing a video from its series", async () => {
-    render(<VideoEditForm video={editedVideo} series={[existingSeries, otherSeries]} />);
+    render(
+      <VideoEditForm
+        returnHref="/organization/9/admin"
+        video={editedVideo}
+        series={[existingSeries, otherSeries]}
+      />,
+    );
 
     fireEvent.change(screen.getByLabelText("Serie (valgfritt)"), { target: { value: "none" } });
     fireEvent.click(screen.getByRole("button", { name: "Lagre" }));
@@ -170,7 +182,13 @@ describe("VideoEditForm series membership", () => {
   });
 
   it("selects a series created from the modal as the video's first episode", async () => {
-    render(<VideoEditForm video={editedVideo} series={[existingSeries, otherSeries]} />);
+    render(
+      <VideoEditForm
+        returnHref="/organization/9/admin"
+        video={editedVideo}
+        series={[existingSeries, otherSeries]}
+      />,
+    );
 
     fireEvent.click(screen.getByRole("button", { name: "Opprett ny serie" }));
     fireEvent.click(screen.getByRole("button", { name: "Opprett serie for 3" }));
@@ -189,13 +207,25 @@ describe("VideoEditForm series membership", () => {
 
 describe("VideoEditForm fields", () => {
   it("shows the video's current title", () => {
-    render(<VideoEditForm video={editedVideo} series={[existingSeries, otherSeries]} />);
+    render(
+      <VideoEditForm
+        returnHref="/organization/9/admin"
+        video={editedVideo}
+        series={[existingSeries, otherSeries]}
+      />,
+    );
 
     expect((screen.getByLabelText("Navn") as HTMLInputElement).value).toBe("Reportasje");
   });
 
   it("saves an age rating and a language", async () => {
-    render(<VideoEditForm video={editedVideo} series={[existingSeries, otherSeries]} />);
+    render(
+      <VideoEditForm
+        returnHref="/organization/9/admin"
+        video={editedVideo}
+        series={[existingSeries, otherSeries]}
+      />,
+    );
 
     fireEvent.change(screen.getByLabelText("Aldersgrense"), { target: { value: "12" } });
     fireEvent.change(screen.getByLabelText("Språk"), { target: { value: "none" } });

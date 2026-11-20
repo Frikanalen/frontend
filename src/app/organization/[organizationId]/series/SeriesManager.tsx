@@ -4,6 +4,7 @@ import { NewSeriesModal } from "@/app/organization/[organizationId]/create/NewSe
 import { useSeriesList } from "@/generated/series/series";
 import { Button, Table } from "@heroui/react";
 import Link from "next/link";
+import { StudioHeader } from "@/app/organization/[organizationId]/StudioHeader";
 import { useState } from "react";
 
 export const SeriesManager = ({ organizationId }: { organizationId: number }) => {
@@ -13,22 +14,24 @@ export const SeriesManager = ({ organizationId }: { organizationId: number }) =>
   const series = list.data?.data.results ?? [];
 
   return (
-    <section className="space-y-4">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h2 className="text-xl font-bold">Registrerte serier</h2>
-        <Button onPress={() => setModalOpen(true)} variant="primary">
-          Ny serie
-        </Button>
-      </div>
+    <section>
+      <StudioHeader
+        title="Serier"
+        intro="Samle videoer som hører sammen, så seerne finner dem i rekkefølge."
+        action={
+          <Button onPress={() => setModalOpen(true)} variant="primary">
+            Ny serie
+          </Button>
+        }
+      />
       {list.isError ? (
         <p role="alert">Seriene kunne ikke hentes. Prøv igjen om litt.</p>
       ) : (
-        <Table aria-label="Registrerte serier">
+        <Table aria-label="Serier">
           <Table.Content>
             <Table.Header>
               <Table.Column isRowHeader>Navn</Table.Column>
               <Table.Column>Episoder</Table.Column>
-              <Table.Column>Handlinger</Table.Column>
             </Table.Header>
             <Table.Body
               renderEmptyState={() => (
@@ -37,24 +40,15 @@ export const SeriesManager = ({ organizationId }: { organizationId: number }) =>
             >
               {series.map((item) => (
                 <Table.Row key={item.id} id={item.id}>
-                  <Table.Cell>{item.name}</Table.Cell>
-                  <Table.Cell>{item.episodeCount}</Table.Cell>
                   <Table.Cell>
-                    <div className="flex flex-wrap gap-2">
-                      <Link
-                        className="inline-flex h-8 items-center rounded-medium bg-default-100 px-3 text-sm font-medium transition-colors hover:bg-default-200"
-                        href={`/organization/${organizationId}/series/${item.id}`}
-                      >
-                        Rediger
-                      </Link>
-                      <Link
-                        className="inline-flex h-8 items-center rounded-medium px-3 text-sm font-medium transition-colors hover:bg-default-100"
-                        href={`/series/${item.id}`}
-                      >
-                        Offentlig side
-                      </Link>
-                    </div>
+                    <Link
+                      className="font-semibold text-link hover:underline"
+                      href={`/organization/${organizationId}/series/${item.id}`}
+                    >
+                      {item.name}
+                    </Link>
                   </Table.Cell>
+                  <Table.Cell>{item.episodeCount}</Table.Cell>
                 </Table.Row>
               ))}
             </Table.Body>

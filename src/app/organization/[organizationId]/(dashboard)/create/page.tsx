@@ -2,7 +2,6 @@ import { categoriesList } from "@/generated/categories/categories";
 import { VideoCreateForm } from "@/app/organization/[organizationId]/create/VideoCreateForm";
 import { getCookiesFromRequest } from "@/lib/getCookiesFromRequest";
 import { organizationRetrieve } from "@/generated/organization/organization";
-import { PageShell, PageShellBody } from "@/components/layout/PageShell";
 import { seriesList } from "@/generated/series/series";
 import { OrganizationParams, parseParamsOr404 } from "@/lib/routeParams";
 
@@ -23,15 +22,13 @@ export default async function Page({ params }: { params: Promise<{ organizationI
   );
 
   return (
-    <PageShell>
-      <PageShellBody className={"space-y-4"}>
-        <VideoCreateForm
-          organizationId={organizationId}
-          organizationName={organization.name}
-          categories={categories.results}
-          series={series.results}
-        />
-      </PageShellBody>
-    </PageShell>
+    <section className="mx-auto max-w-3xl">
+      <VideoCreateForm
+        organizationId={organizationId}
+        organizationName={organization.name}
+        categories={categories.results}
+        series={series.results}
+      />
+    </section>
   );
 }

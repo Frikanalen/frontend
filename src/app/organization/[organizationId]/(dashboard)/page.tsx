@@ -4,7 +4,6 @@ import { Fragment } from "react";
 import { Organization } from "@/generated/frikanalenDjangoAPI.schemas";
 import { getCookiesFromRequest } from "@/lib/getCookiesFromRequest";
 import { profileIsAdminOrMember } from "@/app/organization/[organizationId]/admin/profileIsAdminOrMember";
-import { AdminAlert } from "@/app/organization/[organizationId]/AdminAlert";
 import { getUserOrNull } from "@/app/getUserOrNull";
 import { RecentVideos } from "@/app/organization/[organizationId]/RecentVideos";
 import { OrganizationSeries } from "@/app/organization/[organizationId]/OrganizationSeries";
@@ -78,7 +77,6 @@ export default async function Page({ params }: OrgPageProps) {
   return (
     <div className="grow space-y-6">
       <OrgBlurb organization={organization} />
-      {isAdmin && <AdminAlert organizationId={organizationId} />}
       <OrganizationSeries organizationId={organization.id} />
       <ArchiveSearch scope={{ id: organization.id, name: organization.name }} />
       <RecentVideos organization={organization} />

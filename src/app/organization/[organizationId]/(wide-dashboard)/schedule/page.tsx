@@ -6,6 +6,8 @@ import { organizationRetrieve } from "@/generated/organization/organization";
 import { forbidden, notFound, redirect } from "next/navigation";
 import { OrganizationParams, parseParamsOr404 } from "@/lib/routeParams";
 import Link from "next/link";
+import { ButtonLink } from "@/components/ButtonLink";
+import { StudioHeader } from "@/app/organization/[organizationId]/StudioHeader";
 
 // Per-visitor: rendered on request, without a static shell of its own.
 export const instant = false;
@@ -24,25 +26,20 @@ export default async function Page({ params }: { params: Promise<{ organizationI
 
   return (
     <div className="grow space-y-5">
-      <header>
-        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">Sendetid</h1>
-        <p className="mt-2 text-default-600">for {organization.name}</p>
-        <p className="mt-2 max-w-3xl">
-          Her er sendetiden Frikanalen har gitt dere. Sett opp hva som skal sendes i hver av dem før
-          fristen.
-        </p>
-        <div className="mt-2 flex flex-wrap gap-x-5 gap-y-1">
-          <Link
-            className="font-semibold text-link hover:underline"
-            href={`/organization/${organization.id}/schedule/request`}
-          >
-            Be om mer sendetid
-          </Link>
-          <Link className="font-semibold text-link hover:underline" href="/schedule/plan/rules">
-            Les hvordan sendetid virker
-          </Link>
-        </div>
-      </header>
+      <StudioHeader
+        title="Sendetid"
+        intro="Her er sendetiden Frikanalen har gitt dere. Sett opp hva som skal sendes i hver av dem før fristen."
+        action={
+          <>
+            <Link className="font-semibold text-link hover:underline" href="/schedule/plan/rules">
+              Slik virker sendetid
+            </Link>
+            <ButtonLink href={`/organization/${organization.id}/schedule/request`}>
+              Be om mer sendetid
+            </ButtonLink>
+          </>
+        }
+      />
 
       {!user.identityConfirmed && !user.isStaff ? (
         <section className="border-l-4 border-warning bg-background p-5">

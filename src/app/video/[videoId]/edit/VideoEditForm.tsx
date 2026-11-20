@@ -36,8 +36,11 @@ export const VideoEditForm = ({
   categories = [],
   liveSources = [],
   image,
+  returnHref,
 }: {
   video: Video;
+  /** Where saving or cancelling leads: the Studio's list of videos. */
+  returnHref: string;
   /** The video's picture, which opens its image manager. */
   image?: ReactNode;
   series: Series[];
@@ -63,7 +66,6 @@ export const VideoEditForm = ({
   const router = useRouter();
   const [availableSeries, setAvailableSeries] = useState<SeriesOption[]>(series);
   const [isSeriesModalOpen, setSeriesModalOpen] = useState(false);
-  const videoPage = `/video/${video.id}`;
 
   const { onSubmit, error, isSubmitting } = useApiFormSubmit(form, async (data) => {
     // Sent only when changed: the API checks a source it's given, and a
@@ -76,7 +78,7 @@ export const VideoEditForm = ({
     // Saved: leaving now must not ask about unsaved changes.
     form.reset(data);
     await editAction(video.id);
-    router.push(videoPage);
+    router.push(returnHref);
   });
 
   const isDirty = form.formState.isDirty && !form.formState.isSubmitSuccessful;
@@ -223,7 +225,7 @@ export const VideoEditForm = ({
         </div>
         <div className="flex w-full flex-wrap items-center justify-end gap-3">
           <Link
-            href={videoPage}
+            href={returnHref}
             className="text-sm text-foreground-500 underline-offset-4 hover:underline"
           >
             Avbryt

@@ -4,7 +4,8 @@ import { profileIsAdminOrMember } from "@/app/organization/[organizationId]/admi
 import { forbidden } from "next/navigation";
 import { VideoParams, parseParamsOr404 } from "@/lib/routeParams";
 
-import { PageShell, PageShellBody } from "@/components/layout/PageShell";
+import { StudioBar } from "@/app/organization/[organizationId]/StudioBar";
+import { StudioHeader } from "@/app/organization/[organizationId]/StudioHeader";
 import { getUserOrNull } from "@/app/getUserOrNull";
 import { FileUpload } from "@/components/upload/FileUpload";
 
@@ -23,18 +24,26 @@ export default async function Page({ params }: { params: Promise<{ videoId: stri
     headers,
   });
 
+  const studio = `/organization/${video.organization.id}/admin`;
+
   return (
-    <PageShell>
-      <PageShellBody className={"space-y-4"}>
-        <div className="prose dark:prose-invert">
-          <h2>Last opp originalfil for {video.name}</h2>
-        </div>
-        <FileUpload
-          videoId={videoId}
-          uploadEndpoint={uploadToken.uploadUrl}
-          uploadToken={uploadToken.uploadToken}
-        />
-      </PageShellBody>
-    </PageShell>
+    <>
+      <StudioBar organizationId={video.organization.id} section="videos" />
+      <div className="mx-auto w-full max-w-7xl px-4 pt-8 sm:px-6">
+        <section className="bg-background p-4 text-foreground sm:p-6">
+          <StudioHeader
+            title={video.name}
+            intro="Last opp originalfilen. La siden være åpen til filen er overført."
+            back={{ href: studio, label: "Videoer" }}
+          />
+          <FileUpload
+            videoId={videoId}
+            uploadEndpoint={uploadToken.uploadUrl}
+            uploadToken={uploadToken.uploadToken}
+            doneHref={`/video/${videoId}/edit`}
+          />
+        </section>
+      </div>
+    </>
   );
 }
