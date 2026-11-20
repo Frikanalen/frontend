@@ -34,7 +34,7 @@ describe("onboardingSteps", () => {
     const steps = onboardingSteps(facts());
     expect(nextStep(steps)?.id).toBe("affidavit");
     expect(affidavit().actions[0]).toEqual({
-      href: "/organization/3/affidavit",
+      href: "/organization/3/start?erklaering",
       label: "Last ned og last opp",
     });
     expect(isOnboarded(steps)).toBe(false);

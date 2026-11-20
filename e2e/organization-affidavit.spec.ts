@@ -1,6 +1,9 @@
 import { expect, test, type Page } from "@playwright/test";
 import { waitForHydration } from "./support/hydration";
 
+/** The declaration dialog on Kom i gang, where /affidavit now lands. */
+const declaration = (page: Page) => page.getByRole("dialog", { name: "Redaktørerklæringen" });
+
 const asApplicant = async (page: Page, baseURL: string, affidavit?: string) => {
   const url = baseURL;
   await page
@@ -74,21 +77,78 @@ test("says a scan is waiting for review", async ({ page, baseURL }) => {
   await asApplicant(page, baseURL!, "pending");
   await page.goto("/organization/3/affidavit");
 
-  await expect(page.getByText("venter på at Frikanalen sjekker den")).toBeVisible();
+  await expect(declaration(page).getByText("venter på at Frikanalen sjekker den")).toBeVisible();
 });
 
 test("passes on why a scan was turned down", async ({ page, baseURL }) => {
   await asApplicant(page, baseURL!, "rejected");
   await page.goto("/organization/3/affidavit");
 
-  await expect(page.getByText("Frikanalen kunne ikke godkjenne erklæringen.")).toBeVisible();
-  await expect(page.getByText("Signaturen mangler.")).toBeVisible();
+  await expect(
+    declaration(page).getByText("Frikanalen kunne ikke godkjenne erklæringen."),
+  ).toBeVisible();
+  await expect(declaration(page).getByText("Signaturen mangler.")).toBeVisible();
 });
 
 test("shows a member organization its approval instead", async ({ page, baseURL }) => {
   await page.context().addCookies([{ name: "e2e-member", value: "1", url: baseURL! }]);
   await page.goto("/organization/3/affidavit");
 
-  await expect(page.getByText("Frikanalen har godkjent erklæringen.")).toBeVisible();
+  await expect(declaration(page).getByText("Frikanalen har godkjent erklæringen.")).toBeVisible();
   await expect(page.getByRole("button", { name: "Send til Frikanalen" })).toHaveCount(0);
+});
+
+test("tells an unfinished organization what is left on its other pages", async ({
+  page,
+  baseURL,
+}) => {
+  await asApplicant(page, baseURL!);
+  await page.goto("/organization/3/admin");
+
+  const banner = page.getByRole("region", { name: "Medlemskap" });
+  await expect(banner).toContainText("Innmeldingen er ikke ferdig");
+  await expect(
+    banner.getByRole("link", { name: "Last ned og last opp erklæringen →" }),
+  ).toHaveAttribute("href", "/organization/3/start?erklaering");
+});
+
+test("shows a rejected declaration on the other pages too", async ({ page, baseURL }) => {
+  await asApplicant(page, baseURL!, "rejected");
+  await page.goto("/organization/3/admin");
+
+  await expect(page.getByRole("region", { name: "Medlemskap" })).toContainText(
+    "Erklæringen ble ikke godkjent",
+  );
+});
+
+test("leaves the banner off the start page itself", async ({ page, baseURL }) => {
+  await asApplicant(page, baseURL!);
+  await page.goto("/organization/3/start");
+
+  await expect(page.getByRole("heading", { name: "Kom i gang" })).toBeVisible();
+  await expect(page.getByRole("region", { name: "Medlemskap" })).toHaveCount(0);
+});
+
+test("opens the declaration as a dialog on the start page", async ({ page, baseURL }) => {
+  await asApplicant(page, baseURL!);
+  await page.goto("/organization/3/start");
+  await waitForHydration(page);
+
+  await page.getByRole("link", { name: "Last ned og last opp" }).click();
+
+  const dialog = page.getByRole("dialog", { name: "Redaktørerklæringen" });
+  await expect(dialog.getByRole("link", { name: "Last ned erklæringen (PDF)" })).toBeVisible();
+  await expect(page).toHaveURL(/\/organization\/3\/start\?erklaering/);
+
+  await dialog.getByRole("button", { name: "Lukk" }).click();
+  await expect(dialog).toHaveCount(0);
+  await expect(page).toHaveURL(/\/organization\/3\/start$/);
+});
+
+test("sends old declaration links to the dialog", async ({ page, baseURL }) => {
+  await asApplicant(page, baseURL!);
+  await page.goto("/organization/3/affidavit");
+
+  await expect(page).toHaveURL(/\/organization\/3\/start\?erklaering/);
+  await expect(page.getByRole("dialog", { name: "Redaktørerklæringen" })).toBeVisible();
 });

@@ -4,6 +4,9 @@ import { loadOrganization } from "@/app/organization/[organizationId]/loadOrgani
 import { grantsNeedingProgramme } from "@/app/organization/[organizationId]/studioAttention";
 import { StudioNav, type StudioSection } from "@/app/organization/[organizationId]/StudioNav";
 import { ssrGrantsList } from "@/generated/ssr/grants/grants";
+import { ssrOrganizationAffidavitList } from "@/generated/ssr/organization/organization";
+import { MembershipBanner } from "@/app/organization/[organizationId]/MembershipBanner";
+import { latestAffidavitState } from "@/app/organization/[organizationId]/affidavit/latestAffidavitState";
 import { getCookiesFromRequest } from "@/lib/getCookiesFromRequest";
 
 /**
@@ -43,13 +46,28 @@ export const StudioBar = async ({
   const scheduleAttention =
     grants?.status === 200 ? grantsNeedingProgramme(grants.data.results) : 0;
 
+  // Until then, every Studio page says what is left: the tab is easy to miss.
+  const affidavits = showStart
+    ? await ssrOrganizationAffidavitList(organizationId, { headers, cache: "no-store" }).catch(
+        () => null,
+      )
+    : null;
+
   return (
-    <StudioNav
-      organizationId={organizationId}
-      organizationName={organization.data.name}
-      scheduleAttention={scheduleAttention}
-      section={section}
-      showStart={showStart}
-    />
+    <>
+      <StudioNav
+        organizationId={organizationId}
+        organizationName={organization.data.name}
+        scheduleAttention={scheduleAttention}
+        section={section}
+        showStart={showStart}
+      />
+      {showStart ? (
+        <MembershipBanner
+          organizationId={organizationId}
+          state={affidavits?.status === 200 ? latestAffidavitState(affidavits.data) : "none"}
+        />
+      ) : null}
+    </>
   );
 };

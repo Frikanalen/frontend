@@ -1,3 +1,4 @@
+import { affidavitHref } from "@/app/organization/[organizationId]/affidavit/affidavitHref";
 /**
  * The road from "we would like to be on Frikanalen" to an active membership,
  * as the steps an organization has to take and whose move each one is. What a
@@ -48,7 +49,7 @@ export const onboardingSteps = (facts: OnboardingFacts): OnboardingStep[] => {
     {
       id: "account",
       title: "Opprett en bruker",
-      text: "Den som registrerer organisasjonen blir dens redaktør, så bruk din egen konto.",
+      text: "Den som melder inn organisasjonen blir dens redaktør, så bruk din egen konto.",
       state: loggedIn ? "done" : "todo",
       actions: loggedIn
         ? []
@@ -59,13 +60,17 @@ export const onboardingSteps = (facts: OnboardingFacts): OnboardingStep[] => {
     },
     {
       id: "organization",
-      title: "Registrer organisasjonen",
+      title: "Meld inn organisasjonen",
       text: "Organisasjonsnummer, navn, adresse og en kort beskrivelse. Redaktørens navn og kontaktinformasjon blir offentlig, slik kringkastingsloven krever.",
       state: registered ? "done" : loggedIn ? "todo" : "blocked",
-      actions:
-        registered || !loggedIn
-          ? []
-          : [{ href: "/organization/register", label: "Registrer organisasjonen" }],
+      actions: registered
+        ? []
+        : [
+            ...(loggedIn
+              ? [{ href: "/organization/register", label: "Meld inn organisasjonen" }]
+              : []),
+            { href: "/about/join", label: "Kontingent og vilkår" },
+          ],
     },
     {
       id: "affidavit",
@@ -89,11 +94,10 @@ export const onboardingSteps = (facts: OnboardingFacts): OnboardingStep[] => {
         : [
             registered
               ? {
-                  href: `/organization/${id}/affidavit`,
+                  href: affidavitHref(id),
                   label: affidavit === "pending" ? "Se erklæringen" : "Last ned og last opp",
                 }
               : { href: "/about/join/affidavit", label: "Se erklæringen" },
-            { href: "/about/join", label: "Kontingent og vilkår" },
           ],
     },
   ];

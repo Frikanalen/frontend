@@ -11,6 +11,9 @@ import { getCookiesFromRequest } from "@/lib/getCookiesFromRequest";
 import { OrganizationParams, parseParamsOr404 } from "@/lib/routeParams";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Suspense } from "react";
+import { AffidavitDialog } from "@/app/organization/[organizationId]/affidavit/AffidavitDialog";
+import { AffidavitSteps } from "@/app/organization/[organizationId]/affidavit/AffidavitSteps";
 import { forbidden, notFound, redirect } from "next/navigation";
 
 // Per-visitor: rendered on request, without a static shell of its own.
@@ -35,8 +38,8 @@ export default async function Page({ params }: { params: Promise<{ organizationI
     headers,
     cache: "no-store",
   });
-  const affidavit =
-    affidavitResponse.status === 200 ? latestAffidavitState(affidavitResponse.data) : "none";
+  const submissions = affidavitResponse.status === 200 ? affidavitResponse.data : [];
+  const affidavit = latestAffidavitState(submissions);
 
   const steps = onboardingSteps({
     organizationId,
@@ -67,6 +70,15 @@ export default async function Page({ params }: { params: Promise<{ organizationI
         </p>
       </header>
       <OnboardingSteps steps={steps} />
+      <Suspense>
+        <AffidavitDialog>
+          <AffidavitSteps
+            organization={organization}
+            latest={submissions[0]}
+            isEditor={organization.editorId === user.id || user.isStaff}
+          />
+        </AffidavitDialog>
+      </Suspense>
       {/* What a member does next is its own work, not a step on the way in. */}
       <p className="flex flex-wrap items-center gap-x-6 gap-y-2 text-default-700">
         {onboarded

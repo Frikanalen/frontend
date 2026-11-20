@@ -33,15 +33,15 @@ test("fills the form from Enhetsregisteret", async ({ page }) => {
   await fetchButton(page).click();
 
   await expect(page.getByText("Hentet fra Enhetsregisteret")).toBeVisible();
-  await expect(page.getByLabel("Organisasjonens navn")).toHaveValue("TESTFORENINGEN");
+  await expect(page.getByLabel("Organisasjonens navn")).toHaveValue("testforeningen");
   await expect(page.getByLabel("Organisasjonens nettside")).toHaveValue(
     "https://www.testforeningen.no",
   );
   await expect(page.getByLabel("En kort beskrivelse av organisasjonen")).toHaveValue(
     "Foreningen skal lage lokal-TV.",
   );
-  await expect(page.getByLabel("Besøksadresse")).toHaveValue("Testgata 1\n0150 OSLO");
-  await expect(page.getByLabel("Postadresse")).toHaveValue("Postboks 1\n0101 OSLO");
+  await expect(page.getByLabel("Besøksadresse")).toHaveValue("Testgata 1\n0150 oslo");
+  await expect(page.getByLabel("Postadresse")).toHaveValue("Postboks 1\n0101 oslo");
 });
 
 test("asks for a long purpose to be shortened", async ({ page }) => {
@@ -60,14 +60,14 @@ test("waits for the button, then replaces what is there", async ({ page }) => {
     return route.fulfill({ status: 200, json: entity });
   });
 
-  await fillAndConfirm(page.getByLabel("Organisasjonens navn"), "Testforeningen");
+  await fillAndConfirm(page.getByLabel("Organisasjonens navn"), "Noe annet");
   await fillAndConfirm(page.getByLabel("Organisasjonsnummer"), ORGNR);
-  await expect(page.getByLabel("Organisasjonens navn")).toHaveValue("Testforeningen");
+  await expect(page.getByLabel("Organisasjonens navn")).toHaveValue("Noe annet");
   expect(asked).toBe(0);
 
   await fetchButton(page).click();
 
-  await expect(page.getByLabel("Organisasjonens navn")).toHaveValue("TESTFORENINGEN");
+  await expect(page.getByLabel("Organisasjonens navn")).toHaveValue("testforeningen");
   expect(asked).toBe(1);
 });
 
@@ -103,15 +103,15 @@ test("sends the number along with the new organization", async ({ page }) => {
 
   await fillAndConfirm(page.getByLabel("Organisasjonsnummer"), "971 526 920");
   await fetchButton(page).click();
-  await expect(page.getByLabel("Organisasjonens navn")).toHaveValue("TESTFORENINGEN");
+  await expect(page.getByLabel("Organisasjonens navn")).toHaveValue("testforeningen");
   await page.getByRole("button", { name: "Opprett organisasjon" }).click();
 
   await expect.poll(() => created.length).toBe(1);
   expect(created[0]).toMatchObject({
     orgnr: ORGNR,
-    name: "TESTFORENINGEN",
+    name: "testforeningen",
     description: "Foreningen skal lage lokal-TV.",
-    streetAddress: "Testgata 1\n0150 OSLO",
+    streetAddress: "Testgata 1\n0150 oslo",
   });
 });
 
