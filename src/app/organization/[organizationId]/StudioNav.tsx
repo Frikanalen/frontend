@@ -3,7 +3,7 @@ import Link from "next/link";
 import cx from "classnames";
 import { usePathname } from "next/navigation";
 
-export type StudioSection = "start" | "videos" | "schedule" | "series" | "live";
+export type StudioSection = "start" | "videos" | "schedule" | "series" | "live" | "organization";
 
 /**
  * The member tools for one organisation, as a bar under the channel bar.
@@ -52,6 +52,7 @@ export const StudioNav = ({
     { key: "schedule", href: `${base}/schedule`, label: "Sendetid", badge: scheduleAttention },
     { key: "series", href: `${base}/series`, label: "Serier" },
     { key: "live", href: `${base}/live`, label: "Direktesending" },
+    { key: "organization", href: `${base}/profile`, label: "Organisasjon" },
   ];
 
   return (
