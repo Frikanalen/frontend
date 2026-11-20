@@ -1,21 +1,42 @@
 "use client";
+import { format } from "date-fns";
+import { nb } from "date-fns/locale";
 import { useVideosList } from "@/generated/videos/videos";
+import type { Video } from "@/generated/frikanalenDjangoAPI.schemas";
 import { VideoList } from "@/app/video/VideoList";
 import { IngestStatusChip } from "@/app/organization/[organizationId]/IngestStatusChip";
 import { useVideoDeletion } from "@/app/organization/[organizationId]/useVideoDeletion";
-import { Button } from "@heroui/react";
+import { VideoRowMenu } from "@/app/organization/[organizationId]/VideoRowMenu";
 import { ButtonLink } from "@/components/ButtonLink";
-import { Notice } from "@/components/Notice";
+import { inOsloTime } from "@/lib/osloTime";
+
+/** A live programme airs from its source until it has a file: nothing is wrong. */
+export const isLiveProgramme = (video: Pick<Video, "liveSource">) => video.liveSource != null;
 
 /**
- * The organization's videos that have no watchable copy yet: the ones an
- * upload was never finished for, the ones ingest is still working through,
- * and the ones it gave up on.
+ * A live programme with no airing left and no file: it went out live without
+ * being recorded (or was never booked). Nothing to upload, so it is listed
+ * under Direktesending rather than among the videos still being worked on.
+ */
+export const isPastLiveProgramme = (video: Pick<Video, "liveSource" | "liveAirings">) =>
+  isLiveProgramme(video) && !video.liveAirings?.length;
+
+/** When a live programme next goes out, in words, or null if it has no airing booked. */
+export const nextLiveAiring = (video: Pick<Video, "liveAirings">) => {
+  const next = video.liveAirings?.[0];
+  if (!next) return null;
+  return format(inOsloTime(next.starttime), "EEEE d. MMMM 'kl.' HH:mm", { locale: nb });
+};
+
+/**
+ * The organization's videos that have no watchable copy yet: uploads still
+ * being processed, uploads that failed or were never made, and live
+ * programmes waiting for their airing. Live programmes that have had their
+ * airing are listed under Direktesending instead. Each row says where it stands, and
+ * only a row that needs something done offers to upload.
  *
- * It is a separate list from the main one rather than a filter on it because
- * these need doing something about, and the warning above them says so. The
- * server draws the same line: `proper_import` omitted is the finished
- * catalogue, and `false` is exactly this list.
+ * A separate list from the finished ones because the server draws the same
+ * line: `proper_import=false` is exactly this list.
  */
 export const OutstandingVideosList = ({ organizationId }: { organizationId: number }) => {
   const { remove, isRemoving, error } = useVideoDeletion();
@@ -23,48 +44,46 @@ export const OutstandingVideosList = ({ organizationId }: { organizationId: numb
     organization: organizationId,
     proper_import: false,
     ordering: "-id",
+    limit: 50,
   });
-  const videos = data?.data.results ?? [];
+  const videos = (data?.data.results ?? []).filter((video) => !isPastLiveProgramme(video));
 
   if (!videos.length) return null;
 
   return (
-    <section className={"space-y-4"}>
-      <h2 className={"text-xl font-bold"}>Uferdige videoer</h2>
-
-      <Notice status="warning">
-        <div className="space-y-2">
-          <p>
-            Disse videoene har ingen ferdig visningskopi ennå. Status under hver av dem sier hvor
-            langt behandlingen er kommet.
-          </p>
-          <p>
-            Har behandlingen stoppet, eller ble det aldri lastet opp noen fil, kan du prøve på nytt
-            med &laquo;last opp&raquo; - eller slette videoen om den er blitt igjen ved en feil.
-          </p>
-        </div>
-      </Notice>
+    <section aria-labelledby="outstanding-heading" className="space-y-3">
+      <h2 id="outstanding-heading" className="text-xl font-bold">
+        Under arbeid
+      </h2>
 
       <VideoList
         videos={videos}
         showOrganization={false}
         showCategory={false}
-        status={(video) => <IngestStatusChip videoId={video.id} />}
+        href={(video) => `/video/${video.id}/edit`}
+        status={(video) => {
+          if (!isLiveProgramme(video)) return <IngestStatusChip videoId={video.id} />;
+          const airing = nextLiveAiring(video) ?? "";
+          return (
+            <span className="rounded bg-brand-coral/15 px-2 py-0.5 text-xs font-semibold">
+              Direkte · sendes {airing}
+            </span>
+          );
+        }}
         actions={(video) => (
           <>
-            <ButtonLink href={`/video/${video.id}/upload`} size="sm">
-              Last opp
-            </ButtonLink>
-            <Button
-              variant="danger-soft"
-              size="sm"
-              isPending={isRemoving(video.id)}
-              onPress={() =>
-                remove(video.id, video.name, `Slett den uimporterte videoen «${video.name}»?`)
+            {isLiveProgramme(video) ? null : (
+              <ButtonLink href={`/video/${video.id}/edit`} size="sm">
+                Last opp
+              </ButtonLink>
+            )}
+            <VideoRowMenu
+              video={video}
+              isDeleting={isRemoving(video.id)}
+              onDelete={() =>
+                remove(video.id, video.name, `Slett «${video.name}»? Dette kan ikke angres.`)
               }
-            >
-              Slett
-            </Button>
+            />
           </>
         )}
       />

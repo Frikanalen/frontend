@@ -10,11 +10,14 @@ import { profileIsAdminOrMember } from "@/app/organization/[organizationId]/admi
 import { getUserOrNull } from "@/app/getUserOrNull";
 import { VideoPageProps } from "@/app/video/[videoId]/page";
 import { VideoEditForm } from "@/app/video/[videoId]/edit/VideoEditForm";
+import { VideoUploadPanel } from "@/app/video/[videoId]/edit/VideoUploadPanel";
 import { ProgramImageManager } from "@/app/video/[videoId]/edit/ProgramImageManager";
 import { ssrSeriesList } from "@/generated/ssr/series/series";
 import { ssrCategoriesList } from "@/generated/ssr/categories/categories";
 import Link from "next/link";
 import { VideoParams, parseParamsOr404 } from "@/lib/routeParams";
+import { StudioBar } from "@/app/organization/[organizationId]/StudioBar";
+import { StudioHeader } from "@/app/organization/[organizationId]/StudioHeader";
 
 // Per-visitor: rendered on request, without a static shell of its own.
 export const instant = false;
@@ -64,32 +67,46 @@ export default async function Page({ params }: VideoPageProps) {
   const uploadToken = uploadTokenResponse.data.uploadToken;
   if (!uploadToken) throw new Error(`No upload token returned for video ${videoId}`);
 
+  const studio = `/organization/${video.organization.id}/admin`;
+
   return (
-    <section className={"mx-auto mt-10 max-w-5xl space-y-3 bg-background p-6 sm:p-8"}>
-      <Link
-        href={`/video/${videoId}`}
-        className="text-sm text-foreground-500 underline-offset-4 hover:underline"
-      >
-        ← Tilbake til videoen
-      </Link>
-      <div className={"prose dark:prose-invert"}>
-        <h1 className="text-2xl!">Rediger video</h1>
-      </div>
-      <VideoEditForm
-        image={
-          <ProgramImageManager
+    <>
+      <StudioBar organizationId={video.organization.id} section="videos" />
+      <div className="mx-auto w-full max-w-7xl px-4 pt-8 sm:px-6">
+        <section className="bg-background p-4 text-foreground sm:p-6">
+          <StudioHeader
+            title={video.name}
+            back={{ href: studio, label: "Videoer" }}
+            action={
+              <Link className="font-semibold text-link hover:underline" href={`/video/${videoId}`}>
+                Se offentlig side ↗
+              </Link>
+            }
+          />
+          <VideoUploadPanel
             videoId={videoId}
             uploadEndpoint={uploadTokenResponse.data.uploadUrl}
             uploadToken={uploadToken}
-            initialImages={imagesResponse.data.results}
-            fallbackThumbnail={video.files.largeThumb?.url}
+            needsFile={!video.properImport && video.liveSource == null}
           />
-        }
-        categories={categoriesResponse.status === 200 ? categoriesResponse.data.results : []}
-        liveSources={liveSourcesResponse.status === 200 ? liveSourcesResponse.data : []}
-        series={seriesResponse.data.results}
-        video={video}
-      />
-    </section>
+          <VideoEditForm
+            image={
+              <ProgramImageManager
+                videoId={videoId}
+                uploadEndpoint={uploadTokenResponse.data.uploadUrl}
+                uploadToken={uploadToken}
+                initialImages={imagesResponse.data.results}
+                fallbackThumbnail={video.files.largeThumb?.url}
+              />
+            }
+            categories={categoriesResponse.status === 200 ? categoriesResponse.data.results : []}
+            liveSources={liveSourcesResponse.status === 200 ? liveSourcesResponse.data : []}
+            returnHref={studio}
+            series={seriesResponse.data.results}
+            video={video}
+          />
+        </section>
+      </div>
+    </>
   );
 }

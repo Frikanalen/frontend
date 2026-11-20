@@ -196,6 +196,38 @@ createServer((request, response) => {
       ...(has("old") ? [retired] : []),
     ]);
   }
+  // A video's own page in Studio: the record, its pictures and an upload
+  // token. Any id is a fresh, file-less upload, which is what a video just
+  // created on "Ny video" is.
+  const videoPath = /^\/api\/videos\/(\d+)(?:\/(images|upload_token))?$/.exec(
+    url.pathname,
+  );
+  if (videoPath && request.method === "GET") {
+    const [, id, part] = videoPath;
+    if (part === "images")
+      return json(response, 200, {
+        count: 0,
+        next: null,
+        previous: null,
+        results: [],
+      });
+    if (part === "upload_token")
+      return json(response, 200, {
+        uploadToken: "upload-token",
+        uploadUrl: "/uploads",
+      });
+    return json(response, 200, {
+      ...video(Number(id), "Ny episode fra kaia", null),
+      files: {},
+      series: null,
+      description: "",
+      properImport: false,
+      publishOnWeb: true,
+      liveSource: null,
+      liveAirings: [],
+    });
+  }
+
   if (url.pathname === `/api/series/${series.id}`)
     return json(response, 200, series);
 

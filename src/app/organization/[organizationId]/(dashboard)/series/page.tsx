@@ -22,11 +22,7 @@ export default async function Page({ params }: { params: Promise<{ organizationI
   if (response.status !== 200) throw new Error(`Kunne ikke hente organisasjon ${organizationId}`);
 
   return (
-    <section className="space-y-6 p-4">
-      <div>
-        <h1 className="text-2xl font-bold">Serier for {response.data.name}</h1>
-        <p className="text-foreground/75">Samle videoer som hører sammen.</p>
-      </div>
+    <section>
       <SeriesManager organizationId={organizationId} />
     </section>
   );
