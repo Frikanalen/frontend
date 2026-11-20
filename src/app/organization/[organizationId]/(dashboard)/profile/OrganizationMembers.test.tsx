@@ -1,12 +1,19 @@
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import type { FormHTMLAttributes, InputHTMLAttributes, ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { OrganizationMember } from "@/generated/frikanalenDjangoAPI.schemas";
-import { LEAVE_QUESTION, OrganizationMembers, removeQuestion } from "./OrganizationMembers";
+import type { Invitation, OrganizationMember } from "@/generated/frikanalenDjangoAPI.schemas";
+import {
+  LEAVE_QUESTION,
+  OrganizationMembers,
+  removeQuestion,
+  withdrawQuestion,
+} from "./OrganizationMembers";
 
 const api = vi.hoisted(() => ({
   people: [] as unknown[],
+  invitations: [] as unknown[],
   create: vi.fn(),
+  withdraw: vi.fn(),
   destroy: vi.fn(),
   invalidate: vi.fn(),
   push: vi.fn(),
@@ -16,7 +23,10 @@ const api = vi.hoisted(() => ({
 vi.mock("@/generated/organization/organization", () => ({
   getOrganizationMembersListQueryKey: (id: number) => [`/api/organization/${id}/members`],
   useOrganizationMembersList: () => ({ data: { data: api.people }, isLoading: false, error: null }),
-  useOrganizationMembersCreate: () => ({ mutateAsync: api.create }),
+  getOrganizationInvitationsListQueryKey: (id: number) => [`/api/organization/${id}/invitations`],
+  useOrganizationInvitationsList: () => ({ data: { data: api.invitations } }),
+  useOrganizationInvitationsCreate: () => ({ mutateAsync: api.create }),
+  useOrganizationInvitationsDestroy: () => ({ mutateAsync: api.withdraw }),
   useOrganizationMembersDestroy: () => ({ mutateAsync: api.destroy }),
 }));
 vi.mock("@tanstack/react-query", () => ({
@@ -66,6 +76,12 @@ const editor: OrganizationMember = {
   isEditor: true,
   identityConfirmed: true,
 };
+const invitation: Invitation = {
+  id: 5,
+  email: "bo@example.test",
+  createdAt: "2026-11-20T12:00:00Z",
+  expiresAt: "2026-12-04T12:00:00Z",
+};
 const member: OrganizationMember = {
   id: 7,
   name: "Bo Berg",
@@ -80,7 +96,9 @@ Object.defineProperty(globalThis, "confirm", { configurable: true, value: confir
 afterEach(() => {
   cleanup();
   confirm.mockClear();
-  for (const fn of [api.create, api.destroy, api.invalidate, api.push, api.refresh]) fn.mockReset();
+  api.invitations = [];
+  for (const fn of [api.create, api.withdraw, api.destroy, api.invalidate, api.push, api.refresh])
+    fn.mockReset();
 });
 
 describe("OrganizationMembers", () => {
@@ -95,22 +113,32 @@ describe("OrganizationMembers", () => {
     expect(screen.getByRole("button", { name: "Forlat organisasjonen" })).toBeTruthy();
   });
 
-  it("lets the editor add a member by e-mail", async () => {
+  it("lets the editor invite by e-mail, without saying whether the address has an account", async () => {
     api.people = [editor];
-    api.create.mockResolvedValue({ data: member });
+    api.create.mockResolvedValue({ data: invitation });
     render(<OrganizationMembers organizationId={3} currentUserId={42} mayManage />);
-    fireEvent.change(screen.getByRole("textbox", { name: "Legg til medlem" }), {
+    fireEvent.change(screen.getByRole("textbox", { name: "Inviter et medlem" }), {
       target: { value: "bo@example.test" },
     });
-    fireEvent.submit(screen.getByRole("form", { name: "Legg til medlem" }));
+    fireEvent.submit(screen.getByRole("form", { name: "Inviter et medlem" }));
     await waitFor(() =>
       expect(api.create).toHaveBeenCalledWith({ id: 3, data: { email: "bo@example.test" } }),
     );
     expect(await screen.findByRole("status")).toHaveProperty(
       "textContent",
-      "Bo Berg er lagt til og har fått beskjed på e-post.",
+      "Invitasjonen er sendt til bo@example.test.",
     );
     expect(api.invalidate).toHaveBeenCalled();
+  });
+
+  it("lists open invitations by address and lets the editor withdraw one", async () => {
+    api.people = [editor];
+    api.invitations = [invitation];
+    render(<OrganizationMembers organizationId={3} currentUserId={42} mayManage />);
+    expect(screen.getByText("bo@example.test")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Trekk tilbake" }));
+    expect(confirm).toHaveBeenCalledWith(withdrawQuestion(invitation));
+    await waitFor(() => expect(api.withdraw).toHaveBeenCalledWith({ id: 3, invitationId: 5 }));
   });
 
   it("lets the editor remove a member, but not themselves", async () => {

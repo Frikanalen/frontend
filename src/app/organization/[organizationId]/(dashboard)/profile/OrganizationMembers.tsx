@@ -6,10 +6,17 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { FormInput } from "@/components/FormField";
 import { FormError } from "@/components/form/FormError";
-import type { AddMemberRequest, OrganizationMember } from "@/generated/frikanalenDjangoAPI.schemas";
+import type {
+  Invitation,
+  InviteRequest,
+  OrganizationMember,
+} from "@/generated/frikanalenDjangoAPI.schemas";
 import {
+  getOrganizationInvitationsListQueryKey,
   getOrganizationMembersListQueryKey,
-  useOrganizationMembersCreate,
+  useOrganizationInvitationsCreate,
+  useOrganizationInvitationsDestroy,
+  useOrganizationInvitationsList,
   useOrganizationMembersDestroy,
   useOrganizationMembersList,
 } from "@/generated/organization/organization";
@@ -20,54 +27,117 @@ export const removeQuestion = (member: OrganizationMember) =>
   `Fjerne ${member.name || member.email} fra organisasjonen? De mister tilgangen til Studio.`;
 
 export const LEAVE_QUESTION =
-  "Forlate organisasjonen? Du mister tilgangen til Studio, og redaktøren må legge deg til igjen.";
+  "Forlate organisasjonen? Du mister tilgangen til Studio, og redaktøren må invitere deg på nytt.";
 
-const AddMember = ({ organizationId }: { organizationId: number }) => {
+export const withdrawQuestion = (invitation: Invitation) =>
+  `Trekke tilbake invitasjonen til ${invitation.email}? Lenken i e-posten slutter å virke.`;
+
+const dateFormat = new Intl.DateTimeFormat("nb-NO", {
+  day: "numeric",
+  month: "long",
+  timeZone: "Europe/Oslo",
+});
+
+/**
+ * Invite someone by e-mail, and the invitations nobody has accepted yet.
+ * The answer is the same whether or not the address has an account, and an
+ * invitation shows by its address until it is accepted, so this tells the
+ * editor nothing about who is registered.
+ */
+const Invitations = ({ organizationId }: { organizationId: number }) => {
   const queryClient = useQueryClient();
-  const form = useForm<AddMemberRequest>({ defaultValues: { email: "" } });
-  const { mutateAsync } = useOrganizationMembersCreate();
-  const [added, setAdded] = useState<string | null>(null);
-  const { onSubmit, error, isSubmitting } = useApiFormSubmit(form, async (data) => {
-    setAdded(null);
-    const { data: member } = await mutateAsync({ id: organizationId, data });
-    form.reset({ email: "" });
-    setAdded(member.name || member.email);
-    await queryClient.invalidateQueries({
-      queryKey: getOrganizationMembersListQueryKey(organizationId),
+  const form = useForm<InviteRequest>({ defaultValues: { email: "" } });
+  const { mutateAsync: create } = useOrganizationInvitationsCreate();
+  const { mutateAsync: withdraw } = useOrganizationInvitationsDestroy();
+  const { data: response } = useOrganizationInvitationsList(organizationId);
+  const invitations = response?.data ?? [];
+  const [sent, setSent] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const refresh = () =>
+    queryClient.invalidateQueries({
+      queryKey: getOrganizationInvitationsListQueryKey(organizationId),
     });
+
+  const {
+    onSubmit,
+    error: inviteError,
+    isSubmitting,
+  } = useApiFormSubmit(form, async (data) => {
+    setSent(null);
+    const { data: invitation } = await create({ id: organizationId, data });
+    form.reset({ email: "" });
+    setSent(invitation.email);
+    await refresh();
   });
 
+  const onWithdraw = async (invitation: Invitation) => {
+    if (!globalThis.confirm(withdrawQuestion(invitation))) return;
+    setError(null);
+    try {
+      await withdraw({ id: organizationId, invitationId: invitation.id });
+      await refresh();
+    } catch (cause) {
+      setError(formatApiError(cause));
+    }
+  };
+
   return (
-    <Form onSubmit={onSubmit} className="block space-y-2" aria-label="Legg til medlem">
-      <FormError error={error} />
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
-        <FormInput
-          label="Legg til medlem"
-          labelPlacement="outside-top"
-          type="email"
-          id="member-email"
-          className="w-full sm:max-w-sm"
-          description="E-postadressen personen bruker for å logge inn på Frikanalen."
-          isRequired
-          {...form.register("email", { required: true })}
-        />
-        <Button type="submit" variant="secondary" isPending={isSubmitting}>
-          Legg til
-        </Button>
-      </div>
-      {added ? (
-        <p role="status" className="text-sm text-success">
-          {added} er lagt til og har fått beskjed på e-post.
-        </p>
+    <div className="space-y-4">
+      {invitations.length > 0 ? (
+        <div>
+          <h3 className="text-sm font-semibold">Invitert, ikke svart ennå</h3>
+          <FormError error={error} />
+          <ul className="mt-1 divide-y divide-default-200 border-y border-default-200">
+            {invitations.map((invitation) => (
+              <li
+                key={invitation.id}
+                className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 py-3"
+              >
+                <div className="min-w-0">
+                  <p className="break-all">{invitation.email}</p>
+                  <p className="text-sm text-default-600">
+                    Lenken virker til {dateFormat.format(new Date(invitation.expiresAt))}
+                  </p>
+                </div>
+                <Button size="sm" variant="tertiary" onPress={() => void onWithdraw(invitation)}>
+                  Trekk tilbake
+                </Button>
+              </li>
+            ))}
+          </ul>
+        </div>
       ) : null}
-    </Form>
+      <Form onSubmit={onSubmit} className="block space-y-2" aria-label="Inviter et medlem">
+        <FormError error={inviteError} />
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
+          <FormInput
+            label="Inviter et medlem"
+            labelPlacement="outside-top"
+            type="email"
+            id="member-email"
+            className="w-full sm:max-w-sm"
+            description="Personen får en lenke på e-post. Har de ikke bruker på Frikanalen, lager de den fra lenken."
+            isRequired
+            {...form.register("email", { required: true })}
+          />
+          <Button type="submit" variant="secondary" isPending={isSubmitting}>
+            Send invitasjon
+          </Button>
+        </div>
+        {sent ? (
+          <p role="status" className="text-sm text-success">
+            Invitasjonen er sendt til {sent}.
+          </p>
+        ) : null}
+      </Form>
+    </div>
   );
 };
 
 /**
  * Who works for the organization. Members act on its behalf: they upload
  * videos and, once Frikanalen has confirmed who they are, set up airtime.
- * The editor decides who the members are; a member can leave on their own.
+ * The editor invites and removes members; a member can leave on their own.
  */
 export const OrganizationMembers = ({
   organizationId,
@@ -124,7 +194,7 @@ export const OrganizationMembers = ({
         <p className="mt-1 max-w-3xl text-sm text-default-600">
           Medlemmene jobber på vegne av organisasjonen: de laster opp videoer, og når Frikanalen har
           bekreftet hvem de er, setter de opp sendetid.
-          {mayManage ? " Dere legger til folk som allerede har en bruker på Frikanalen." : null}
+          {mayManage ? " Dere inviterer nye medlemmer på e-post." : null}
         </p>
       </div>
       <FormError error={error ?? (loadError ? formatApiError(loadError) : null)} />
@@ -171,7 +241,7 @@ export const OrganizationMembers = ({
           })}
         </ul>
       ) : null}
-      {mayManage ? <AddMember organizationId={organizationId} /> : null}
+      {mayManage ? <Invitations organizationId={organizationId} /> : null}
     </section>
   );
 };
