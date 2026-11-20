@@ -24,6 +24,17 @@ const PREFILLED = {
 // is filled in whole, for the member to shorten.
 const DESCRIPTION_MAX = 255;
 
+// Enhetsregisteret only stores capitals. Lower case is less shouty, and the
+// member is asked to put the capitals back where they belong.
+const ALL_CAPS_FIELDS = new Set<keyof typeof PREFILLED>(["name", "streetAddress", "postalAddress"]);
+export const lowerAllCaps = (text: string) =>
+  text
+    .split("\n")
+    .map((line) =>
+      /\p{Lu}/u.test(line) && line === line.toUpperCase() ? line.toLowerCase() : line,
+    )
+    .join("\n");
+
 const LookupStatus = ({ lookup }: { lookup: BrregLookup }) => {
   switch (lookup.state) {
     case "idle":
@@ -89,8 +100,14 @@ export const OrgCreateForm = ({ className }: { className?: string }) => {
     useWatch({ control: form.control, name: "orgnr" }),
     (entity) => {
       // Asked for with the button, so it replaces what is there.
-      for (const [field, source] of Object.entries(PREFILLED)) {
-        form.setValue(field as keyof typeof PREFILLED, entity[source], { shouldDirty: true });
+      for (const [key, source] of Object.entries(PREFILLED)) {
+        const field = key as keyof typeof PREFILLED;
+        const value = entity[source];
+        form.setValue(
+          field,
+          ALL_CAPS_FIELDS.has(field) && typeof value === "string" ? lowerAllCaps(value) : value,
+          { shouldDirty: true },
+        );
       }
       void form.trigger("description");
     },
