@@ -25,7 +25,7 @@ const FEES = [
 
 const Join = () => (
   <>
-    <AboutHeading lead="Ved å melde organisasjonen din inn i Frikanalen, får dere:">
+    <AboutHeading lead="Ved å melde organisasjonen din inn i Frikanalen, får den:">
       Bli medlem
     </AboutHeading>
 
@@ -100,9 +100,9 @@ const Join = () => (
 
     <section className="flex flex-wrap items-center gap-x-8 gap-y-4 border-t border-foreground pt-8">
       <div className="min-w-0 grow basis-80">
-        <h2 className="text-2xl font-bold">Klar til å melde dere inn?</h2>
+        <h2 className="text-2xl font-bold">Klar til å melde organisasjonen inn?</h2>
         <p className="mt-1 text-default-700">
-          Fire steg til aktivt medlemskap. Vi viser dere veien.
+          Fire steg til aktivt medlemskap. Vi viser deg veien.
         </p>
       </div>
       <Link

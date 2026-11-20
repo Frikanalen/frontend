@@ -185,7 +185,7 @@ export const SourceMonitor = ({
       {/* Filled column by column where the window is wide: each picture
           with what belongs to it underneath, the pictures the same size. */}
       <div className="grid min-h-0 flex-1 gap-[0.6em] landscape:grid-flow-col landscape:grid-cols-2 landscape:grid-rows-[minmax(0,1fr)_auto]">
-        <Tile phase={own.phase} stream={own.stream} title="Fra dere">
+        <Tile phase={own.phase} stream={own.stream} title="Fra deg">
           {lost ? (
             <p className="absolute inset-x-0 bottom-0 bg-red-600 px-[0.6em] py-[0.3em] text-center text-[1.4em] font-bold tracking-wide uppercase">
               Ingen signal
@@ -193,7 +193,7 @@ export const SourceMonitor = ({
           ) : null}
         </Tile>
 
-        <section aria-label="Signalet deres" className="min-w-0 space-y-[0.7em]">
+        <section aria-label="Signalet ditt" className="min-w-0 space-y-[0.7em]">
           {lines.length > 0 ? (
             <dl className="grid grid-cols-2 gap-x-[1.2em] gap-y-[0.5em] leading-tight sm:grid-cols-3">
               {lines.map(({ label, value, status: mark }) => (

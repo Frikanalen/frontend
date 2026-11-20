@@ -169,7 +169,7 @@ export const EncoderKeys = ({
         >
           <div className="min-w-48 grow">
             <FormInput
-              description="Hva dere kaller koderen, f.eks. «ATEM i studio»."
+              description="Hva du kaller koderen, f.eks. «ATEM i studio»."
               label="Legg til en koder"
               value={label}
               onValueChange={setLabel}

@@ -479,7 +479,7 @@ test.describe("airtime grants", () => {
 
     const cards = page.getByRole("article");
     await expect(cards.nth(0)).toContainText("Fylles fra serien «Ukens program»");
-    await expect(cards.nth(1)).toContainText("Fylles fra alt dere laster opp");
+    await expect(cards.nth(1)).toContainText("Fylles fra alt du laster opp");
   });
 
   test("keeps a video the rule picked, and lets the rule fill around it", async ({ page }) => {

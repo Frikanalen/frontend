@@ -46,7 +46,7 @@ export const SourceCheck = ({
       )}
 
       <p className="border-t border-default-200 pt-4 text-sm text-default-600">
-        Under selve sendingen: bruk sendeskjermen, som viser nedtelling, om dere er på lufta, og
+        Under selve sendingen: bruk sendeskjermen, som viser nedtelling, om du er på lufta, og
         bildet slik Frikanalen sender det.{" "}
         <Link className="font-semibold text-link hover:underline" href={base}>
           Nøkler og oppsett for kilden

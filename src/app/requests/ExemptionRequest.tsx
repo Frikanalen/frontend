@@ -24,7 +24,7 @@ export const ExemptionRequest = ({ grant }: { grant: AirtimeGrant }) => {
   if (latest?.status === "pending") {
     return (
       <p className="bg-background p-3 text-sm" role="status">
-        Dere har bedt om å få endre listen. Forespørselen venter på svar fra Frikanalen.
+        Du har bedt om å få endre listen. Forespørselen venter på svar fra Frikanalen.
       </p>
     );
   }

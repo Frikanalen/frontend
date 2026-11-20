@@ -107,7 +107,7 @@ export const SignalCheck = ({
         ) : null}
         {verdict.level === "ready" || (!signal && seen) ? (
           <p className="mt-1 text-default-700">
-            Se selv at det er riktig bilde, og at lydmåleren beveger seg med lyden dere sender.
+            Se selv at det er riktig bilde, og at lydmåleren beveger seg med lyden du sender.
           </p>
         ) : null}
         {verdict.reasons.length > 0 ? (
@@ -146,7 +146,7 @@ export const SignalCheck = ({
         {signal ? (
           <section aria-labelledby="signal-panel" className="space-y-2">
             <h3 className="font-semibold" id="signal-panel">
-              Signalet deres
+              Signalet ditt
             </h3>
             <SignalPanel
               history={history}

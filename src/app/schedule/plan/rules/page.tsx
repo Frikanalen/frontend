@@ -47,7 +47,7 @@ export default async function Page() {
 
         <h2>Be om sendetid</h2>
         <p>
-          Under <em>Sendetid</em> velger dere <em>Be om mer sendetid</em>. Der ser dere uken med de
+          Under <em>Sendetid</em> velger du <em>Be om mer sendetid</em>. Der ser du uken med de
           faste sendeflatene som allerede er tatt, og kan be om en fast sendeflate hver uke eller
           sendetid én gang. Frikanalen svarer på samme side.
         </p>
@@ -66,28 +66,28 @@ export default async function Page() {
         <h2>Frist</h2>
         <p>
           Ved midnatt natt til mandag, uken før sending, låses planen for hele uken. Frem til da kan
-          dere endre listen så ofte dere vil. Deretter lages sendeplanen av den. Slik vet seere og
+          du endre listen så ofte du vil. Deretter lages sendeplanen av den. Slik vet seere og
           programoversikter hva som sendes, en uke i forveien.
         </p>
         <p>
-          Trenger dere å endre noe etter fristen, for eksempel rundt en direktesending, kan dere be
-          om det fra den låste sendetiden. Godkjenner Frikanalen det, kan listen endres helt frem
-          til sending.
+          Trenger du å endre noe etter fristen, for eksempel rundt en direktesending, kan du be om
+          det fra den låste sendetiden. Godkjenner Frikanalen det, kan listen endres helt frem til
+          sending.
         </p>
 
         <h2>Automatisk fylling</h2>
         <p>
           Sendetid fra en fast sendeflate fyller seg selv: først det nyeste som ikke har vært sendt,
           deretter arkivet, det som er sendt minst først. Organisasjonen kan la en sendeflate følge
-          en av seriene sine. Gjør dere ingenting, blir sendetiden likevel fylt, og nye opplastinger
-          kommer med helt frem til et døgn før sending. Videoer dere velger selv, blir stående
-          først, og resten fylles rundt dem. Slå av <em>Fyll resten av tiden automatisk</em> for å
-          sende bare det dere selv har satt opp.
+          en av seriene sine. Gjør du ingenting, blir sendetiden likevel fylt, og nye opplastinger
+          kommer med helt frem til et døgn før sending. Videoer du velger selv, blir stående først,
+          og resten fylles rundt dem. Slå av <em>Fyll resten av tiden automatisk</em> for å sende
+          bare det du selv har satt opp.
         </p>
 
         <h2>Video som ikke er ferdig</h2>
         <p>
-          Blir ikke filen ferdig før fristen, kan dere opprette videoen først, med tittel og lengde
+          Blir ikke filen ferdig før fristen, kan du opprette videoen først, med tittel og lengde
           fylt inn for hånd, og sette den på listen. Filen kan lastes opp senere. Er den ikke kommet
           når sendingen starter, vises en melding om at programmet ikke er tilgjengelig.
         </p>

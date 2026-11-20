@@ -28,8 +28,8 @@ export default async function Page({ params }: { params: Promise<{ organizationI
         <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">Sendetid</h1>
         <p className="mt-2 text-default-600">for {organization.name}</p>
         <p className="mt-2 max-w-3xl">
-          Her er sendetiden Frikanalen har gitt dere. Sett opp hva som skal sendes i hver av dem før
-          fristen.
+          Her er sendetiden Frikanalen har gitt organisasjonen. Sett opp hva som skal sendes i hver
+          av dem før fristen.
         </p>
         <div className="mt-2 flex flex-wrap gap-x-5 gap-y-1">
           <Link

@@ -59,6 +59,10 @@ const LookupStatus = ({ lookup }: { lookup: BrregLookup }) => {
             {entity.organizationForm && <> ({entity.organizationForm.toLowerCase()})</>}. Se over
             feltene under og rett det som ikke stemmer.
           </p>
+          <p className="mt-1">
+            Enhetsregisteret skiller ikke mellom versaler og minuskler. Påse at navnet er riktig
+            gjengitt.
+          </p>
           {entity.bankrupt && (
             <p className="mt-1 text-danger">Registeret oppgir at organisasjonen er konkurs.</p>
           )}

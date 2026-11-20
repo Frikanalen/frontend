@@ -202,7 +202,9 @@ test("a member sets up a source for Frikanalen to fetch", async ({ page }) => {
   await expect
     .poll(() => posted)
     .toEqual([{ name: "Kamera", pullUrl: "rtsp://kamera.example.no/stream" }]);
-  await expect(page.getByText("Dere har ingen kommende sendetid som kan endres.")).toBeVisible();
+  await expect(
+    page.getByText("Organisasjonen har ingen kommende sendetid som kan endres."),
+  ).toBeVisible();
 });
 
 test("a source no encoder can send to says so, and encoders are added, rekeyed and removed", async ({
@@ -376,7 +378,7 @@ test("the check page gives one verdict with its reasons, and leads on to airtime
   await expect(verdict).toContainText("Bilde: Lavere oppløsning enn anbefalt");
   // The receiver's report on the member's signal, not the preview's numbers,
   // each figure in its own slot.
-  const panel = page.getByRole("region", { name: "Signalet deres" });
+  const panel = page.getByRole("region", { name: "Signalet ditt" });
   await expect(panel.getByText("Oppløsning")).toBeVisible();
   await expect(panel.getByText("1280×720")).toBeVisible();
   await expect(panel.getByText("H.264")).toBeVisible();
@@ -426,7 +428,7 @@ test("the monitor counts down to air and turns red on air", async ({ page }) => 
   await expect(timer).toContainText("Direkte om");
   await expect(timer).toContainText(/01:\d\d/);
   await expect(timer).toContainText("Høstkonsert");
-  await expect(page.getByRole("region", { name: "Fra dere" })).toBeVisible();
+  await expect(page.getByRole("region", { name: "Fra deg" })).toBeVisible();
   // No programme return on this receiver: its tile is left out, not empty.
   await expect(page.getByRole("region", { name: "Frikanalen sender nå" })).toHaveCount(0);
   await expect(page.getByText(/Mbit\/s/).first()).toBeVisible();

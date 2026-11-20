@@ -191,10 +191,10 @@ export const LiveSetup = ({
             title="Send til Frikanalen"
             onChoose={() => setMode("push")}
           >
-            <p>Koderen deres sender signalet til oss. Dette er det vanlige.</p>
+            <p>Koderen din sender signalet til oss. Dette er det vanlige.</p>
             <p>
-              For OBS, vMix, ATEM, Web Presenter og andre kodere. Dere får innstillinger å lime inn
-              i koderen.
+              For OBS, vMix, ATEM, Web Presenter og andre kodere. Du får innstillinger å lime inn i
+              koderen.
             </p>
           </ChoiceCard>
           <ChoiceCard
@@ -203,7 +203,7 @@ export const LiveSetup = ({
             title="La Frikanalen hente"
             onChoose={() => setMode("pull")}
           >
-            <p>Vi henter en strøm som allerede finnes, fra en adresse dere oppgir.</p>
+            <p>Vi henter en strøm som allerede finnes, fra en adresse du oppgir.</p>
             <p>
               For IP-kameraer, en sending som alt strømmes et annet sted, eller en avsender som
               venter på oppkobling. Ingenting å installere.
@@ -222,7 +222,7 @@ export const LiveSetup = ({
           }}
         >
           <FormInput
-            description="Ett navn per sted dere sender fra, f.eks. «Studio» eller «Kirkesalen»."
+            description="Ett navn per sted du sender fra, f.eks. «Studio» eller «Kirkesalen»."
             label="Navn på kilden"
             value={name}
             onValueChange={setName}
@@ -230,7 +230,7 @@ export const LiveSetup = ({
 
           {mode === "push" ? (
             <fieldset className="space-y-2">
-              <legend className="text-sm font-medium">Hva sender dere med?</legend>
+              <legend className="text-sm font-medium">Hva sender du med?</legend>
               <div className="grid gap-2 sm:grid-cols-3">
                 {ENCODERS.map(({ id, name: title, hint }) => (
                   <Radio

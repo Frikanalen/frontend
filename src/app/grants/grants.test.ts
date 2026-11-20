@@ -209,7 +209,7 @@ const uploads = { id: 4, kind: "uploads", description: "", seriesName: null } as
 
 describe("fillSourceLabel", () => {
   it("names what a self-filling grant draws on", () => {
-    expect(fillSourceLabel({ recipe: uploads })).toBe("alt dere laster opp");
+    expect(fillSourceLabel({ recipe: uploads })).toBe("alt du laster opp");
     expect(
       fillSourceLabel({ recipe: { ...uploads, kind: "series", series: 8, seriesName: "Ukens" } }),
     ).toBe("serien «Ukens»");

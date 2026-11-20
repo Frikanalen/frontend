@@ -51,7 +51,7 @@ export const OrgVideosList = ({ organizationId }: { organizationId: number }) =>
           )}
         />
       ) : (
-        <p className="text-foreground/75">Dere har ingen ferdige videoer ennå.</p>
+        <p className="text-foreground/75">Organisasjonen har ingen ferdige videoer ennå.</p>
       )}
 
       {error && (
