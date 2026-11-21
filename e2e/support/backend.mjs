@@ -181,6 +181,15 @@ createServer((request, response) => {
       email: "ny@example.test",
       expiresAt: "2026-12-04T12:00:00Z",
     });
+  // A link handed over in person: no address of its own.
+  if (url.pathname === "/api/invitations/link-token")
+    return json(response, 200, {
+      organizationId: organization.id,
+      organizationName: organization.name,
+      invitedBy: "Ada Lovelace",
+      email: "",
+      expiresAt: "2026-12-04T12:00:00Z",
+    });
   if (url.pathname.startsWith("/api/invitations/"))
     return json(response, 404, {
       type: "client_error",

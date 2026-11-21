@@ -7570,8 +7570,9 @@ paths:
     get:
       operationId: organization_invitations_list
       description: |-
-        The organization's open invitations, by address. The editor and staff
-        see them and invite more.
+        The organization's open invitations, by address (blank for one shared
+        as a link). The editor and staff see them and invite more: by e-mail,
+        or as a link and QR code to hand over themselves.
       parameters:
         - name: id
           in: path
@@ -7692,8 +7693,9 @@ paths:
     post:
       operationId: organization_invitations_create
       description: |-
-        The organization's open invitations, by address. The editor and staff
-        see them and invite more.
+        The organization's open invitations, by address (blank for one shared
+        as a link). The editor and staff see them and invite more: by e-mail,
+        or as a link and QR code to hand over themselves.
       parameters:
         - name: id
           in: path
@@ -7701,7 +7703,6 @@ paths:
           schema:
             type: integer
       requestBody:
-        required: true
         content:
           application/json:
             schema:
@@ -7712,7 +7713,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Invitation'
+                $ref: '#/components/schemas/InvitationCreated'
         '400':
           description: ''
           content:
@@ -19974,6 +19975,11 @@ components:
       description: "Empty when logged in. Without a session: the new account's details."
       type: object
       properties:
+        email:
+          description: Only for an invitation shared as a link, which has no address.
+          type: string
+          format: email
+          minLength: 1
         firstName:
           type: string
           minLength: 1
@@ -24761,9 +24767,12 @@ components:
           type: integer
           readOnly: true
         email:
-          type: string
-          format: email
-          maxLength: 254
+          oneOf:
+            - type: string
+              format: email
+              maxLength: 254
+            - type: string
+              maxLength: 0
         createdAt:
           type: string
           format: date-time
@@ -24771,9 +24780,42 @@ components:
           type: string
           format: date-time
       required:
-        - email
         - expiresAt
         - id
+    InvitationCreated:
+      description: |-
+        A new invitation, with its link. The link is only ever shown here: only
+        its hash is stored, so a lost link means a new invitation.
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        email:
+          oneOf:
+            - type: string
+              format: email
+              maxLength: 254
+            - type: string
+              maxLength: 0
+        createdAt:
+          type: string
+          format: date-time
+        expiresAt:
+          type: string
+          format: date-time
+        link:
+          type: string
+          readOnly: true
+        qrCode:
+          description: The link as an SVG data URI
+          type: string
+          readOnly: true
+      required:
+        - expiresAt
+        - id
+        - link
+        - qrCode
     InvitationPreview:
       type: object
       properties:
@@ -24784,9 +24826,8 @@ components:
         invitedBy:
           type: string
         email:
-          description: The address the invitation was sent to.
+          description: The address the invitation was sent to; blank for a link.
           type: string
-          format: email
         expiresAt:
           type: string
           format: date-time
@@ -24796,16 +24837,46 @@ components:
         - invitedBy
         - organizationId
         - organizationName
+    InvitationsAcceptCreateEmailErrorComponent:
+      type: object
+      properties:
+        attr:
+          description: '* `email` - email'
+          type: string
+          enum:
+            - email
+        code:
+          description: |-
+            * `blank` - blank
+            * `invalid` - invalid
+            * `null` - null
+            * `null_characters_not_allowed` - null_characters_not_allowed
+            * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed
+          type: string
+          enum:
+            - blank
+            - invalid
+            - 'null'
+            - null_characters_not_allowed
+            - surrogate_characters_not_allowed
+        detail:
+          type: string
+      required:
+        - attr
+        - code
+        - detail
     InvitationsAcceptCreateError:
       discriminator:
         propertyName: attr
         mapping:
           non_field_errors: '#/components/schemas/InvitationsAcceptCreateNonFieldErrorsErrorComponent'
+          email: '#/components/schemas/InvitationsAcceptCreateEmailErrorComponent'
           first_name: '#/components/schemas/InvitationsAcceptCreateFirstNameErrorComponent'
           last_name: '#/components/schemas/InvitationsAcceptCreateLastNameErrorComponent'
           password: '#/components/schemas/InvitationsAcceptCreatePasswordErrorComponent'
       oneOf:
         - $ref: '#/components/schemas/InvitationsAcceptCreateNonFieldErrorsErrorComponent'
+        - $ref: '#/components/schemas/InvitationsAcceptCreateEmailErrorComponent'
         - $ref: '#/components/schemas/InvitationsAcceptCreateFirstNameErrorComponent'
         - $ref: '#/components/schemas/InvitationsAcceptCreateLastNameErrorComponent'
         - $ref: '#/components/schemas/InvitationsAcceptCreatePasswordErrorComponent'
@@ -24947,11 +25018,12 @@ components:
       type: object
       properties:
         email:
-          type: string
-          format: email
-          minLength: 1
-      required:
-        - email
+          description: Send the link here. Leave out to only get the link, to share yourself.
+          oneOf:
+            - type: string
+              format: email
+            - type: string
+              maxLength: 0
     IssuedEncoderKey:
       description: |-
         The one response that carries the password, with the encoder settings
@@ -26711,19 +26783,15 @@ components:
             - email
         code:
           description: |-
-            * `blank` - blank
             * `invalid` - invalid
             * `null` - null
             * `null_characters_not_allowed` - null_characters_not_allowed
-            * `required` - required
             * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed
           type: string
           enum:
-            - blank
             - invalid
             - 'null'
             - null_characters_not_allowed
-            - required
             - surrogate_characters_not_allowed
         detail:
           type: string

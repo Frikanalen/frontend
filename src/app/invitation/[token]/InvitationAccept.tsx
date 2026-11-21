@@ -42,7 +42,7 @@ const Join = ({
       setError(formatApiError(cause));
     }
   };
-  const otherAddress = email.toLowerCase() !== invitation.email.toLowerCase();
+  const otherAddress = !!invitation.email && email.toLowerCase() !== invitation.email.toLowerCase();
 
   return (
     <div className="mt-5 space-y-3">
@@ -67,7 +67,7 @@ const SignUp = ({ token, invitation }: { token: string; invitation: InvitationPr
   const form = useForm<Required<AcceptInvitationRequest>>();
   const { register, formState, setError } = form;
   const score = usePasswordStrength(useWatch({ control: form.control, name: "password" }) ?? "", [
-    invitation.email,
+    useWatch({ control: form.control, name: "email" }) || invitation.email,
     useWatch({ control: form.control, name: "firstName" }) ?? "",
     useWatch({ control: form.control, name: "lastName" }) ?? "",
   ]);
@@ -76,7 +76,8 @@ const SignUp = ({ token, invitation }: { token: string; invitation: InvitationPr
       setError("password", { message: TOO_WEAK });
       return;
     }
-    await mutateAsync({ token, data });
+    // An e-mailed invitation already knows the address.
+    await mutateAsync({ token, data: invitation.email ? { ...data, email: undefined } : data });
     router.push(studioOf(invitation));
     router.refresh();
   });
@@ -87,10 +88,22 @@ const SignUp = ({ token, invitation }: { token: string; invitation: InvitationPr
       <Form className="block" onSubmit={onSubmit} aria-label="Lag bruker og bli med">
         <div className="flex flex-col gap-4">
           <FormError error={error} />
-          <div>
-            <p className="text-sm font-medium">E-post (brukernavn)</p>
-            <p className="mt-1 break-all">{invitation.email}</p>
-          </div>
+          {invitation.email ? (
+            <div>
+              <p className="text-sm font-medium">E-post (brukernavn)</p>
+              <p className="mt-1 break-all">{invitation.email}</p>
+            </div>
+          ) : (
+            // A link handed over in person has no address of its own.
+            <AuthField
+              id="email"
+              {...register("email", { required: "Fyll inn e-postadressen din." })}
+              type="email"
+              label="E-post (brukernavn)"
+              autoComplete="username"
+              required
+            />
+          )}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <AuthField
               id="firstName"
