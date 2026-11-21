@@ -1,6 +1,20 @@
 2025-05-31 
 # Changelog
 
+## [3.15.0](https://github.com/Frikanalen/frontend/compare/v3.14.0...v3.15.0) (2026-11-21)
+
+
+### Features
+
+* **onboarding:** membership banner, declaration dialog, Brønnøysund casing ([#159](https://github.com/Frikanalen/frontend/issues/159)) ([e5eb7f0](https://github.com/Frikanalen/frontend/commit/e5eb7f04716111ece18363e1d6d8325f3cfe375d))
+* **organization:** finish registration: required orgnr, affidavit PDF and scan upload ([#158](https://github.com/Frikanalen/frontend/issues/158)) ([85fe5e7](https://github.com/Frikanalen/frontend/commit/85fe5e7e8849a09aaeda3e73f69256de32482173))
+* **profile:** Min side lists your organizations and your role in each ([#162](https://github.com/Frikanalen/frontend/issues/162)) ([a10c040](https://github.com/Frikanalen/frontend/commit/a10c0406a90d112f243e218f8cebf901e048a557))
+* public Faste sendeflater week and "Slik fordeles sendetiden" under Om Frikanalen ([#156](https://github.com/Frikanalen/frontend/issues/156)) ([03873f6](https://github.com/Frikanalen/frontend/commit/03873f66873b0ecfcb16a25836778f7c2a6486fe))
+* **studio:** invite by link and QR code, from a dialog on the members list ([#163](https://github.com/Frikanalen/frontend/issues/163)) ([308f694](https://github.com/Frikanalen/frontend/commit/308f694015be709d7595ce7c269e0331d7f31bd9))
+* **studio:** Organisasjon tab lists the members; the editor invites and removes them, members can leave ([#161](https://github.com/Frikanalen/frontend/issues/161)) ([72d3728](https://github.com/Frikanalen/frontend/commit/72d372874b5d8fc5848d5619f6075aa7c1facc8a))
+* **studio:** rework the organization Studio pages ([#160](https://github.com/Frikanalen/frontend/issues/160)) ([526ebdc](https://github.com/Frikanalen/frontend/commit/526ebdcef66bb975818e74b2618ffd1c1820087f))
+* **video:** neutral notice for administratively removed videos ([#164](https://github.com/Frikanalen/frontend/issues/164)) ([d666249](https://github.com/Frikanalen/frontend/commit/d666249074acf25ce0301468c59f537ac6cb6784))
+
 ## [3.14.0](https://github.com/Frikanalen/frontend/compare/v3.13.0...v3.14.0) (2026-11-19)
 
 
