@@ -8,6 +8,7 @@ const SECTIONS = [
   { href: "/schedule/plan/slots", label: "Faste sendeflater" },
   { href: "/schedule/plan/requests", label: "Forespørsler" },
   { href: "/schedule/plan/bulletins", label: "Meldinger" },
+  { href: "/schedule/plan/sendelogg", label: "Sendelogg" },
   { href: "/schedule/plan/rules", label: "Slik virker det" },
 ] as const;
 
