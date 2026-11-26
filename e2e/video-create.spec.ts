@@ -61,8 +61,8 @@ const stubUpload = async (page: Page) => {
     "Tus-Resumable": "1.0.0",
   };
 
-  await page.route(`**/api/videos/${VIDEO_ID}/upload_token`, (route) =>
-    answerJson(route, 200, { uploadToken: "upload-token", uploadUrl: "/uploads" }),
+  await page.route(`**/api/videos/${VIDEO_ID}/upload`, (route) =>
+    answerJson(route, 200, { uploadUrl: "/uploads" }),
   );
   // The offset tusd would be keeping, taken from what the client says it is
   // sending rather than from the bytes on the wire: WebKit does not hand
@@ -221,7 +221,8 @@ test.describe("video creation", () => {
 
     const createUpload = uploadRequests.find(({ method }) => method === "POST");
     expect(createUpload?.headers["upload-metadata"]).toContain("videoID NzAwMQ==");
-    expect(createUpload?.headers["upload-metadata"]).toContain("uploadToken dXBsb2FkLXRva2Vu");
+    // Authorized by the session cookie the browser sends along, not by a token.
+    expect(createUpload?.headers["upload-metadata"]).not.toContain("uploadToken");
   });
 
   test("follows the replacement through when ingest rejects the first file", async ({ page }) => {
