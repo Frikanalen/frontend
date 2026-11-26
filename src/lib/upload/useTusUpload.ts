@@ -7,7 +7,6 @@ import { buildUploadMetadata } from "@/lib/upload/buildUploadMetadata";
 
 export function useTusUpload(
   videoId: string,
-  uploadToken: string,
   endpoint: string,
   additionalMetadata?: Record<string, string>,
   initialFile?: File,
@@ -30,7 +29,7 @@ export function useTusUpload(
 
   useEffect(() => {
     if (!state.file) return;
-    const metadata = buildUploadMetadata(state.file, videoId, uploadToken, additionalMetadata);
+    const metadata = buildUploadMetadata(state.file, videoId, additionalMetadata);
     uploadRef.current = new tus.Upload(state.file, {
       endpoint,
       metadata,
@@ -41,7 +40,7 @@ export function useTusUpload(
       uploadRef.current?.abort(false);
       uploadRef.current = null;
     };
-  }, [state.file, videoId, uploadToken, endpoint, uploadHooks, additionalMetadata]);
+  }, [state.file, videoId, endpoint, uploadHooks, additionalMetadata]);
 
   const start = useCallback(() => {
     if (!uploadRef.current) return;

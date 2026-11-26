@@ -26,13 +26,11 @@ const PROMOTIONAL_ROLE: RoleEnum = RoleEnum.key_art_titled;
 export const ProgramImageManager = ({
   videoId,
   uploadEndpoint,
-  uploadToken,
   initialImages,
   fallbackThumbnail,
 }: {
   videoId: number;
   uploadEndpoint: string;
-  uploadToken: string;
   initialImages: ProgramImage[];
   /** A frame from the video, shown while it has no promotional image. */
   fallbackThumbnail?: string;
@@ -48,7 +46,7 @@ export const ProgramImageManager = ({
     () => ({ uploadKind: "program_image", imageRole: PROMOTIONAL_ROLE }),
     [],
   );
-  const upload = useTusUpload(String(videoId), uploadToken, uploadEndpoint, uploadMetadata);
+  const upload = useTusUpload(String(videoId), uploadEndpoint, uploadMetadata);
   const images = initialImages.filter(({ id }) => !unpublishedImageIds.has(id));
   const cover = images[0];
 
