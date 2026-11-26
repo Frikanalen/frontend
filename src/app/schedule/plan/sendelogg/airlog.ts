@@ -55,3 +55,50 @@ export const instantAt = (fraction: number, day: { start: Date; end: Date }) => 
   const at = day.start.getTime() + Math.min(1, Math.max(0, fraction)) * length;
   return new Date(Math.floor(at / 60_000) * 60_000);
 };
+
+/** What a schedule row is called on the air log's programme list. */
+export type EpgRow = {
+  id: number;
+  start: Date;
+  end: Date;
+  title: string;
+  organization?: string;
+  kind: "video" | "live" | "poster" | "graphic" | "other";
+};
+
+type ScheduleRow = {
+  id: number;
+  starttime: string;
+  endtime: string;
+  defaultName: string;
+  isLive: boolean;
+  video: { name: string; organization: { name: string } } | null;
+  poster?: { heading: string; organization: { name: string } } | null;
+  graphic?: { name: string } | null;
+};
+
+export const epgRow = (item: ScheduleRow): EpgRow => {
+  const base = { id: item.id, start: new Date(item.starttime), end: new Date(item.endtime) };
+  if (item.video) {
+    return {
+      ...base,
+      title: item.video.name,
+      organization: item.video.organization.name,
+      kind: item.isLive ? "live" : "video",
+    };
+  }
+  if (item.poster) {
+    return {
+      ...base,
+      title: item.poster.heading || "Plakat",
+      organization: item.poster.organization.name,
+      kind: "poster",
+    };
+  }
+  if (item.graphic) return { ...base, title: item.graphic.name, kind: "graphic" };
+  return { ...base, title: item.defaultName || "Uten navn", kind: "other" };
+};
+
+/** The row on air at `instant`, if any. */
+export const rowAt = (rows: EpgRow[], instant: Date | null) =>
+  instant ? rows.find((row) => row.start <= instant && instant < row.end) : undefined;
