@@ -95,7 +95,13 @@ export const ProgramImageManager = ({
     <>
       <button
         type="button"
-        onClick={() => setOpen(true)}
+        onClick={() => {
+          setOpen(true);
+          // Upload tokens are short-lived and deleted once the video's own
+          // file is ingested, so the one this page was rendered with may be
+          // gone by now. Re-rendering fetches the live one.
+          router.refresh();
+        }}
         className="group relative block aspect-video w-full max-w-72 shrink-0 overflow-hidden rounded-md bg-default text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus sm:w-56"
         aria-label="Endre bilde"
       >
