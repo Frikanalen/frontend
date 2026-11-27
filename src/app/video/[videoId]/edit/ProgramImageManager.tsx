@@ -1,5 +1,5 @@
 "use client";
-import { Button, Modal, ProgressBar } from "@heroui/react";
+import { Button, Modal, ProgressBar, Spinner } from "@heroui/react";
 import { Notice } from "@/components/Notice";
 import { ChangeEvent, ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -8,6 +8,10 @@ import { ProgramImage, RoleEnum } from "@/generated/frikanalenDjangoAPI.schemas"
 import { videosImagesDestroy } from "@/generated/videos/videos";
 import { formatApiError } from "@/lib/formatApiError";
 import { useTusUpload } from "@/lib/upload/useTusUpload";
+import {
+  isDecodableImage,
+  useNewProgramImage,
+} from "@/app/video/[videoId]/edit/useNewProgramImage";
 
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
 const ACCEPTED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
@@ -47,14 +51,33 @@ export const ProgramImageManager = ({
     [],
   );
   const upload = useTusUpload(String(videoId), uploadEndpoint, uploadMetadata);
-  const images = initialImages.filter(({ id }) => !unpublishedImageIds.has(id));
+  // Newest first: a new upload replaces the picture in use, which is what
+  // "Last opp nytt bilde" promises. The API lists them oldest first.
+  const images = initialImages
+    .filter(({ id }) => !unpublishedImageIds.has(id))
+    .sort((a, b) => b.id - a.id);
   const cover = images[0];
+  // The upload forgets its file once it is done, and that is the file to show
+  // while ingest works on it.
+  const [sentFile, setSentFile] = useState<File>();
+  const newImage = useNewProgramImage(
+    videoId,
+    upload.isSuccess ? (sentFile ?? null) : null,
+    initialImages,
+    router.refresh,
+  );
+  const isProcessing = newImage === "processing";
 
-  useEffect(() => {
-    if (upload.isSuccess) router.refresh();
-  }, [router, upload.isSuccess]);
+  // The member's own copy of the file, shown while ingest works on it.
+  const preview = useMemo(() => (sentFile ? URL.createObjectURL(sentFile) : undefined), [sentFile]);
+  useEffect(
+    () => () => {
+      if (preview) URL.revokeObjectURL(preview);
+    },
+    [preview],
+  );
 
-  const selectImage = (event: ChangeEvent<HTMLInputElement>) => {
+  const selectImage = async (event: ChangeEvent<HTMLInputElement>) => {
     setSelectionError(undefined);
     const file = event.target.files?.[0];
     if (file && file.size > MAX_IMAGE_BYTES) {
@@ -65,6 +88,12 @@ export const ProgramImageManager = ({
     }
     if (file?.type && !ACCEPTED_IMAGE_TYPES.has(file.type)) {
       setSelectionError("Velg et JPEG-, PNG- eller WebP-bilde.");
+      event.target.value = "";
+      upload.onFileListChange(event);
+      return;
+    }
+    if (file && !(await isDecodableImage(file))) {
+      setSelectionError("Filen kan ikke leses som et bilde. Velg en annen fil.");
       event.target.value = "";
       upload.onFileListChange(event);
       return;
@@ -107,11 +136,13 @@ export const ProgramImageManager = ({
           </span>
         )}
         <span className="absolute inset-x-0 bottom-0 bg-black/60 px-3 py-1.5 text-xs font-medium text-white">
-          {cover
-            ? "Eget bilde · endre"
-            : thumbnail
-              ? "Bilde fra videoen · endre"
-              : "Legg til bilde"}
+          {isProcessing
+            ? "Nytt bilde behandles …"
+            : cover
+              ? "Eget bilde · endre"
+              : thumbnail
+                ? "Bilde fra videoen · endre"
+                : "Legg til bilde"}
         </span>
       </button>
 
@@ -134,6 +165,15 @@ export const ProgramImageManager = ({
                 </p>
 
                 <div className="grid gap-4 sm:grid-cols-2">
+                  {isProcessing && preview && (
+                    <ImageCard
+                      src={preview}
+                      title="Nytt bilde"
+                      isPending
+                      isInUse={false}
+                      detail="Behandles automatisk: vi sjekker at filen er et gyldig bilde og lagrer det. Det tar vanligvis bare noen sekunder."
+                    />
+                  )}
                   {images.map((image, index) => (
                     <ImageCard
                       key={image.id}
@@ -171,9 +211,14 @@ export const ProgramImageManager = ({
                 {upload.isError && (
                   <Notice status="danger">Opplastingen feilet: {upload.error?.message}</Notice>
                 )}
-                {upload.isSuccess && (
-                  <Notice status="success">
-                    Bildet er lastet opp. Det vises her når det er kontrollert.
+                {newImage === "ready" && (
+                  <Notice status="success">Det nye bildet er klart og er nå i bruk.</Notice>
+                )}
+                {newImage === "stalled" && (
+                  <Notice status="warning">
+                    Bildet ble lastet opp, men ble ikke ferdig behandlet. Det tar vanligvis bare
+                    noen sekunder, så filen ble trolig avvist som ugyldig. Prøv igjen, gjerne med et
+                    annet bilde. Skjer det igjen, ta kontakt med oss.
                   </Notice>
                 )}
                 {upload.isUploading && (
@@ -205,14 +250,20 @@ export const ProgramImageManager = ({
                   </Button>
                 )}
                 {upload.isReady ? (
-                  <Button onPress={upload.start} variant="primary">
+                  <Button
+                    onPress={() => {
+                      setSentFile(upload.file ?? undefined);
+                      upload.start();
+                    }}
+                    variant="primary"
+                  >
                     Last opp {upload.file?.name}
                   </Button>
                 ) : (
                   <Button
                     variant="primary"
                     onPress={() => fileInput.current?.click()}
-                    isDisabled={upload.isUploading}
+                    isDisabled={upload.isUploading || isProcessing}
                   >
                     {cover ? "Last opp nytt bilde" : "Last opp eget bilde"}
                   </Button>
@@ -231,25 +282,36 @@ const ImageCard = ({
   title,
   detail,
   isInUse,
+  isPending = false,
   children,
 }: {
   src: string;
   title: string;
   detail: string;
   isInUse: boolean;
+  /** Uploaded, but not processed yet: dimmed, with a spinner over it. */
+  isPending?: boolean;
   children?: ReactNode;
 }) => (
   <article
+    aria-busy={isPending}
     className={`space-y-2 rounded-lg border p-3 ${isInUse ? "border-primary" : "border-default"}`}
   >
-    {/* The archive URL is runtime configuration, so it cannot be allow-listed at build time. */}
-    {/* eslint-disable-next-line @next/next/no-img-element */}
-    <img
-      src={src}
-      alt={title}
-      loading="lazy"
-      className="aspect-video w-full rounded-md bg-default object-contain"
-    />
+    <div className="relative">
+      {/* The archive URL is runtime configuration, so it cannot be allow-listed at build time. */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={src}
+        alt={title}
+        loading="lazy"
+        className={`aspect-video w-full rounded-md bg-default object-contain ${isPending ? "opacity-50" : ""}`}
+      />
+      {isPending && (
+        <span className="absolute inset-0 flex items-center justify-center">
+          <Spinner size="lg" aria-label="Behandler bildet" />
+        </span>
+      )}
+    </div>
     <div className="flex flex-wrap items-start justify-between gap-2">
       <div>
         <p className="text-sm font-medium">
