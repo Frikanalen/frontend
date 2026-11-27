@@ -240,10 +240,10 @@ createServer((request, response) => {
       ...(has("old") ? [retired] : []),
     ]);
   }
-  // A video's own page in Studio: the record, its pictures and an upload
-  // token. Any id is a fresh, file-less upload, which is what a video just
+  // A video's own page in Studio: the record, its pictures and where to
+  // upload. Any id is a fresh, file-less upload, which is what a video just
   // created on "Ny video" is.
-  const videoPath = /^\/api\/videos\/(\d+)(?:\/(images|upload_token))?$/.exec(
+  const videoPath = /^\/api\/videos\/(\d+)(?:\/(images|upload))?$/.exec(
     url.pathname,
   );
   if (videoPath && request.method === "GET") {
@@ -255,9 +255,8 @@ createServer((request, response) => {
         previous: null,
         results: [],
       });
-    if (part === "upload_token")
+    if (part === "upload")
       return json(response, 200, {
-        uploadToken: "upload-token",
         uploadUrl: "/uploads",
       });
     return json(response, 200, {

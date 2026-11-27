@@ -15,7 +15,6 @@ const REDIRECT_DELAY_MS = 2000;
 export const FileUpload = ({
   videoId,
   uploadEndpoint,
-  uploadToken,
   initialFile,
   autoStart = false,
   onFileChange,
@@ -29,7 +28,6 @@ export const FileUpload = ({
    */
   doneHref?: string | null;
   uploadEndpoint: string;
-  uploadToken: string | undefined;
   initialFile?: File;
   autoStart?: boolean;
   /** Told which file is on its way up, so a caller naming it can keep up. */
@@ -37,7 +35,6 @@ export const FileUpload = ({
 }) => {
   const ref = useRef<HTMLInputElement>(null);
   // fixme: this is probably not really nullable, this is just a DB schema issue.
-  if (!uploadToken) throw new Error("No upload token provided");
   const {
     onFileListChange,
     start,
@@ -48,7 +45,7 @@ export const FileUpload = ({
     isError,
     error,
     isSuccess,
-  } = useTusUpload(String(videoId), uploadToken, uploadEndpoint, undefined, initialFile);
+  } = useTusUpload(String(videoId), uploadEndpoint, undefined, initialFile);
 
   useEffect(() => {
     if (autoStart && isReady) start();

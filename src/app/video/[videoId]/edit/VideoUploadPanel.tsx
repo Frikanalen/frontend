@@ -13,12 +13,10 @@ import { FileUpload } from "@/components/upload/FileUpload";
 export const VideoUploadPanel = ({
   videoId,
   uploadEndpoint,
-  uploadToken,
   needsFile,
 }: {
   videoId: number;
   uploadEndpoint: string;
-  uploadToken: string;
   /** No finished file yet, and not a live programme. */
   needsFile: boolean;
 }) => {
@@ -50,7 +48,6 @@ export const VideoUploadPanel = ({
       <FileUpload
         videoId={videoId}
         uploadEndpoint={uploadEndpoint}
-        uploadToken={uploadToken}
         initialFile={file}
         autoStart={!!file}
         onFileChange={setFile}

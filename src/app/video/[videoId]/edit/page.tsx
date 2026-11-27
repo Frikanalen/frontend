@@ -2,7 +2,7 @@ import { getCookiesFromRequest } from "@/lib/getCookiesFromRequest";
 import {
   ssrVideosImagesList,
   ssrVideosRetrieve,
-  ssrVideosUploadTokenRetrieve,
+  ssrVideosUploadRetrieve,
 } from "@/generated/ssr/videos/videos";
 import { ssrOrganizationLiveSourcesList } from "@/generated/ssr/organization/organization";
 import { forbidden, notFound, redirect } from "next/navigation";
@@ -45,30 +45,28 @@ export default async function Page({ params }: VideoPageProps) {
   // editor and members.
   if (!user?.isStaff && !profileIsAdminOrMember(video.organization.id, user)) return forbidden();
 
-  const [
-    seriesResponse,
-    imagesResponse,
-    uploadTokenResponse,
-    liveSourcesResponse,
-    categoriesResponse,
-  ] = await Promise.all([
-    ssrSeriesList(
-      { organization: video.organization.id, limit: 100 },
-      { headers, cache: "no-store" },
-    ),
-    ssrVideosImagesList(videoId, { limit: 100 }, { headers, cache: "no-store" }),
-    ssrVideosUploadTokenRetrieve(videoId, { headers, cache: "no-store" }),
-    ssrOrganizationLiveSourcesList(video.organization.id, { headers, cache: "no-store" }),
-    ssrCategoriesList({ limit: 100 }, { headers, cache: "no-store" }),
-  ]);
+  const [seriesResponse, imagesResponse, uploadResponse, liveSourcesResponse, categoriesResponse] =
+    await Promise.all([
+      ssrSeriesList(
+        { organization: video.organization.id, limit: 100 },
+        { headers, cache: "no-store" },
+      ),
+      ssrVideosImagesList(videoId, { limit: 100 }, { headers, cache: "no-store" }),
+      ssrVideosUploadRetrieve(videoId, { headers, cache: "no-store" }),
+      ssrOrganizationLiveSourcesList(video.organization.id, { headers, cache: "no-store" }),
+      ssrCategoriesList({ limit: 100 }, { headers, cache: "no-store" }),
+    ]);
   if (seriesResponse.status !== 200)
     throw new Error(`Unexpected status ${seriesResponse.status} when fetching series`);
   if (imagesResponse.status !== 200)
     throw new Error(`Could not load images for video ${videoId}: ${imagesResponse.status}`);
-  if (uploadTokenResponse.status !== 200)
-    throw new Error(`Could not get an upload token for video ${videoId}`);
-  const uploadToken = uploadTokenResponse.data.uploadToken;
-  if (!uploadToken) throw new Error(`No upload token returned for video ${videoId}`);
+  if (uploadResponse.status !== 200)
+    throw new Error(
+      `Could not get the upload endpoint for video ${videoId}: ${uploadResponse.status}`,
+    );
+  // Uploads are authorized by the uploader's own session, which the browser
+  // sends to the upload endpoint because it is on the site's own origin.
+  const uploadEndpoint = uploadResponse.data.uploadUrl;
 
   const studio = `/organization/${video.organization.id}/admin`;
 
@@ -88,16 +86,14 @@ export default async function Page({ params }: VideoPageProps) {
           />
           <VideoUploadPanel
             videoId={videoId}
-            uploadEndpoint={uploadTokenResponse.data.uploadUrl}
-            uploadToken={uploadToken}
+            uploadEndpoint={uploadEndpoint}
             needsFile={!video.properImport && video.liveSource == null}
           />
           <VideoEditForm
             image={
               <ProgramImageManager
                 videoId={videoId}
-                uploadEndpoint={uploadTokenResponse.data.uploadUrl}
-                uploadToken={uploadToken}
+                uploadEndpoint={uploadEndpoint}
                 initialImages={imagesResponse.data.results}
                 fallbackThumbnail={video.files.largeThumb?.url}
               />

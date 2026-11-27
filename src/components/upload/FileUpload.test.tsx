@@ -59,7 +59,7 @@ describe("FileUpload", () => {
       },
     });
 
-    render(<FileUpload videoId={7} uploadEndpoint="/uploads" uploadToken="upload-token" />);
+    render(<FileUpload videoId={7} uploadEndpoint="/uploads" />);
 
     await waitFor(() => expect(mocks.push).toHaveBeenCalledWith("/video/7"));
   });
