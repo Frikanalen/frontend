@@ -1,6 +1,16 @@
 2025-05-31 
 # Changelog
 
+## [3.16.0](https://github.com/Frikanalen/frontend/compare/v3.15.0...v3.16.0) (2026-11-27)
+
+
+### Features
+
+* **staff:** Sendelogg page, a week of what the stream aired ([#165](https://github.com/Frikanalen/frontend/issues/165)) ([a07db7c](https://github.com/Frikanalen/frontend/commit/a07db7c0e1efaa048ecd1a6d2a6d0f3ea24dd7d3))
+* **staff:** Sendelogg shows the day's schedule beside the player and what was on ([#167](https://github.com/Frikanalen/frontend/issues/167)) ([e521f65](https://github.com/Frikanalen/frontend/commit/e521f653d36de0c20d551d0b7bfa84584ec06d5f))
+* upload without a per-video token ([#169](https://github.com/Frikanalen/frontend/issues/169)) ([6a378c3](https://github.com/Frikanalen/frontend/commit/6a378c33623456f2b2ad9e511969bff32fc97171))
+* **video:** show progress while an uploaded programme image is processed ([#170](https://github.com/Frikanalen/frontend/issues/170)) ([6e39d4d](https://github.com/Frikanalen/frontend/commit/6e39d4d4a804fbab47204c22df90e62f1df31e88))
+
 ## [3.15.0](https://github.com/Frikanalen/frontend/compare/v3.14.0...v3.15.0) (2026-11-21)
 
 
